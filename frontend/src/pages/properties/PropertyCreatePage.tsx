@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCreateProperty } from '../../hooks';
-import { PropertyForm } from '../../components/forms/PropertyForm';
+import PropertyFormModern from '../../components/forms/PropertyFormModern';
 import type { PropertyInput } from '../../types';
 
 const PropertyCreatePage: React.FC = () => {
@@ -11,11 +11,10 @@ const PropertyCreatePage: React.FC = () => {
   };
 
   return (
-    <PropertyForm
+    <PropertyFormModern
       onSubmit={handleSubmit}
       loading={loading}
       title="Create New Property"
-      submitButtonText="Create Property"
     />
   );
 };

@@ -1913,7 +1913,7 @@ app.get('/', (req, res) => {
 // Mount routes
 app.use('/api/properties', createPropertyRoutes(propertyController));
 app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
-app.use('/api/tenants', createTenantRoutes(tenantController));
+app.use('/api', createTenantRoutes(tenantController));
 app.use('/api', createUnitRoutes(unitController));
 app.use('/api', createUnitTenantRoutes(unitTenantController));
 app.use('/api/leases', createLeaseRoutes(leaseController));

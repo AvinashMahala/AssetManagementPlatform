@@ -146,3 +146,6 @@ playwright/.cache/
 .cache/
 *.tgz
 *.tar.gz
+
+package-lock.json
+test_data/*

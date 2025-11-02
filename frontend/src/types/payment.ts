@@ -1,0 +1,33 @@
+export const PaymentStatus = { PAID: 'paid', PENDING: 'pending', OVERDUE: 'overdue', PARTIAL: 'partial' } as const;
+export type PaymentStatusValue = typeof PaymentStatus[keyof typeof PaymentStatus];
+
+export const PaymentMethod = { CASH: 'cash', BANK_TRANSFER: 'bank_transfer', UPI: 'upi', CHEQUE: 'cheque', CARD: 'card' } as const;
+export type PaymentMethodValue = typeof PaymentMethod[keyof typeof PaymentMethod];
+
+export interface RentPayment {
+  id: string;
+  leaseId: string;
+  tenantId: string;
+  amount: number;
+  dueDate: string;
+  paidDate?: string;
+  paymentMethod?: PaymentMethodValue;
+  transactionId?: string;
+  status: PaymentStatusValue;
+  lateFee?: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RentPaymentInput {
+  leaseId: string;
+  tenantId: string;
+  amount: number;
+  dueDate: string;
+  paidDate?: string;
+  paymentMethod?: PaymentMethodValue;
+  transactionId?: string;
+  lateFee?: number;
+  notes?: string;
+}

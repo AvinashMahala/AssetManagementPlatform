@@ -20,8 +20,11 @@ export function useProperties(filters?: PropertyFilters) {
     setCurrentFilters({});
   }, []);
 
+  // Extract properties from the response structure
+  const properties = data?.properties || [];
+
   return {
-    properties: Array.isArray(data?.data) ? data.data : [],
+    properties: Array.isArray(properties) ? properties : [],
     pagination: data?.pagination,
     loading,
     error,
@@ -71,8 +74,11 @@ export function usePropertySearch() {
     setSearchQuery('');
   }, []);
 
+  // Extract properties from the response structure
+  const properties = data?.properties || [];
+
   return {
-    properties: data?.data || [],
+    properties: Array.isArray(properties) ? properties : [],
     pagination: data?.pagination,
     loading,
     error,

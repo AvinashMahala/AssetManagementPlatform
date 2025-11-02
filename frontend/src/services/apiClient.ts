@@ -46,29 +46,33 @@ class ApiClient {
   }
 
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
-    let data: unknown;
+    let responseData: unknown;
 
     try {
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
+        responseData = await response.json();
       } else {
-        data = await response.text();
+        responseData = await response.text();
       }
     } catch (_error) {
-      data = null;
+      responseData = null;
     }
 
     if (response.ok) {
+      // Backend returns {success: true, data: {...}}
+      // Extract the data field from the backend response
+      const backendResponse = responseData as { success?: boolean; data?: T; message?: string };
+      
       return {
         success: true,
-        data: data as T,
-        message: (data as { message?: string })?.message,
+        data: backendResponse?.data || (responseData as T),
+        message: backendResponse?.message,
       };
     }
 
     // Handle error responses
-    const errorData = data as { error?: { code?: string; message?: string; details?: unknown }; message?: string };
+    const errorData = responseData as { error?: { code?: string; message?: string; details?: unknown }; message?: string };
     const error: ApiError = {
       code: errorData?.error?.code || `HTTP_${response.status}`,
       message: errorData?.error?.message || errorData?.message || `HTTP ${response.status}: ${response.statusText}`,

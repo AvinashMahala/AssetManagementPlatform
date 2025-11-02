@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/userController';
-import { authMiddleware } from '../middlewares/authMiddleware';
+import { conditionalAuth, devAuthBypass } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validationMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 import { PasswordResetService } from '../services/PasswordResetService';
@@ -8,7 +8,9 @@ import { PasswordResetService } from '../services/PasswordResetService';
 export const createAuthRoutes = (userService: IUserService, passwordResetService: PasswordResetService) => {
   const router = Router();
   const userController = new UserController(userService, passwordResetService);
-  const authenticate = authMiddleware(userService);
+  
+  // Create conditional auth middleware instance
+  const authenticate = conditionalAuth(userService);
 
   // Public routes (no authentication required)
   /**
@@ -605,7 +607,7 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
   router.post('/logout', userController.logout.bind(userController));
 
   // Protected routes (authentication required)
-  router.use(authenticate); // All routes below require authentication
+  // Use conditionalAuth middleware for all protected routes
 
   /**
    * @swagger
@@ -756,10 +758,7 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *                             type: string
    *                           description: "List of recovery codes (shown only once)"
    */
-  router.post('/recovery-codes/generate', userController.generateRecoveryCodes.bind(userController));
-
-  // Protected routes (authentication required)
-  router.use(authenticate); // All routes below require authentication
+  router.post('/recovery-codes/generate', authenticate, userController.generateRecoveryCodes.bind(userController));
 
   /**
    * @swagger
@@ -836,8 +835,8 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/profile', userController.getProfile.bind(userController));
-  router.put('/profile', validateRequest.updateProfile, userController.updateProfile.bind(userController));
+  router.get('/profile', authenticate, userController.getProfile.bind(userController));
+  router.put('/profile', authenticate, validateRequest.updateProfile, userController.updateProfile.bind(userController));
 
   /**
    * @swagger
@@ -876,7 +875,7 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/link-google', validateRequest.linkGoogle, userController.linkGoogle.bind(userController));
+  router.post('/link-google', authenticate, validateRequest.linkGoogle, userController.linkGoogle.bind(userController));
 
   /**
    * @swagger
@@ -913,7 +912,7 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *                           type: string
    *                           description: "Temporary password (shown only to admin)"
    */
-  router.post('/admin/reset-password', validateRequest.adminResetPassword, userController.adminResetPassword.bind(userController));
+  router.post('/admin/reset-password', authenticate, validateRequest.adminResetPassword, userController.adminResetPassword.bind(userController));
 
   // Admin only routes
   /**
@@ -943,7 +942,7 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *                           items:
    *                             $ref: '#/components/schemas/User'
    */
-  router.get('/', userController.getAllUsers.bind(userController));
+  router.get('/', authenticate, userController.getAllUsers.bind(userController));
 
   /**
    * @swagger
@@ -1043,9 +1042,9 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.get('/:id', userController.getUserById.bind(userController));
-  router.put('/:id', validateRequest.updateUser, userController.updateUser.bind(userController));
-  router.delete('/:id', userController.deleteUser.bind(userController));
+  router.get('/:id', authenticate, userController.getUserById.bind(userController));
+  router.put('/:id', authenticate, validateRequest.updateUser, userController.updateUser.bind(userController));
+  router.delete('/:id', authenticate, userController.deleteUser.bind(userController));
 
   return router;
 };

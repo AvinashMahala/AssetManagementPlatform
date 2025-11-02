@@ -99,8 +99,8 @@ export interface PropertyFilters {
 }
 
 export interface PropertyListResponse {
-  data: Property[];
-  pagination: {
+  properties: Property[];
+  pagination?: {
     page: number;
     limit: number;
     total: number;
