@@ -16,7 +16,7 @@ export class TenantController {
    * /api/tenants:
    *   get:
    *     summary: Get all tenants
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     responses:
@@ -53,7 +53,7 @@ export class TenantController {
    * /api/tenants/{id}:
    *   get:
    *     summary: Get tenant by ID
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -103,7 +103,7 @@ export class TenantController {
    * /api/tenants/email/{email}:
    *   get:
    *     summary: Get tenant by email
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -154,7 +154,7 @@ export class TenantController {
    * /api/tenants/phone/{phone}:
    *   get:
    *     summary: Get tenant by phone
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -204,7 +204,7 @@ export class TenantController {
    * /api/tenants:
    *   post:
    *     summary: Create a new tenant
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     requestBody:
@@ -248,7 +248,7 @@ export class TenantController {
    * /api/tenants/{id}:
    *   put:
    *     summary: Update tenant
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -336,7 +336,7 @@ export class TenantController {
    * /api/tenants/{id}:
    *   delete:
    *     summary: Delete tenant
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -381,7 +381,7 @@ export class TenantController {
    * /api/tenants/{id}/status:
    *   patch:
    *     summary: Update tenant status
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -449,7 +449,7 @@ export class TenantController {
    * /api/tenants/{tenantId}/documents:
    *   post:
    *     summary: Add document to tenant
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -536,7 +536,7 @@ export class TenantController {
    * /api/tenants/{tenantId}/documents:
    *   get:
    *     summary: Get tenant documents
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -607,7 +607,7 @@ export class TenantController {
    * /api/tenants/documents/{documentId}:
    *   put:
    *     summary: Update tenant document
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -700,7 +700,7 @@ export class TenantController {
    * /api/tenants/documents/{documentId}:
    *   delete:
    *     summary: Delete tenant document
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -745,7 +745,7 @@ export class TenantController {
    * /api/tenants/documents/{documentId}/verify:
    *   patch:
    *     summary: Verify tenant document
-   *     tags: [Tenants]
+   *     tags: ['Tenants']
    *     security:
    *       - bearerAuth: []
    *     parameters:
