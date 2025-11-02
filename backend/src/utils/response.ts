@@ -1,0 +1,76 @@
+import { Response } from 'express';
+import { HTTP_STATUS } from '../constants/http';
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+export class ResponseUtils {
+  /**
+   * Send a successful response
+   */
+  static success<T>(res: Response, data: T, message?: string, statusCode: number = HTTP_STATUS.OK): void {
+    const response: ApiResponse<T> = {
+      success: true,
+      data,
+      ...(message && { message }),
+    };
+    res.status(statusCode).json(response);
+  }
+
+  /**
+   * Send an error response
+   */
+  static error(res: Response, message: string, statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR): void {
+    const response: ApiResponse = {
+      success: false,
+      error: message,
+    };
+    res.status(statusCode).json(response);
+  }
+
+  /**
+   * Send a created response
+   */
+  static created<T>(res: Response, data: T, message?: string): void {
+    this.success(res, data, message, HTTP_STATUS.CREATED);
+  }
+
+  /**
+   * Send a not found response
+   */
+  static notFound(res: Response, message: string = 'Resource not found'): void {
+    this.error(res, message, HTTP_STATUS.NOT_FOUND);
+  }
+
+  /**
+   * Send a bad request response
+   */
+  static badRequest(res: Response, message: string): void {
+    this.error(res, message, HTTP_STATUS.BAD_REQUEST);
+  }
+
+  /**
+   * Send a conflict response
+   */
+  static conflict(res: Response, message: string): void {
+    this.error(res, message, HTTP_STATUS.CONFLICT);
+  }
+
+  /**
+   * Send an unauthorized response
+   */
+  static unauthorized(res: Response, message: string = 'Unauthorized access'): void {
+    this.error(res, message, HTTP_STATUS.UNAUTHORIZED);
+  }
+
+  /**
+   * Send a forbidden response
+   */
+  static forbidden(res: Response, message: string = 'Access forbidden'): void {
+    this.error(res, message, HTTP_STATUS.FORBIDDEN);
+  }
+}

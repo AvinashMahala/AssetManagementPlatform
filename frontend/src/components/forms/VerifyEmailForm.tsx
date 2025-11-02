@@ -1,0 +1,156 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { useAuthContext } from '../../contexts/AuthContext';
+
+interface VerifyEmailFormProps {
+  email?: string;
+  onSuccess?: () => void;
+  onResend?: () => void;
+}
+
+export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
+  email,
+  onSuccess,
+  onResend
+}) => {
+  const { verifyEmail, resendVerification, loading } = useAuthContext();
+  const [token, setToken] = useState('');
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
+  const [resendLoading, setResendLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if there's a token in the URL (from email link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      setToken(urlToken);
+      handleVerify(urlToken);
+    }
+  }, []);
+
+  const handleVerify = async (verificationToken?: string) => {
+    const tokenToUse = verificationToken || token;
+    if (!tokenToUse) {
+      setError('Please enter the verification token');
+      return;
+    }
+
+    try {
+      const success = await verifyEmail(tokenToUse);
+      if (success) {
+        setSuccess('Email verified successfully! You can now sign in.');
+        setError('');
+        onSuccess?.();
+      } else {
+        setError('Invalid or expired verification token');
+      }
+    } catch (err) {
+      setError('Verification failed. Please try again.');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleVerify();
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      setError('No email address available for resend');
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      const success = await resendVerification(email);
+      if (success) {
+        setSuccess('Verification email sent! Please check your inbox.');
+        setError('');
+        onResend?.();
+      } else {
+        setError('Failed to resend verification email');
+      }
+    } catch (err) {
+      setError('Failed to resend verification email. Please try again.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-md mx-auto">
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
+            Verify Your Email
+          </h2>
+          <p className="text-center text-gray-600">
+            {email ? `We've sent a verification code to ${email}` : 'Please enter the verification token from your email'}
+          </p>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Verification Token"
+            type="text"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            placeholder="Enter the 6-digit code from your email"
+            required
+          />
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="large"
+            className="w-full"
+            disabled={loading || !token}
+          >
+            {loading ? 'Verifying...' : 'Verify Email'}
+          </Button>
+        </form>
+
+        {email && (
+          <div className="text-center">
+            <p className="text-gray-600 mb-3">
+              Didn't receive the email?
+            </p>
+            <Button
+              type="button"
+              variant="secondary"
+              size="medium"
+              onClick={handleResend}
+              disabled={resendLoading}
+            >
+              {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+            </Button>
+          </div>
+        )}
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="text-blue-600 hover:text-blue-500 font-medium"
+          >
+            Back to Sign In
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

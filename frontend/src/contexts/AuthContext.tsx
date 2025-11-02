@@ -1,0 +1,317 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import type {
+  User,
+  UserRegistrationInput,
+  UserCredentials,
+  GoogleUserProfile,
+  UpdateProfileRequest,
+  PasswordResetOptions,
+  SecurityQuestionSetup,
+  PasswordResetViaSecurityQuestions,
+  PasswordResetViaRecoveryCode,
+  AdminPasswordReset
+} from '../services/authService';
+import { authService } from '../services/authService';
+import { apiClient } from '../services/apiClient';
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  login: (credentials: UserCredentials) => Promise<boolean>;
+  register: (userData: UserRegistrationInput) => Promise<boolean>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+  verifyEmail: (token: string) => Promise<boolean>;
+  resendVerification: (email: string) => Promise<boolean>;
+  requestPhoneVerification: (phone: string) => Promise<boolean>;
+  verifyPhone: (phone: string, code: string) => Promise<boolean>;
+  getPasswordResetOptions: () => Promise<PasswordResetOptions>;
+  enableResetMethod: (methodType: string) => Promise<boolean>;
+  disableResetMethod: (methodType: string) => Promise<boolean>;
+  setupSecurityQuestions: (questions: SecurityQuestionSetup) => Promise<boolean>;
+  generateRecoveryCodes: (count?: number) => Promise<string[]>;
+  resetPasswordViaSecurityQuestions: (data: PasswordResetViaSecurityQuestions) => Promise<boolean>;
+  resetPasswordViaRecoveryCode: (data: PasswordResetViaRecoveryCode) => Promise<boolean>;
+  adminResetPassword: (data: AdminPasswordReset) => Promise<string>;
+  googleAuth: (profile: GoogleUserProfile) => Promise<boolean>;
+  refreshToken: () => Promise<boolean>;
+  updateProfile: (profileData: UpdateProfileRequest) => Promise<boolean>;
+  linkGoogle: (googleId: string) => Promise<boolean>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      if (apiClient.isAuthenticated()) {
+        const userData = await authService.getProfile();
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    } catch (error) {
+      setIsAuthenticated(false);
+      setUser(null);
+      apiClient.setAuthToken(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (credentials: UserCredentials): Promise<boolean> => {
+    try {
+      const authResponse = await authService.login(credentials);
+      setUser(authResponse.user);
+      setIsAuthenticated(true);
+      apiClient.setAuthToken(authResponse.tokens.accessToken);
+      // Store refresh token in localStorage or secure storage
+      localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const register = async (userData: UserRegistrationInput): Promise<boolean> => {
+    try {
+      await authService.register(userData);
+      // Registration successful, but user needs to verify email/phone
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      // Continue with logout even if API call fails
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      apiClient.setAuthToken(null);
+      localStorage.removeItem('refreshToken');
+    }
+  };
+
+  const verifyEmail = async (token: string): Promise<boolean> => {
+    try {
+      await authService.verifyEmail(token);
+      // Refresh user data after verification
+      await checkAuth();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const resendVerification = async (email: string): Promise<boolean> => {
+    try {
+      await authService.resendVerification(email);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const requestPhoneVerification = async (phone: string): Promise<boolean> => {
+    try {
+      await authService.requestPhoneVerification(phone);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const verifyPhone = async (phone: string, code: string): Promise<boolean> => {
+    try {
+      await authService.verifyPhone(phone, code);
+      // Refresh user data after verification
+      await checkAuth();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const getPasswordResetOptions = async (): Promise<PasswordResetOptions> => {
+    try {
+      return await authService.getPasswordResetOptions();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const enableResetMethod = async (methodType: string): Promise<boolean> => {
+    try {
+      await authService.enableResetMethod(methodType);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const disableResetMethod = async (methodType: string): Promise<boolean> => {
+    try {
+      await authService.disableResetMethod(methodType);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const setupSecurityQuestions = async (questions: SecurityQuestionSetup): Promise<boolean> => {
+    try {
+      await authService.setupSecurityQuestions(questions);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const generateRecoveryCodes = async (count?: number): Promise<string[]> => {
+    try {
+      const response = await authService.generateRecoveryCodes(count);
+      return response.codes;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const resetPasswordViaSecurityQuestions = async (data: PasswordResetViaSecurityQuestions): Promise<boolean> => {
+    try {
+      await authService.resetPasswordViaSecurityQuestions(data);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const resetPasswordViaRecoveryCode = async (data: PasswordResetViaRecoveryCode): Promise<boolean> => {
+    try {
+      await authService.resetPasswordViaRecoveryCode(data);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const adminResetPassword = async (data: AdminPasswordReset): Promise<string> => {
+    try {
+      const response = await authService.adminResetPassword(data);
+      return response.tempPassword;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const googleAuth = async (profile: GoogleUserProfile): Promise<boolean> => {
+    try {
+      const authResponse = await authService.googleAuth(profile) as any;
+      setUser(authResponse.data.user);
+      setIsAuthenticated(true);
+      apiClient.setAuthToken(authResponse.data.tokens.accessToken);
+      localStorage.setItem('refreshToken', authResponse.data.tokens.refreshToken);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const refreshToken = async (): Promise<boolean> => {
+    try {
+      const refreshTokenValue = localStorage.getItem('refreshToken');
+      if (!refreshTokenValue) {
+        return false;
+      }
+
+      const authResponse = await authService.refreshToken(refreshTokenValue);
+      apiClient.setAuthToken(authResponse.tokens.accessToken);
+      localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      return true;
+    } catch (error) {
+      // Token refresh failed, logout user
+      await logout();
+      return false;
+    }
+  };
+
+  const updateProfile = async (profileData: UpdateProfileRequest): Promise<boolean> => {
+    try {
+      const updatedUser = await authService.updateProfile(profileData);
+      setUser(updatedUser);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const linkGoogle = async (googleId: string): Promise<boolean> => {
+    try {
+      await authService.linkGoogle(googleId);
+      // Refresh user data after linking
+      await checkAuth();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const value: AuthContextType = {
+    user,
+    isAuthenticated,
+    loading,
+    login,
+    register,
+    logout,
+    checkAuth,
+    verifyEmail,
+    resendVerification,
+    requestPhoneVerification,
+    verifyPhone,
+    getPasswordResetOptions,
+    enableResetMethod,
+    disableResetMethod,
+    setupSecurityQuestions,
+    generateRecoveryCodes,
+    resetPasswordViaSecurityQuestions,
+    resetPasswordViaRecoveryCode,
+    adminResetPassword,
+    googleAuth,
+    refreshToken,
+    updateProfile,
+    linkGoogle,
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuthContext = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuthContext must be used within an AuthProvider');
+  }
+  return context;
+};
