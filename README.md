@@ -225,6 +225,55 @@ docker-compose up -d postgres
 docker-compose up -d
 ```
 
+#### Database Management Scripts
+
+The project includes comprehensive Python scripts for database management:
+
+```bash
+# First-time setup (migration + test data)
+./scripts/db_manage.sh setup
+
+# Or run individual commands
+./scripts/db_manage.sh migrate    # Convert IDs to UUID
+./scripts/db_manage.sh seed       # Add test data
+./scripts/db_manage.sh clean      # Remove test data
+./scripts/db_manage.sh test       # Test connection
+```
+
+#### End-to-End Setup
+
+For complete system setup from scratch, use the end-to-end script:
+
+```bash
+# Complete setup (database + services + tests)
+./scripts/e2e_setup.sh
+
+# Quick setup (skip build and tests)
+./scripts/e2e_setup.sh --skip-build --skip-tests
+
+# Show help
+./scripts/e2e_setup.sh --help
+```
+
+**What the end-to-end script does:**
+1. ✅ Checks system dependencies (Docker, Node.js, Python)
+2. ✅ Validates environment configuration
+3. ✅ Sets up database infrastructure
+4. ✅ Runs UUID migration
+5. ✅ Seeds test data
+6. ✅ Installs all dependencies
+7. ✅ Builds frontend and backend
+8. ✅ Starts all services with Docker
+9. ✅ Runs health checks
+10. ✅ Executes comprehensive API tests
+
+**Test Credentials:**
+- **Admin**: `admin@assetplatform.com` / `admin123`
+- **User**: `john.doe@example.com` / `password123`
+- **Manager**: `manager@assetplatform.com` / `manager123`
+
+See `scripts/python/README.md` for detailed database documentation.
+
 ### 4. Development
 
 ```bash
