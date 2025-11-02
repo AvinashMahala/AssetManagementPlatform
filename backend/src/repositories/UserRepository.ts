@@ -30,7 +30,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     try {
       const result = await this.pool.query(
         `SELECT ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
@@ -182,7 +182,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async update(id: number, data: Partial<UserInput>): Promise<User | null> {
+  async update(id: string, data: Partial<UserInput>): Promise<User | null> {
     try {
       const updates: string[] = [];
       const values: any[] = [];
@@ -225,7 +225,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async delete(id: number): Promise<boolean> {
+  async delete(id: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `DELETE FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.ID} = $1`,
@@ -238,7 +238,7 @@ export class UserRepository implements IUserRepository {
   }
 
   // Authentication-specific update methods
-  async updateEmailVerificationToken(userId: number, token: string, expiresAt: Date): Promise<boolean> {
+  async updateEmailVerificationToken(userId: string, token: string, expiresAt: Date): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.EMAIL_VERIFICATION_TOKEN} = $1,
@@ -252,7 +252,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async updatePasswordResetToken(userId: number, token: string, expiresAt: Date): Promise<boolean> {
+  async updatePasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.PASSWORD_RESET_TOKEN} = $1,
@@ -266,7 +266,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async updatePassword(userId: number, hashedPassword: string): Promise<boolean> {
+  async updatePassword(userId: string, hashedPassword: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.PASSWORD} = $1, ${COLUMNS.USERS.UPDATED_AT} = NOW()
@@ -279,7 +279,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async updateLastLogin(userId: number): Promise<boolean> {
+  async updateLastLogin(userId: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.LAST_LOGIN} = NOW(), ${COLUMNS.USERS.UPDATED_AT} = NOW()
@@ -292,7 +292,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async clearPasswordResetToken(userId: number): Promise<boolean> {
+  async clearPasswordResetToken(userId: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.PASSWORD_RESET_TOKEN} = NULL,
@@ -306,7 +306,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async verifyEmail(userId: number): Promise<boolean> {
+  async verifyEmail(userId: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.IS_EMAIL_VERIFIED} = true,
@@ -321,7 +321,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async verifyPhone(userId: number): Promise<boolean> {
+  async verifyPhone(userId: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.IS_PHONE_VERIFIED} = true, ${COLUMNS.USERS.UPDATED_AT} = NOW()
@@ -334,7 +334,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async linkGoogleAccount(userId: number, googleId: string, profilePicture?: string): Promise<boolean> {
+  async linkGoogleAccount(userId: string, googleId: string, profilePicture?: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.USERS} SET ${COLUMNS.USERS.GOOGLE_ID} = $1,

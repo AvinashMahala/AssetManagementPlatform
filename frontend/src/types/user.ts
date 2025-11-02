@@ -18,6 +18,8 @@ export interface UserLoginInput {
   password: string;
 }
 
+export interface UserCredentials extends UserLoginInput {}
+
 export interface AuthUser {
   user: User;
   token: string;

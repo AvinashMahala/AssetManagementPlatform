@@ -4,7 +4,7 @@ import { IUserService } from '../interfaces/services/IUserService';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    id: number;
+    id: string;
     email: string;
     role: string;
   };
@@ -24,7 +24,7 @@ export const authMiddleware = (userService: IUserService) => {
       const token = authHeader.substring(7); // Remove 'Bearer ' prefix
       const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
 
-      const decoded = jwt.verify(token, jwtSecret) as { userId: number; email: string; role: string };
+      const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; role: string };
 
       // Verify user still exists and is active
       const user = await userService.getUserById(decoded.userId);

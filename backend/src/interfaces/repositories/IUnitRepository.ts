@@ -1,4 +1,4 @@
-import { Unit, UnitInput, UnitTenant, UnitTenantInput } from '../models/Unit';
+import { Unit, UnitInput, UnitTenant, UnitTenantInput } from '../../models/Unit';
 
 export interface IUnitRepository {
   // Unit methods

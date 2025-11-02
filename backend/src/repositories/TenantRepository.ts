@@ -19,7 +19,7 @@ export class TenantRepository implements ITenantRepository {
     }
   }
 
-  async findById(id: number): Promise<Tenant | null> {
+  async findById(id: string): Promise<Tenant | null> {
     try {
       const result = await this.pool.query(
         `SELECT * FROM ${TABLES.TENANTS} WHERE ${COLUMNS.TENANTS.ID} = $1`,
@@ -102,13 +102,13 @@ export class TenantRepository implements ITenantRepository {
           data.currentAddress.city,
           data.currentAddress.state,
           data.currentAddress.pincode,
-          data.permanentAddress.street,
-          data.permanentAddress.city,
-          data.permanentAddress.state,
-          data.permanentAddress.pincode,
-          data.emergencyContact.name,
-          data.emergencyContact.relationship,
-          data.emergencyContact.phone,
+          data.permanentAddress?.street || null,
+          data.permanentAddress?.city || null,
+          data.permanentAddress?.state || null,
+          data.permanentAddress?.pincode || null,
+          data.emergencyContact?.name || null,
+          data.emergencyContact?.relationship || null,
+          data.emergencyContact?.phone || null,
           data.status || 'active',
           data.totalRentals || 0,
           data.currentPropertyId,
@@ -122,7 +122,7 @@ export class TenantRepository implements ITenantRepository {
     }
   }
 
-  async update(id: number, data: Partial<Omit<Tenant, 'id' | 'documents' | 'createdAt' | 'updatedAt'>>): Promise<Tenant | null> {
+  async update(id: string, data: Partial<Omit<Tenant, 'id' | 'documents' | 'createdAt' | 'updatedAt'>>): Promise<Tenant | null> {
     try {
       const fields = [];
       const values = [];
@@ -243,7 +243,7 @@ export class TenantRepository implements ITenantRepository {
     }
   }
 
-  async delete(id: number): Promise<boolean> {
+  async delete(id: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `DELETE FROM ${TABLES.TENANTS} WHERE ${COLUMNS.TENANTS.ID} = $1`,
@@ -255,7 +255,7 @@ export class TenantRepository implements ITenantRepository {
     }
   }
 
-  async updateStatus(id: number, status: string): Promise<boolean> {
+  async updateStatus(id: string, status: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `UPDATE ${TABLES.TENANTS} SET ${COLUMNS.TENANTS.STATUS} = $1, ${COLUMNS.TENANTS.UPDATED_AT} = $2 WHERE ${COLUMNS.TENANTS.ID} = $3`,
@@ -268,7 +268,7 @@ export class TenantRepository implements ITenantRepository {
   }
 
   // Document management methods
-  async addDocument(tenantId: number, document: Omit<TenantDocument, 'id' | 'tenantId' | 'uploadedAt'>): Promise<TenantDocument> {
+  async addDocument(tenantId: string, document: Omit<TenantDocument, 'id' | 'tenantId' | 'uploadedAt'>): Promise<TenantDocument> {
     try {
       const now = new Date();
       const result = await this.pool.query(
@@ -299,7 +299,7 @@ export class TenantRepository implements ITenantRepository {
     }
   }
 
-  async getDocuments(tenantId: number): Promise<TenantDocument[]> {
+  async getDocuments(tenantId: string): Promise<TenantDocument[]> {
     try {
       const result = await this.pool.query(
         `SELECT * FROM ${TABLES.TENANT_DOCUMENTS} WHERE ${COLUMNS.TENANT_DOCUMENTS.TENANT_ID} = $1 ORDER BY ${COLUMNS.TENANT_DOCUMENTS.UPLOADED_AT} DESC`,
@@ -311,7 +311,7 @@ export class TenantRepository implements ITenantRepository {
     }
   }
 
-  async updateDocument(documentId: number, data: Partial<TenantDocument>): Promise<TenantDocument | null> {
+  async updateDocument(documentId: string, data: Partial<TenantDocument>): Promise<TenantDocument | null> {
     try {
       const fields = [];
       const values = [];
@@ -361,7 +361,7 @@ export class TenantRepository implements ITenantRepository {
     }
   }
 
-  async deleteDocument(documentId: number): Promise<boolean> {
+  async deleteDocument(documentId: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `DELETE FROM ${TABLES.TENANT_DOCUMENTS} WHERE ${COLUMNS.TENANT_DOCUMENTS.ID} = $1`,
@@ -392,17 +392,17 @@ export class TenantRepository implements ITenantRepository {
         state: row.current_address_state,
         pincode: row.current_address_pincode,
       },
-      permanentAddress: {
+      permanentAddress: row.permanent_address_street ? {
         street: row.permanent_address_street,
         city: row.permanent_address_city,
         state: row.permanent_address_state,
         pincode: row.permanent_address_pincode,
-      },
-      emergencyContact: {
+      } : undefined,
+      emergencyContact: row.emergency_contact_name ? {
         name: row.emergency_contact_name,
         relationship: row.emergency_contact_relationship,
         phone: row.emergency_contact_phone,
-      },
+      } : undefined,
       documents: [], // Will be populated separately if needed
       status: row.status,
       totalRentals: row.total_rentals || 0,

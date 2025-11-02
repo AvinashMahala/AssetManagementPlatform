@@ -175,6 +175,30 @@ class ApiClient {
     }
   }
 
+  async patch<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
+    const url = this.buildURL(endpoint, config?.params);
+
+    try {
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: this.getHeaders(config?.headers),
+        body: data ? JSON.stringify(data) : undefined,
+        signal: AbortSignal.timeout(API_TIMEOUT),
+        ...config,
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (_error) {
+      return {
+        success: false,
+        error: {
+          code: 'NETWORK_ERROR',
+          message: _error instanceof Error ? _error.message : 'Network request failed',
+        },
+      };
+    }
+  }
+
   // Utility method to set auth token
   setAuthToken(token: string | null): void {
     if (token) {

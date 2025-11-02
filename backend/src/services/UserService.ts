@@ -35,7 +35,7 @@ export class UserService implements IUserService {
     return await this.repository.findAll();
   }
 
-  async getUserById(id: number): Promise<User | null> {
+  async getUserById(id: string): Promise<User | null> {
     const idValidation = ValidationUtils.validateId(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
@@ -99,7 +99,7 @@ export class UserService implements IUserService {
     return await this.repository.create(userWithHashedPassword);
   }
 
-  async updateUser(id: number, userData: Partial<UserInput>): Promise<User | null> {
+  async updateUser(id: string, userData: Partial<UserInput>): Promise<User | null> {
     const idValidation = ValidationUtils.validateId(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
@@ -151,7 +151,7 @@ export class UserService implements IUserService {
     return await this.repository.update(id, userData);
   }
 
-  async deleteUser(id: number): Promise<boolean> {
+  async deleteUser(id: string): Promise<boolean> {
     const idValidation = ValidationUtils.validateId(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
@@ -246,14 +246,14 @@ export class UserService implements IUserService {
     return await this.generateAuthTokens(user);
   }
 
-  async logoutUser(userId: number): Promise<boolean> {
+  async logoutUser(userId: string): Promise<boolean> {
     // In a real implementation, you might want to blacklist the token
     // For now, we'll just return success
     return true;
   }
 
   // Email verification methods
-  async requestEmailVerification(userId: number): Promise<string> {
+  async requestEmailVerification(userId: string): Promise<string> {
     const user = await this.repository.findById(userId);
     if (!user) {
       throw new Error('User not found');
@@ -364,7 +364,7 @@ export class UserService implements IUserService {
     return await this.repository.create(userData);
   }
 
-  async linkGoogleAccount(userId: number, googleId: string): Promise<boolean> {
+  async linkGoogleAccount(userId: string, googleId: string): Promise<boolean> {
     return await this.repository.linkGoogleAccount(userId, googleId);
   }
 
@@ -394,7 +394,7 @@ export class UserService implements IUserService {
 
   async refreshAuthTokens(refreshToken: string): Promise<AuthResponse | null> {
     try {
-      const decoded = jwt.verify(refreshToken, this.jwtRefreshSecret) as { userId: number };
+      const decoded = jwt.verify(refreshToken, this.jwtRefreshSecret) as { userId: string };
       const user = await this.repository.findById(decoded.userId);
 
       if (!user) {
@@ -409,7 +409,7 @@ export class UserService implements IUserService {
 
   async validateRefreshToken(token: string): Promise<User | null> {
     try {
-      const decoded = jwt.verify(token, this.jwtRefreshSecret) as { userId: number };
+      const decoded = jwt.verify(token, this.jwtRefreshSecret) as { userId: string };
       return await this.repository.findById(decoded.userId);
     } catch (error) {
       return null;
@@ -417,15 +417,15 @@ export class UserService implements IUserService {
   }
 
   // Profile methods
-  async getUserProfile(userId: number): Promise<User | null> {
+  async getUserProfile(userId: string): Promise<User | null> {
     return await this.repository.findById(userId);
   }
 
-  async updateUserProfile(userId: number, profileData: Partial<User>): Promise<User | null> {
+  async updateUserProfile(userId: string, profileData: Partial<User>): Promise<User | null> {
     return await this.repository.update(userId, profileData);
   }
 
-  async updateLastLogin(userId: number): Promise<boolean> {
+  async updateLastLogin(userId: string): Promise<boolean> {
     return await this.repository.updateLastLogin(userId);
   }
 }

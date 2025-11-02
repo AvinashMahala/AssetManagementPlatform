@@ -172,9 +172,9 @@ export class PropertyRepository implements IPropertyRepository {
         fields.push(`${COLUMNS.PROPERTIES.CO_OWNERS} = $${paramIndex++}`);
         values.push(JSON.stringify(data.coOwners));
       }
-      if (data.photos !== undefined) {
+      if (data.buildingPhotos !== undefined) {
         fields.push(`${COLUMNS.PROPERTIES.PHOTOS} = $${paramIndex++}`);
-        values.push(JSON.stringify(data.photos));
+        values.push(JSON.stringify(data.buildingPhotos));
       }
 
       if (fields.length === 0) {

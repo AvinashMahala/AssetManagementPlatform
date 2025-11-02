@@ -8,7 +8,7 @@ export class RecoveryCodeRepository {
     this.pool = pool;
   }
 
-  async create(userId: number, codeHash: string): Promise<RecoveryCode> {
+  async create(userId: string, codeHash: string): Promise<RecoveryCode> {
     const query = `
       INSERT INTO recovery_codes (user_id, code_hash)
       VALUES ($1, $2)
@@ -18,7 +18,7 @@ export class RecoveryCodeRepository {
     return result.rows[0];
   }
 
-  async createMultiple(userId: number, codeHashes: string[]): Promise<RecoveryCode[]> {
+  async createMultiple(userId: string, codeHashes: string[]): Promise<RecoveryCode[]> {
     const values = codeHashes.map((_, index) => `($1, $${index + 2})`).join(', ');
     const params = [userId, ...codeHashes];
 
@@ -31,7 +31,7 @@ export class RecoveryCodeRepository {
     return result.rows;
   }
 
-  async findByUserId(userId: number): Promise<RecoveryCode[]> {
+  async findByUserId(userId: string): Promise<RecoveryCode[]> {
     const query = `
       SELECT id, user_id, code_hash, is_used, created_at, used_at
       FROM recovery_codes
@@ -42,7 +42,7 @@ export class RecoveryCodeRepository {
     return result.rows;
   }
 
-  async findUnusedByUserId(userId: number): Promise<RecoveryCode[]> {
+  async findUnusedByUserId(userId: string): Promise<RecoveryCode[]> {
     const query = `
       SELECT id, user_id, code_hash, is_used, created_at, used_at
       FROM recovery_codes
@@ -63,7 +63,7 @@ export class RecoveryCodeRepository {
     return result.rows[0] || null;
   }
 
-  async markAsUsed(id: number): Promise<boolean> {
+  async markAsUsed(id: string): Promise<boolean> {
     const query = `
       UPDATE recovery_codes
       SET is_used = true, used_at = CURRENT_TIMESTAMP
@@ -73,13 +73,13 @@ export class RecoveryCodeRepository {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async deleteByUserId(userId: number): Promise<boolean> {
+  async deleteByUserId(userId: string): Promise<boolean> {
     const query = 'DELETE FROM recovery_codes WHERE user_id = $1';
     const result = await this.pool.query(query, [userId]);
     return (result.rowCount ?? 0) > 0;
   }
 
-  async regenerateForUser(userId: number, codeHashes: string[]): Promise<RecoveryCode[]> {
+  async regenerateForUser(userId: string, codeHashes: string[]): Promise<RecoveryCode[]> {
     // Delete existing codes
     await this.deleteByUserId(userId);
 

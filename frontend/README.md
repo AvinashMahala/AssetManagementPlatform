@@ -1,32 +1,11 @@
-# Asset Management Platform - Frontend# Asset Management Platform - Frontend# Asset Management Platform - Frontend# React + TypeScript + Vite
-
-
+# Property Management Platform - Frontend
 
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)](https://eslint.org/)
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-
-A modern, industrial-grade React frontend for the Asset Management Platform. Built with TypeScript, Vite, and following enterprise-level architectural patterns with layered architecture, global state management, and comprehensive type safety.
-
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-## 🏗️ Architecture Overview
-
-[![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)](https://eslint.org/)
-
-### Industrial-Grade Frontend Architecture
-
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-
-The frontend follows an **enterprise-level layered architecture** that mirrors backend patterns while adapting to React best practices:
-
-A modern, industrial-grade React frontend for the Asset Management Platform. Built with TypeScript, Vite, and following enterprise-level architectural patterns with layered architecture, global state management, and comprehensive type safety.
+A modern, industrial-grade React frontend for the Property Management Platform. Built with TypeScript, Vite, and following enterprise-level architectural patterns with layered architecture, global state management, and comprehensive type safety.
 
 ```
 

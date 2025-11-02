@@ -8,7 +8,7 @@ export class PasswordResetMethodRepository {
     this.pool = pool;
   }
 
-  async create(userId: number, methodType: string): Promise<PasswordResetMethod> {
+  async create(userId: string, methodType: string): Promise<PasswordResetMethod> {
     const query = `
       INSERT INTO password_reset_methods (user_id, method_type)
       VALUES ($1, $2)
@@ -18,7 +18,7 @@ export class PasswordResetMethodRepository {
     return result.rows[0];
   }
 
-  async findByUserId(userId: number): Promise<PasswordResetMethod[]> {
+  async findByUserId(userId: string): Promise<PasswordResetMethod[]> {
     const query = `
       SELECT id, user_id, method_type, is_enabled, created_at, updated_at
       FROM password_reset_methods
@@ -29,7 +29,7 @@ export class PasswordResetMethodRepository {
     return result.rows;
   }
 
-  async enableMethod(userId: number, methodType: string): Promise<boolean> {
+  async enableMethod(userId: string, methodType: string): Promise<boolean> {
     const query = `
       UPDATE password_reset_methods
       SET is_enabled = true, updated_at = CURRENT_TIMESTAMP
@@ -39,7 +39,7 @@ export class PasswordResetMethodRepository {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async disableMethod(userId: number, methodType: string): Promise<boolean> {
+  async disableMethod(userId: string, methodType: string): Promise<boolean> {
     const query = `
       UPDATE password_reset_methods
       SET is_enabled = false, updated_at = CURRENT_TIMESTAMP
@@ -49,7 +49,7 @@ export class PasswordResetMethodRepository {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async deleteByUserId(userId: number): Promise<boolean> {
+  async deleteByUserId(userId: string): Promise<boolean> {
     const query = 'DELETE FROM password_reset_methods WHERE user_id = $1';
     const result = await this.pool.query(query, [userId]);
     return (result.rowCount ?? 0) > 0;

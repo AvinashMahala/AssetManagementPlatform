@@ -41,10 +41,18 @@ export interface Tenant {
   dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
   occupation?: string;
+  companyName?: string;
   monthlyIncome?: number;
 
   // Address details
   currentAddress: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+
+  permanentAddress?: {
     street: string;
     city: string;
     state: string;
@@ -58,7 +66,14 @@ export interface Tenant {
     phone: string;
   };
 
+  // Additional fields from database
+  totalRentals?: number;
+  currentPropertyId?: string;
+
   status: TenantStatus;
+
+  // Documents array (populated by service)
+  documents?: TenantDocument[];
 
   // Metadata
   createdAt: Date;
@@ -76,10 +91,18 @@ export interface TenantInput {
   dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
   occupation?: string;
+  companyName?: string;
   monthlyIncome?: number;
 
   // Address details
   currentAddress: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+
+  permanentAddress?: {
     street: string;
     city: string;
     state: string;
@@ -92,6 +115,10 @@ export interface TenantInput {
     relationship: string;
     phone: string;
   };
+
+  // Additional fields
+  totalRentals?: number;
+  currentPropertyId?: string;
 
   status?: TenantStatus;
 }

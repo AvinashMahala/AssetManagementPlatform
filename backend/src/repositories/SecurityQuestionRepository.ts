@@ -8,7 +8,7 @@ export class SecurityQuestionRepository {
     this.pool = pool;
   }
 
-  async create(userId: number, question: string, answerHash: string): Promise<SecurityQuestion> {
+  async create(userId: string, question: string, answerHash: string): Promise<SecurityQuestion> {
     const query = `
       INSERT INTO security_questions (user_id, question, answer_hash)
       VALUES ($1, $2, $3)
@@ -18,7 +18,7 @@ export class SecurityQuestionRepository {
     return result.rows[0];
   }
 
-  async findByUserId(userId: number): Promise<SecurityQuestion[]> {
+  async findByUserId(userId: string): Promise<SecurityQuestion[]> {
     const query = `
       SELECT id, user_id, question, answer_hash, created_at, updated_at
       FROM security_questions
@@ -55,7 +55,7 @@ export class SecurityQuestionRepository {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async deleteByUserId(userId: number): Promise<boolean> {
+  async deleteByUserId(userId: string): Promise<boolean> {
     const query = 'DELETE FROM security_questions WHERE user_id = $1';
     const result = await this.pool.query(query, [userId]);
     return (result.rowCount ?? 0) > 0;

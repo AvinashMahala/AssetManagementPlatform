@@ -14,20 +14,20 @@ import {
 export interface IUserService {
   // Basic CRUD operations
   getAllUsers(): Promise<User[]>;
-  getUserById(id: number): Promise<User | null>;
+  getUserById(id: string): Promise<User | null>;
   getUserByEmail(email: string): Promise<User | null>;
   createUser(userData: UserInput): Promise<User>;
-  updateUser(id: number, userData: Partial<UserInput>): Promise<User | null>;
-  deleteUser(id: number): Promise<boolean>;
+  updateUser(id: string, userData: Partial<UserInput>): Promise<User | null>;
+  deleteUser(id: string): Promise<boolean>;
 
   // Authentication methods
   authenticateUser(credentials: UserCredentials): Promise<User | null>;
   registerUser(userData: UserRegistrationInput): Promise<User>;
   loginUser(credentials: UserCredentials): Promise<AuthResponse | null>;
-  logoutUser(userId: number): Promise<boolean>;
+  logoutUser(userId: string): Promise<boolean>;
 
   // Email authentication
-  requestEmailVerification(userId: number): Promise<string>;
+  requestEmailVerification(userId: string): Promise<string>;
   verifyEmail(token: string): Promise<boolean>;
   resendEmailVerification(email: string): Promise<boolean>;
 
@@ -37,7 +37,7 @@ export interface IUserService {
 
   // Google OAuth
   findOrCreateGoogleUser(profile: GoogleUserProfile): Promise<User>;
-  linkGoogleAccount(userId: number, googleId: string): Promise<boolean>;
+  linkGoogleAccount(userId: string, googleId: string): Promise<boolean>;
 
   // Token management
   generateAuthTokens(user: User): Promise<AuthResponse>;
@@ -45,7 +45,7 @@ export interface IUserService {
   validateRefreshToken(token: string): Promise<User | null>;
 
   // User profile
-  getUserProfile(userId: number): Promise<User | null>;
-  updateUserProfile(userId: number, profileData: Partial<User>): Promise<User | null>;
-  updateLastLogin(userId: number): Promise<boolean>;
+  getUserProfile(userId: string): Promise<User | null>;
+  updateUserProfile(userId: string, profileData: Partial<User>): Promise<User | null>;
+  updateLastLogin(userId: string): Promise<boolean>;
 }

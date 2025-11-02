@@ -1,14 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../contexts';
-import { useAssets } from '../hooks';
+import { useProperties } from '../hooks';
 import { Card } from '../components/common';
 import { Button } from '../components/common/Button';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuthContext();
-  const { assets, loading: assetsLoading, error: assetsError } = useAssets();
+  const { properties, loading: propertiesLoading, error: propertiesError } = useProperties();
 
   const handleLogout = async () => {
     await logout();
@@ -53,52 +53,57 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Assets</h3>
-          {assetsLoading ? (
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Properties</h3>
+          {propertiesLoading ? (
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-16"></div>
             </div>
-          ) : assetsError ? (
-            <p className="text-red-600">Error loading assets</p>
+          ) : propertiesError ? (
+            <p className="text-red-600">Error loading properties</p>
           ) : (
-            <p className="text-3xl font-bold text-blue-600">{Array.isArray(assets) ? assets.length : 0}</p>
+            <p className="text-3xl font-bold text-blue-600">{Array.isArray(properties) ? properties.length : 0}</p>
           )}
         </Card>
 
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Assets</h3>
-          {assetsLoading ? (
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Available Properties</h3>
+          {propertiesLoading ? (
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-16"></div>
             </div>
-          ) : assetsError ? (
-            <p className="text-red-600">Error loading assets</p>
+          ) : propertiesError ? (
+            <p className="text-red-600">Error loading properties</p>
           ) : (
             <p className="text-3xl font-bold text-green-600">
-              {Array.isArray(assets) ? assets.length : 0}
+              {Array.isArray(properties) ? properties.filter(p => p.status === 'available').length : 0}
             </p>
           )}
         </Card>
 
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Value</h3>
-          {assetsLoading ? (
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Area</h3>
+          {propertiesLoading ? (
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-24"></div>
             </div>
-          ) : assetsError ? (
-            <p className="text-red-600">Error loading assets</p>
+          ) : propertiesError ? (
+            <p className="text-red-600">Error loading properties</p>
           ) : (
             <p className="text-3xl font-bold text-blue-600">
-              ${Array.isArray(assets) ? assets.reduce((sum, asset) => sum + asset.value, 0).toLocaleString() : '0'}
+              {Array.isArray(properties) ? properties.reduce((sum: number, property) => sum + property.totalArea, 0).toLocaleString() : '0'} sq ft
             </p>
           )}
         </Card>
       </div>
 
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Assets</h3>
-        {assetsLoading ? (
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Recent Properties</h3>
+          <Button variant="secondary" size="small" onClick={() => navigate('/properties')}>
+            View All
+          </Button>
+        </div>
+        {propertiesLoading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="animate-pulse">
@@ -107,26 +112,36 @@ const Dashboard: React.FC = () => {
               </div>
             ))}
           </div>
-        ) : assetsError ? (
-          <p className="text-red-600">Error loading assets</p>
-        ) : assets && Array.isArray(assets) && assets.length > 0 ? (
+        ) : propertiesError ? (
+          <p className="text-red-600">Error loading properties</p>
+        ) : properties && Array.isArray(properties) && properties.length > 0 ? (
           <div className="space-y-3">
-            {assets.slice(0, 5).map(asset => (
-              <div key={asset.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+            {properties.slice(0, 5).map(property => (
+              <div key={property.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                 <div>
-                  <p className="font-medium text-gray-900">{asset.name}</p>
+                  <p className="font-medium text-gray-900">{property.name}</p>
                   <p className="text-sm text-gray-600">
-                    {asset.location || 'No location'} • ${asset.value.toLocaleString()}
+                    {property.address.city}, {property.address.state} • {property.totalArea} sq ft
                   </p>
                 </div>
-                <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                  Active
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  property.status === 'available' ? 'bg-green-100 text-green-800' :
+                  property.status === 'occupied' ? 'bg-blue-100 text-blue-800' :
+                  property.status === 'under_maintenance' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {property.status.charAt(0).toUpperCase() + property.status.slice(1)}
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">No assets found. Create your first asset to get started.</p>
+          <div className="text-center py-4">
+            <p className="text-gray-600 mb-4">No properties found. Create your first property to get started.</p>
+            <Button onClick={() => navigate('/properties')}>
+              Manage Properties
+            </Button>
+          </div>
         )}
       </Card>
     </div>

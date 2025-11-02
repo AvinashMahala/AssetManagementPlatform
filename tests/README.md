@@ -1,10 +1,10 @@
-# Asset Management Platform - Testing
+# Property Management Platform - Testing
 
 [![Jest](https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io/)
 [![Testing Library](https://img.shields.io/badge/Testing%20Library-E33332?style=for-the-badge&logo=testing-library&logoColor=white)](https://testing-library.com/)
 [![Playwright](https://img.shields.io/badge/Playwright-45ba4b?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 
-Comprehensive testing suite for the Asset Management Platform. Includes unit tests, integration tests, and end-to-end tests to ensure code quality and prevent regressions.
+Comprehensive testing suite for the Property Management Platform. Includes unit tests, integration tests, and end-to-end tests to ensure code quality and prevent regressions.
 
 ## 🧪 Testing Strategy
 

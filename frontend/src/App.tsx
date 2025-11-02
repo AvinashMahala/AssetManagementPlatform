@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
+import { PropertyListPage, PropertyCreatePage, PropertyEditPage, PropertyDetailPage } from './pages/properties';
 import Dashboard from './pages/Dashboard';
 import './App.css';
 
@@ -51,7 +52,7 @@ function App() {
                               Asset Management Platform
                             </h1>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              Enterprise Asset Management
+                              Property Management System
                             </div>
                           </div>
                         </div>
@@ -70,6 +71,110 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/properties"
+                element={
+                  <ProtectedRoute>
+                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                          <div className="flex justify-between items-center py-4">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                              Property Management
+                            </h1>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              Asset Management Platform
+                            </div>
+                          </div>
+                        </div>
+                      </header>
+
+                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <PropertyListPage />
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/properties/create"
+                element={
+                  <ProtectedRoute>
+                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                          <div className="flex justify-between items-center py-4">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                              Create Property
+                            </h1>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              Asset Management Platform
+                            </div>
+                          </div>
+                        </div>
+                      </header>
+
+                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <PropertyCreatePage />
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/properties/:id"
+                element={
+                  <ProtectedRoute>
+                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                          <div className="flex justify-between items-center py-4">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                              Property Details
+                            </h1>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              Asset Management Platform
+                            </div>
+                          </div>
+                        </div>
+                      </header>
+
+                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <PropertyDetailPage />
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/properties/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                          <div className="flex justify-between items-center py-4">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                              Edit Property
+                            </h1>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              Asset Management Platform
+                            </div>
+                          </div>
+                        </div>
+                      </header>
+
+                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <PropertyEditPage />
+                      </main>
+                    </div>
                   </ProtectedRoute>
                 }
               />

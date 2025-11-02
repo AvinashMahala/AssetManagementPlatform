@@ -1,6 +1,6 @@
 # Test Data Instructions
 
-This folder contains the Excel file used for database seeding. The `test_data.xlsx` file provides sample data for testing the Asset Management Platform with the new **Property → Units → Tenants** architecture.
+This folder contains the Excel file used for database seeding. The `test_data.xlsx` file provides sample data for testing the Property Management Platform with the new **Property → Units → Tenants** architecture.
 
 ## Excel File Structure
 

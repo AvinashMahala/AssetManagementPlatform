@@ -3,6 +3,11 @@ export const API_BASE_URL = 'http://localhost:5001';
 
 export const API_ENDPOINTS = {
   ASSETS: '/api/assets',
+  PROPERTIES: '/api/properties',
+  UNITS: '/api/units',
+  TENANTS: '/api/tenants',
+  LEASES: '/api/leases',
+  RENT_PAYMENTS: '/api/rent-payments',
   USERS: '/api/users',
   AUTH: {
     LOGIN: '/api/users/login',

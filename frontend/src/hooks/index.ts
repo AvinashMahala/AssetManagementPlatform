@@ -1,4 +1,4 @@
 // Hooks index
 export * from './useApi';
-export * from './useAssets';
+export * from './useProperties';
 export * from './useUsers';

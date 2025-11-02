@@ -12,6 +12,14 @@ export interface ApiError {
   details?: Record<string, unknown>;
 }
 
+export interface AuthResponse {
+  user: any; // TODO: Define proper user type
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}
+
 export interface PaginationParams {
   page?: number;
   limit?: number;

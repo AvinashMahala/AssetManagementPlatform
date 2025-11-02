@@ -42,7 +42,7 @@ export class UserController {
   async getUserById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const user = await this.service.getUserById(parseInt(id));
+      const user = await this.service.getUserById(id);
       if (!user) {
         return ResponseUtils.notFound(res, 'User not found');
       }
@@ -77,7 +77,7 @@ export class UserController {
     try {
       const { id } = req.params;
       const updateData: Partial<UserInput> = req.body;
-      const user = await this.service.updateUser(parseInt(id), updateData);
+      const user = await this.service.updateUser(id, updateData);
       if (!user) {
         return ResponseUtils.notFound(res, 'User not found');
       }
@@ -96,7 +96,7 @@ export class UserController {
   async deleteUser(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const deleted = await this.service.deleteUser(parseInt(id));
+      const deleted = await this.service.deleteUser(id);
       if (!deleted) {
         return ResponseUtils.notFound(res, 'User not found');
       }

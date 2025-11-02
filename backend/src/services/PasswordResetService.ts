@@ -33,7 +33,7 @@ export class PasswordResetService {
   }
 
   // Get available reset methods for a user
-  async getPasswordResetOptions(userId: number): Promise<PasswordResetOptions> {
+  async getPasswordResetOptions(userId: string): Promise<PasswordResetOptions> {
     const methods = await this.passwordResetMethodRepo.findByUserId(userId);
 
     let securityQuestions: SecurityQuestion[] | undefined;
@@ -56,12 +56,12 @@ export class PasswordResetService {
   }
 
   // Get security questions for a user (public method for password reset)
-  async getSecurityQuestionsForUser(userId: number): Promise<SecurityQuestion[]> {
+  async getSecurityQuestionsForUser(userId: string): Promise<SecurityQuestion[]> {
     return await this.securityQuestionRepo.findByUserId(userId);
   }
 
   // Enable a password reset method for a user
-  async enableResetMethod(userId: number, methodType: string): Promise<PasswordResetMethod> {
+  async enableResetMethod(userId: string, methodType: string): Promise<PasswordResetMethod> {
     // Check if method already exists
     const existingMethods = await this.passwordResetMethodRepo.findByUserId(userId);
     const existingMethod = existingMethods.find(m => m.methodType === methodType);
@@ -75,12 +75,12 @@ export class PasswordResetService {
   }
 
   // Disable a password reset method for a user
-  async disableResetMethod(userId: number, methodType: string): Promise<boolean> {
+  async disableResetMethod(userId: string, methodType: string): Promise<boolean> {
     return await this.passwordResetMethodRepo.disableMethod(userId, methodType);
   }
 
   // Security Questions Methods
-  async setupSecurityQuestions(userId: number, questions: SecurityQuestionSetup[]): Promise<SecurityQuestion[]> {
+  async setupSecurityQuestions(userId: string, questions: SecurityQuestionSetup[]): Promise<SecurityQuestion[]> {
     // Delete existing questions
     await this.securityQuestionRepo.deleteByUserId(userId);
 
@@ -126,7 +126,7 @@ export class PasswordResetService {
   }
 
   // Recovery Codes Methods
-  async generateRecoveryCodes(userId: number, count: number = 10): Promise<string[]> {
+  async generateRecoveryCodes(userId: string, count: number = 10): Promise<string[]> {
     // Delete existing codes
     await this.recoveryCodeRepo.deleteByUserId(userId);
 

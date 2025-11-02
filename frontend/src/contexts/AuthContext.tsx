@@ -41,6 +41,7 @@ interface AuthContextType {
   refreshToken: () => Promise<boolean>;
   updateProfile: (profileData: UpdateProfileRequest) => Promise<boolean>;
   linkGoogle: (googleId: string) => Promise<boolean>;
+  devModeLogin: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -216,10 +217,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const googleAuth = async (profile: GoogleUserProfile): Promise<boolean> => {
     try {
       const authResponse = await authService.googleAuth(profile);
-      setUser(authResponse.data.user);
+      setUser(authResponse.user);
       setIsAuthenticated(true);
-      apiClient.setAuthToken(authResponse.data.tokens.accessToken);
-      localStorage.setItem('refreshToken', authResponse.data.tokens.refreshToken);
+      apiClient.setAuthToken(authResponse.tokens.accessToken);
+      localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
       return true;
     } catch (_error) {
       return false;
@@ -265,6 +266,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const devModeLogin = (): void => {
+    // Only allow in development mode
+    if (import.meta.env.DEV) {
+      const mockUser: User = {
+        id: 1,
+        username: 'dev_user',
+        email: 'dev@example.com',
+        name: 'Development User',
+        role: 'admin',
+        isEmailVerified: true,
+        isPhoneVerified: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      setUser(mockUser);
+      setIsAuthenticated(true);
+      // Set a mock token for API calls
+      apiClient.setAuthToken('dev-mode-token');
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated,
@@ -289,6 +312,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshToken,
     updateProfile,
     linkGoogle,
+    devModeLogin,
   };
 
   return (

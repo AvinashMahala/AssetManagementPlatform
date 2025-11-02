@@ -20,12 +20,7 @@ export class TenantService implements ITenantService {
     return tenants;
   }
 
-  async getTenantById(id: number): Promise<Tenant | null> {
-    const idValidation = ValidationUtils.validateId(id);
-    if (!idValidation.isValid) {
-      throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
-    }
-
+  async getTenantById(id: string): Promise<Tenant | null> {
     const tenant = await this.repository.findById(id);
     if (tenant) {
       tenant.documents = await this.repository.getDocuments(id);
@@ -84,16 +79,18 @@ export class TenantService implements ITenantService {
       throw new Error(ERROR_MESSAGES.TENANT.EMAIL_EXISTS);
     }
 
-    // Validate phone
-    const phoneValidation = ValidationUtils.validateTenantPhone(tenantData.phone);
-    if (!phoneValidation.isValid) {
-      throw new Error(phoneValidation.message);
-    }
+    // Validate phone if provided
+    if (tenantData.phone) {
+      const phoneValidation = ValidationUtils.validateTenantPhone(tenantData.phone);
+      if (!phoneValidation.isValid) {
+        throw new Error(phoneValidation.message);
+      }
 
-    // Check if phone already exists
-    const existingTenantByPhone = await this.repository.findByPhone(tenantData.phone);
-    if (existingTenantByPhone) {
-      throw new Error('Phone number already exists');
+      // Check if phone already exists
+      const existingTenantByPhone = await this.repository.findByPhone(tenantData.phone);
+      if (existingTenantByPhone) {
+        throw new Error('Phone number already exists');
+      }
     }
 
     // Validate monthly income
@@ -108,16 +105,20 @@ export class TenantService implements ITenantService {
       throw new Error(currentAddressValidation.message);
     }
 
-    // Validate permanent address
-    const permanentAddressValidation = ValidationUtils.validateTenantAddress(tenantData.permanentAddress);
-    if (!permanentAddressValidation.isValid) {
-      throw new Error(permanentAddressValidation.message);
+    // Validate permanent address if provided
+    if (tenantData.permanentAddress) {
+      const permanentAddressValidation = ValidationUtils.validateTenantAddress(tenantData.permanentAddress);
+      if (!permanentAddressValidation.isValid) {
+        throw new Error(permanentAddressValidation.message);
+      }
     }
 
-    // Validate emergency contact
-    const emergencyContactValidation = ValidationUtils.validateEmergencyContact(tenantData.emergencyContact);
-    if (!emergencyContactValidation.isValid) {
-      throw new Error(emergencyContactValidation.message);
+    // Validate emergency contact if provided
+    if (tenantData.emergencyContact) {
+      const emergencyContactValidation = ValidationUtils.validateEmergencyContact(tenantData.emergencyContact);
+      if (!emergencyContactValidation.isValid) {
+        throw new Error(emergencyContactValidation.message);
+      }
     }
 
     // Ensure optional fields have proper defaults
@@ -142,7 +143,7 @@ export class TenantService implements ITenantService {
     return await this.repository.create(tenantDataWithDefaults);
   }
 
-  async updateTenant(id: number, tenantData: Partial<TenantInput>): Promise<Tenant | null> {
+  async updateTenant(id: string, tenantData: Partial<TenantInput>): Promise<Tenant | null> {
     const idValidation = ValidationUtils.validateId(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
@@ -224,7 +225,7 @@ export class TenantService implements ITenantService {
     return updatedTenant;
   }
 
-  async deleteTenant(id: number): Promise<boolean> {
+  async deleteTenant(id: string): Promise<boolean> {
     const idValidation = ValidationUtils.validateId(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
@@ -233,7 +234,7 @@ export class TenantService implements ITenantService {
     return await this.repository.delete(id);
   }
 
-  async updateTenantStatus(id: number, status: string): Promise<boolean> {
+  async updateTenantStatus(id: string, status: string): Promise<boolean> {
     const idValidation = ValidationUtils.validateId(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
@@ -249,7 +250,7 @@ export class TenantService implements ITenantService {
   }
 
   // Document management methods
-  async addTenantDocument(tenantId: number, document: Omit<TenantDocument, 'id' | 'tenantId' | 'uploadedAt'>): Promise<TenantDocument> {
+  async addTenantDocument(tenantId: string, document: Omit<TenantDocument, 'id' | 'tenantId' | 'uploadedAt'>): Promise<TenantDocument> {
     const idValidation = ValidationUtils.validateId(tenantId);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
@@ -269,7 +270,7 @@ export class TenantService implements ITenantService {
     return await this.repository.addDocument(tenantId, document);
   }
 
-  async getTenantDocuments(tenantId: number): Promise<TenantDocument[]> {
+  async getTenantDocuments(tenantId: string): Promise<TenantDocument[]> {
     const idValidation = ValidationUtils.validateId(tenantId);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
@@ -278,7 +279,7 @@ export class TenantService implements ITenantService {
     return await this.repository.getDocuments(tenantId);
   }
 
-  async updateTenantDocument(documentId: number, data: Partial<TenantDocument>): Promise<TenantDocument | null> {
+  async updateTenantDocument(documentId: string, data: Partial<TenantDocument>): Promise<TenantDocument | null> {
     const idValidation = ValidationUtils.validateId(documentId);
     if (!idValidation.isValid) {
       throw new Error('Invalid document ID');
@@ -294,7 +295,7 @@ export class TenantService implements ITenantService {
     return await this.repository.updateDocument(documentId, data);
   }
 
-  async deleteTenantDocument(documentId: number): Promise<boolean> {
+  async deleteTenantDocument(documentId: string): Promise<boolean> {
     const idValidation = ValidationUtils.validateId(documentId);
     if (!idValidation.isValid) {
       throw new Error('Invalid document ID');
@@ -303,7 +304,7 @@ export class TenantService implements ITenantService {
     return await this.repository.deleteDocument(documentId);
   }
 
-  async verifyTenantDocument(documentId: number, verifiedBy: number): Promise<boolean> {
+  async verifyTenantDocument(documentId: string, verifiedBy: string): Promise<boolean> {
     const documentIdValidation = ValidationUtils.validateId(documentId);
     if (!documentIdValidation.isValid) {
       throw new Error('Invalid document ID');

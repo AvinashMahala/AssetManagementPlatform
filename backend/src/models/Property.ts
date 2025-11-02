@@ -36,14 +36,14 @@ export interface Property {
   };
 
   // Building specifications
-  totalArea: number; // in sq ft
+  totalArea: number; // in sq ft (maps to 'area' column)
   totalFloors?: number;
   yearBuilt?: number;
   parkingSpaces?: number;
 
   // Building amenities and features
-  buildingAmenities: string[]; // ['parking', 'lift', 'security', 'gym', etc.]
-  buildingPhotos: string[]; // array of photo URLs
+  buildingAmenities: string[]; // maps to 'amenities' column
+  buildingPhotos: string[]; // maps to 'photos' column
 
   // Ownership details
   ownerId: string; // UUID reference to users table

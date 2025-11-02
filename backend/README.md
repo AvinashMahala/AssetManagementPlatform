@@ -1,4 +1,4 @@
-# Asset Management Platform - Backend
+# Property Management Platform - Backend
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
@@ -6,7 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-The backend API server for the Asset Management Platform, built with Node.js, Express, and TypeScript. Features a clean layered architecture with dependency injection for maximum maintainability and testability, including Google OAuth authentication and JWT-based security.
+The backend API server for the Property Management Platform, built with Node.js, Express, and TypeScript. Features a clean layered architecture with dependency injection for maximum maintainability and testability, including Google OAuth authentication and JWT-based security.
 
 ## 🏗️ Architecture Overview
 

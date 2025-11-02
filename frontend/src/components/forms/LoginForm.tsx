@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
-import { GoogleOAuthButton } from '../common/GoogleOAuthButton';
-import { useAuthContext } from '../../contexts/AuthContext';
-import type { UserCredentials } from '../../services/authService';
-import type { GoogleCredentialResponse } from '../../hooks/useGoogleOAuth';
+// import { GoogleOAuthButton } from '../common/GoogleOAuthButton';
+import { useAuthContext } from '../../contexts';
+// import { authService } from '../../services/authService';
+import type { UserCredentials } from '../../types/user';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -17,7 +17,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onSwitchToRegister,
   onForgotPassword
 }) => {
-  const { login, googleAuth, loading } = useAuthContext();
+  const { login, loading, devModeLogin } = useAuthContext();
   const [formData, setFormData] = useState<UserCredentials>({
     email: '',
     password: ''
@@ -64,44 +64,45 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     }
   };
 
-  const handleGoogleSuccess = async (response: GoogleCredentialResponse) => {
-    try {
-      setSubmitError('');
-      // Decode the JWT token to get user profile
-      const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      const googleProfile = {
-        id: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        picture: payload.picture,
-        verified_email: payload.email_verified || true
-      };
+  // Temporarily disabled Google OAuth functions for development
+  // const handleGoogleSuccess = async (response: GoogleCredentialResponse) => {
+  //   try {
+  //     setSubmitError('');
+  //     // Decode the JWT token to get user profile
+  //     const payload = JSON.parse(atob(response.credential.split('.')[1]));
+  //     const googleProfile = {
+  //       id: payload.sub,
+  //       email: payload.email,
+  //       name: payload.name,
+  //       picture: payload.picture,
+  //       verified_email: payload.email_verified || true
+  //     };
 
-      const success = await googleAuth(googleProfile);
-      if (success) {
-        onSuccess?.();
-      } else {
-        setSubmitError('Google authentication failed');
-      }
-    } catch (_error) {
-      setSubmitError('An error occurred during Google authentication. Please try again.');
-    }
-  };
+  //     const success = await googleAuth(googleProfile);
+  //     if (success) {
+  //       onSuccess?.();
+  //     } else {
+  //       setSubmitError('Google authentication failed');
+  //     }
+  //   } catch (_error) {
+  //     setSubmitError('An error occurred during Google authentication. Please try again.');
+  //   }
+  // };
 
-  const handleGoogleError = (error: string) => {
-    setSubmitError(`Google authentication error: ${error}`);
-  };
+  // const handleGoogleError = (error: string) => {
+  //   setSubmitError(`Google authentication error: ${error}`);
+  // };
 
   const handleInputChange = (field: keyof UserCredentials) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setFormData(prev => ({
+    setFormData((prev: UserCredentials) => ({
       ...prev,
       [field]: e.target.value
     }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev: Partial<Record<keyof UserCredentials, string>>) => ({
         ...prev,
         [field]: undefined
       }));
@@ -170,6 +171,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           {loading ? 'Signing in...' : 'Sign In'}
         </Button>
 
+        {/* Development mode skip button */}
+        {import.meta.env.DEV && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="large"
+            className="w-full"
+            onClick={() => {
+              devModeLogin();
+              onSuccess?.();
+            }}
+            disabled={loading}
+          >
+            🚀 Skip Sign In (Dev Mode)
+          </Button>
+        )}
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300" />
@@ -179,13 +197,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           </div>
         </div>
 
-        <GoogleOAuthButton
+        {/* Temporarily disabled Google OAuth for development */}
+        {/* <GoogleOAuthButton
           clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
           disabled={loading}
           text="signin_with"
-        />
+        /> */}
+        <div className="text-center text-sm text-gray-500 bg-gray-50 p-3 rounded-md">
+          Google OAuth temporarily disabled for development
+        </div>
 
         <div className="text-center">
           <span className="text-gray-600">Don't have an account? </span>

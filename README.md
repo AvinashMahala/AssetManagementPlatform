@@ -1,4 +1,4 @@
-# Asset Management Platform
+# Property Management Platform
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
@@ -7,7 +7,30 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 
-A scalable, enterprise-grade Asset Management Platform built with modern web technologies. Features a complete React frontend with TypeScript, Node.js/Express backend with layered architecture, PostgreSQL database, Google OAuth authentication, and comprehensive API documentation.
+A comprehensive Property Management Platform built with modern web technologies. Features a complete React frontend with TypeScript, Node.js/Express backend with layered architecture, PostgreSQL database, Google OAuth authentication, and comprehensive API documentation for managing rental properties, tenants, leases, and rent payments.
+
+## 🚀 Features
+
+- **Full-Stack TypeScript**: End-to-end type safety across frontend and backend
+- **Google OAuth Integration**: Seamless authentication with Google Identity Services API
+- **JWT Authentication**: Secure token-based authentication with refresh tokens
+- **Property Management**: Complete rental property portfolio management
+- **Tenant Management**: Comprehensive tenant profiles and document management
+- **Lease Management**: Full lease lifecycle with automatic rent generation
+- **Rent Payment Processing**: Advanced payment tracking with financial calculations
+- **Financial Reporting**: Revenue analytics and payment status monitoring
+- **Industrial-Grade Frontend Architecture**: Layered React application with contexts, hooks, and services
+- **Layered Architecture**: Clean separation of concerns with Controllers, Services, and Repositories in backend
+- **Dependency Injection**: Interface-based DI container for maximum testability and modularity
+- **Global State Management**: React Context API for authentication, theming, and notifications
+- **Component Library**: Reusable UI components with TypeScript interfaces
+- **Custom Hooks**: Business logic encapsulation with React hooks
+- **API Integration**: Centralized API client with error handling and TypeScript types
+- **Database Integration**: PostgreSQL with connection pooling and prepared statements
+- **Security**: Password hashing, input validation, CORS, and Helmet security headers
+- **Containerization**: Docker and Docker Compose for easy deployment
+- **Development Tools**: ESLint, Prettier, and comprehensive error handling
+- **Monorepo Structure**: Organized with npm workspaces for efficient development
 
 ## 🚀 Features
 
@@ -109,7 +132,7 @@ A scalable, enterprise-grade Asset Management Platform built with modern web tec
 ## 📁 Project Structure
 
 ```
-AssetManagementPlatform/
+PropertyManagementPlatform/
 ├── frontend/                 # React application with industrial-grade architecture
 │   ├── src/
 │   │   ├── components/       # Reusable UI components
@@ -121,15 +144,15 @@ AssetManagementPlatform/
 │   │   │   ├── forms/        # Form components (LoginForm, RegisterForm, etc.)
 │   │   │   └── ui/           # UI-specific components
 │   │   ├── pages/            # Route-level page components
-│   │   │   └── Dashboard.tsx # Main dashboard with asset overview
+│   │   │   └── Dashboard.tsx # Main dashboard with property overview
 │   │   ├── hooks/            # Custom React hooks
 │   │   │   ├── useApi.ts     # API communication hook
-│   │   │   ├── useAssets.ts  # Asset management hook
+│   │   │   ├── useProperties.ts # Property management hook
 │   │   │   ├── useUsers.ts   # User management hook
 │   │   │   └── useGoogleOAuth.ts # Google OAuth integration hook
 │   │   ├── services/         # API service functions
 │   │   │   ├── apiClient.ts  # Centralized API client
-│   │   │   ├── assetService.ts # Asset API operations
+│   │   │   ├── propertyService.ts # Property API operations
 │   │   │   ├── authService.ts # Authentication API operations
 │   │   │   └── userService.ts # User API operations
 │   │   ├── contexts/         # React contexts for global state
@@ -138,7 +161,7 @@ AssetManagementPlatform/
 │   │   │   ├── NotificationContext.tsx # Notification system
 │   │   │   └── index.ts      # Context exports
 │   │   ├── types/            # TypeScript type definitions
-│   │   │   ├── asset.ts      # Asset-related types
+│   │   │   ├── property.ts   # Property-related types
 │   │   │   ├── user.ts       # User-related types
 │   │   │   ├── api.ts        # API response types
 │   │   │   ├── common.ts     # Common/shared types
@@ -152,16 +175,31 @@ AssetManagementPlatform/
 ├── backend/                  # Express API server with layered architecture
 │   ├── src/
 │   │   ├── controllers/      # HTTP request handlers
-│   │   │   ├── assetController.ts
+│   │   │   ├── propertyController.ts
+│   │   │   ├── tenantController.ts
+│   │   │   ├── unitController.ts
+│   │   │   ├── leaseController.ts
+│   │   │   ├── rentPaymentController.ts
+│   │   │   ├── unitTenantController.ts
 │   │   │   ├── userController.ts
 │   │   │   └── authController.ts
 │   │   ├── services/         # Business logic layer
-│   │   │   ├── AssetService.ts
+│   │   │   ├── PropertyService.ts
+│   │   │   ├── TenantService.ts
+│   │   │   ├── UnitService.ts
+│   │   │   ├── LeaseService.ts
+│   │   │   ├── RentPaymentService.ts
+│   │   │   ├── UnitTenantService.ts
 │   │   │   ├── UserService.ts
 │   │   │   ├── AuthService.ts
 │   │   │   └── PasswordResetService.ts
 │   │   ├── repositories/     # Data access layer
-│   │   │   ├── AssetRepository.ts
+│   │   │   ├── PropertyRepository.ts
+│   │   │   ├── TenantRepository.ts
+│   │   │   ├── UnitRepository.ts
+│   │   │   ├── LeaseRepository.ts
+│   │   │   ├── RentPaymentRepository.ts
+│   │   │   ├── UnitTenantRepository.ts
 │   │   │   ├── UserRepository.ts
 │   │   │   ├── PasswordResetMethodRepository.ts
 │   │   │   ├── RecoveryCodeRepository.ts
@@ -170,6 +208,12 @@ AssetManagementPlatform/
 │   │   │   ├── repositories/
 │   │   │   └── services/
 │   │   ├── models/           # Data transfer objects
+│   │   │   ├── Property.ts
+│   │   │   ├── Tenant.ts
+│   │   │   ├── Unit.ts
+│   │   │   ├── Lease.ts
+│   │   │   ├── RentPayment.ts
+│   │   │   └── User.ts
 │   │   ├── routes/           # API route definitions
 │   │   ├── utils/            # Backend utilities
 │   │   ├── constants/        # Configuration constants
@@ -199,7 +243,7 @@ AssetManagementPlatform/
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd AssetManagementPlatform
+cd PropertyManagementPlatform
 
 # Install dependencies for all workspaces
 npm install
@@ -268,9 +312,9 @@ For complete system setup from scratch, use the end-to-end script:
 10. ✅ Executes comprehensive API tests
 
 **Test Credentials:**
-- **Admin**: `admin@assetplatform.com` / `admin123`
+- **Admin**: `admin@propertyplatform.com` / `admin123`
 - **User**: `john.doe@example.com` / `password123`
-- **Manager**: `manager@assetplatform.com` / `manager123`
+- **Manager**: `manager@propertyplatform.com` / `manager123`
 
 See `scripts/python/README.md` for detailed database documentation.
 
@@ -344,11 +388,11 @@ Content-Type: application/json
 }
 ```
 
-### Assets API
+### Properties API
 
-#### List Assets
+#### List Properties
 ```http
-GET /api/assets
+GET /api/properties
 Authorization: Bearer <token>
 ```
 
@@ -358,11 +402,10 @@ Authorization: Bearer <token>
   "success": true,
   "data": [
     {
-      "id": 1,
-      "name": "Laptop Dell XPS 13",
-      "description": "Developer laptop",
-      "value": 1500.00,
-      "location": "Office A",
+      "id": "uuid-string",
+      "name": "Sunset Apartments",
+      "description": "Luxury apartment complex",
+      "address": "123 Main St, City, State 12345",
       "createdAt": "2024-01-15T10:30:00Z",
       "updatedAt": "2024-01-15T10:30:00Z"
     }
@@ -375,24 +418,23 @@ Authorization: Bearer <token>
 }
 ```
 
-#### Create Asset
+#### Create Property
 ```http
-POST /api/assets
+POST /api/properties
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "name": "Server Rack",
-  "description": "Data center equipment",
-  "value": 5000.00,
-  "location": "Server Room B"
+  "name": "Riverside Condos",
+  "description": "Modern condominium complex",
+  "address": "456 River Rd, City, State 12345"
 }
 ```
 
-#### Update/Delete Assets
+#### Update/Delete Properties
 ```http
-PUT /api/assets/:id
-DELETE /api/assets/:id
+PUT /api/properties/:id
+DELETE /api/properties/:id
 Authorization: Bearer <token>
 ```
 
@@ -419,8 +461,8 @@ docker-compose up --build
 
 # Or build manually
 npm run build
-docker build -t asset-management .
-docker run -p 5000:5000 asset-management
+docker build -t property-management .
+docker run -p 5000:5000 property-management
 ```
 
 ### Environment Variables
@@ -481,7 +523,7 @@ npm run lint
 npm run format
 
 # 4. Commit with conventional format
-git commit -m "feat: add new asset filtering"
+git commit -m "feat: add new property filtering"
 
 # 5. Push and create PR
 git push origin feature/new-feature
@@ -498,7 +540,7 @@ git push origin feature/new-feature
 - [x] **Component Library**: Reusable UI components (Button, Input, Card, GoogleOAuthButton) with TypeScript interfaces
 - [x] **Custom Hooks**: Business logic encapsulation for API state management and OAuth
 - [x] **API Integration Layer**: Centralized API client with error handling and TypeScript types
-- [x] **Dashboard Page**: Asset overview with statistics and user information
+- [x] **Dashboard Page**: Property overview with statistics and user information
 - [x] **Type Safety**: End-to-end TypeScript with strict interfaces across all layers
 - [x] **Layered Architecture**: Clean separation of concerns mirroring backend patterns
 - [x] **Dependency Injection**: Interface-based DI container for maximum testability
@@ -510,14 +552,14 @@ git push origin feature/new-feature
 ### 🔄 In Progress
 
 - [ ] React Router integration for client-side routing
-- [ ] Asset management pages (list, create, edit, detail views)
+- [ ] Property management pages (list, create, edit, detail views)
 - [ ] User profile management interface
 - [ ] Advanced search and filtering capabilities
 
 ### 📋 Planned Features
 
-- [ ] Asset categories and tagging system
-- [ ] File upload for asset images and documents
+- [ ] Property categories and tagging system
+- [ ] File upload for property images and documents
 - [ ] Audit logging and activity tracking
 - [ ] Role-based access control (RBAC)
 - [ ] Real-time notifications with WebSocket

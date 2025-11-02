@@ -95,7 +95,7 @@ export class RentPaymentService implements IRentPaymentService {
     }
 
     // Verify tenant exists
-    const tenant = await this.tenantRepository.findById(parseInt(paymentData.tenantId));
+    const tenant = await this.tenantRepository.findById(paymentData.tenantId);
     if (!tenant) {
       throw new Error('Tenant not found');
     }
