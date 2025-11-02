@@ -11,22 +11,14 @@ import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepo
 import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
 import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
 import { IUnitRepository } from './src/interfaces/repositories/IUnitRepository.js';
-import { IUnitTenantRepository } from './src/interfaces/repositories/IUnitTenantRepository.js';
-import { IPropertyService } from './src/interfaces/services/IPropertyService.js';
-import { IUserService } from './src/interfaces/services/IUserService.js';
-import { ITenantService } from './src/interfaces/services/ITenantService.js';
-import { IUnitService } from './src/interfaces/services/IUnitService.js';
-import { IUnitTenantService } from './src/interfaces/services/IUnitTenantService.js';
-import { PropertyRepository } from './src/repositories/PropertyRepository.js';
-import { UserRepository } from './src/repositories/UserRepository.js';
-import { TenantRepository } from './src/repositories/TenantRepository.js';
-import { UnitRepository } from './src/repositories/UnitRepository.js';
-import { UnitTenantRepository } from './src/repositories/UnitTenantRepository.js';
-import { PropertyService } from './src/services/PropertyService.js';
-import { UserService } from './src/services/UserService.js';
-import { TenantService } from './src/services/TenantService.js';
-import { UnitService } from './src/services/UnitService.js';
-import { UnitTenantService } from './src/services/UnitTenantService.js';
+import { ILeaseRepository } from './src/interfaces/repositories/ILeaseRepository.js';
+import { ILeaseService } from './src/interfaces/services/ILeaseService.js';
+import { LeaseRepository } from './src/repositories/LeaseRepository.js';
+import { LeaseService } from './src/services/LeaseService.js';
+import { LeaseController } from './src/controllers/leaseController.js';
+import { createLeaseRoutes } from './src/routes/leaseRoutes.js';
+import { RentPaymentController } from './src/controllers/RentPaymentController.js';
+import { createRentPaymentRoutes } from './src/routes/rentPaymentRoutes.js';
 import { PropertyController } from './src/controllers/propertyController.js';
 import { UserController } from './src/controllers/userController.js';
 import { TenantController } from './src/controllers/TenantController.js';
@@ -57,6 +49,8 @@ const userService = container.userService;
 const tenantService = container.tenantService;
 const unitService = container.unitService;
 const unitTenantService = container.unitTenantService;
+const leaseService = container.leaseService;
+const rentPaymentService = container.rentPaymentService;
 const passwordResetService = container.passwordResetService;
 
 // Create controllers with injected services
@@ -65,6 +59,8 @@ const userController = new UserController(userService, passwordResetService);
 const tenantController = new TenantController(tenantService);
 const unitController = new UnitController(unitService);
 const unitTenantController = new UnitTenantController(unitTenantService);
+const leaseController = new LeaseController(leaseService);
+const rentPaymentController = new RentPaymentController(rentPaymentService);
 
 const options = {
   definition: {
@@ -989,25 +985,28 @@ const options = {
           type: 'object',
           properties: {
             id: {
-              type: 'integer',
-              description: 'Lease ID',
+              type: 'string',
+              format: 'uuid',
+              description: 'Lease ID (UUID)',
             },
             propertyId: {
-              type: 'integer',
-              description: 'Property ID',
+              type: 'string',
+              format: 'uuid',
+              description: 'Property ID (UUID)',
             },
             tenantId: {
-              type: 'integer',
-              description: 'Tenant ID',
-            },
-            leaseStartDate: {
               type: 'string',
-              format: 'date',
+              format: 'uuid',
+              description: 'Tenant ID (UUID)',
+            },
+            startDate: {
+              type: 'string',
+              format: 'date-time',
               description: 'Lease start date',
             },
-            leaseEndDate: {
+            endDate: {
               type: 'string',
-              format: 'date',
+              format: 'date-time',
               description: 'Lease end date',
             },
             monthlyRent: {
@@ -1018,34 +1017,76 @@ const options = {
               type: 'number',
               description: 'Security deposit amount',
             },
+            status: {
+              type: 'string',
+              enum: ['draft', 'active', 'expired', 'terminated'],
+              description: 'Lease status',
+            },
+            noticePeriodDays: {
+              type: 'integer',
+              description: 'Notice period in days',
+            },
+            autoRenewal: {
+              type: 'boolean',
+              description: 'Auto renewal enabled',
+            },
             maintenanceCharges: {
               type: 'number',
               description: 'Monthly maintenance charges',
             },
             paymentFrequency: {
               type: 'string',
-              enum: ['monthly', 'quarterly', 'half_yearly', 'yearly'],
-              description: 'Rent payment frequency',
+              description: 'Payment frequency',
             },
-            noticePeriodDays: {
+            rentDueDay: {
               type: 'integer',
-              description: 'Notice period in days',
+              description: 'Rent due day of month',
             },
-            lockInPeriodMonths: {
-              type: 'integer',
-              description: 'Lock-in period in months',
+            electricityCharges: {
+              type: 'number',
+              description: 'Monthly electricity charges',
             },
-            conditions: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-              description: 'Lease conditions and terms',
+            waterCharges: {
+              type: 'number',
+              description: 'Monthly water charges',
             },
-            status: {
+            otherCharges: {
+              type: 'number',
+              description: 'Other monthly charges',
+            },
+            petsAllowed: {
+              type: 'boolean',
+              description: 'Pets allowed',
+            },
+            smokingAllowed: {
+              type: 'boolean',
+              description: 'Smoking allowed',
+            },
+            sublettingAllowed: {
+              type: 'boolean',
+              description: 'Subletting allowed',
+            },
+            specialConditions: {
               type: 'string',
-              enum: ['draft', 'active', 'expired', 'terminated', 'cancelled'],
-              description: 'Lease status',
+              description: 'Special lease conditions',
+            },
+            signedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Lease signing date',
+            },
+            leaseDocumentUrl: {
+              type: 'string',
+              description: 'Lease document URL',
+            },
+            terminatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Lease termination date',
+            },
+            terminationReason: {
+              type: 'string',
+              description: 'Lease termination reason',
             },
             createdAt: {
               type: 'string',
@@ -1061,24 +1102,26 @@ const options = {
         },
         LeaseInput: {
           type: 'object',
-          required: ['propertyId', 'tenantId', 'leaseStartDate', 'leaseEndDate', 'monthlyRent', 'securityDeposit'],
+          required: ['propertyId', 'tenantId', 'startDate', 'endDate', 'monthlyRent', 'securityDeposit'],
           properties: {
             propertyId: {
-              type: 'integer',
-              description: 'Property ID',
+              type: 'string',
+              format: 'uuid',
+              description: 'Property ID (UUID)',
             },
             tenantId: {
-              type: 'integer',
-              description: 'Tenant ID',
-            },
-            leaseStartDate: {
               type: 'string',
-              format: 'date',
+              format: 'uuid',
+              description: 'Tenant ID (UUID)',
+            },
+            startDate: {
+              type: 'string',
+              format: 'date-time',
               description: 'Lease start date',
             },
-            leaseEndDate: {
+            endDate: {
               type: 'string',
-              format: 'date',
+              format: 'date-time',
               description: 'Lease end date',
             },
             monthlyRent: {
@@ -1089,37 +1132,68 @@ const options = {
               type: 'number',
               description: 'Security deposit amount',
             },
+            status: {
+              type: 'string',
+              enum: ['draft', 'active', 'expired', 'terminated'],
+              default: 'draft',
+              description: 'Lease status',
+            },
+            noticePeriodDays: {
+              type: 'integer',
+              description: 'Notice period in days',
+            },
+            autoRenewal: {
+              type: 'boolean',
+              description: 'Auto renewal enabled',
+            },
             maintenanceCharges: {
               type: 'number',
               description: 'Monthly maintenance charges',
             },
             paymentFrequency: {
               type: 'string',
-              enum: ['monthly', 'quarterly', 'half_yearly', 'yearly'],
-              default: 'monthly',
-              description: 'Rent payment frequency',
+              description: 'Payment frequency',
             },
-            noticePeriodDays: {
+            rentDueDay: {
               type: 'integer',
-              default: 30,
-              description: 'Notice period in days',
+              description: 'Rent due day of month',
             },
-            lockInPeriodMonths: {
-              type: 'integer',
-              description: 'Lock-in period in months',
+            electricityCharges: {
+              type: 'number',
+              description: 'Monthly electricity charges',
             },
-            conditions: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-              description: 'Lease conditions and terms',
+            waterCharges: {
+              type: 'number',
+              description: 'Monthly water charges',
             },
-            status: {
+            otherCharges: {
+              type: 'number',
+              description: 'Other monthly charges',
+            },
+            petsAllowed: {
+              type: 'boolean',
+              description: 'Pets allowed',
+            },
+            smokingAllowed: {
+              type: 'boolean',
+              description: 'Smoking allowed',
+            },
+            sublettingAllowed: {
+              type: 'boolean',
+              description: 'Subletting allowed',
+            },
+            specialConditions: {
               type: 'string',
-              enum: ['draft', 'active', 'expired', 'terminated', 'cancelled'],
-              default: 'draft',
-              description: 'Lease status',
+              description: 'Special lease conditions',
+            },
+            signedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Lease signing date',
+            },
+            leaseDocumentUrl: {
+              type: 'string',
+              description: 'Lease document URL',
             },
           },
         },
@@ -1127,12 +1201,24 @@ const options = {
           type: 'object',
           properties: {
             id: {
-              type: 'integer',
-              description: 'Payment ID',
+              type: 'string',
+              format: 'uuid',
+              description: 'Payment ID (UUID)',
             },
             leaseId: {
-              type: 'integer',
-              description: 'Lease ID',
+              type: 'string',
+              format: 'uuid',
+              description: 'Lease ID (UUID)',
+            },
+            propertyId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Property ID (UUID)',
+            },
+            tenantId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Tenant ID (UUID)',
             },
             amount: {
               type: 'number',
@@ -1148,27 +1234,57 @@ const options = {
               format: 'date-time',
               description: 'Payment date',
             },
+            status: {
+              type: 'string',
+              enum: ['pending', 'paid', 'overdue', 'partial', 'failed'],
+              description: 'Payment status',
+            },
             paymentMethod: {
               type: 'string',
-              enum: ['cash', 'bank_transfer', 'cheque', 'upi', 'card', 'net_banking'],
+              enum: ['cash', 'bank_transfer', 'upi', 'cheque', 'card', 'net_banking', 'paytm', 'phonepe', 'amazon_pay', 'other'],
               description: 'Payment method',
             },
             transactionId: {
               type: 'string',
               description: 'Transaction reference ID',
             },
-            status: {
+            paymentReference: {
               type: 'string',
-              enum: ['pending', 'paid', 'overdue', 'partial', 'failed'],
-              description: 'Payment status',
+              description: 'Payment reference',
             },
             lateFee: {
               type: 'number',
               description: 'Late payment fee',
             },
-            remarks: {
+            penaltyAmount: {
+              type: 'number',
+              description: 'Penalty amount',
+            },
+            rentAmount: {
+              type: 'number',
+              description: 'Rent amount',
+            },
+            maintenanceCharges: {
+              type: 'number',
+              description: 'Maintenance charges',
+            },
+            otherCharges: {
+              type: 'number',
+              description: 'Other charges',
+            },
+            notes: {
               type: 'string',
-              description: 'Payment remarks',
+              description: 'Payment notes',
+            },
+            createdBy: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Created by user ID (UUID)',
+            },
+            updatedBy: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Updated by user ID (UUID)',
             },
             createdAt: {
               type: 'string',
@@ -1184,11 +1300,22 @@ const options = {
         },
         RentPaymentInput: {
           type: 'object',
-          required: ['leaseId', 'amount', 'dueDate'],
+          required: ['leaseId', 'propertyId', 'tenantId', 'amount', 'dueDate', 'rentAmount', 'status', 'createdBy'],
           properties: {
             leaseId: {
-              type: 'integer',
-              description: 'Lease ID',
+              type: 'string',
+              format: 'uuid',
+              description: 'Lease ID (UUID)',
+            },
+            propertyId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Property ID (UUID)',
+            },
+            tenantId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Tenant ID (UUID)',
             },
             amount: {
               type: 'number',
@@ -1204,28 +1331,58 @@ const options = {
               format: 'date-time',
               description: 'Payment date',
             },
-            paymentMethod: {
-              type: 'string',
-              enum: ['cash', 'bank_transfer', 'cheque', 'upi', 'card', 'net_banking'],
-              description: 'Payment method',
-            },
-            transactionId: {
-              type: 'string',
-              description: 'Transaction reference ID',
-            },
             status: {
               type: 'string',
               enum: ['pending', 'paid', 'overdue', 'partial', 'failed'],
               default: 'pending',
               description: 'Payment status',
             },
+            paymentMethod: {
+              type: 'string',
+              enum: ['cash', 'bank_transfer', 'upi', 'cheque', 'card', 'net_banking', 'paytm', 'phonepe', 'amazon_pay', 'other'],
+              description: 'Payment method',
+            },
+            transactionId: {
+              type: 'string',
+              description: 'Transaction reference ID',
+            },
+            paymentReference: {
+              type: 'string',
+              description: 'Payment reference',
+            },
             lateFee: {
               type: 'number',
               description: 'Late payment fee',
             },
-            remarks: {
+            penaltyAmount: {
+              type: 'number',
+              description: 'Penalty amount',
+            },
+            rentAmount: {
+              type: 'number',
+              description: 'Rent amount',
+            },
+            maintenanceCharges: {
+              type: 'number',
+              description: 'Maintenance charges',
+            },
+            otherCharges: {
+              type: 'number',
+              description: 'Other charges',
+            },
+            notes: {
               type: 'string',
-              description: 'Payment remarks',
+              description: 'Payment notes',
+            },
+            createdBy: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Created by user ID (UUID)',
+            },
+            updatedBy: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Updated by user ID (UUID)',
             },
           },
         },
@@ -1759,6 +1916,8 @@ app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
 app.use('/api/tenants', createTenantRoutes(tenantController));
 app.use('/api', createUnitRoutes(unitController));
 app.use('/api', createUnitTenantRoutes(unitTenantController));
+app.use('/api/leases', createLeaseRoutes(leaseController));
+app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

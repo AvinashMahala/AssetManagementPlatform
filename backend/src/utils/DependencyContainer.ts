@@ -4,11 +4,15 @@ import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';
 import { IUnitRepository } from '../interfaces/repositories/IUnitRepository';
 import { IUnitTenantRepository } from '../interfaces/repositories/IUnitTenantRepository';
+import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
+import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentRepository';
 import { IPropertyService } from '../interfaces/services/IPropertyService';
 import { IUserService } from '../interfaces/services/IUserService';
 import { ITenantService } from '../interfaces/services/ITenantService';
 import { IUnitService } from '../interfaces/services/IUnitService';
 import { IUnitTenantService } from '../interfaces/services/IUnitTenantService';
+import { ILeaseService } from '../interfaces/services/ILeaseService';
+import { IRentPaymentService } from '../interfaces/services/IRentPaymentService';
 import { PropertyRepository } from '../repositories/PropertyRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { TenantRepository } from '../repositories/TenantRepository';
@@ -17,12 +21,16 @@ import { SecurityQuestionRepository } from '../repositories/SecurityQuestionRepo
 import { RecoveryCodeRepository } from '../repositories/RecoveryCodeRepository';
 import { UnitRepository } from '../repositories/UnitRepository';
 import { UnitTenantRepository } from '../repositories/UnitTenantRepository';
+import { LeaseRepository } from '../repositories/LeaseRepository';
+import { RentPaymentRepository } from '../repositories/RentPaymentRepository';
 import { PropertyService } from '../services/PropertyService';
 import { UserService } from '../services/UserService';
 import { TenantService } from '../services/TenantService';
 import { PasswordResetService } from '../services/PasswordResetService';
 import { UnitService } from '../services/UnitService';
 import { UnitTenantService } from '../services/UnitTenantService';
+import { LeaseService } from '../services/LeaseService';
+import { RentPaymentService } from '../services/RentPaymentService';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -34,6 +42,8 @@ export class DependencyContainer {
   private _tenantRepository: ITenantRepository | null = null;
   private _unitRepository: IUnitRepository | null = null;
   private _unitTenantRepository: IUnitTenantRepository | null = null;
+  private _leaseRepository: ILeaseRepository | null = null;
+  private _rentPaymentRepository: IRentPaymentRepository | null = null;
   private _passwordResetMethodRepository: PasswordResetMethodRepository | null = null;
   private _securityQuestionRepository: SecurityQuestionRepository | null = null;
   private _recoveryCodeRepository: RecoveryCodeRepository | null = null;
@@ -44,6 +54,8 @@ export class DependencyContainer {
   private _tenantService: ITenantService | null = null;
   private _unitService: IUnitService | null = null;
   private _unitTenantService: IUnitTenantService | null = null;
+  private _leaseService: ILeaseService | null = null;
+  private _rentPaymentService: IRentPaymentService | null = null;
   private _passwordResetService: PasswordResetService | null = null;
 
   private constructor(pool: Pool) {
@@ -121,6 +133,20 @@ export class DependencyContainer {
     return this._unitTenantRepository;
   }
 
+  public get leaseRepository(): ILeaseRepository {
+    if (!this._leaseRepository) {
+      this._leaseRepository = new LeaseRepository(this.pool);
+    }
+    return this._leaseRepository;
+  }
+
+  public get rentPaymentRepository(): IRentPaymentRepository {
+    if (!this._rentPaymentRepository) {
+      this._rentPaymentRepository = new RentPaymentRepository(this.pool);
+    }
+    return this._rentPaymentRepository;
+  }
+
   // Service getters with lazy initialization
   public get propertyService(): IPropertyService {
     if (!this._propertyService) {
@@ -169,6 +195,25 @@ export class DependencyContainer {
     return this._unitTenantService;
   }
 
+  public get leaseService(): ILeaseService {
+    if (!this._leaseService) {
+      this._leaseService = new LeaseService(this.leaseRepository);
+    }
+    return this._leaseService;
+  }
+
+  public get rentPaymentService(): IRentPaymentService {
+    if (!this._rentPaymentService) {
+      this._rentPaymentService = new RentPaymentService(
+        this.rentPaymentRepository,
+        this.leaseRepository,
+        this.propertyRepository,
+        this.tenantRepository
+      );
+    }
+    return this._rentPaymentService;
+  }
+
   // Method to register custom implementations (for testing)
   public registerPropertyRepository(repository: IPropertyRepository): void {
     this._propertyRepository = repository;
@@ -210,6 +255,22 @@ export class DependencyContainer {
     this._unitTenantService = service;
   }
 
+  public registerLeaseRepository(repository: ILeaseRepository): void {
+    this._leaseRepository = repository;
+  }
+
+  public registerLeaseService(service: ILeaseService): void {
+    this._leaseService = service;
+  }
+
+  public registerRentPaymentRepository(repository: IRentPaymentRepository): void {
+    this._rentPaymentRepository = repository;
+  }
+
+  public registerRentPaymentService(service: IRentPaymentService): void {
+    this._rentPaymentService = service;
+  }
+
     // Reset method for testing
   public reset(): void {
     this._propertyRepository = null;
@@ -217,6 +278,8 @@ export class DependencyContainer {
     this._tenantRepository = null;
     this._unitRepository = null;
     this._unitTenantRepository = null;
+    this._leaseRepository = null;
+    this._rentPaymentRepository = null;
     this._passwordResetMethodRepository = null;
     this._securityQuestionRepository = null;
     this._recoveryCodeRepository = null;
@@ -225,6 +288,8 @@ export class DependencyContainer {
     this._tenantService = null;
     this._unitService = null;
     this._unitTenantService = null;
+    this._leaseService = null;
+    this._rentPaymentService = null;
     this._passwordResetService = null;
   }
 }

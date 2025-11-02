@@ -2,19 +2,19 @@ import { Lease, LeaseInput } from '../../models/Lease';
 
 export interface ILeaseService {
   getAllLeases(): Promise<Lease[]>;
-  getLeaseById(id: number): Promise<Lease | null>;
-  getLeasesByProperty(propertyId: number): Promise<Lease[]>;
-  getLeasesByTenant(tenantId: number): Promise<Lease[]>;
+  getLeaseById(id: string): Promise<Lease | null>;
+  getLeasesByProperty(propertyId: string): Promise<Lease[]>;
+  getLeasesByTenant(tenantId: string): Promise<Lease[]>;
   getActiveLeases(): Promise<Lease[]>;
   getExpiringLeases(days: number): Promise<Lease[]>;
   createLease(leaseData: LeaseInput): Promise<Lease>;
-  updateLease(id: number, leaseData: Partial<LeaseInput>): Promise<Lease | null>;
-  deleteLease(id: number): Promise<boolean>;
-  terminateLease(id: number, terminationReason: string): Promise<boolean>;
-  renewLease(id: number, newEndDate: Date): Promise<Lease | null>;
+  updateLease(id: string, leaseData: Partial<LeaseInput>): Promise<Lease | null>;
+  deleteLease(id: string): Promise<boolean>;
+  terminateLease(id: string, terminationReason: string): Promise<boolean>;
+  renewLease(id: string, newEndDate: Date): Promise<Lease | null>;
 
   // Validation methods
   validateLeaseDates(startDate: Date, endDate: Date): boolean;
-  checkPropertyAvailability(propertyId: number, startDate: Date, endDate: Date): Promise<boolean>;
+  checkPropertyAvailability(propertyId: string, startDate: Date, endDate: Date): Promise<boolean>;
   calculateLeaseDuration(startDate: Date, endDate: Date): number; // in months
 }

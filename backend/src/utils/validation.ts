@@ -705,4 +705,50 @@ export class ValidationUtils {
     }
     return { isValid: true };
   }
+
+  /**
+   * Validate rent payment lease ID
+   */
+  static validateRentPaymentLeaseId(leaseId: string): { isValid: boolean; message?: string } {
+    if (!leaseId || leaseId.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.RENT_PAYMENT.LEASE_REQUIRED };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate rent payment amount
+   */
+  static validateRentPaymentAmount(amount: number): { isValid: boolean; message?: string } {
+    if (amount === undefined || amount === null) {
+      return { isValid: false, message: ERROR_MESSAGES.RENT_PAYMENT.AMOUNT_REQUIRED };
+    }
+    if (!this.isPositiveNumber(amount)) {
+      return { isValid: false, message: ERROR_MESSAGES.RENT_PAYMENT.AMOUNT_NEGATIVE };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate rent payment due date
+   */
+  static validateRentPaymentDueDate(dueDate: Date): { isValid: boolean; message?: string } {
+    if (!dueDate) {
+      return { isValid: false, message: ERROR_MESSAGES.RENT_PAYMENT.DUE_DATE_REQUIRED };
+    }
+    if (dueDate < new Date()) {
+      return { isValid: false, message: 'Due date cannot be in the past' };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate rent payment late fee
+   */
+  static validateRentPaymentLateFee(lateFee?: number): { isValid: boolean; message?: string } {
+    if (lateFee !== undefined && !this.isPositiveNumber(lateFee)) {
+      return { isValid: false, message: ERROR_MESSAGES.RENT_PAYMENT.LATE_FEE_NEGATIVE };
+    }
+    return { isValid: true };
+  }
 }

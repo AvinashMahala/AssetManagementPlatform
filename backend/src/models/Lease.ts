@@ -9,8 +9,7 @@ export enum LeaseStatus {
 export interface Lease {
   id: string; // UUID
   propertyId: string; // UUID reference to properties
-  unitId: string; // UUID reference to units
-  primaryTenantId: string; // UUID reference to tenants
+  tenantId: string; // UUID reference to tenants
 
   // Lease terms
   startDate: Date;
@@ -18,11 +17,25 @@ export interface Lease {
   monthlyRent: number;
   securityDeposit: number;
   status: LeaseStatus;
-  leaseTerms?: string;
-  signedAt?: Date;
 
-  // Created by user
-  createdBy: string; // UUID reference to users
+  // Additional lease details
+  noticePeriodDays?: number;
+  autoRenewal?: boolean;
+  maintenanceCharges?: number;
+  paymentFrequency?: string;
+  rentDueDay?: number;
+  electricityCharges?: number;
+  waterCharges?: number;
+  otherCharges?: number;
+  petsAllowed?: boolean;
+  smokingAllowed?: boolean;
+  sublettingAllowed?: boolean;
+  specialConditions?: string;
+
+  signedAt?: Date;
+  terminatedAt?: Date;
+  terminationReason?: string;
+  leaseDocumentUrl?: string;
 
   // Metadata
   createdAt: Date;
@@ -31,14 +44,26 @@ export interface Lease {
 
 export interface LeaseInput {
   propertyId: string;
-  unitId: string;
-  primaryTenantId: string;
+  tenantId: string;
   startDate: Date;
   endDate: Date;
   monthlyRent: number;
   securityDeposit: number;
   status?: LeaseStatus;
-  leaseTerms?: string;
+  noticePeriodDays?: number;
+  autoRenewal?: boolean;
+  maintenanceCharges?: number;
+  paymentFrequency?: string;
+  rentDueDay?: number;
+  electricityCharges?: number;
+  waterCharges?: number;
+  otherCharges?: number;
+  petsAllowed?: boolean;
+  smokingAllowed?: boolean;
+  sublettingAllowed?: boolean;
+  specialConditions?: string;
   signedAt?: Date;
-  createdBy: string;
+  terminatedAt?: Date;
+  terminationReason?: string;
+  leaseDocumentUrl?: string;
 }

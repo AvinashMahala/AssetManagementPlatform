@@ -2,20 +2,27 @@ import { RentPayment, RentPaymentInput } from '../../models/RentPayment';
 
 export interface IRentPaymentRepository {
   findAll(): Promise<RentPayment[]>;
-  findById(id: number): Promise<RentPayment | null>;
-  findByLease(leaseId: number): Promise<RentPayment[]>;
-  findByProperty(propertyId: number): Promise<RentPayment[]>;
-  findByTenant(tenantId: number): Promise<RentPayment[]>;
+  findById(id: string): Promise<RentPayment | null>;
+  findByLease(leaseId: string): Promise<RentPayment[]>;
+  findByProperty(propertyId: string): Promise<RentPayment[]>;
+  findByTenant(tenantId: string): Promise<RentPayment[]>;
   findPendingPayments(): Promise<RentPayment[]>;
   findOverduePayments(): Promise<RentPayment[]>;
+  findPartialPayments(): Promise<RentPayment[]>;
   findPaymentsByDateRange(startDate: Date, endDate: Date): Promise<RentPayment[]>;
+  findPaymentsByStatus(status: string): Promise<RentPayment[]>;
   create(data: Omit<RentPayment, 'id' | 'createdAt' | 'updatedAt'>): Promise<RentPayment>;
-  update(id: number, data: Partial<Omit<RentPayment, 'id' | 'createdAt' | 'updatedAt'>>): Promise<RentPayment | null>;
-  delete(id: number): Promise<boolean>;
-  markAsPaid(id: number, paidDate: Date, paymentMethod?: string, transactionId?: string): Promise<boolean>;
+  update(id: string, data: Partial<Omit<RentPayment, 'id' | 'createdAt' | 'updatedAt'>>): Promise<RentPayment | null>;
+  delete(id: string): Promise<boolean>;
+  markAsPaid(id: string, paidDate: Date, paymentMethod?: string, transactionId?: string): Promise<boolean>;
+  markAsOverdue(id: string): Promise<boolean>;
+  calculateLateFees(id: string): Promise<number>;
 
   // Financial summaries
-  getTotalRevenueByProperty(propertyId: number, startDate?: Date, endDate?: Date): Promise<number>;
-  getTotalRevenueByOwner(ownerId: number, startDate?: Date, endDate?: Date): Promise<number>;
-  getOutstandingPayments(): Promise<number>;
+  getTotalRevenueByProperty(propertyId: string, startDate?: Date, endDate?: Date): Promise<number>;
+  getTotalRevenueByLease(leaseId: string, startDate?: Date, endDate?: Date): Promise<number>;
+  getOutstandingPaymentsByProperty(propertyId: string): Promise<number>;
+  getOutstandingPaymentsByTenant(tenantId: string): Promise<number>;
+  getMonthlyRevenueReport(propertyId?: string, year?: number, month?: number): Promise<any>;
+  getPaymentStatistics(startDate?: Date, endDate?: Date): Promise<any>;
 }
