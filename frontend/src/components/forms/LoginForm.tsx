@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
-// import { GoogleOAuthButton } from '../common/GoogleOAuthButton';
+import { GoogleOAuthButton } from '../common/GoogleOAuthButton';
 import { useAuthContext } from '../../contexts';
-// import { authService } from '../../services/authService';
 import type { UserCredentials } from '../../types/user';
 
 interface LoginFormProps {
@@ -17,7 +16,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onSwitchToRegister,
   onForgotPassword
 }) => {
-  const { login, loading, devModeLogin } = useAuthContext();
+  const { login, googleAuth, loading, devModeLogin } = useAuthContext();
   const [formData, setFormData] = useState<UserCredentials>({
     email: '',
     password: ''
@@ -64,34 +63,33 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     }
   };
 
-  // Temporarily disabled Google OAuth functions for development
-  // const handleGoogleSuccess = async (response: GoogleCredentialResponse) => {
-  //   try {
-  //     setSubmitError('');
-  //     // Decode the JWT token to get user profile
-  //     const payload = JSON.parse(atob(response.credential.split('.')[1]));
-  //     const googleProfile = {
-  //       id: payload.sub,
-  //       email: payload.email,
-  //       name: payload.name,
-  //       picture: payload.picture,
-  //       verified_email: payload.email_verified || true
-  //     };
+  const handleGoogleSuccess = async (response: any) => {
+    try {
+      setSubmitError('');
+      // Decode the JWT token to get user profile
+      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      const googleProfile = {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture,
+        verified_email: payload.email_verified || true
+      };
 
-  //     const success = await googleAuth(googleProfile);
-  //     if (success) {
-  //       onSuccess?.();
-  //     } else {
-  //       setSubmitError('Google authentication failed');
-  //     }
-  //   } catch (_error) {
-  //     setSubmitError('An error occurred during Google authentication. Please try again.');
-  //   }
-  // };
+      const success = await googleAuth(googleProfile);
+      if (success) {
+        onSuccess?.();
+      } else {
+        setSubmitError('Google authentication failed');
+      }
+    } catch (_error) {
+      setSubmitError('An error occurred during Google authentication. Please try again.');
+    }
+  };
 
-  // const handleGoogleError = (error: string) => {
-  //   setSubmitError(`Google authentication error: ${error}`);
-  // };
+  const handleGoogleError = (error: string) => {
+    setSubmitError(`Google authentication error: ${error}`);
+  };
 
   const handleInputChange = (field: keyof UserCredentials) => (
     e: React.ChangeEvent<HTMLInputElement>
@@ -197,17 +195,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           </div>
         </div>
 
-        {/* Temporarily disabled Google OAuth for development */}
-        {/* <GoogleOAuthButton
+        <GoogleOAuthButton
           clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
           disabled={loading}
           text="signin_with"
-        /> */}
-        <div className="text-center text-sm text-gray-500 bg-gray-50 p-3 rounded-md">
-          Google OAuth temporarily disabled for development
-        </div>
+        />
 
         <div className="text-center">
           <span className="text-gray-600">Don't have an account? </span>

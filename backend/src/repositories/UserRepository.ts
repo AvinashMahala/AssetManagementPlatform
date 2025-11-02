@@ -163,18 +163,37 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async create(data: UserInput): Promise<User> {
+  async create(data: any): Promise<User> {
     try {
-      const hashedPassword = await PasswordUtils.hashPassword(data.password);
+      // Check if password needs hashing (not already hashed)
+      const password = data.password && !data.password.startsWith('$2b$') 
+        ? await PasswordUtils.hashPassword(data.password)
+        : data.password;
+      
       const result = await this.pool.query(
-        `INSERT INTO ${TABLES.USERS} (${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
-                ${COLUMNS.USERS.PASSWORD}, ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE},
-                ${COLUMNS.USERS.IS_EMAIL_VERIFIED}, ${COLUMNS.USERS.IS_PHONE_VERIFIED})
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO ${TABLES.USERS} (
+          ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL}, ${COLUMNS.USERS.PASSWORD},
+          ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
+          ${COLUMNS.USERS.IS_PHONE_VERIFIED}, ${COLUMNS.USERS.GOOGLE_ID},
+          ${COLUMNS.USERS.PROFILE_PICTURE}, name
+        )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
                    ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
-                   ${COLUMNS.USERS.IS_PHONE_VERIFIED}, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}`,
-        [data.username, data.email, hashedPassword, data.phone || null, data.role || DEFAULTS.USER_ROLE, false, false]
+                   ${COLUMNS.USERS.IS_PHONE_VERIFIED}, ${COLUMNS.USERS.GOOGLE_ID},
+                   ${COLUMNS.USERS.PROFILE_PICTURE}, name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}`,
+        [
+          data.username,
+          data.email,
+          password,
+          data.phone || null,
+          data.role || DEFAULTS.USER_ROLE,
+          data.isEmailVerified || false,
+          data.isPhoneVerified || false,
+          data.googleId || null,
+          data.profilePicture || null,
+          data.name || null
+        ]
       );
       return result.rows[0];
     } catch (error) {

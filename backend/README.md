@@ -49,6 +49,16 @@ The backend follows a **Layered Architecture** pattern with **Dependency Injecti
 
 ## 🚀 Features
 
+### Authentication & Security
+- 🔐 JWT-based authentication with refresh tokens
+- 🔑 Configurable authentication (enable/disable via environment)
+- 👤 Google OAuth integration
+- 🛡️ Role-based access control (Admin/User)
+- 📱 Multi-factor authentication options
+- 🔄 Password reset via security questions or recovery codes
+- ✉️ Email and phone verification
+- 📖 See [Authentication Documentation](./docs/AUTHENTICATION.md) for details
+
 - **Google OAuth Integration** with Google Identity Services API
 - **JWT Authentication** with secure token management
 - **Password Security** with bcrypt hashing and validation
