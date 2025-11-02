@@ -443,4 +443,266 @@ export class ValidationUtils {
 
     return { isValid: true };
   }
+
+  /**
+   * Validate unit property ID
+   */
+  static validateUnitPropertyId(propertyId: string): { isValid: boolean; message?: string } {
+    if (!propertyId || propertyId.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.PROPERTY_ID_REQUIRED };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit number
+   */
+  static validateUnitNumber(unitNumber: string): { isValid: boolean; message?: string } {
+    if (!unitNumber || unitNumber.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.UNIT_NUMBER_REQUIRED };
+    }
+    if (unitNumber.length < VALIDATION.UNIT.UNIT_NUMBER.MIN_LENGTH) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.UNIT_NUMBER_TOO_SHORT };
+    }
+    if (unitNumber.length > VALIDATION.UNIT.UNIT_NUMBER.MAX_LENGTH) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.UNIT_NUMBER_TOO_LONG };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit name
+   */
+  static validateUnitName(unitName?: string): { isValid: boolean; message?: string } {
+    if (unitName && unitName.length > VALIDATION.UNIT.UNIT_NAME.MAX_LENGTH) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.UNIT_NAME_TOO_LONG };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit description
+   */
+  static validateUnitDescription(description?: string): { isValid: boolean; message?: string } {
+    if (description && description.length > VALIDATION.UNIT.DESCRIPTION.MAX_LENGTH) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.DESCRIPTION_TOO_LONG };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit type
+   */
+  static validateUnitType(unitType: string): { isValid: boolean; message?: string } {
+    if (!unitType || unitType.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.UNIT_TYPE_REQUIRED };
+    }
+    if (!VALIDATION.UNIT.UNIT_TYPES.includes(unitType as any)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.UNIT_TYPE_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit status
+   */
+  static validateUnitStatus(status?: string): { isValid: boolean; message?: string } {
+    if (status && !VALIDATION.UNIT.UNIT_STATUSES.includes(status as any)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.STATUS_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit area
+   */
+  static validateUnitArea(area: number): { isValid: boolean; message?: string } {
+    if (area === undefined || area === null) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.AREA_REQUIRED };
+    }
+    if (!this.isPositiveNumber(area) || area < VALIDATION.UNIT.AREA.MIN_VALUE || area > VALIDATION.UNIT.AREA.MAX_VALUE) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.AREA_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit floor
+   */
+  static validateUnitFloor(floor?: number): { isValid: boolean; message?: string } {
+    if (floor !== undefined && (floor < VALIDATION.UNIT.FLOOR.MIN_VALUE || floor > VALIDATION.UNIT.FLOOR.MAX_VALUE)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.FLOOR_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit bedrooms
+   */
+  static validateUnitBedrooms(bedrooms?: number): { isValid: boolean; message?: string } {
+    if (bedrooms !== undefined && (bedrooms < VALIDATION.UNIT.BEDROOMS.MIN_VALUE || bedrooms > VALIDATION.UNIT.BEDROOMS.MAX_VALUE)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.BEDROOMS_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit bathrooms
+   */
+  static validateUnitBathrooms(bathrooms?: number): { isValid: boolean; message?: string } {
+    if (bathrooms !== undefined && (bathrooms < VALIDATION.UNIT.BATHROOMS.MIN_VALUE || bathrooms > VALIDATION.UNIT.BATHROOMS.MAX_VALUE)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.BATHROOMS_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit balconies
+   */
+  static validateUnitBalconies(balconies?: number): { isValid: boolean; message?: string } {
+    if (balconies !== undefined && (balconies < VALIDATION.UNIT.BALCONIES.MIN_VALUE || balconies > VALIDATION.UNIT.BALCONIES.MAX_VALUE)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.BALCONIES_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit max occupants
+   */
+  static validateUnitMaxOccupants(maxOccupants?: number): { isValid: boolean; message?: string } {
+    if (maxOccupants !== undefined && (maxOccupants < VALIDATION.UNIT.MAX_OCCUPANTS.MIN_VALUE || maxOccupants > VALIDATION.UNIT.MAX_OCCUPANTS.MAX_VALUE)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.MAX_OCCUPANTS_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit monthly rent
+   */
+  static validateUnitMonthlyRent(rent: number): { isValid: boolean; message?: string } {
+    if (rent === undefined || rent === null) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.RENT_REQUIRED };
+    }
+    if (!this.isPositiveNumber(rent)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.RENT_NEGATIVE };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit security deposit
+   */
+  static validateUnitSecurityDeposit(deposit: number): { isValid: boolean; message?: string } {
+    if (deposit === undefined || deposit === null) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.SECURITY_DEPOSIT_NEGATIVE };
+    }
+    if (!this.isPositiveNumber(deposit)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.SECURITY_DEPOSIT_NEGATIVE };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit maintenance charges
+   */
+  static validateUnitMaintenanceCharges(charges?: number): { isValid: boolean; message?: string } {
+    if (charges !== undefined && !this.isPositiveNumber(charges)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.MAINTENANCE_CHARGES_NEGATIVE };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit amenities array
+   */
+  static validateUnitAmenities(amenities?: string[]): { isValid: boolean; message?: string } {
+    if (!amenities) return { isValid: true };
+
+    if (amenities.length > VALIDATION.UNIT.AMENITIES.MAX_COUNT) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.AMENITIES_TOO_MANY };
+    }
+
+    for (const amenity of amenities) {
+      if (amenity.length > VALIDATION.UNIT.AMENITIES.MAX_LENGTH) {
+        return { isValid: false, message: ERROR_MESSAGES.UNIT.AMENITY_TOO_LONG };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit photos array
+   */
+  static validateUnitPhotos(photos?: string[]): { isValid: boolean; message?: string } {
+    if (!photos) return { isValid: true };
+
+    if (photos.length > VALIDATION.UNIT.PHOTOS.MAX_COUNT) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT.PHOTOS_TOO_MANY };
+    }
+
+    for (const photo of photos) {
+      if (photo.length > VALIDATION.UNIT.PHOTOS.MAX_URL_LENGTH) {
+        return { isValid: false, message: ERROR_MESSAGES.UNIT.PHOTO_URL_TOO_LONG };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit-tenant unit ID
+   */
+  static validateUnitTenantUnitId(unitId: string): { isValid: boolean; message?: string } {
+    if (!unitId || unitId.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_TENANT.UNIT_ID_REQUIRED };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit-tenant tenant ID
+   */
+  static validateUnitTenantTenantId(tenantId: string): { isValid: boolean; message?: string } {
+    if (!tenantId || tenantId.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_TENANT.TENANT_ID_REQUIRED };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit-tenant rent share
+   */
+  static validateUnitTenantRentShare(rentShare: number): { isValid: boolean; message?: string } {
+    if (rentShare === undefined || rentShare === null) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_TENANT.RENT_SHARE_NEGATIVE };
+    }
+    if (!this.isPositiveNumber(rentShare)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_TENANT.RENT_SHARE_NEGATIVE };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit-tenant security deposit share
+   */
+  static validateUnitTenantSecurityDepositShare(depositShare: number): { isValid: boolean; message?: string } {
+    if (depositShare === undefined || depositShare === null) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_TENANT.SECURITY_DEPOSIT_SHARE_NEGATIVE };
+    }
+    if (!this.isPositiveNumber(depositShare)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_TENANT.SECURITY_DEPOSIT_SHARE_NEGATIVE };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit-tenant status
+   */
+  static validateUnitTenantStatus(status?: string): { isValid: boolean; message?: string } {
+    if (status && !VALIDATION.UNIT_TENANT.STATUSES.includes(status as any)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_TENANT.STATUS_INVALID };
+    }
+    return { isValid: true };
+  }
 }

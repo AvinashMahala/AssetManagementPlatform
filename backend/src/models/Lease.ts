@@ -3,59 +3,26 @@ export enum LeaseStatus {
   DRAFT = 'draft',
   ACTIVE = 'active',
   EXPIRED = 'expired',
-  TERMINATED = 'terminated',
-  RENEWED = 'renewed'
-}
-
-// Payment frequency
-export enum PaymentFrequency {
-  MONTHLY = 'monthly',
-  QUARTERLY = 'quarterly',
-  HALF_YEARLY = 'half_yearly',
-  YEARLY = 'yearly'
+  TERMINATED = 'terminated'
 }
 
 export interface Lease {
-  id: number;
-  propertyId: number;
-  tenantId: number;
+  id: string; // UUID
+  propertyId: string; // UUID reference to properties
+  unitId: string; // UUID reference to units
+  primaryTenantId: string; // UUID reference to tenants
 
   // Lease terms
   startDate: Date;
   endDate: Date;
-  noticePeriodDays: number; // notice period in days
-  autoRenewal: boolean;
-
-  // Financial terms
   monthlyRent: number;
   securityDeposit: number;
-  maintenanceCharges?: number;
-  paymentFrequency: PaymentFrequency;
-  rentDueDay: number; // day of month when rent is due (1-31)
-
-  // Additional charges
-  electricityCharges?: 'tenant_responsible' | 'landlord_responsible' | 'included';
-  waterCharges?: 'tenant_responsible' | 'landlord_responsible' | 'included';
-  otherCharges?: {
-    name: string;
-    amount: number;
-    frequency: PaymentFrequency;
-  }[];
-
-  // Lease conditions
-  petsAllowed: boolean;
-  smokingAllowed: boolean;
-  sublettingAllowed: boolean;
-  specialConditions?: string;
-
-  // Status and tracking
   status: LeaseStatus;
+  leaseTerms?: string;
   signedAt?: Date;
-  terminatedAt?: Date;
-  terminationReason?: string;
 
-  // Document storage
-  leaseDocumentUrl?: string;
+  // Created by user
+  createdBy: string; // UUID reference to users
 
   // Metadata
   createdAt: Date;
@@ -63,37 +30,15 @@ export interface Lease {
 }
 
 export interface LeaseInput {
-  propertyId: number;
-  tenantId: number;
-
-  // Lease terms
+  propertyId: string;
+  unitId: string;
+  primaryTenantId: string;
   startDate: Date;
   endDate: Date;
-  noticePeriodDays?: number;
-  autoRenewal?: boolean;
-
-  // Financial terms
   monthlyRent: number;
   securityDeposit: number;
-  maintenanceCharges?: number;
-  paymentFrequency?: PaymentFrequency;
-  rentDueDay?: number;
-
-  // Additional charges
-  electricityCharges?: 'tenant_responsible' | 'landlord_responsible' | 'included';
-  waterCharges?: 'tenant_responsible' | 'landlord_responsible' | 'included';
-  otherCharges?: {
-    name: string;
-    amount: number;
-    frequency: PaymentFrequency;
-  }[];
-
-  // Lease conditions
-  petsAllowed?: boolean;
-  smokingAllowed?: boolean;
-  sublettingAllowed?: boolean;
-  specialConditions?: string;
-
-  // Document
-  leaseDocumentUrl?: string;
+  status?: LeaseStatus;
+  leaseTerms?: string;
+  signedAt?: Date;
+  createdBy: string;
 }

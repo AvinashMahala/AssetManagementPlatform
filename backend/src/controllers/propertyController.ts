@@ -21,8 +21,8 @@ export class PropertyController {
    *       - in: query
    *         name: ownerId
    *         schema:
-   *           type: integer
-   *         description: Filter properties by owner ID
+   *           type: string
+   *         description: Filter properties by owner ID (UUID)
    *     responses:
    *       200:
    *         description: List of properties
@@ -42,8 +42,7 @@ export class PropertyController {
 
       let properties;
       if (ownerId) {
-        const ownerIdNum = parseInt(ownerId as string, 10);
-        properties = await this.service.getPropertiesByOwner(ownerIdNum);
+        properties = await this.service.getPropertiesByOwner(ownerId as string);
       } else {
         properties = await this.service.getAllProperties();
       }
@@ -65,7 +64,7 @@ export class PropertyController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
+   *           type: string
    *     responses:
    *       200:
    *         description: Property details
@@ -79,7 +78,7 @@ export class PropertyController {
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const propertyId = parseInt(id, 10);
+      const propertyId = id;
 
       const property = await this.service.getPropertyById(propertyId);
       if (!property) {
@@ -139,7 +138,7 @@ export class PropertyController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
+   *           type: string
    *     requestBody:
    *       required: true
    *       content:
@@ -159,7 +158,7 @@ export class PropertyController {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const propertyId = parseInt(id, 10);
+      const propertyId = id;
       const propertyData: Partial<PropertyInput> = req.body;
 
       const property = await this.service.updateProperty(propertyId, propertyData);
@@ -190,7 +189,7 @@ export class PropertyController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
+   *           type: string
    *     responses:
    *       200:
    *         description: Property deleted
@@ -200,7 +199,7 @@ export class PropertyController {
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const propertyId = parseInt(id, 10);
+      const propertyId = id;
 
       const deleted = await this.service.deleteProperty(propertyId);
       if (!deleted) {
@@ -224,7 +223,7 @@ export class PropertyController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
+   *           type: string
    *     requestBody:
    *       required: true
    *       content:
@@ -244,7 +243,7 @@ export class PropertyController {
   async updateStatus(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const propertyId = parseInt(id, 10);
+      const propertyId = id;
       const { status } = req.body;
 
       if (!status) {

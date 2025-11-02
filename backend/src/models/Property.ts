@@ -20,7 +20,7 @@ export enum PropertyStatus {
 }
 
 export interface Property {
-  id: number;
+  id: string; // UUID
   name: string;
   description?: string;
   propertyType: PropertyType;
@@ -35,30 +35,19 @@ export interface Property {
     landmark?: string;
   };
 
-  // Property specifications
-  area: number; // in sq ft
-  bedrooms?: number;
-  bathrooms?: number;
-  balconies?: number;
-  floor?: number;
+  // Building specifications
+  totalArea: number; // in sq ft
   totalFloors?: number;
-
-  // Amenities and features
-  amenities: string[]; // ['parking', 'lift', 'security', 'gym', etc.]
-  furnished: boolean;
+  yearBuilt?: number;
   parkingSpaces?: number;
 
-  // Financial details
-  monthlyRent: number;
-  securityDeposit: number;
-  maintenanceCharges?: number;
+  // Building amenities and features
+  buildingAmenities: string[]; // ['parking', 'lift', 'security', 'gym', etc.]
+  buildingPhotos: string[]; // array of photo URLs
 
   // Ownership details
-  ownerId: number;
-  coOwners?: number[]; // array of user IDs
-
-  // Property photos
-  photos: string[]; // array of photo URLs
+  ownerId: string; // UUID reference to users table
+  coOwners?: string[]; // array of user UUIDs
 
   // Metadata
   createdAt: Date;
@@ -80,28 +69,17 @@ export interface PropertyInput {
     landmark?: string;
   };
 
-  // Property specifications
-  area: number;
-  bedrooms?: number;
-  bathrooms?: number;
-  balconies?: number;
-  floor?: number;
+  // Building specifications
+  totalArea: number;
   totalFloors?: number;
-
-  // Amenities and features
-  amenities?: string[];
-  furnished?: boolean;
+  yearBuilt?: number;
   parkingSpaces?: number;
 
-  // Financial details
-  monthlyRent: number;
-  securityDeposit: number;
-  maintenanceCharges?: number;
+  // Building amenities and features
+  buildingAmenities?: string[];
+  buildingPhotos?: string[];
 
   // Ownership details
-  ownerId: number;
-  coOwners?: number[];
-
-  // Property photos
-  photos?: string[];
+  ownerId: string;
+  coOwners?: string[];
 }

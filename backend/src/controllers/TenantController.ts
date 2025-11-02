@@ -61,8 +61,8 @@ export class TenantController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Tenant ID
+   *           type: string
+   *         description: Tenant ID (UUID)
    *     responses:
    *       200:
    *         description: Tenant retrieved successfully
@@ -85,7 +85,7 @@ export class TenantController {
   // GET /tenants/:id
   async getTenantById(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const tenant = await this.tenantService.getTenantById(id);
 
       if (!tenant) {
@@ -256,8 +256,8 @@ export class TenantController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Tenant ID
+   *           type: string
+   *         description: Tenant ID (UUID)
    *     requestBody:
    *       required: true
    *       content:
@@ -317,7 +317,7 @@ export class TenantController {
   // PUT /tenants/:id
   async updateTenant(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const tenantData: Partial<TenantInput> = req.body;
       const tenant = await this.tenantService.updateTenant(id, tenantData);
 
@@ -344,8 +344,8 @@ export class TenantController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Tenant ID
+   *           type: string
+   *         description: Tenant ID (UUID)
    *     responses:
    *       200:
    *         description: Tenant deleted successfully
@@ -363,7 +363,7 @@ export class TenantController {
   // DELETE /tenants/:id
   async deleteTenant(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const deleted = await this.tenantService.deleteTenant(id);
 
       if (!deleted) {
@@ -374,9 +374,7 @@ export class TenantController {
     } catch (error) {
       ResponseUtils.error(res, 'Failed to delete tenant');
     }
-  }
-
-  /**
+  }  /**
    * @swagger
    * /api/tenants/{id}/status:
    *   patch:
@@ -389,8 +387,8 @@ export class TenantController {
    *         name: id
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Tenant ID
+   *           type: string
+   *         description: Tenant ID (UUID)
    *     requestBody:
    *       required: true
    *       content:
@@ -423,7 +421,7 @@ export class TenantController {
   // PATCH /tenants/:id/status
   async updateTenantStatus(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const { status } = req.body;
 
       if (!status) {
@@ -457,8 +455,8 @@ export class TenantController {
    *         name: tenantId
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Tenant ID
+   *           type: string
+   *         description: Tenant ID (UUID)
    *     requestBody:
    *       required: true
    *       content:
@@ -522,7 +520,7 @@ export class TenantController {
   // POST /tenants/:tenantId/documents
   async addTenantDocument(req: Request, res: Response): Promise<void> {
     try {
-      const tenantId = parseInt(req.params.tenantId);
+      const tenantId = req.params.tenantId;
       const documentData: Omit<TenantDocument, 'id' | 'tenantId' | 'uploadedAt'> = req.body;
       const document = await this.tenantService.addTenantDocument(tenantId, documentData);
       ResponseUtils.created(res, document, 'Document added successfully');
@@ -544,8 +542,8 @@ export class TenantController {
    *         name: tenantId
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Tenant ID
+   *           type: string
+   *         description: Tenant ID (UUID)
    *     responses:
    *       200:
    *         description: Documents retrieved successfully
@@ -594,15 +592,13 @@ export class TenantController {
   // GET /tenants/:tenantId/documents
   async getTenantDocuments(req: Request, res: Response): Promise<void> {
     try {
-      const tenantId = parseInt(req.params.tenantId);
+      const tenantId = req.params.tenantId;
       const documents = await this.tenantService.getTenantDocuments(tenantId);
       ResponseUtils.success(res, documents, 'Documents retrieved successfully');
     } catch (error) {
       ResponseUtils.error(res, 'Failed to retrieve documents');
     }
-  }
-
-  /**
+  }  /**
    * @swagger
    * /api/tenants/documents/{documentId}:
    *   put:
@@ -615,8 +611,8 @@ export class TenantController {
    *         name: documentId
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Document ID
+   *           type: string
+   *         description: Document ID (UUID)
    *     requestBody:
    *       required: true
    *       content:
@@ -681,7 +677,7 @@ export class TenantController {
   // PUT /tenants/documents/:documentId
   async updateTenantDocument(req: Request, res: Response): Promise<void> {
     try {
-      const documentId = parseInt(req.params.documentId);
+      const documentId = req.params.documentId;
       const documentData: Partial<TenantDocument> = req.body;
       const document = await this.tenantService.updateTenantDocument(documentId, documentData);
 
@@ -708,8 +704,8 @@ export class TenantController {
    *         name: documentId
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Document ID
+   *           type: string
+   *         description: Document ID (UUID)
    *     responses:
    *       200:
    *         description: Document deleted successfully
@@ -727,7 +723,7 @@ export class TenantController {
   // DELETE /tenants/documents/:documentId
   async deleteTenantDocument(req: Request, res: Response): Promise<void> {
     try {
-      const documentId = parseInt(req.params.documentId);
+      const documentId = req.params.documentId;
       const deleted = await this.tenantService.deleteTenantDocument(documentId);
 
       if (!deleted) {
@@ -753,8 +749,8 @@ export class TenantController {
    *         name: documentId
    *         required: true
    *         schema:
-   *           type: integer
-   *         description: Document ID
+   *           type: string
+   *         description: Document ID (UUID)
    *     requestBody:
    *       required: true
    *       content:
@@ -765,8 +761,8 @@ export class TenantController {
    *               - verifiedBy
    *             properties:
    *               verifiedBy:
-   *                 type: integer
-   *                 description: User ID who is verifying the document
+   *                 type: string
+   *                 description: User ID who is verifying the document (UUID)
    *     responses:
    *       200:
    *         description: Document verified successfully
@@ -786,7 +782,7 @@ export class TenantController {
   // PATCH /tenants/documents/:documentId/verify
   async verifyTenantDocument(req: Request, res: Response): Promise<void> {
     try {
-      const documentId = parseInt(req.params.documentId);
+      const documentId = req.params.documentId;
       const { verifiedBy } = req.body;
 
       if (!verifiedBy) {

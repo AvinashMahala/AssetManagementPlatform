@@ -10,21 +10,33 @@ import swaggerUi from 'swagger-ui-express';
 import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
 import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
 import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
+import { IUnitRepository } from './src/interfaces/repositories/IUnitRepository.js';
+import { IUnitTenantRepository } from './src/interfaces/repositories/IUnitTenantRepository.js';
 import { IPropertyService } from './src/interfaces/services/IPropertyService.js';
 import { IUserService } from './src/interfaces/services/IUserService.js';
 import { ITenantService } from './src/interfaces/services/ITenantService.js';
+import { IUnitService } from './src/interfaces/services/IUnitService.js';
+import { IUnitTenantService } from './src/interfaces/services/IUnitTenantService.js';
 import { PropertyRepository } from './src/repositories/PropertyRepository.js';
 import { UserRepository } from './src/repositories/UserRepository.js';
 import { TenantRepository } from './src/repositories/TenantRepository.js';
+import { UnitRepository } from './src/repositories/UnitRepository.js';
+import { UnitTenantRepository } from './src/repositories/UnitTenantRepository.js';
 import { PropertyService } from './src/services/PropertyService.js';
 import { UserService } from './src/services/UserService.js';
 import { TenantService } from './src/services/TenantService.js';
+import { UnitService } from './src/services/UnitService.js';
+import { UnitTenantService } from './src/services/UnitTenantService.js';
 import { PropertyController } from './src/controllers/propertyController.js';
 import { UserController } from './src/controllers/userController.js';
 import { TenantController } from './src/controllers/TenantController.js';
+import { UnitController } from './src/controllers/UnitController.js';
+import { UnitTenantController } from './src/controllers/UnitTenantController.js';
 import { createPropertyRoutes } from './src/routes/propertyRoutes.js';
 import { createAuthRoutes } from './src/routes/authRoutes.js';
 import { createTenantRoutes } from './src/routes/tenantRoutes.js';
+import { createUnitRoutes } from './src/routes/unitRoutes.js';
+import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
 import { DependencyContainer } from './src/utils/DependencyContainer.js';
 
 console.log('Environment variables loaded:');
@@ -43,12 +55,16 @@ const container = DependencyContainer.initialize(pool);
 const propertyService = container.propertyService;
 const userService = container.userService;
 const tenantService = container.tenantService;
+const unitService = container.unitService;
+const unitTenantService = container.unitTenantService;
 const passwordResetService = container.passwordResetService;
 
 // Create controllers with injected services
 const propertyController = new PropertyController(propertyService);
 const userController = new UserController(userService, passwordResetService);
 const tenantController = new TenantController(tenantService);
+const unitController = new UnitController(unitService);
+const unitTenantController = new UnitTenantController(unitTenantService);
 
 const options = {
   definition: {
@@ -77,8 +93,16 @@ const options = {
         description: 'Property portfolio management endpoints',
       },
       {
+        name: 'Units',
+        description: 'Unit management and tenant assignment endpoints',
+      },
+      {
         name: 'Tenants',
         description: 'Tenant profile and management endpoints',
+      },
+      {
+        name: 'Unit Tenants',
+        description: 'Unit tenant management endpoints',
       },
       {
         name: 'Leases',
@@ -1205,6 +1229,297 @@ const options = {
             },
           },
         },
+        Unit: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Unit ID (UUID)',
+            },
+            propertyId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Property ID (UUID)',
+            },
+            unitNumber: {
+              type: 'string',
+              description: 'Unit number',
+            },
+            unitName: {
+              type: 'string',
+              description: 'Unit name',
+            },
+            description: {
+              type: 'string',
+              description: 'Unit description',
+            },
+            unitType: {
+              type: 'string',
+              enum: ['apartment', 'room', 'studio', 'penthouse', 'duplex', 'triplex'],
+              description: 'Type of unit',
+            },
+            status: {
+              type: 'string',
+              enum: ['available', 'occupied', 'under_maintenance', 'vacant'],
+              description: 'Unit status',
+            },
+            floor: {
+              type: 'integer',
+              description: 'Floor number',
+            },
+            area: {
+              type: 'number',
+              description: 'Area in sq ft',
+            },
+            bedrooms: {
+              type: 'integer',
+              description: 'Number of bedrooms',
+            },
+            bathrooms: {
+              type: 'integer',
+              description: 'Number of bathrooms',
+            },
+            balconies: {
+              type: 'integer',
+              description: 'Number of balconies',
+            },
+            furnished: {
+              type: 'boolean',
+              description: 'Whether unit is furnished',
+            },
+            maxOccupants: {
+              type: 'integer',
+              description: 'Maximum number of occupants',
+            },
+            unitAmenities: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of unit amenities',
+            },
+            unitPhotos: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of unit photo URLs',
+            },
+            monthlyRent: {
+              type: 'number',
+              description: 'Monthly rent amount',
+            },
+            securityDeposit: {
+              type: 'number',
+              description: 'Security deposit amount',
+            },
+            maintenanceCharges: {
+              type: 'number',
+              description: 'Monthly maintenance charges',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
+            },
+          },
+        },
+        UnitInput: {
+          type: 'object',
+          required: ['propertyId', 'unitNumber', 'unitType', 'area', 'monthlyRent', 'securityDeposit'],
+          properties: {
+            propertyId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Property ID (UUID)',
+            },
+            unitNumber: {
+              type: 'string',
+              description: 'Unit number',
+            },
+            unitName: {
+              type: 'string',
+              description: 'Unit name',
+            },
+            description: {
+              type: 'string',
+              description: 'Unit description',
+            },
+            unitType: {
+              type: 'string',
+              enum: ['apartment', 'room', 'studio', 'penthouse', 'duplex', 'triplex'],
+              description: 'Type of unit',
+            },
+            status: {
+              type: 'string',
+              enum: ['available', 'occupied', 'under_maintenance', 'vacant'],
+              default: 'available',
+              description: 'Unit status',
+            },
+            floor: {
+              type: 'integer',
+              description: 'Floor number',
+            },
+            area: {
+              type: 'number',
+              description: 'Area in sq ft',
+            },
+            bedrooms: {
+              type: 'integer',
+              description: 'Number of bedrooms',
+            },
+            bathrooms: {
+              type: 'integer',
+              description: 'Number of bathrooms',
+            },
+            balconies: {
+              type: 'integer',
+              description: 'Number of balconies',
+            },
+            furnished: {
+              type: 'boolean',
+              description: 'Whether unit is furnished',
+            },
+            maxOccupants: {
+              type: 'integer',
+              description: 'Maximum number of occupants',
+            },
+            unitAmenities: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of unit amenities',
+            },
+            unitPhotos: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of unit photo URLs',
+            },
+            monthlyRent: {
+              type: 'number',
+              description: 'Monthly rent amount',
+            },
+            securityDeposit: {
+              type: 'number',
+              description: 'Security deposit amount',
+            },
+            maintenanceCharges: {
+              type: 'number',
+              description: 'Monthly maintenance charges',
+            },
+          },
+        },
+        UnitTenant: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Assignment ID (UUID)',
+            },
+            unitId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Unit ID (UUID)',
+            },
+            tenantId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Tenant ID (UUID)',
+            },
+            isPrimaryTenant: {
+              type: 'boolean',
+              description: 'Whether this is the primary tenant',
+            },
+            moveInDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Move-in date',
+            },
+            moveOutDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Move-out date',
+            },
+            monthlyRentShare: {
+              type: 'number',
+              description: 'Monthly rent share amount',
+            },
+            securityDepositShare: {
+              type: 'number',
+              description: 'Security deposit share amount',
+            },
+            status: {
+              type: 'string',
+              enum: ['active', 'inactive', 'evicted'],
+              description: 'Assignment status',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
+            },
+          },
+        },
+        UnitTenantInput: {
+          type: 'object',
+          required: ['unitId', 'tenantId', 'monthlyRentShare', 'securityDepositShare'],
+          properties: {
+            unitId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Unit ID (UUID)',
+            },
+            tenantId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Tenant ID (UUID)',
+            },
+            isPrimaryTenant: {
+              type: 'boolean',
+              default: false,
+              description: 'Whether this is the primary tenant',
+            },
+            moveInDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Move-in date',
+            },
+            moveOutDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Move-out date',
+            },
+            monthlyRentShare: {
+              type: 'number',
+              description: 'Monthly rent share amount',
+            },
+            securityDepositShare: {
+              type: 'number',
+              description: 'Security deposit share amount',
+            },
+            status: {
+              type: 'string',
+              enum: ['active', 'inactive', 'evicted'],
+              default: 'active',
+              description: 'Assignment status',
+            },
+          },
+        },
         Error: {
           type: 'object',
           properties: {
@@ -1442,6 +1757,8 @@ app.get('/', (req, res) => {
 app.use('/api/properties', createPropertyRoutes(propertyController));
 app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
 app.use('/api/tenants', createTenantRoutes(tenantController));
+app.use('/api', createUnitRoutes(unitController));
+app.use('/api', createUnitTenantRoutes(unitTenantController));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

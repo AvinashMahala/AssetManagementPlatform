@@ -3,7 +3,6 @@ export enum PaymentStatus {
   PENDING = 'pending',
   PAID = 'paid',
   OVERDUE = 'overdue',
-  PARTIAL = 'partial',
   CANCELLED = 'cancelled'
 }
 
@@ -20,10 +19,9 @@ export enum PaymentMethod {
 }
 
 export interface RentPayment {
-  id: number;
-  leaseId: number;
-  propertyId: number;
-  tenantId: number;
+  id: string; // UUID
+  leaseId: string; // UUID reference to leases
+  tenantId: string; // UUID reference to tenants
 
   // Payment details
   amount: number;
@@ -34,26 +32,12 @@ export interface RentPayment {
   // Payment method and reference
   paymentMethod?: PaymentMethod;
   transactionId?: string;
-  paymentReference?: string;
-
-  // Late fees and penalties
-  lateFee?: number;
-  penaltyAmount?: number;
-
-  // Breakdown
-  rentAmount: number;
-  maintenanceCharges?: number;
-  otherCharges?: {
-    name: string;
-    amount: number;
-  }[];
 
   // Notes and comments
   notes?: string;
 
   // Tracking
-  createdBy: number; // user ID who created the payment record
-  updatedBy?: number; // user ID who last updated
+  createdBy: string; // UUID reference to users
 
   // Metadata
   createdAt: Date;
@@ -61,36 +45,14 @@ export interface RentPayment {
 }
 
 export interface RentPaymentInput {
-  leaseId: number;
-  propertyId: number;
-  tenantId: number;
-
-  // Payment details
+  leaseId: string;
+  tenantId: string;
   amount: number;
   dueDate: Date;
   paidDate?: Date;
   status?: PaymentStatus;
-
-  // Payment method and reference
   paymentMethod?: PaymentMethod;
   transactionId?: string;
-  paymentReference?: string;
-
-  // Late fees and penalties
-  lateFee?: number;
-  penaltyAmount?: number;
-
-  // Breakdown
-  rentAmount: number;
-  maintenanceCharges?: number;
-  otherCharges?: {
-    name: string;
-    amount: number;
-  }[];
-
-  // Notes
   notes?: string;
-
-  // Tracking
-  createdBy: number;
+  createdBy: string;
 }

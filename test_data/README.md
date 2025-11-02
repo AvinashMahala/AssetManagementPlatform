@@ -1,6 +1,6 @@
 # Test Data Instructions
 
-This folder contains the Excel file used for database seeding. The `test_data.xlsx` file provides sample data for testing the Asset Management Platform.
+This folder contains the Excel file used for database seeding. The `test_data.xlsx` file provides sample data for testing the Asset Management Platform with the new **Property → Units → Tenants** architecture.
 
 ## Excel File Structure
 
@@ -16,27 +16,44 @@ Contains user accounts for testing. Columns:
 - `is_email_verified` - 'true'/'false'
 - `is_phone_verified` - 'true'/'false'
 
-### properties Sheet
-Contains property listings. Columns:
-- `name` - Property name
-- `description` - Property description
-- `property_type` - 'apartment', 'house', etc.
-- `status` - 'available', 'rented', etc.
-- `address_street` - Street address
-- `address_city` - City
-- `address_state` - State
-- `address_pincode` - Postal code
-- `area` - Area in sq ft
+### properties Sheet (Buildings)
+Contains building/property information. **Note:** Properties are containers for units and don't have individual pricing. Columns:
+- `name` - Property/building name
+- `description` - Building description
+- `property_type` - 'apartment', 'villa', 'office', etc.
+- `status` - 'active', 'inactive', etc.
+- `address_*` - Complete address fields
+- `total_area` - Total building area in sq ft
+- `total_floors` - Number of floors in building
+- `year_built` - Construction year
+- `parking_spaces` - Total parking spaces
+- `owner_username` - References users.username
+- `building_amenities` - JSON array of shared amenities
+- `building_photos` - JSON array of building exterior photos
+
+### units Sheet (Rentable Units)
+Contains individual rentable units within properties. **This is where pricing lives.** Columns:
+- `property_name` - References properties.name
+- `unit_number` - Unit identifier (e.g., "101", "Villa-A")
+- `unit_name` - Full unit name (auto-generated as "Property - Unit X")
+- `description` - Unit description
+- `unit_type` - 'apartment', 'villa', 'room', 'office', etc.
+- `status` - 'available', 'occupied', 'maintenance'
+- `floor` - Floor number (0 for ground floor)
+- `area` - Unit area in sq ft
 - `bedrooms` - Number of bedrooms
 - `bathrooms` - Number of bathrooms
+- `balconies` - Number of balconies
+- `furnished` - 'true'/'false'
 - `monthly_rent` - Monthly rent amount
 - `security_deposit` - Security deposit
-- `owner_username` - References users.username
-- `amenities` - JSON array like: ["wifi", "parking"]
-- `photos` - JSON array like: ["photo1.jpg", "photo2.jpg"]
+- `maintenance_charges` - Monthly maintenance
+- `unit_amenities` - JSON array of unit-specific amenities
+- `unit_photos` - JSON array of unit interior photos
+- `max_occupants` - Maximum number of occupants (for shared housing)
 
 ### tenants Sheet
-Contains tenant information. Columns:
+Contains tenant profiles. **Note:** Tenants are linked to units via unit_tenants table. Columns:
 - `first_name` - First name
 - `last_name` - Last name
 - `email` - Unique email
@@ -47,47 +64,66 @@ Contains tenant information. Columns:
 - `occupation` - Job title
 - `monthly_income` - Monthly income
 - `current_address_*` - Current address fields
+- `permanent_address_*` - Permanent address fields
 - `emergency_contact_*` - Emergency contact details
 - `status` - 'active', 'inactive', etc.
-- `current_property_name` - References properties.name (optional)
 
-### leases Sheet
-Contains lease agreements. Columns:
+### unit_tenants Sheet (Tenant-Unit Assignments)
+Links tenants to specific units. Supports shared housing (multiple tenants per unit). Columns:
 - `property_name` - References properties.name
+- `unit_number` - References units.unit_number
 - `tenant_email` - References tenants.email
+- `is_primary_tenant` - 'true'/'false' (main lease holder)
+- `move_in_date` - YYYY-MM-DD format
+- `move_out_date` - YYYY-MM-DD format (optional)
+- `monthly_rent_share` - Tenant's share of rent
+- `security_deposit_share` - Tenant's share of deposit
+- `status` - 'active', 'moved_out', etc.
+
+### leases Sheet (Property-Unit-Tenant Agreements)
+Contains lease agreements linking properties, units, and primary tenants. Columns:
+- `property_name` - References properties.name
+- `unit_number` - References units.unit_number
+- `primary_tenant_email` - References tenants.email (main lease holder)
 - `start_date` - YYYY-MM-DD format
 - `end_date` - YYYY-MM-DD format
-- `monthly_rent` - Monthly rent amount
-- `security_deposit` - Security deposit
-- `status` - 'active', 'expired', etc.
+- `monthly_rent` - Total monthly rent
+- `security_deposit` - Total security deposit
+- `status` - 'active', 'expired', 'terminated'
+- `lease_terms` - Additional terms and conditions
+- `signed_at` - YYYY-MM-DD format
+- `created_by_username` - References users.username
 
 ### rent_payments Sheet
-Contains payment records. Columns:
+Contains payment records. Can track payments by specific tenants in shared housing. Columns:
 - `property_name` - References properties.name
-- `tenant_email` - References tenants.email
+- `unit_number` - References units.unit_number
+- `primary_tenant_email` - References leases.primary_tenant_email
+- `tenant_email` - References tenants.email (who made the payment)
 - `amount` - Payment amount
 - `due_date` - YYYY-MM-DD format
 - `paid_date` - YYYY-MM-DD format (optional)
-- `status` - 'paid', 'pending', 'overdue'
-- `payment_method` - 'check', 'cash', 'online'
+- `status` - 'paid', 'pending', 'overdue', 'partial'
+- `payment_method` - 'online', 'check', 'cash', etc.
 - `notes` - Payment notes (optional)
 - `created_by_username` - References users.username
 
-## Data Rules
+## Data Relationships
 
-### Required Fields
-- All ID fields and foreign keys must reference existing records
-- Dates must be in YYYY-MM-DD format
-- JSON arrays should be valid JSON format
+### Property → Units
+- One property can have multiple units
+- Units inherit building address but have individual attributes
+- Properties don't have pricing (units do)
 
-### Optional Fields
-- Fields marked as (optional) can be left blank
-- Empty cells will be treated as NULL in the database
+### Units → Tenants (via unit_tenants)
+- One unit can have multiple tenants (shared housing)
+- Each tenant-unit relationship has move-in/out dates
+- Rent/deposit can be shared among tenants
 
-### Data Types
-- Numbers: Use plain numbers (no currency symbols)
-- Booleans: Use 'true'/'false' or '1'/'0'
-- JSON: Use valid JSON array syntax
+### Leases → Payments
+- Leases link property + unit + primary tenant
+- Payments can be made by any tenant assigned to the unit
+- Supports tracking individual tenant payments in shared housing
 
 ## Usage
 
@@ -102,21 +138,28 @@ Contains payment records. Columns:
 
 The current file contains sample data for:
 - 4 users (including admin)
-- 3 properties
+- 3 properties (buildings)
+- 6 units across the properties
 - 3 tenants
-- Empty leases and payments sheets (ready for your data)
+- 2 unit-tenant assignments
+- 2 active leases
+- 2 payment records
 
 ## Adding New Data
 
-1. Open `test_data.xlsx` in Excel or Google Sheets
-2. Add rows to the appropriate sheets
-3. Ensure foreign key references are valid
-4. Save and run the seeding script
+1. **Add properties first** (buildings)
+2. **Add units** for each property
+3. **Add tenants** (profiles only)
+4. **Assign tenants to units** via unit_tenants sheet
+5. **Create leases** for occupied units
+6. **Add payment records** as needed
 
 ## Notes
 
+- Unit names are auto-generated as "Property Name - Unit Number"
+- Foreign key relationships are resolved automatically during seeding
 - Passwords are automatically hashed during seeding
-- UUID primary keys are generated automatically
-- Foreign key relationships are resolved automatically
+- JSON arrays should use valid JSON syntax
+- Dates must be in YYYY-MM-DD format
 - The script will show test credentials after seeding</content>
 <parameter name="filePath">/Users/avinashmahala/Desktop/githubRepos/AssetManagementPlatform/test_data/README.md

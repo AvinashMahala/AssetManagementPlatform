@@ -204,34 +204,53 @@ def create_schema(connection):
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- Create properties table
+    -- Create properties table (buildings/containers)
     CREATE TABLE properties (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       name VARCHAR(255) NOT NULL,
       description TEXT,
-      property_type VARCHAR(50) NOT NULL,
-      status VARCHAR(50) DEFAULT 'available',
+      property_type VARCHAR(50) NOT NULL, -- apartment, house, villa, etc.
+      status VARCHAR(50) DEFAULT 'active',
       address_street VARCHAR(255) NOT NULL,
       address_city VARCHAR(100) NOT NULL,
       address_state VARCHAR(100) NOT NULL,
       address_pincode VARCHAR(10) NOT NULL,
       address_landmark VARCHAR(255),
-      area DECIMAL(10,2) NOT NULL,
+      total_area DECIMAL(10,2), -- total building area
+      total_floors INTEGER,
+      year_built INTEGER,
+      parking_spaces INTEGER,
+      owner_id UUID NOT NULL REFERENCES users(id),
+      building_amenities JSONB DEFAULT '[]'::jsonb, -- shared amenities
+      building_photos JSONB DEFAULT '[]'::jsonb, -- building exterior photos
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create units table (rentable units within properties)
+    CREATE TABLE units (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+      unit_number VARCHAR(50) NOT NULL, -- e.g., "101", "A-201", "Ground Floor"
+      unit_name VARCHAR(255), -- e.g., "Modern 2BHK Apartment - Unit 101"
+      description TEXT,
+      unit_type VARCHAR(50) NOT NULL, -- apartment, room, studio, etc.
+      status VARCHAR(50) DEFAULT 'available', -- available, occupied, maintenance
+      floor INTEGER,
+      area DECIMAL(10,2) NOT NULL, -- unit area in sq ft
       bedrooms INTEGER,
       bathrooms INTEGER,
       balconies INTEGER,
-      floor INTEGER,
-      total_floors INTEGER,
-      furnished BOOLEAN,
-      parking_spaces INTEGER,
+      furnished BOOLEAN DEFAULT FALSE,
       monthly_rent DECIMAL(12,2) NOT NULL,
       security_deposit DECIMAL(12,2) NOT NULL,
       maintenance_charges DECIMAL(10,2),
-      owner_id UUID NOT NULL REFERENCES users(id),
-      amenities JSONB DEFAULT '[]'::jsonb,
-      photos JSONB DEFAULT '[]'::jsonb,
+      unit_amenities JSONB DEFAULT '[]'::jsonb, -- unit-specific amenities
+      unit_photos JSONB DEFAULT '[]'::jsonb, -- unit interior photos
+      max_occupants INTEGER DEFAULT 1, -- for shared housing
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(property_id, unit_number) -- unique unit numbers within property
     );
 
     -- Create tenants table
@@ -260,9 +279,24 @@ def create_schema(connection):
       emergency_contact_phone VARCHAR(20),
       status VARCHAR(50) DEFAULT 'active',
       total_rentals INTEGER DEFAULT 0,
-      current_property_id UUID REFERENCES properties(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create unit_tenants table (for shared housing support)
+    CREATE TABLE unit_tenants (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      unit_id UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+      tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+      is_primary_tenant BOOLEAN DEFAULT FALSE, -- main lease holder
+      move_in_date DATE,
+      move_out_date DATE,
+      monthly_rent_share DECIMAL(12,2), -- tenant's share of rent
+      security_deposit_share DECIMAL(12,2), -- tenant's share of deposit
+      status VARCHAR(50) DEFAULT 'active', -- active, moved_out, evicted
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(unit_id, tenant_id) -- prevent duplicate assignments
     );
 
     -- Create tenant_documents table
@@ -277,17 +311,20 @@ def create_schema(connection):
       uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- Create leases table
+    -- Create leases table (property-unit-tenant agreements)
     CREATE TABLE leases (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       property_id UUID NOT NULL REFERENCES properties(id),
-      tenant_id UUID NOT NULL REFERENCES tenants(id),
+      unit_id UUID NOT NULL REFERENCES units(id),
+      primary_tenant_id UUID NOT NULL REFERENCES tenants(id), -- main lease holder
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
       monthly_rent DECIMAL(12,2) NOT NULL,
       security_deposit DECIMAL(12,2) NOT NULL,
-      status VARCHAR(50) DEFAULT 'active',
+      status VARCHAR(50) DEFAULT 'active', -- active, expired, terminated
+      lease_terms TEXT, -- additional terms and conditions
       signed_at TIMESTAMP,
+      created_by UUID NOT NULL REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -296,10 +333,11 @@ def create_schema(connection):
     CREATE TABLE rent_payments (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       lease_id UUID NOT NULL REFERENCES leases(id),
+      tenant_id UUID NOT NULL REFERENCES tenants(id), -- which tenant paid
       amount DECIMAL(12,2) NOT NULL,
       due_date DATE NOT NULL,
       paid_date DATE,
-      status VARCHAR(50) DEFAULT 'pending',
+      status VARCHAR(50) DEFAULT 'pending', -- pending, paid, overdue, partial
       payment_method VARCHAR(50),
       notes TEXT,
       created_by UUID NOT NULL REFERENCES users(id),
@@ -307,11 +345,20 @@ def create_schema(connection):
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- Create indexes
+    -- Create indexes for performance
     CREATE INDEX idx_users_email ON users(email);
     CREATE INDEX idx_users_username ON users(username);
-    CREATE INDEX idx_tenants_email ON tenants(email);
     CREATE INDEX idx_properties_owner_id ON properties(owner_id);
+    CREATE INDEX idx_units_property_id ON units(property_id);
+    CREATE INDEX idx_units_status ON units(status);
+    CREATE INDEX idx_tenants_email ON tenants(email);
+    CREATE INDEX idx_unit_tenants_unit_id ON unit_tenants(unit_id);
+    CREATE INDEX idx_unit_tenants_tenant_id ON unit_tenants(tenant_id);
+    CREATE INDEX idx_leases_property_id ON leases(property_id);
+    CREATE INDEX idx_leases_unit_id ON leases(unit_id);
+    CREATE INDEX idx_leases_primary_tenant_id ON leases(primary_tenant_id);
+    CREATE INDEX idx_rent_payments_lease_id ON rent_payments(lease_id);
+    CREATE INDEX idx_rent_payments_tenant_id ON rent_payments(tenant_id);
     """
 
     try:
@@ -405,7 +452,7 @@ def seed_users(connection, df):
     print_success(f"Seeded {len(df)} users")
 
 def seed_properties(connection, df):
-    """Seed properties table"""
+    """Seed properties table (buildings)"""
     print_step("Seeding properties...")
 
     for _, row in df.iterrows():
@@ -413,24 +460,25 @@ def seed_properties(connection, df):
             'name': row.get('name', '').strip(),
             'description': row.get('description'),
             'property_type': row.get('property_type', 'apartment'),
-            'status': row.get('status', 'available'),
+            'status': row.get('status', 'active'),
             'address_street': row.get('address_street'),
             'address_city': row.get('address_city'),
             'address_state': row.get('address_state'),
             'address_pincode': row.get('address_pincode'),
-            'area': convert_value(row.get('area'), 'decimal'),
-            'bedrooms': convert_value(row.get('bedrooms'), 'integer'),
-            'bathrooms': convert_value(row.get('bathrooms'), 'integer'),
-            'monthly_rent': convert_value(row.get('monthly_rent'), 'decimal'),
-            'security_deposit': convert_value(row.get('security_deposit'), 'decimal'),
+            'address_landmark': row.get('address_landmark'),
+            'total_area': convert_value(row.get('total_area'), 'decimal'),
+            'total_floors': convert_value(row.get('total_floors'), 'integer'),
+            'year_built': convert_value(row.get('year_built'), 'integer'),
+            'parking_spaces': convert_value(row.get('parking_spaces'), 'integer'),
             'owner_id': get_user_id_by_username(connection, row.get('owner_username')),
-            'amenities': convert_value(row.get('amenities'), 'jsonb'),
-            'photos': convert_value(row.get('photos'), 'jsonb')
+            'building_amenities': convert_value(row.get('building_amenities'), 'jsonb'),
+            'building_photos': convert_value(row.get('building_photos'), 'jsonb')
         }
 
         columns = ['name', 'description', 'property_type', 'status', 'address_street',
-                  'address_city', 'address_state', 'address_pincode', 'area', 'bedrooms',
-                  'bathrooms', 'monthly_rent', 'security_deposit', 'owner_id', 'amenities', 'photos']
+                  'address_city', 'address_state', 'address_pincode', 'address_landmark',
+                  'total_area', 'total_floors', 'year_built', 'parking_spaces', 'owner_id',
+                  'building_amenities', 'building_photos']
         values = [prop_data[col] for col in columns]
 
         sql = f"""
@@ -441,6 +489,46 @@ def seed_properties(connection, df):
         execute_sql(connection, sql, values)
 
     print_success(f"Seeded {len(df)} properties")
+
+def seed_units(connection, df):
+    """Seed units table"""
+    print_step("Seeding units...")
+
+    for _, row in df.iterrows():
+        unit_data = {
+            'property_id': get_property_id_by_name(connection, row.get('property_name')),
+            'unit_number': row.get('unit_number', '').strip(),
+            'unit_name': row.get('unit_name'),
+            'description': row.get('description'),
+            'unit_type': row.get('unit_type', 'apartment'),
+            'status': row.get('status', 'available'),
+            'floor': convert_value(row.get('floor'), 'integer'),
+            'area': convert_value(row.get('area'), 'decimal'),
+            'bedrooms': convert_value(row.get('bedrooms'), 'integer'),
+            'bathrooms': convert_value(row.get('bathrooms'), 'integer'),
+            'balconies': convert_value(row.get('balconies'), 'integer'),
+            'furnished': convert_value(row.get('furnished'), 'boolean'),
+            'monthly_rent': convert_value(row.get('monthly_rent'), 'decimal'),
+            'security_deposit': convert_value(row.get('security_deposit'), 'decimal'),
+            'maintenance_charges': convert_value(row.get('maintenance_charges'), 'decimal'),
+            'unit_amenities': convert_value(row.get('unit_amenities'), 'jsonb'),
+            'unit_photos': convert_value(row.get('unit_photos'), 'jsonb'),
+            'max_occupants': convert_value(row.get('max_occupants'), 'integer')
+        }
+
+        columns = ['property_id', 'unit_number', 'unit_name', 'description', 'unit_type', 'status',
+                  'floor', 'area', 'bedrooms', 'bathrooms', 'balconies', 'furnished', 'monthly_rent',
+                  'security_deposit', 'maintenance_charges', 'unit_amenities', 'unit_photos', 'max_occupants']
+        values = [unit_data[col] for col in columns]
+
+        sql = f"""
+        INSERT INTO units ({', '.join(columns)})
+        VALUES ({', '.join(['%s'] * len(columns))})
+        """
+
+        execute_sql(connection, sql, values)
+
+    print_success(f"Seeded {len(df)} units")
 
 def seed_tenants(connection, df):
     """Seed tenants table"""
@@ -464,14 +552,13 @@ def seed_tenants(connection, df):
             'emergency_contact_name': row.get('emergency_contact_name'),
             'emergency_contact_relationship': row.get('emergency_contact_relationship'),
             'emergency_contact_phone': row.get('emergency_contact_phone'),
-            'status': row.get('status', 'active'),
-            'current_property_id': get_property_id_by_name(connection, row.get('current_property_name'))
+            'status': row.get('status', 'active')
         }
 
         columns = ['first_name', 'last_name', 'email', 'phone', 'alternate_phone', 'date_of_birth',
                   'gender', 'occupation', 'monthly_income', 'current_address_street', 'current_address_city',
                   'current_address_state', 'current_address_pincode', 'emergency_contact_name',
-                  'emergency_contact_relationship', 'emergency_contact_phone', 'status', 'current_property_id']
+                  'emergency_contact_relationship', 'emergency_contact_phone', 'status']
         values = [tenant_data[col] for col in columns]
 
         sql = f"""
@@ -482,6 +569,35 @@ def seed_tenants(connection, df):
         execute_sql(connection, sql, values)
 
     print_success(f"Seeded {len(df)} tenants")
+
+def seed_unit_tenants(connection, df):
+    """Seed unit_tenants table (tenant-unit assignments)"""
+    print_step("Seeding unit-tenant assignments...")
+
+    for _, row in df.iterrows():
+        unit_tenant_data = {
+            'unit_id': get_unit_id(connection, row.get('property_name'), row.get('unit_number')),
+            'tenant_id': get_tenant_id_by_email(connection, row.get('tenant_email')),
+            'is_primary_tenant': convert_value(row.get('is_primary_tenant'), 'boolean'),
+            'move_in_date': convert_value(row.get('move_in_date'), 'date'),
+            'move_out_date': convert_value(row.get('move_out_date'), 'date'),
+            'monthly_rent_share': convert_value(row.get('monthly_rent_share'), 'decimal'),
+            'security_deposit_share': convert_value(row.get('security_deposit_share'), 'decimal'),
+            'status': row.get('status', 'active')
+        }
+
+        columns = ['unit_id', 'tenant_id', 'is_primary_tenant', 'move_in_date', 'move_out_date',
+                  'monthly_rent_share', 'security_deposit_share', 'status']
+        values = [unit_tenant_data[col] for col in columns]
+
+        sql = f"""
+        INSERT INTO unit_tenants ({', '.join(columns)})
+        VALUES ({', '.join(['%s'] * len(columns))})
+        """
+
+        execute_sql(connection, sql, values)
+
+    print_success(f"Seeded {len(df)} unit-tenant assignments")
 
 def get_user_id_by_username(connection, username):
     """Get user ID by username"""
@@ -527,6 +643,32 @@ def get_property_id_by_name(connection, name):
             result = cursor.fetchone()
             return result[0] if result else None
 
+def get_unit_id(connection, property_name, unit_number):
+    """Get unit ID by property name and unit number"""
+    if not property_name or not unit_number:
+        return None
+
+    property_id = get_property_id_by_name(connection, property_name)
+    if not property_id:
+        return None
+
+    sql = "SELECT id FROM units WHERE property_id = %s AND unit_number = %s"
+    if 'docker_container' in connection:
+        container = connection['docker_container']
+        cmd = ['docker', 'exec', container, 'psql', '-U', DB_CONFIG['user'], '-d', DB_CONFIG['database'],
+               '-t', '-c', f"SELECT id FROM units WHERE property_id = '{property_id}' AND unit_number = '{unit_number}'"]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return result.stdout.strip()
+        except:
+            return None
+    else:
+        conn = connection['direct']
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (property_id, unit_number))
+            result = cursor.fetchone()
+            return result[0] if result else None
+
 def seed_leases(connection, df):
     """Seed leases table"""
     print_step("Seeding leases...")
@@ -534,15 +676,20 @@ def seed_leases(connection, df):
     for _, row in df.iterrows():
         lease_data = {
             'property_id': get_property_id_by_name(connection, row.get('property_name')),
-            'tenant_id': get_tenant_id_by_email(connection, row.get('tenant_email')),
+            'unit_id': get_unit_id(connection, row.get('property_name'), row.get('unit_number')),
+            'primary_tenant_id': get_tenant_id_by_email(connection, row.get('primary_tenant_email')),
             'start_date': convert_value(row.get('start_date'), 'date'),
             'end_date': convert_value(row.get('end_date'), 'date'),
             'monthly_rent': convert_value(row.get('monthly_rent'), 'decimal'),
             'security_deposit': convert_value(row.get('security_deposit'), 'decimal'),
-            'status': row.get('status', 'active')
+            'status': row.get('status', 'active'),
+            'lease_terms': row.get('lease_terms'),
+            'signed_at': convert_value(row.get('signed_at'), 'date'),
+            'created_by': get_user_id_by_username(connection, row.get('created_by_username'))
         }
 
-        columns = ['property_id', 'tenant_id', 'start_date', 'end_date', 'monthly_rent', 'security_deposit', 'status']
+        columns = ['property_id', 'unit_id', 'primary_tenant_id', 'start_date', 'end_date',
+                  'monthly_rent', 'security_deposit', 'status', 'lease_terms', 'signed_at', 'created_by']
         values = [lease_data[col] for col in columns]
 
         sql = f"""
@@ -582,7 +729,8 @@ def seed_payments(connection, df):
 
     for _, row in df.iterrows():
         payment_data = {
-            'lease_id': get_lease_id(connection, row.get('property_name'), row.get('tenant_email')),
+            'lease_id': get_lease_id(connection, row.get('property_name'), row.get('unit_number'), row.get('primary_tenant_email')),
+            'tenant_id': get_tenant_id_by_email(connection, row.get('tenant_email')),
             'amount': convert_value(row.get('amount'), 'decimal'),
             'due_date': convert_value(row.get('due_date'), 'date'),
             'paid_date': convert_value(row.get('paid_date'), 'date'),
@@ -592,7 +740,8 @@ def seed_payments(connection, df):
             'created_by': get_user_id_by_username(connection, row.get('created_by_username'))
         }
 
-        columns = ['lease_id', 'amount', 'due_date', 'paid_date', 'status', 'payment_method', 'notes', 'created_by']
+        columns = ['lease_id', 'tenant_id', 'amount', 'due_date', 'paid_date', 'status',
+                  'payment_method', 'notes', 'created_by']
         values = [payment_data[col] for col in columns]
 
         sql = f"""
@@ -604,22 +753,23 @@ def seed_payments(connection, df):
 
     print_success(f"Seeded {len(df)} payments")
 
-def get_lease_id(connection, property_name, tenant_email):
-    """Get lease ID by property name and tenant email"""
-    if not property_name or not tenant_email:
+def get_lease_id(connection, property_name, unit_number, primary_tenant_email):
+    """Get lease ID by property, unit, and primary tenant"""
+    if not property_name or not unit_number or not primary_tenant_email:
         return None
 
     property_id = get_property_id_by_name(connection, property_name)
-    tenant_id = get_tenant_id_by_email(connection, tenant_email)
+    unit_id = get_unit_id(connection, property_name, unit_number)
+    tenant_id = get_tenant_id_by_email(connection, primary_tenant_email)
 
-    if not property_id or not tenant_id:
+    if not property_id or not unit_id or not tenant_id:
         return None
 
-    sql = "SELECT id FROM leases WHERE property_id = %s AND tenant_id = %s"
+    sql = "SELECT id FROM leases WHERE property_id = %s AND unit_id = %s AND primary_tenant_id = %s"
     if 'docker_container' in connection:
         container = connection['docker_container']
         cmd = ['docker', 'exec', container, 'psql', '-U', DB_CONFIG['user'], '-d', DB_CONFIG['database'],
-               '-t', '-c', f"SELECT id FROM leases WHERE property_id = '{property_id}' AND tenant_id = '{tenant_id}'"]
+               '-t', '-c', f"SELECT id FROM leases WHERE property_id = '{property_id}' AND unit_id = '{unit_id}' AND primary_tenant_id = '{tenant_id}'"]
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             return result.stdout.strip()
@@ -628,7 +778,7 @@ def get_lease_id(connection, property_name, tenant_email):
     else:
         conn = connection['direct']
         with conn.cursor() as cursor:
-            cursor.execute(sql, (property_id, tenant_id))
+            cursor.execute(sql, (property_id, unit_id, tenant_id))
             result = cursor.fetchone()
             return result[0] if result else None
 
@@ -672,8 +822,14 @@ def main():
     if 'properties' in sheets:
         seed_properties(connection, sheets['properties'])
 
+    if 'units' in sheets:
+        seed_units(connection, sheets['units'])
+
     if 'tenants' in sheets:
         seed_tenants(connection, sheets['tenants'])
+
+    if 'unit_tenants' in sheets:
+        seed_unit_tenants(connection, sheets['unit_tenants'])
 
     if 'leases' in sheets:
         seed_leases(connection, sheets['leases'])

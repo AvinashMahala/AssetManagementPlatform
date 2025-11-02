@@ -18,30 +18,29 @@ export enum DocumentType {
 }
 
 export interface TenantDocument {
-  id: number;
-  tenantId: number;
+  id: string; // UUID
+  tenantId: string; // UUID
   documentType: DocumentType;
   documentNumber?: string;
   fileUrl: string;
   verified: boolean;
   verifiedAt?: Date;
-  verifiedBy?: number; // user ID who verified
+  verifiedBy?: string; // UUID reference to users
   uploadedAt: Date;
 }
 
 export interface Tenant {
-  id: number;
+  id: string; // UUID
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone?: string;
   alternatePhone?: string;
 
   // Personal details
   dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
   occupation?: string;
-  companyName?: string;
   monthlyIncome?: number;
 
   // Address details
@@ -52,27 +51,14 @@ export interface Tenant {
     pincode: string;
   };
 
-  permanentAddress: {
-    street: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-
   // Emergency contact
-  emergencyContact: {
+  emergencyContact?: {
     name: string;
     relationship: string;
     phone: string;
   };
 
-  // Documents
-  documents: TenantDocument[];
-
-  // Rental history
   status: TenantStatus;
-  totalRentals: number;
-  currentPropertyId?: number;
 
   // Metadata
   createdAt: Date;
@@ -83,14 +69,13 @@ export interface TenantInput {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone?: string;
   alternatePhone?: string;
 
   // Personal details
   dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
   occupation?: string;
-  companyName?: string;
   monthlyIncome?: number;
 
   // Address details
@@ -101,20 +86,82 @@ export interface TenantInput {
     pincode: string;
   };
 
-  permanentAddress: {
-    street: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-
   // Emergency contact
-  emergencyContact: {
+  emergencyContact?: {
     name: string;
     relationship: string;
     phone: string;
   };
 
-  // Documents will be handled separately
   status?: TenantStatus;
+}
+
+export interface Lease {
+  id: string; // UUID
+  propertyId: string; // UUID reference to properties
+  unitId: string; // UUID reference to units
+  primaryTenantId: string; // UUID reference to tenants
+
+  // Lease terms
+  startDate: Date;
+  endDate: Date;
+  monthlyRent: number;
+  securityDeposit: number;
+  status: 'active' | 'expired' | 'terminated' | 'draft';
+  leaseTerms?: string;
+  signedAt?: Date;
+
+  // Created by user
+  createdBy: string; // UUID reference to users
+
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface LeaseInput {
+  propertyId: string;
+  unitId: string;
+  primaryTenantId: string;
+  startDate: Date;
+  endDate: Date;
+  monthlyRent: number;
+  securityDeposit: number;
+  status?: 'active' | 'expired' | 'terminated' | 'draft';
+  leaseTerms?: string;
+  signedAt?: Date;
+  createdBy: string;
+}
+
+export interface RentPayment {
+  id: string; // UUID
+  leaseId: string; // UUID reference to leases
+  tenantId: string; // UUID reference to tenants
+
+  // Payment details
+  amount: number;
+  dueDate: Date;
+  paidDate?: Date;
+  status: 'pending' | 'paid' | 'overdue' | 'cancelled';
+  paymentMethod?: string;
+  notes?: string;
+
+  // Created by user
+  createdBy: string; // UUID reference to users
+
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RentPaymentInput {
+  leaseId: string;
+  tenantId: string;
+  amount: number;
+  dueDate: Date;
+  paidDate?: Date;
+  status?: 'pending' | 'paid' | 'overdue' | 'cancelled';
+  paymentMethod?: string;
+  notes?: string;
+  createdBy: string;
 }

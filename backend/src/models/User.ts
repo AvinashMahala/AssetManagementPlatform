@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: string; // UUID
   username: string;
   name?: string; // Full display name (for Google OAuth users)
   email: string;
@@ -66,8 +66,8 @@ export interface PhoneVerificationConfirm {
 }
 
 export interface PasswordResetMethod {
-  id: number;
-  userId: number;
+  id: string; // UUID
+  userId: string; // UUID
   methodType: 'security_questions' | 'recovery_codes' | 'admin_assist';
   isEnabled: boolean;
   createdAt: Date;
@@ -75,8 +75,8 @@ export interface PasswordResetMethod {
 }
 
 export interface SecurityQuestion {
-  id: number;
-  userId: number;
+  id: string; // UUID
+  userId: string; // UUID
   question: string;
   answerHash: string;
   createdAt: Date;
@@ -84,8 +84,8 @@ export interface SecurityQuestion {
 }
 
 export interface RecoveryCode {
-  id: number;
-  userId: number;
+  id: string; // UUID
+  userId: string; // UUID
   codeHash: string;
   isUsed: boolean;
   createdAt: Date;
@@ -98,19 +98,19 @@ export interface SecurityQuestionSetup {
 }
 
 export interface PasswordResetViaSecurityQuestions {
-  userId: number;
-  answers: { questionId: number; answer: string }[];
+  userId: string; // UUID
+  answers: { questionId: string; answer: string }[]; // UUID
   newPassword: string;
 }
 
 export interface PasswordResetViaRecoveryCode {
-  userId: number;
+  userId: string; // UUID
   recoveryCode: string;
   newPassword: string;
 }
 
 export interface AdminPasswordReset {
-  userId: number;
+  userId: string; // UUID
   tempPassword: string;
   reason?: string;
 }

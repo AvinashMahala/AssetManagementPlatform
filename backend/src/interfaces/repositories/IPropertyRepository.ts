@@ -2,10 +2,10 @@ import { Property, PropertyInput } from '../../models/Property';
 
 export interface IPropertyRepository {
   findAll(): Promise<Property[]>;
-  findById(id: number): Promise<Property | null>;
-  findByOwner(ownerId: number): Promise<Property[]>;
+  findById(id: string): Promise<Property | null>;
+  findByOwner(ownerId: string): Promise<Property[]>;
   create(data: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>): Promise<Property>;
-  update(id: number, data: Partial<Omit<Property, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Property | null>;
-  delete(id: number): Promise<boolean>;
-  updateStatus(id: number, status: string): Promise<boolean>;
+  update(id: string, data: Partial<Omit<Property, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Property | null>;
+  delete(id: string): Promise<boolean>;
+  updateStatus(id: string, status: string): Promise<boolean>;
 }

@@ -1,24 +1,3 @@
-// Property types for Indian rental market
-export enum PropertyType {
-  APARTMENT = 'apartment',
-  HOUSE = 'house',
-  VILLA = 'villa',
-  COMMERCIAL = 'commercial',
-  PG_HOSTEL = 'pg_hostel',
-  CO_LIVING = 'co_living',
-  OFFICE = 'office',
-  SHOP = 'shop',
-  WAREHOUSE = 'warehouse'
-}
-
-// Property status
-export enum PropertyStatus {
-  AVAILABLE = 'available',
-  OCCUPIED = 'occupied',
-  UNDER_MAINTENANCE = 'under_maintenance',
-  VACANT = 'vacant'
-}
-
 // Unit types
 export enum UnitType {
   APARTMENT = 'apartment',
@@ -39,73 +18,6 @@ export enum UnitStatus {
   VACANT = 'vacant'
 }
 
-// Property represents a building/container that holds multiple units
-export interface Property {
-  id: string; // UUID
-  name: string;
-  description?: string;
-  propertyType: PropertyType;
-  status: PropertyStatus;
-
-  // Address details (Indian format)
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    pincode: string;
-    landmark?: string;
-  };
-
-  // Building specifications
-  totalArea: number; // in sq ft
-  totalFloors?: number;
-  yearBuilt?: number;
-  parkingSpaces?: number;
-
-  // Building amenities and features
-  buildingAmenities: string[]; // ['parking', 'lift', 'security', 'gym', etc.]
-  buildingPhotos: string[]; // array of photo URLs
-
-  // Ownership details
-  ownerId: string; // UUID reference to users table
-  coOwners?: string[]; // array of user UUIDs
-
-  // Metadata
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface PropertyInput {
-  name: string;
-  description?: string;
-  propertyType: PropertyType;
-  status?: PropertyStatus;
-
-  // Address details
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    pincode: string;
-    landmark?: string;
-  };
-
-  // Building specifications
-  totalArea: number;
-  totalFloors?: number;
-  yearBuilt?: number;
-  parkingSpaces?: number;
-
-  // Building amenities and features
-  buildingAmenities?: string[];
-  buildingPhotos?: string[];
-
-  // Ownership details
-  ownerId: string;
-  coOwners?: string[];
-}
-
-// Unit represents an individual rentable space within a property
 export interface Unit {
   id: string; // UUID
   propertyId: string; // UUID reference to properties table
