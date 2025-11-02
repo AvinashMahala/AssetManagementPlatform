@@ -18,10 +18,6 @@ export interface UserLoginInput {
   password: string;
 }
 
-export interface UserResponse extends User {
-  // Response-specific fields can be added here
-}
-
 export interface AuthUser {
   user: User;
   token: string;

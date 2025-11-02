@@ -91,7 +91,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
         setError('');
         onSuccess?.();
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Password reset failed. Please check your answers.');
     }
   };
@@ -114,7 +114,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
         setError('');
         onSuccess?.();
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Password reset failed. Please check your recovery code.');
     }
   };

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
+/* eslint-disable react-refresh/only-export-components */
+
 export type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {

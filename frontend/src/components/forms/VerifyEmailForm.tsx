@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -20,17 +20,7 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
   const [success, setSuccess] = useState<string>('');
   const [resendLoading, setResendLoading] = useState(false);
 
-  useEffect(() => {
-    // Check if there's a token in the URL (from email link)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
-    if (urlToken) {
-      setToken(urlToken);
-      handleVerify(urlToken);
-    }
-  }, []);
-
-  const handleVerify = async (verificationToken?: string) => {
+  const handleVerify = useCallback(async (verificationToken?: string) => {
     const tokenToUse = verificationToken || token;
     if (!tokenToUse) {
       setError('Please enter the verification token');
@@ -46,10 +36,20 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
       } else {
         setError('Invalid or expired verification token');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Verification failed. Please try again.');
     }
-  };
+  }, [token, verifyEmail, onSuccess]);
+
+  useEffect(() => {
+    // Check if there's a token in the URL (from email link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      setToken(urlToken);
+      handleVerify(urlToken);
+    }
+  }, [handleVerify]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +72,7 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
       } else {
         setError('Failed to resend verification email');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to resend verification email. Please try again.');
     } finally {
       setResendLoading(false);

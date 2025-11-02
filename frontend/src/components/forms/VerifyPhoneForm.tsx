@@ -39,7 +39,7 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
       } else {
         setError('Failed to send verification code');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to send verification code. Please try again.');
     } finally {
       setRequestLoading(false);
@@ -61,7 +61,7 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
       } else {
         setError('Invalid verification code');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Verification failed. Please try again.');
     }
   };

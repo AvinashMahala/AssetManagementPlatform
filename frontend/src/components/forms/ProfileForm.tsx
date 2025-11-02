@@ -44,7 +44,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (formData.phone && !/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
+    if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
@@ -69,7 +69,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
       } else {
         setSubmitError('Failed to update profile');
       }
-    } catch (error) {
+    } catch (_error) {
       setSubmitError('An error occurred while updating your profile. Please try again.');
     }
   };

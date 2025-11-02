@@ -13,32 +13,34 @@ export interface ValidationRule {
   pattern?: RegExp;
   min?: number;
   max?: number;
-  custom?: (value: any) => string | null;
+  custom?: (value: unknown) => string | null;
 }
 
 // Generic validation function
-export function validateField(value: any, rules: ValidationRule): string | null {
-  if (rules.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
+export function validateField(value: unknown, rules: ValidationRule): string | null {
+  if (rules.required && (!value || (typeof value === 'string' && (value as string).trim() === ''))) {
     return VALIDATION_MESSAGES.REQUIRED;
   }
 
   if (value && typeof value === 'string') {
-    if (rules.minLength && value.length < rules.minLength) {
+    const strValue = value as string;
+    if (rules.minLength && strValue.length < rules.minLength) {
       return `Must be at least ${rules.minLength} characters`;
     }
-    if (rules.maxLength && value.length > rules.maxLength) {
+    if (rules.maxLength && strValue.length > rules.maxLength) {
       return `Must be less than ${rules.maxLength} characters`;
     }
-    if (rules.pattern && !rules.pattern.test(value)) {
+    if (rules.pattern && !rules.pattern.test(strValue)) {
       return 'Invalid format';
     }
   }
 
   if (value && typeof value === 'number') {
-    if (rules.min !== undefined && value < rules.min) {
+    const numValue = value as number;
+    if (rules.min !== undefined && numValue < rules.min) {
       return `Must be at least ${rules.min}`;
     }
-    if (rules.max !== undefined && value > rules.max) {
+    if (rules.max !== undefined && numValue > rules.max) {
       return `Must be less than ${rules.max}`;
     }
   }
@@ -110,7 +112,7 @@ export function validateUserRegistration(userData: UserInput): ValidationResult 
     minLength: VALIDATION_RULES.USER.PASSWORD.MIN_LENGTH,
     pattern: VALIDATION_RULES.USER.PASSWORD.PATTERN,
     custom: (value) => {
-      if (!VALIDATION_RULES.USER.PASSWORD.PATTERN.test(value)) {
+      if (typeof value === 'string' && !VALIDATION_RULES.USER.PASSWORD.PATTERN.test(value)) {
         return VALIDATION_MESSAGES.PASSWORD_WEAK;
       }
       return null;
@@ -146,7 +148,7 @@ export function validateUserLogin(credentials: UserLoginInput): ValidationResult
 
 // Form validation helpers
 export function validateFormField(
-  value: any,
+  value: unknown,
   rules: ValidationRule
 ): { isValid: boolean; error: string | null } {
   const error = validateField(value, rules);
@@ -156,7 +158,7 @@ export function validateFormField(
   };
 }
 
-export function validateForm<T extends Record<string, any>>(
+export function validateForm<T extends Record<string, unknown>>(
   data: T,
   rules: Record<keyof T, ValidationRule>
 ): ValidationResult {

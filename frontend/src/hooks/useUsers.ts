@@ -8,12 +8,6 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Initialize auth state
-    userService.initializeAuth();
-    checkAuthStatus();
-  }, []);
-
   const checkAuthStatus = useCallback(async () => {
     try {
       if (userService.isAuthenticated()) {
@@ -31,13 +25,19 @@ export function useAuth() {
         setIsAuthenticated(false);
         setUser(null);
       }
-    } catch (error) {
+    } catch (_error) {
       setIsAuthenticated(false);
       setUser(null);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    // Initialize auth state
+    userService.initializeAuth();
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const login = useCallback(async (credentials: UserLoginInput) => {
     const response = await userService.login(credentials);

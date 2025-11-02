@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -47,18 +47,18 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadOptions();
-  }, []);
-
-  const loadOptions = async () => {
+  const loadOptions = useCallback(async () => {
     try {
       const opts = await getPasswordResetOptions();
       setOptions(opts);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load password reset options');
     }
-  };
+  }, [getPasswordResetOptions]);
+
+  useEffect(() => {
+    loadOptions();
+  }, [loadOptions]);
 
   const handleDisableMethod = async (methodType: string) => {
     try {
@@ -67,7 +67,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
         setSuccess(`${methodType.replace('_', ' ')} disabled successfully`);
         await loadOptions();
       }
-    } catch (err) {
+    } catch (_err) {
       setError(`Failed to disable ${methodType}`);
     }
   };
@@ -85,7 +85,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
         setStep('options');
         await loadOptions();
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to set up security questions');
     }
   };
@@ -96,7 +96,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
       setGeneratedCodes(codes);
       setSuccess('Recovery codes generated successfully. Save them in a secure place!');
       await loadOptions();
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to generate recovery codes');
     }
   };
@@ -122,7 +122,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
         setSuccess('Password reset successfully!');
         onSuccess?.();
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Password reset failed. Please check your answers.');
     }
   };
@@ -148,7 +148,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
         setSuccess('Password reset successfully!');
         onSuccess?.();
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Password reset failed. Please check your recovery code.');
     }
   };

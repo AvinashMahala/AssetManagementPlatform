@@ -15,6 +15,8 @@ import type {
 import { authService } from '../services/authService';
 import { apiClient } from '../services/apiClient';
 
+/* eslint-disable react-refresh/only-export-components */
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -66,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
       }
-    } catch (error) {
+    } catch (_error) {
       setIsAuthenticated(false);
       setUser(null);
       apiClient.setAuthToken(null);
@@ -84,7 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Store refresh token in localStorage or secure storage
       localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -94,7 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await authService.register(userData);
       // Registration successful, but user needs to verify email/phone
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -102,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async (): Promise<void> => {
     try {
       await authService.logout();
-    } catch (error) {
+    } catch (_error) {
       // Continue with logout even if API call fails
     } finally {
       setUser(null);
@@ -118,7 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Refresh user data after verification
       await checkAuth();
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -127,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.resendVerification(email);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -136,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.requestPhoneVerification(phone);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -147,24 +149,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Refresh user data after verification
       await checkAuth();
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
 
   const getPasswordResetOptions = async (): Promise<PasswordResetOptions> => {
-    try {
-      return await authService.getPasswordResetOptions();
-    } catch (error) {
-      throw error;
-    }
+    return await authService.getPasswordResetOptions();
   };
 
   const enableResetMethod = async (methodType: string): Promise<boolean> => {
     try {
       await authService.enableResetMethod(methodType);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -173,7 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.disableResetMethod(methodType);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -182,25 +180,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.setupSecurityQuestions(questions);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
 
   const generateRecoveryCodes = async (count?: number): Promise<string[]> => {
-    try {
-      const response = await authService.generateRecoveryCodes(count);
-      return response.codes;
-    } catch (error) {
-      throw error;
-    }
+    const response = await authService.generateRecoveryCodes(count);
+    return response.codes;
   };
 
   const resetPasswordViaSecurityQuestions = async (data: PasswordResetViaSecurityQuestions): Promise<boolean> => {
     try {
       await authService.resetPasswordViaSecurityQuestions(data);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -209,29 +203,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.resetPasswordViaRecoveryCode(data);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
 
   const adminResetPassword = async (data: AdminPasswordReset): Promise<string> => {
-    try {
-      const response = await authService.adminResetPassword(data);
-      return response.tempPassword;
-    } catch (error) {
-      throw error;
-    }
+    const response = await authService.adminResetPassword(data);
+    return response.tempPassword;
   };
 
   const googleAuth = async (profile: GoogleUserProfile): Promise<boolean> => {
     try {
-      const authResponse = await authService.googleAuth(profile) as any;
+      const authResponse = await authService.googleAuth(profile);
       setUser(authResponse.data.user);
       setIsAuthenticated(true);
       apiClient.setAuthToken(authResponse.data.tokens.accessToken);
       localStorage.setItem('refreshToken', authResponse.data.tokens.refreshToken);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -247,7 +237,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       apiClient.setAuthToken(authResponse.tokens.accessToken);
       localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
       return true;
-    } catch (error) {
+    } catch (_error) {
       // Token refresh failed, logout user
       await logout();
       return false;
@@ -259,7 +249,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const updatedUser = await authService.updateProfile(profileData);
       setUser(updatedUser);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };
@@ -270,7 +260,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Refresh user data after linking
       await checkAuth();
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };

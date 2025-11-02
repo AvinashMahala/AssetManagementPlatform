@@ -3,7 +3,7 @@ import type { ApiResponse, AsyncState } from '../types/api';
 
 export function useApi<T>(
   apiCall: () => Promise<ApiResponse<T>>,
-  dependencies: any[] = []
+  dependencies: unknown[] = []
 ): AsyncState<T> & { refetch: () => void } {
   const [state, setState] = useState<AsyncState<T>>({
     data: null,
@@ -37,7 +37,7 @@ export function useApi<T>(
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
       });
     }
-  }, dependencies);
+  }, [apiCall, ...dependencies]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     execute();

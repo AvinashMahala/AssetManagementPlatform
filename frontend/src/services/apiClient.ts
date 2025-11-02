@@ -31,7 +31,7 @@ class ApiClient {
     return headers;
   }
 
-  private buildURL(endpoint: string, params?: Record<string, any>): string {
+  private buildURL(endpoint: string, params?: Record<string, unknown>): string {
     const url = new URL(endpoint, this.baseURL);
 
     if (params) {
@@ -46,7 +46,7 @@ class ApiClient {
   }
 
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
-    let data: any;
+    let data: unknown;
 
     try {
       const contentType = response.headers.get('content-type');
@@ -55,23 +55,24 @@ class ApiClient {
       } else {
         data = await response.text();
       }
-    } catch (error) {
+    } catch (_error) {
       data = null;
     }
 
     if (response.ok) {
       return {
         success: true,
-        data: data,
-        message: data?.message,
+        data: data as T,
+        message: (data as { message?: string })?.message,
       };
     }
 
     // Handle error responses
+    const errorData = data as { error?: { code?: string; message?: string; details?: unknown }; message?: string };
     const error: ApiError = {
-      code: data?.error?.code || `HTTP_${response.status}`,
-      message: data?.error?.message || data?.message || `HTTP ${response.status}: ${response.statusText}`,
-      details: data?.error?.details,
+      code: errorData?.error?.code || `HTTP_${response.status}`,
+      message: errorData?.error?.message || errorData?.message || `HTTP ${response.status}: ${response.statusText}`,
+      details: errorData?.error?.details as Record<string, unknown> | undefined,
     };
 
     return {
@@ -92,18 +93,18 @@ class ApiClient {
       });
 
       return this.handleResponse<T>(response);
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         error: {
           code: 'NETWORK_ERROR',
-          message: error instanceof Error ? error.message : 'Network request failed',
+          message: _error instanceof Error ? _error.message : 'Network request failed',
         },
       };
     }
   }
 
-  async post<T>(endpoint: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
     try {
@@ -116,18 +117,18 @@ class ApiClient {
       });
 
       return this.handleResponse<T>(response);
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         error: {
           code: 'NETWORK_ERROR',
-          message: error instanceof Error ? error.message : 'Network request failed',
+          message: _error instanceof Error ? _error.message : 'Network request failed',
         },
       };
     }
   }
 
-  async put<T>(endpoint: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>> {
+  async put<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
     try {
@@ -140,12 +141,12 @@ class ApiClient {
       });
 
       return this.handleResponse<T>(response);
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         error: {
           code: 'NETWORK_ERROR',
-          message: error instanceof Error ? error.message : 'Network request failed',
+          message: _error instanceof Error ? _error.message : 'Network request failed',
         },
       };
     }
@@ -163,12 +164,12 @@ class ApiClient {
       });
 
       return this.handleResponse<T>(response);
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         error: {
           code: 'NETWORK_ERROR',
-          message: error instanceof Error ? error.message : 'Network request failed',
+          message: _error instanceof Error ? _error.message : 'Network request failed',
         },
       };
     }

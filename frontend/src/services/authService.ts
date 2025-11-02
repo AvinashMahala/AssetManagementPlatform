@@ -33,6 +33,7 @@ export interface UserRegistrationInput {
   password: string;
   phone?: string;
   registrationMethod: 'email' | 'phone' | 'google';
+  googleId?: string; // For Google OAuth registration
 }
 
 export interface UserCredentials {
@@ -191,8 +192,8 @@ class AuthService {
     return response.data;
   }
 
-  async setupSecurityQuestions(questions: SecurityQuestionSetup): Promise<{ questions: any[]; message: string }> {
-    const response = await apiClient.post<{ questions: any[]; message: string }>('/api/auth/security-questions', questions);
+  async setupSecurityQuestions(questions: SecurityQuestionSetup): Promise<{ questions: { question: string }[]; message: string }> {
+    const response = await apiClient.post<{ questions: { question: string }[]; message: string }>('/api/auth/security-questions', questions);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Setup security questions failed');
     }

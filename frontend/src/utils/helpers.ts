@@ -1,12 +1,12 @@
 // General utility functions
-export function isEmpty(value: any): boolean {
+export function isEmpty(value: unknown): boolean {
   if (value == null) return true;
   if (typeof value === 'string' || Array.isArray(value)) return value.length === 0;
   if (typeof value === 'object') return Object.keys(value).length === 0;
   return false;
 }
 
-export function isEqual(a: any, b: any): boolean {
+export function isEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
@@ -14,7 +14,7 @@ export function cloneDeep<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
 
-export function pick<T extends Record<string, any>, K extends keyof T>(
+export function pick<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
   keys: K[]
 ): Pick<T, K> {
@@ -27,7 +27,7 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
   return result;
 }
 
-export function omit<T extends Record<string, any>, K extends keyof T>(
+export function omit<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
   keys: K[]
 ): Omit<T, K> {
@@ -50,7 +50,7 @@ export function groupBy<T, K extends string | number>(
 
 export function sortBy<T>(
   array: T[],
-  keyFn: (item: T) => any,
+  keyFn: (item: T) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
   order: 'asc' | 'desc' = 'asc'
 ): T[] {
   return [...array].sort((a, b) => {
@@ -108,7 +108,7 @@ export function retry<T>(
   });
 }
 
-export function memoize<T extends (...args: any[]) => any>(
+export function memoize<T extends (...args: any[]) => any>( // eslint-disable-line @typescript-eslint/no-explicit-any
   fn: T,
   getKey?: (...args: Parameters<T>) => string
 ): T {

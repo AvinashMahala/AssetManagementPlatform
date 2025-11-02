@@ -59,7 +59,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       } else {
         setSubmitError('Invalid email or password');
       }
-    } catch (error) {
+    } catch (_error) {
       setSubmitError('An error occurred during login. Please try again.');
     }
   };
@@ -83,7 +83,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       } else {
         setSubmitError('Google authentication failed');
       }
-    } catch (error) {
+    } catch (_error) {
       setSubmitError('An error occurred during Google authentication. Please try again.');
     }
   };

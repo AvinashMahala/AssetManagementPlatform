@@ -12,13 +12,13 @@ export type Theme = 'light' | 'dark' | 'auto';
 export type Language = 'en' | 'es' | 'fr' | 'de';
 
 // Form field types
-export interface FormField<T = any> {
+export interface FormField<T = unknown> {
   value: T;
   error?: string;
   touched?: boolean;
 }
 
-export interface FormState<T = Record<string, any>> {
+export interface FormState<T = Record<string, unknown>> {
   values: T;
   errors: Partial<Record<keyof T, string>>;
   touched: Partial<Record<keyof T, boolean>>;
@@ -52,9 +52,9 @@ export type ButtonVariantType = keyof ButtonVariant;
 export type ButtonSizeType = keyof ButtonSize;
 
 // Event handlers
-export type ChangeHandler<T = any> = (value: T) => void;
+export type ChangeHandler<T = unknown> = (value: T) => void;
 export type ClickHandler = (event: React.MouseEvent) => void;
-export type SubmitHandler<T = any> = (data: T) => void | Promise<void>;
+export type SubmitHandler<T = unknown> = (data: T) => void | Promise<void>;
 
 // Utility types
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

@@ -16,10 +16,6 @@ export interface AssetInput {
   location?: string;
 }
 
-export interface AssetFormData extends AssetInput {
-  // Additional form-specific fields can be added here
-}
-
 export interface AssetFilters {
   search?: string;
   location?: string;

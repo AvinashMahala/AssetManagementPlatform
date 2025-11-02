@@ -52,7 +52,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.phone && !/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
+    if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
@@ -75,7 +75,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       } else {
         setSubmitError('Registration failed. Please try again.');
       }
-    } catch (error) {
+    } catch (_error) {
       setSubmitError('An error occurred during registration. Please try again.');
     }
   };
@@ -126,14 +126,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         phone: '',
         registrationMethod: 'google',
         googleId: payload.sub
-      } as any);
+      });
 
       if (success) {
         onSuccess?.();
       } else {
         setSubmitError('Google registration failed');
       }
-    } catch (error) {
+    } catch (_error) {
       setSubmitError('An error occurred during Google registration. Please try again.');
     }
   };
