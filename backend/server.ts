@@ -7,21 +7,25 @@ import helmet from 'helmet';
 import { Pool } from 'pg';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { IAssetRepository } from './src/interfaces/repositories/IAssetRepository.js';
+import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
 import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
-import { IAssetService } from './src/interfaces/services/IAssetService.js';
+import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
+import { IPropertyService } from './src/interfaces/services/IPropertyService.js';
 import { IUserService } from './src/interfaces/services/IUserService.js';
-import { AssetRepository } from './src/repositories/AssetRepository.js';
+import { ITenantService } from './src/interfaces/services/ITenantService.js';
+import { PropertyRepository } from './src/repositories/PropertyRepository.js';
 import { UserRepository } from './src/repositories/UserRepository.js';
-import { AssetService } from './src/services/AssetService.js';
+import { TenantRepository } from './src/repositories/TenantRepository.js';
+import { PropertyService } from './src/services/PropertyService.js';
 import { UserService } from './src/services/UserService.js';
-import { AssetController } from './src/controllers/assetController.js';
+import { TenantService } from './src/services/TenantService.js';
+import { PropertyController } from './src/controllers/propertyController.js';
 import { UserController } from './src/controllers/userController.js';
-import { createAssetRoutes } from './src/routes/assetRoutes.js';
+import { TenantController } from './src/controllers/TenantController.js';
+import { createPropertyRoutes } from './src/routes/propertyRoutes.js';
 import { createAuthRoutes } from './src/routes/authRoutes.js';
+import { createTenantRoutes } from './src/routes/tenantRoutes.js';
 import { DependencyContainer } from './src/utils/DependencyContainer.js';
-
-dotenv.config({ path: '../.env' });
 
 console.log('Environment variables loaded:');
 console.log('EMAIL_PROVIDER:', process.env.EMAIL_PROVIDER);
@@ -36,21 +40,23 @@ const pool = new Pool({
 const container = DependencyContainer.initialize(pool);
 
 // Get services from container
-const assetService = container.assetService;
+const propertyService = container.propertyService;
 const userService = container.userService;
+const tenantService = container.tenantService;
 const passwordResetService = container.passwordResetService;
 
 // Create controllers with injected services
-const assetController = new AssetController(assetService);
+const propertyController = new PropertyController(propertyService);
 const userController = new UserController(userService, passwordResetService);
+const tenantController = new TenantController(tenantService);
 
 const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Asset Management API',
+      title: 'Property Management API',
       version: '1.0.0',
-      description: 'API for managing assets and users',
+      description: 'API for managing rental properties and users',
     },
     servers: [
       {
@@ -59,10 +65,6 @@ const options = {
     ],
     tags: [
       {
-        name: 'Assets',
-        description: 'Asset management endpoints',
-      },
-      {
         name: 'Authentication',
         description: 'User authentication and authorization endpoints',
       },
@@ -70,49 +72,211 @@ const options = {
         name: 'Users',
         description: 'User management endpoints',
       },
+      {
+        name: 'Properties',
+        description: 'Property portfolio management endpoints',
+      },
+      {
+        name: 'Tenants',
+        description: 'Tenant profile and management endpoints',
+      },
+      {
+        name: 'Leases',
+        description: 'Lease agreement management endpoints',
+      },
+      {
+        name: 'Rent Payments',
+        description: 'Rent payment tracking and collection endpoints',
+      },
     ],
     components: {
       schemas: {
-        Asset: {
+        Property: {
           type: 'object',
           properties: {
             id: {
               type: 'integer',
-              description: 'Asset ID',
+              description: 'Property ID',
             },
             name: {
               type: 'string',
-              description: 'Asset name',
+              description: 'Property name',
             },
             description: {
               type: 'string',
-              description: 'Asset description',
+              description: 'Property description',
             },
-            value: {
-              type: 'number',
-              description: 'Asset value',
-            },
-            location: {
+            propertyType: {
               type: 'string',
-              description: 'Asset location',
+              enum: ['apartment', 'house', 'villa', 'commercial', 'pg_hostel', 'co_living', 'office', 'shop', 'warehouse'],
+              description: 'Type of property',
+            },
+            status: {
+              type: 'string',
+              enum: ['available', 'occupied', 'under_maintenance', 'vacant'],
+              description: 'Property status',
+            },
+            address: {
+              type: 'object',
+              properties: {
+                street: {
+                  type: 'string',
+                  description: 'Street address',
+                },
+                city: {
+                  type: 'string',
+                  description: 'City',
+                },
+                state: {
+                  type: 'string',
+                  description: 'State',
+                },
+                pincode: {
+                  type: 'string',
+                  description: 'Pincode',
+                },
+                landmark: {
+                  type: 'string',
+                  description: 'Landmark',
+                },
+              },
+            },
+            area: {
+              type: 'number',
+              description: 'Area in sq ft',
+            },
+            bedrooms: {
+              type: 'integer',
+              description: 'Number of bedrooms',
+            },
+            bathrooms: {
+              type: 'integer',
+              description: 'Number of bathrooms',
+            },
+            monthlyRent: {
+              type: 'number',
+              description: 'Monthly rent amount',
+            },
+            securityDeposit: {
+              type: 'number',
+              description: 'Security deposit amount',
+            },
+            ownerId: {
+              type: 'integer',
+              description: 'Owner user ID',
+            },
+            amenities: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of amenities',
+            },
+            photos: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of photo URLs',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
             },
           },
         },
-        AssetInput: {
+        PropertyInput: {
           type: 'object',
-          required: ['name'],
+          required: ['name', 'propertyType', 'address', 'area', 'monthlyRent', 'securityDeposit', 'ownerId'],
           properties: {
             name: {
               type: 'string',
+              description: 'Property name',
             },
             description: {
               type: 'string',
+              description: 'Property description',
             },
-            value: {
-              type: 'number',
-            },
-            location: {
+            propertyType: {
               type: 'string',
+              enum: ['apartment', 'house', 'villa', 'commercial', 'pg_hostel', 'co_living', 'office', 'shop', 'warehouse'],
+              description: 'Type of property',
+            },
+            status: {
+              type: 'string',
+              enum: ['available', 'occupied', 'under_maintenance', 'vacant'],
+              default: 'available',
+              description: 'Property status',
+            },
+            address: {
+              type: 'object',
+              required: ['street', 'city', 'state', 'pincode'],
+              properties: {
+                street: {
+                  type: 'string',
+                  description: 'Street address',
+                },
+                city: {
+                  type: 'string',
+                  description: 'City',
+                },
+                state: {
+                  type: 'string',
+                  description: 'State',
+                },
+                pincode: {
+                  type: 'string',
+                  description: 'Pincode',
+                },
+                landmark: {
+                  type: 'string',
+                  description: 'Landmark',
+                },
+              },
+            },
+            area: {
+              type: 'number',
+              description: 'Area in sq ft',
+            },
+            bedrooms: {
+              type: 'integer',
+              description: 'Number of bedrooms',
+            },
+            bathrooms: {
+              type: 'integer',
+              description: 'Number of bathrooms',
+            },
+            monthlyRent: {
+              type: 'number',
+              description: 'Monthly rent amount',
+            },
+            securityDeposit: {
+              type: 'number',
+              description: 'Security deposit amount',
+            },
+            ownerId: {
+              type: 'integer',
+              description: 'Owner user ID',
+            },
+            amenities: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of amenities',
+            },
+            photos: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'List of photo URLs',
             },
           },
         },
@@ -120,8 +284,9 @@ const options = {
           type: 'object',
           properties: {
             id: {
-              type: 'integer',
-              description: 'User ID',
+              type: 'string',
+              format: 'uuid',
+              description: 'User ID (UUID)',
             },
             username: {
               type: 'string',
@@ -484,6 +649,562 @@ const options = {
             },
           },
         },
+        Tenant: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Tenant ID (UUID)',
+            },
+            firstName: {
+              type: 'string',
+              description: 'First name',
+            },
+            lastName: {
+              type: 'string',
+              description: 'Last name',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Email address',
+            },
+            phone: {
+              type: 'string',
+              description: 'Phone number',
+            },
+            dateOfBirth: {
+              type: 'string',
+              format: 'date',
+              description: 'Date of birth',
+            },
+            gender: {
+              type: 'string',
+              enum: ['male', 'female', 'other'],
+              description: 'Gender',
+            },
+            occupation: {
+              type: 'string',
+              description: 'Occupation',
+            },
+            monthlyIncome: {
+              type: 'number',
+              description: 'Monthly income',
+            },
+            currentAddress: {
+              type: 'object',
+              properties: {
+                street: {
+                  type: 'string',
+                  description: 'Street address',
+                },
+                city: {
+                  type: 'string',
+                  description: 'City',
+                },
+                state: {
+                  type: 'string',
+                  description: 'State',
+                },
+                pincode: {
+                  type: 'string',
+                  description: 'Pincode',
+                },
+              },
+            },
+            permanentAddress: {
+              type: 'object',
+              properties: {
+                street: {
+                  type: 'string',
+                  description: 'Street address',
+                },
+                city: {
+                  type: 'string',
+                  description: 'City',
+                },
+                state: {
+                  type: 'string',
+                  description: 'State',
+                },
+                pincode: {
+                  type: 'string',
+                  description: 'Pincode',
+                },
+              },
+            },
+            emergencyContact: {
+              type: 'object',
+              properties: {
+                name: {
+                  type: 'string',
+                  description: 'Emergency contact name',
+                },
+                relationship: {
+                  type: 'string',
+                  description: 'Relationship to tenant',
+                },
+                phone: {
+                  type: 'string',
+                  description: 'Emergency contact phone',
+                },
+              },
+            },
+            documents: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                    format: 'uuid',
+                    description: 'Document ID (UUID)',
+                  },
+                  tenantId: {
+                    type: 'string',
+                    format: 'uuid',
+                    description: 'Tenant ID (UUID)',
+                  },
+                  documentType: {
+                    type: 'string',
+                    enum: ['aadhaar', 'pan', 'driving_license', 'passport', 'employment_letter', 'salary_slip', 'bank_statement', 'previous_landlord_reference'],
+                    description: 'Document type',
+                  },
+                  documentNumber: {
+                    type: 'string',
+                    description: 'Document number',
+                  },
+                  fileUrl: {
+                    type: 'string',
+                    description: 'Document file URL',
+                  },
+                  verified: {
+                    type: 'boolean',
+                    description: 'Document verification status',
+                  },
+                  verifiedAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Document verification timestamp',
+                  },
+                  verifiedBy: {
+                    type: 'string',
+                    format: 'uuid',
+                    description: 'User ID who verified the document (UUID)',
+                  },
+                  uploadedAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Document upload timestamp',
+                  },
+                },
+              },
+              description: 'List of tenant documents',
+            },
+            status: {
+              type: 'string',
+              enum: ['active', 'inactive', 'blacklisted'],
+              description: 'Tenant status',
+            },
+            totalRentals: {
+              type: 'integer',
+              description: 'Total number of rentals',
+            },
+            currentPropertyId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Current property ID (UUID)',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
+            },
+          },
+        },
+        TenantInput: {
+          type: 'object',
+          required: ['firstName', 'lastName', 'email', 'phone'],
+          properties: {
+            firstName: {
+              type: 'string',
+              description: 'First name',
+            },
+            lastName: {
+              type: 'string',
+              description: 'Last name',
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Email address',
+            },
+            phone: {
+              type: 'string',
+              description: 'Phone number',
+            },
+            dateOfBirth: {
+              type: 'string',
+              format: 'date',
+              description: 'Date of birth',
+            },
+            gender: {
+              type: 'string',
+              enum: ['male', 'female', 'other'],
+              description: 'Gender',
+            },
+            occupation: {
+              type: 'string',
+              description: 'Occupation',
+            },
+            monthlyIncome: {
+              type: 'number',
+              description: 'Monthly income',
+            },
+            currentAddress: {
+              type: 'object',
+              required: ['street', 'city', 'state', 'pincode'],
+              properties: {
+                street: {
+                  type: 'string',
+                  description: 'Street address',
+                },
+                city: {
+                  type: 'string',
+                  description: 'City',
+                },
+                state: {
+                  type: 'string',
+                  description: 'State',
+                },
+                pincode: {
+                  type: 'string',
+                  description: 'Pincode',
+                },
+              },
+            },
+            permanentAddress: {
+              type: 'object',
+              properties: {
+                street: {
+                  type: 'string',
+                  description: 'Street address',
+                },
+                city: {
+                  type: 'string',
+                  description: 'City',
+                },
+                state: {
+                  type: 'string',
+                  description: 'State',
+                },
+                pincode: {
+                  type: 'string',
+                  description: 'Pincode',
+                },
+              },
+            },
+            emergencyContact: {
+              type: 'object',
+              properties: {
+                name: {
+                  type: 'string',
+                  description: 'Emergency contact name',
+                },
+                relationship: {
+                  type: 'string',
+                  description: 'Relationship to tenant',
+                },
+                phone: {
+                  type: 'string',
+                  description: 'Emergency contact phone',
+                },
+              },
+            },
+            documents: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  type: {
+                    type: 'string',
+                    enum: ['aadhar', 'pan', 'passport', 'driving_license', 'voter_id', 'bank_statement', 'salary_slip'],
+                    description: 'Document type',
+                  },
+                  number: {
+                    type: 'string',
+                    description: 'Document number',
+                  },
+                  url: {
+                    type: 'string',
+                    description: 'Document file URL',
+                  },
+                },
+              },
+              description: 'List of tenant documents',
+            },
+            status: {
+              type: 'string',
+              enum: ['active', 'inactive', 'blacklisted'],
+              default: 'active',
+              description: 'Tenant status',
+            },
+            creditScore: {
+              type: 'integer',
+              description: 'Credit score',
+            },
+          },
+        },
+        Lease: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'integer',
+              description: 'Lease ID',
+            },
+            propertyId: {
+              type: 'integer',
+              description: 'Property ID',
+            },
+            tenantId: {
+              type: 'integer',
+              description: 'Tenant ID',
+            },
+            leaseStartDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Lease start date',
+            },
+            leaseEndDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Lease end date',
+            },
+            monthlyRent: {
+              type: 'number',
+              description: 'Monthly rent amount',
+            },
+            securityDeposit: {
+              type: 'number',
+              description: 'Security deposit amount',
+            },
+            maintenanceCharges: {
+              type: 'number',
+              description: 'Monthly maintenance charges',
+            },
+            paymentFrequency: {
+              type: 'string',
+              enum: ['monthly', 'quarterly', 'half_yearly', 'yearly'],
+              description: 'Rent payment frequency',
+            },
+            noticePeriodDays: {
+              type: 'integer',
+              description: 'Notice period in days',
+            },
+            lockInPeriodMonths: {
+              type: 'integer',
+              description: 'Lock-in period in months',
+            },
+            conditions: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Lease conditions and terms',
+            },
+            status: {
+              type: 'string',
+              enum: ['draft', 'active', 'expired', 'terminated', 'cancelled'],
+              description: 'Lease status',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
+            },
+          },
+        },
+        LeaseInput: {
+          type: 'object',
+          required: ['propertyId', 'tenantId', 'leaseStartDate', 'leaseEndDate', 'monthlyRent', 'securityDeposit'],
+          properties: {
+            propertyId: {
+              type: 'integer',
+              description: 'Property ID',
+            },
+            tenantId: {
+              type: 'integer',
+              description: 'Tenant ID',
+            },
+            leaseStartDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Lease start date',
+            },
+            leaseEndDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Lease end date',
+            },
+            monthlyRent: {
+              type: 'number',
+              description: 'Monthly rent amount',
+            },
+            securityDeposit: {
+              type: 'number',
+              description: 'Security deposit amount',
+            },
+            maintenanceCharges: {
+              type: 'number',
+              description: 'Monthly maintenance charges',
+            },
+            paymentFrequency: {
+              type: 'string',
+              enum: ['monthly', 'quarterly', 'half_yearly', 'yearly'],
+              default: 'monthly',
+              description: 'Rent payment frequency',
+            },
+            noticePeriodDays: {
+              type: 'integer',
+              default: 30,
+              description: 'Notice period in days',
+            },
+            lockInPeriodMonths: {
+              type: 'integer',
+              description: 'Lock-in period in months',
+            },
+            conditions: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Lease conditions and terms',
+            },
+            status: {
+              type: 'string',
+              enum: ['draft', 'active', 'expired', 'terminated', 'cancelled'],
+              default: 'draft',
+              description: 'Lease status',
+            },
+          },
+        },
+        RentPayment: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'integer',
+              description: 'Payment ID',
+            },
+            leaseId: {
+              type: 'integer',
+              description: 'Lease ID',
+            },
+            amount: {
+              type: 'number',
+              description: 'Payment amount',
+            },
+            dueDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Payment due date',
+            },
+            paidDate: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Payment date',
+            },
+            paymentMethod: {
+              type: 'string',
+              enum: ['cash', 'bank_transfer', 'cheque', 'upi', 'card', 'net_banking'],
+              description: 'Payment method',
+            },
+            transactionId: {
+              type: 'string',
+              description: 'Transaction reference ID',
+            },
+            status: {
+              type: 'string',
+              enum: ['pending', 'paid', 'overdue', 'partial', 'failed'],
+              description: 'Payment status',
+            },
+            lateFee: {
+              type: 'number',
+              description: 'Late payment fee',
+            },
+            remarks: {
+              type: 'string',
+              description: 'Payment remarks',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Creation timestamp',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Last update timestamp',
+            },
+          },
+        },
+        RentPaymentInput: {
+          type: 'object',
+          required: ['leaseId', 'amount', 'dueDate'],
+          properties: {
+            leaseId: {
+              type: 'integer',
+              description: 'Lease ID',
+            },
+            amount: {
+              type: 'number',
+              description: 'Payment amount',
+            },
+            dueDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Payment due date',
+            },
+            paidDate: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Payment date',
+            },
+            paymentMethod: {
+              type: 'string',
+              enum: ['cash', 'bank_transfer', 'cheque', 'upi', 'card', 'net_banking'],
+              description: 'Payment method',
+            },
+            transactionId: {
+              type: 'string',
+              description: 'Transaction reference ID',
+            },
+            status: {
+              type: 'string',
+              enum: ['pending', 'paid', 'overdue', 'partial', 'failed'],
+              default: 'pending',
+              description: 'Payment status',
+            },
+            lateFee: {
+              type: 'number',
+              description: 'Late payment fee',
+            },
+            remarks: {
+              type: 'string',
+              description: 'Payment remarks',
+            },
+          },
+        },
         Error: {
           type: 'object',
           properties: {
@@ -558,22 +1279,62 @@ app.use(express.json());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-pool.query(`CREATE TABLE IF NOT EXISTS assets (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT,
-  value DECIMAL(10,2),
-  location VARCHAR(255)
+pool.query(`CREATE TABLE IF NOT EXISTS tenants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  alternate_phone VARCHAR(20),
+  date_of_birth DATE,
+  gender VARCHAR(10),
+  occupation VARCHAR(100),
+  company_name VARCHAR(255),
+  monthly_income DECIMAL(12,2),
+  current_address_street VARCHAR(255) NOT NULL,
+  current_address_city VARCHAR(100) NOT NULL,
+  current_address_state VARCHAR(100) NOT NULL,
+  current_address_pincode VARCHAR(10) NOT NULL,
+  permanent_address_street VARCHAR(255) NOT NULL,
+  permanent_address_city VARCHAR(100) NOT NULL,
+  permanent_address_state VARCHAR(100) NOT NULL,
+  permanent_address_pincode VARCHAR(10) NOT NULL,
+  emergency_contact_name VARCHAR(255) NOT NULL,
+  emergency_contact_relationship VARCHAR(100) NOT NULL,
+  emergency_contact_phone VARCHAR(20) NOT NULL,
+  status VARCHAR(50) DEFAULT 'active',
+  total_rentals INTEGER DEFAULT 0,
+  current_property_id UUID,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`, (err) => {
   if (err) {
-    console.error('Error creating assets table', err);
+    console.error('Error creating tenants table', err);
   } else {
-    console.log('Assets table ready');
+    console.log('Tenants table ready');
+  }
+});
+
+pool.query(`CREATE TABLE IF NOT EXISTS tenant_documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  document_type VARCHAR(50) NOT NULL,
+  document_number VARCHAR(100),
+  file_url TEXT NOT NULL,
+  verified BOOLEAN DEFAULT FALSE,
+  verified_at TIMESTAMP,
+  verified_by UUID REFERENCES users(id),
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`, (err) => {
+  if (err) {
+    console.error('Error creating tenant_documents table', err);
+  } else {
+    console.log('Tenant documents table ready');
   }
 });
 
 pool.query(`CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(255) UNIQUE NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
@@ -612,8 +1373,8 @@ pool.query(`CREATE TABLE IF NOT EXISTS phone_verification_codes (
 });
 
 pool.query(`CREATE TABLE IF NOT EXISTS password_reset_methods (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   method_type VARCHAR(50) NOT NULL,
   is_enabled BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -628,8 +1389,8 @@ pool.query(`CREATE TABLE IF NOT EXISTS password_reset_methods (
 });
 
 pool.query(`CREATE TABLE IF NOT EXISTS security_questions (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   question VARCHAR(500) NOT NULL,
   answer_hash VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -643,8 +1404,8 @@ pool.query(`CREATE TABLE IF NOT EXISTS security_questions (
 });
 
 pool.query(`CREATE TABLE IF NOT EXISTS recovery_codes (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   code_hash VARCHAR(255) NOT NULL,
   is_used BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -674,12 +1435,13 @@ pool.query(`CREATE TABLE IF NOT EXISTS recovery_codes (
  *                   type: string
  */
 app.get('/', (req, res) => {
-  res.json({ message: 'Asset Management API' });
+  res.json({ message: 'Property Management API' });
 });
 
 // Mount routes
-app.use('/api/assets', createAssetRoutes(assetController));
+app.use('/api/properties', createPropertyRoutes(propertyController));
 app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
+app.use('/api/tenants', createTenantRoutes(tenantController));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
