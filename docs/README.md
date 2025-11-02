@@ -1,13 +1,13 @@
-# Asset Management Platform - API Documentation
+# Property Management Platform - API Documentation
 
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0.0-blue?style=for-the-badge)](https://www.openapis.org/)
 
-Comprehensive API documentation for the Asset Management Platform backend. The API is built with Express.js, TypeScript, and follows RESTful conventions with automatic Swagger documentation.
+Comprehensive API documentation for the Property Management Platform backend. The API is built with Express.js, TypeScript, and follows RESTful conventions with automatic Swagger documentation.
 
 ## 🌐 Live Documentation
 
-**Swagger UI**: http://localhost:5000/api-docs
+**Swagger UI**: http://localhost:5001/api-docs
 
 The interactive API documentation provides:
 - Live API testing interface
@@ -20,7 +20,7 @@ The interactive API documentation provides:
 ### Base URL
 ```
 Production:  https://your-domain.com
-Development: http://localhost:5000
+Development: http://localhost:5001
 ```
 
 ### Response Format
@@ -39,11 +39,13 @@ All API responses follow a consistent format:
 ```json
 {
   "success": false,
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable error message",
-    "details": { ... }
-  }
+  "message": "Error message",
+  "errors": [
+    {
+      "field": "fieldName",
+      "message": "Field-specific error"
+    }
+  ]
 }
 ```
 
@@ -60,7 +62,7 @@ All API responses follow a consistent format:
 
 ## 🔐 Authentication
 
-### JWT Token Authentication (Planned)
+### JWT Token Authentication
 ```bash
 # Include in request headers
 Authorization: Bearer <jwt-token>
@@ -68,7 +70,7 @@ Authorization: Bearer <jwt-token>
 
 ### Login Endpoint
 ```http
-POST /api/users/login
+POST /api/auth/login
 Content-Type: application/json
 
 {
@@ -83,58 +85,27 @@ Content-Type: application/json
   "success": true,
   "data": {
     "user": {
-      "id": 1,
+      "id": "uuid-string",
       "username": "john.doe",
-      "email": "user@example.com"
+      "email": "user@example.com",
+      "role": "admin"
     },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-## 📊 Assets API
-
-### List Assets
-Get all assets with optional filtering and pagination.
-
-```http
-GET /api/assets?page=1&limit=10&search=laptop
-```
-
-**Query Parameters:**
-- `page` (number): Page number (default: 1)
-- `limit` (number): Items per page (default: 10, max: 100)
-- `search` (string): Search in name and description
-- `sortBy` (string): Sort field (name, value, createdAt)
-- `sortOrder` (string): Sort order (asc, desc)
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "name": "MacBook Pro 16\"",
-      "description": "Developer laptop",
-      "value": 2499.99,
-      "location": "Office A",
-      "createdAt": "2024-01-15T10:30:00Z",
-      "updatedAt": "2024-01-15T10:30:00Z"
+    "tokens": {
+      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "expiresIn": 3600
     }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 1,
-    "totalPages": 1
   }
 }
 ```
 
-### Get Asset by ID
+## 🏠 Properties API
+
+### List Properties
+Get all properties with optional filtering.
+
 ```http
-GET /api/assets/1
+GET /api/properties
 ```
 
 **Response:**
@@ -142,20 +113,39 @@ GET /api/assets/1
 {
   "success": true,
   "data": {
-    "id": 1,
-    "name": "MacBook Pro 16\"",
-    "description": "Developer laptop",
-    "value": 2499.99,
-    "location": "Office A",
-    "createdAt": "2024-01-15T10:30:00Z",
-    "updatedAt": "2024-01-15T10:30:00Z"
+    "properties": [
+      {
+        "id": "uuid-string",
+        "name": "Sunset Apartments",
+        "description": "Modern apartment complex",
+        "propertyType": "apartment",
+        "status": "available",
+        "address": {
+          "street": "123 Main St",
+          "city": "New York",
+          "state": "NY",
+          "pincode": "10001"
+        },
+        "area": 1500,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "monthlyRent": 2500.00,
+        "securityDeposit": 5000.00,
+        "createdAt": "2024-01-15T10:30:00Z"
+      }
+    ]
   }
 }
 ```
 
-### Create Asset
+### Get Property by ID
 ```http
-POST /api/assets
+GET /api/properties/{id}
+```
+
+### Create Property
+```http
+POST /api/properties
 Content-Type: application/json
 Authorization: Bearer <token>
 ```
@@ -163,79 +153,21 @@ Authorization: Bearer <token>
 **Request Body:**
 ```json
 {
-  "name": "Dell XPS 13",
-  "description": "Ultrabook for development",
-  "value": 1299.99,
-  "location": "Remote Office"
-}
-```
-
-**Validation Rules:**
-- `name`: Required, 1-100 characters, unique
-- `description`: Optional, max 500 characters
-- `value`: Required, positive number
-- `location`: Optional, max 100 characters
-
-**Response (201):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 2,
-    "name": "Dell XPS 13",
-    "description": "Ultrabook for development",
-    "value": 1299.99,
-    "location": "Remote Office",
-    "createdAt": "2024-01-15T11:00:00Z",
-    "updatedAt": "2024-01-15T11:00:00Z"
-  }
-}
-```
-
-### Update Asset
-```http
-PUT /api/assets/1
-Content-Type: application/json
-Authorization: Bearer <token>
-```
-
-**Request Body:**
-```json
-{
-  "name": "MacBook Pro 16\" (Updated)",
-  "description": "Senior developer laptop",
-  "value": 2399.99,
-  "location": "Office B"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 1,
-    "name": "MacBook Pro 16\" (Updated)",
-    "description": "Senior developer laptop",
-    "value": 2399.99,
-    "location": "Office B",
-    "createdAt": "2024-01-15T10:30:00Z",
-    "updatedAt": "2024-01-15T12:00:00Z"
-  }
-}
-```
-
-### Delete Asset
-```http
-DELETE /api/assets/1
-Authorization: Bearer <token>
-```
-
-**Response (204):**
-```json
-{
-  "success": true,
-  "message": "Asset deleted successfully"
+  "name": "Riverside Villas",
+  "description": "Luxury villa complex by the river",
+  "propertyType": "house",
+  "address": {
+    "street": "456 River Road",
+    "city": "Austin",
+    "state": "TX",
+    "pincode": "78701"
+  },
+  "area": 2500,
+  "bedrooms": 4,
+  "bathrooms": 3,
+  "monthlyRent": 4500.00,
+  "securityDeposit": 9000.00,
+  "ownerId": "uuid-string"
 }
 ```
 
@@ -243,7 +175,7 @@ Authorization: Bearer <token>
 
 ### Register User
 ```http
-POST /api/users/register
+POST /api/auth/register
 Content-Type: application/json
 ```
 
@@ -252,32 +184,14 @@ Content-Type: application/json
 {
   "username": "john.doe",
   "email": "john.doe@example.com",
-  "password": "SecurePass123!"
-}
-```
-
-**Validation Rules:**
-- `username`: Required, 3-50 characters, alphanumeric + underscore/hyphen
-- `email`: Required, valid email format, unique
-- `password`: Required, min 8 characters, must contain uppercase, lowercase, number
-
-**Response (201):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 1,
-    "username": "john.doe",
-    "email": "john.doe@example.com",
-    "createdAt": "2024-01-15T10:00:00Z"
-  },
-  "message": "User registered successfully"
+  "password": "SecurePass123!",
+  "registrationMethod": "email"
 }
 ```
 
 ### Login User
 ```http
-POST /api/users/login
+POST /api/auth/login
 Content-Type: application/json
 ```
 
@@ -289,91 +203,474 @@ Content-Type: application/json
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": 1,
-      "username": "john.doe",
-      "email": "john.doe@example.com"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-### Get User Profile (Planned)
+### Get User Profile
 ```http
 GET /api/users/profile
 Authorization: Bearer <token>
 ```
 
-## 🏥 Health Check
+## 🏢 Units API
 
-### System Health
+### List Units
+Get all units for a property.
+
 ```http
-GET /health
+GET /api/units?propertyId={propertyId}
 ```
 
-**Response:**
+### Create Unit
+```http
+POST /api/units
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
 ```json
 {
-  "success": true,
-  "data": {
-    "status": "healthy",
-    "timestamp": "2024-01-15T10:00:00Z",
-    "uptime": 3600,
-    "database": "connected"
+  "propertyId": "uuid-string",
+  "unitNumber": "A-101",
+  "unitType": "apartment",
+  "area": 1200,
+  "bedrooms": 2,
+  "bathrooms": 2,
+  "monthlyRent": 2200.00,
+  "securityDeposit": 4400.00
+}
+```
+
+## 👨‍👩‍👧‍👦 Tenants API
+
+### List Tenants
+```http
+GET /api/tenants
+```
+
+### Create Tenant
+```http
+POST /api/tenants
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@email.com",
+  "phone": "+1234567890",
+  "dateOfBirth": "1990-05-15",
+  "currentAddress": {
+    "street": "123 Oak St",
+    "city": "Springfield",
+    "state": "IL",
+    "pincode": "62701"
   }
 }
 ```
 
+## 📋 Leases API
+
+### List All Leases
+```http
+GET /api/leases
+```
+
+### Get Lease by ID
+```http
+GET /api/leases/{id}
+```
+
+### Get Leases by Property
+```http
+GET /api/leases/property/{propertyId}
+```
+
+### Get Leases by Tenant
+```http
+GET /api/leases/tenant/{tenantId}
+```
+
+### Get Active Leases
+```http
+GET /api/leases/active
+```
+
+### Get Expiring Leases
+```http
+GET /api/leases/expiring?days=30
+```
+
+### Create Lease
+```http
+POST /api/leases
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "propertyId": "uuid-string",
+  "tenantId": "uuid-string",
+  "startDate": "2024-01-01T00:00:00Z",
+  "endDate": "2025-01-01T00:00:00Z",
+  "monthlyRent": 2500.00,
+  "securityDeposit": 5000.00,
+  "noticePeriodDays": 30,
+  "rentDueDay": 1
+}
+```
+
+### Update Lease
+```http
+PUT /api/leases/{id}
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+### Terminate Lease
+```http
+POST /api/leases/{id}/terminate
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "terminationReason": "Tenant moving out"
+}
+```
+
+### Renew Lease
+```http
+POST /api/leases/{id}/renew
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "newEndDate": "2026-01-01T00:00:00Z"
+}
+```
+
+### Validate Lease Dates
+```http
+POST /api/leases/validate-dates
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "startDate": "2024-01-01",
+  "endDate": "2025-01-01"
+}
+```
+
+### Check Property Availability
+```http
+POST /api/leases/check-availability
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "propertyId": "uuid-string",
+  "startDate": "2024-01-01",
+  "endDate": "2025-01-01"
+}
+```
+
+## 💰 Rent Payments API
+
+### List All Payments
+```http
+GET /api/rent-payments
+```
+
+### Get Payment by ID
+```http
+GET /api/rent-payments/{id}
+```
+
+### Get Payments by Lease
+```http
+GET /api/rent-payments/lease/{leaseId}
+```
+
+### Get Payments by Property
+```http
+GET /api/rent-payments/property/{propertyId}
+```
+
+### Get Payments by Tenant
+```http
+GET /api/rent-payments/tenant/{tenantId}
+```
+
+### Get Pending Payments
+```http
+GET /api/rent-payments/pending
+```
+
+### Get Overdue Payments
+```http
+GET /api/rent-payments/overdue
+```
+
+### Get Payments by Date Range
+```http
+GET /api/rent-payments/date-range?startDate=2024-01-01&endDate=2024-12-31
+```
+
+### Create Payment
+```http
+POST /api/rent-payments
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "leaseId": "uuid-string",
+  "propertyId": "uuid-string",
+  "tenantId": "uuid-string",
+  "amount": 2500.00,
+  "dueDate": "2024-02-01",
+  "rentAmount": 2200.00,
+  "maintenanceCharges": 150.00,
+  "otherCharges": 150.00,
+  "status": "pending",
+  "createdBy": "uuid-string"
+}
+```
+
+### Update Payment
+```http
+PUT /api/rent-payments/{id}
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+### Mark Payment as Paid
+```http
+POST /api/rent-payments/{id}/mark-paid
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "paidDate": "2024-02-01T10:00:00Z",
+  "paymentMethod": "bank_transfer",
+  "transactionId": "TXN123456"
+}
+```
+
+### Calculate Late Fees
+```http
+POST /api/rent-payments/calculate-late-fees
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "amount": 2500.00,
+  "dueDate": "2024-02-01",
+  "paidDate": "2024-02-05"
+}
+```
+
+### Generate Monthly Payments
+```http
+POST /api/rent-payments/generate-monthly
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "leaseId": "uuid-string",
+  "startDate": "2024-01-01",
+  "endDate": "2024-12-31"
+}
+```
+
+### Revenue Reports
+
+#### Get Revenue by Property
+```http
+GET /api/rent-payments/revenue/property/{propertyId}?startDate=2024-01-01&endDate=2024-12-31
+```
+
+#### Get Revenue by Owner
+```http
+GET /api/rent-payments/revenue/owner/{ownerId}?startDate=2024-01-01&endDate=2024-12-31
+```
+
+#### Get Outstanding Payments
+```http
+GET /api/rent-payments/outstanding
+```
+
+#### Get Monthly Revenue Report
+```http
+GET /api/rent-payments/reports/monthly/2024/1
+```
+
 ## 📝 Data Models
 
-### Asset
+### Property
 ```typescript
-interface Asset {
-  id: number;
-  name: string;           // 1-100 characters
-  description?: string;   // Max 500 characters
-  value: number;          // Positive decimal
-  location?: string;      // Max 100 characters
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface AssetInput {
+interface Property {
+  id: string;              // UUID
   name: string;
   description?: string;
-  value: number;
-  location?: string;
+  propertyType: 'apartment' | 'house' | 'villa' | 'commercial' | 'pg_hostel' | 'co_living' | 'office' | 'shop' | 'warehouse';
+  status: 'available' | 'occupied' | 'under_maintenance' | 'vacant';
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+    landmark?: string;
+  };
+  area: number;            // sq ft
+  bedrooms?: number;
+  bathrooms?: number;
+  monthlyRent: number;
+  securityDeposit: number;
+  ownerId: string;         // UUID
+  amenities?: string[];
+  photos?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Lease
+```typescript
+interface Lease {
+  id: string;              // UUID
+  propertyId: string;      // UUID
+  tenantId: string;        // UUID
+  startDate: string;
+  endDate: string;
+  monthlyRent: number;
+  securityDeposit: number;
+  status: 'draft' | 'active' | 'expired' | 'terminated';
+  noticePeriodDays?: number;
+  autoRenewal?: boolean;
+  maintenanceCharges?: number;
+  paymentFrequency?: string;
+  rentDueDay?: number;
+  electricityCharges?: number;
+  waterCharges?: number;
+  otherCharges?: number;
+  petsAllowed?: boolean;
+  smokingAllowed?: boolean;
+  sublettingAllowed?: boolean;
+  specialConditions?: string;
+  signedAt?: string;
+  leaseDocumentUrl?: string;
+  terminatedAt?: string;
+  terminationReason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### RentPayment
+```typescript
+interface RentPayment {
+  id: string;              // UUID
+  leaseId: string;         // UUID
+  propertyId: string;      // UUID
+  tenantId: string;        // UUID
+  amount: number;
+  dueDate: string;
+  paidDate?: string;
+  status: 'pending' | 'paid' | 'overdue' | 'partial' | 'failed';
+  paymentMethod?: 'cash' | 'bank_transfer' | 'upi' | 'cheque' | 'card' | 'net_banking' | 'paytm' | 'phonepe' | 'amazon_pay' | 'other';
+  transactionId?: string;
+  paymentReference?: string;
+  lateFee?: number;
+  penaltyAmount?: number;
+  rentAmount: number;
+  maintenanceCharges?: number;
+  otherCharges?: number;
+  notes?: string;
+  createdBy: string;       // UUID
+  updatedBy?: string;      // UUID
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
 ### User
 ```typescript
 interface User {
-  id: number;
-  username: string;       // 3-50 characters
-  email: string;          // Valid email, unique
-  passwordHash: string;   // Hashed password
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface UserInput {
+  id: string;              // UUID
   username: string;
   email: string;
-  password: string;
+  phone?: string;
+  role: 'admin' | 'user';
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
+  profilePicture?: string;
+  lastLogin?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+```
 
-interface UserResponse {
-  id: number;
-  username: string;
+### Tenant
+```typescript
+interface Tenant {
+  id: string;              // UUID
+  firstName: string;
+  lastName: string;
   email: string;
-  createdAt: Date;
+  phone: string;
+  dateOfBirth?: string;
+  gender?: 'male' | 'female' | 'other';
+  occupation?: string;
+  monthlyIncome?: number;
+  currentAddress: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  permanentAddress?: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phone: string;
+  };
+  status: 'active' | 'inactive' | 'blacklisted';
+  totalRentals?: number;
+  currentPropertyId?: string; // UUID
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
@@ -397,14 +694,13 @@ interface UserResponse {
 ```json
 {
   "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input data",
-    "details": {
-      "name": "Name is required",
-      "value": "Value must be positive"
+  "message": "Invalid lease data",
+  "errors": [
+    {
+      "field": "startDate",
+      "message": "Start date cannot be in the past"
     }
-  }
+  ]
 }
 ```
 
@@ -412,113 +708,106 @@ interface UserResponse {
 ```json
 {
   "success": false,
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "Asset with ID 999 not found"
-  }
-}
-```
-
-**Conflict:**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "CONFLICT",
-    "message": "Asset with this name already exists"
-  }
+  "message": "Lease not found"
 }
 ```
 
 ## 🔒 Security
 
 ### Input Validation
-- All inputs are validated using Joi schemas
+- All inputs are validated using custom validation schemas
 - SQL injection prevention with parameterized queries
 - XSS protection with input sanitization
 
 ### Authentication & Authorization
 - JWT tokens for session management
-- Password hashing with bcrypt (12 rounds)
+- Password hashing with bcrypt
 - CORS configuration for cross-origin requests
 - Helmet.js for security headers
 
-### Rate Limiting (Planned)
-- API rate limiting to prevent abuse
-- Different limits for authenticated vs anonymous users
-
-## 📊 API Rate Limits
-
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| All endpoints | 1000 requests | 15 minutes |
-| Auth endpoints | 10 requests | 15 minutes |
+### Password Security
+- Minimum 6 characters
+- Secure password reset with multiple methods:
+  - Security questions
+  - Recovery codes
+  - Admin reset
 
 ## 🧪 Testing the API
 
 ### Using Swagger UI
 1. Start the backend server: `npm run dev`
-2. Open http://localhost:5000/api-docs
+2. Open http://localhost:5001/api-docs
 3. Use the interactive interface to test endpoints
 
 ### Using cURL
 
-**Create Asset:**
+**Create Property:**
 ```bash
-curl -X POST http://localhost:5000/api/assets \
+curl -X POST http://localhost:5001/api/properties \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Test Asset",
-    "description": "Testing API",
-    "value": 100.00,
-    "location": "Test Lab"
+    "name": "Test Property",
+    "propertyType": "apartment",
+    "address": {
+      "street": "123 Test St",
+      "city": "Test City",
+      "state": "TS",
+      "pincode": "12345"
+    },
+    "area": 1000,
+    "monthlyRent": 1500.00,
+    "securityDeposit": 3000.00,
+    "ownerId": "uuid-string"
   }'
 ```
 
-**Get Assets:**
+**Get Properties:**
 ```bash
-curl http://localhost:5000/api/assets
+curl http://localhost:5001/api/properties
 ```
 
 ### Using Postman/Insomnia
 Import the OpenAPI specification from `/api-docs` endpoint.
 
-## 🔄 API Versioning
+## 📊 API Features
 
-The API uses URL versioning (planned for future versions):
-```
-/api/v1/assets
-/api/v2/assets
-```
+### Lease Management
+- Full lease lifecycle tracking
+- Automatic rent payment generation
+- Lease termination and renewal
+- Property availability checking
+- Date validation and conflict detection
 
-## 📈 Performance
+### Payment Processing
+- Multiple payment methods support
+- Late fee calculations
+- Payment status tracking
+- Revenue reporting by property/owner
+- Outstanding payment monitoring
+- Monthly payment generation
 
-### Response Times
-- Average: < 100ms for simple queries
-- 95th percentile: < 500ms for complex operations
-- Database queries optimized with indexes
+### Financial Reporting
+- Revenue analytics by property
+- Revenue analytics by owner
+- Outstanding payments tracking
+- Monthly revenue reports
+- Payment history and trends
 
-### Caching (Planned)
-- Redis caching for frequently accessed data
-- CDN for static assets
-- Database query result caching
+## 🔮 Future Enhancements
 
-## 🔮 Future Endpoints
+### Advanced Features
+- `POST /api/leases/{id}/documents` - Upload lease documents
+- `GET /api/reports/occupancy` - Occupancy reports
+- `POST /api/payments/bulk` - Bulk payment processing
+- `GET /api/maintenance` - Maintenance request tracking
+- `POST /api/notifications` - Automated notifications
 
-### Advanced Asset Management
-- `GET /api/assets/search` - Advanced search with filters
-- `POST /api/assets/bulk` - Bulk operations
-- `GET /api/assets/categories` - Asset categories
-- `POST /api/assets/{id}/transfer` - Asset transfer tracking
-
-### Reporting
-- `GET /api/reports/assets` - Asset reports
-- `GET /api/reports/depreciation` - Depreciation reports
-- `GET /api/reports/audit` - Audit logs
-
-### File Management
-- `POST /api/assets/{id}/images` - Upload asset images
-- `GET /api/assets/{id}/documents` - Asset documents
+### Integration Features
+- Email notifications for payments
+- SMS alerts for lease events
+- Calendar integration for lease dates
+- Document management system
+- Payment gateway integration
 
 ## 📚 Related Documentation
 
