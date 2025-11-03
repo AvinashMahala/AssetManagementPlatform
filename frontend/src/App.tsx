@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
-import { PropertyListPageModern, PropertyCreatePage, PropertyEditPage, PropertyDetailPage, PropertyDashboardPage } from './pages/properties';
+import { PropertyListPageModern, PropertyCreatePage, PropertyEditPage, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
 import { TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
 import { UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
@@ -107,9 +107,7 @@ function App() {
                 path="/properties/:id/dashboard"
                 element={
                   <ProtectedRoute>
-                    <div className="min-h-screen bg-background">
-                      <PropertyDashboardPage />
-                    </div>
+                    <PropertyDashboardPageEnhanced />
                   </ProtectedRoute>
                 }
               />
