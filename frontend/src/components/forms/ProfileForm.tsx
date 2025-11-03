@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../common/Button';
-import { Input } from '../common/Input';
+import { Input } from '../../components/ui/input';
+import { FormField } from '../../components/ui/form-field';
+import { Form } from '../../components/ui/form';
 import { useAuthContext } from '../../contexts/AuthContext';
 import type { UpdateProfileRequest } from '../../services/authService';
 
@@ -14,55 +16,48 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
   onCancel
 }) => {
   const { user, updateProfile, loading } = useAuthContext();
-  const [formData, setFormData] = useState<UpdateProfileRequest>({
-    username: '',
-    email: '',
-    phone: ''
-  });
-  const [errors, setErrors] = useState<Partial<UpdateProfileRequest>>({});
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitError, setSubmitError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
 
   useEffect(() => {
     if (user) {
-      setFormData({
-        username: user.username || '',
-        email: user.email || '',
-        phone: user.phone || ''
-      });
+      // No need to set form data since Form component handles it
     }
   }, [user]);
 
-  const validateForm = (): boolean => {
-    const newErrors: Partial<UpdateProfileRequest> = {};
+  const handleSubmit = async (data: Record<string, any>) => {
+    setSubmitError('');
+    setSuccess('');
+    setErrors({});
 
-    if (formData.username && formData.username.length < 3) {
+    // Validate form data from the Form component
+    const newErrors: Partial<Record<string, string>> = {};
+
+    if (data.username && data.username.length < 3) {
       newErrors.username = 'Username must be at least 3 characters';
     }
 
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+    if (data.email && !/\S+@\S+\.\S+/.test(data.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
+    if (data.phone && !/^\+?[\d\s\-()]+$/.test(data.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitError('');
-    setSuccess('');
-
-    if (!validateForm()) {
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     try {
-      const success = await updateProfile(formData);
+      const updateData: UpdateProfileRequest = {
+        username: data.username || undefined,
+        email: data.email || undefined,
+        phone: data.phone || undefined
+      };
+      const success = await updateProfile(updateData);
       if (success) {
         setSuccess('Profile updated successfully!');
         onSuccess?.();
@@ -71,22 +66,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
       }
     } catch (_error) {
       setSubmitError('An error occurred while updating your profile. Please try again.');
-    }
-  };
-
-  const handleInputChange = (field: keyof UpdateProfileRequest) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: undefined
-      }));
     }
   };
 
@@ -100,7 +79,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <Form onSubmit={handleSubmit} loading={loading}>
         <div>
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
             Update Profile
@@ -132,32 +111,35 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
             </p>
           </div>
 
-          <Input
-            label="Username"
-            type="text"
-            value={formData.username || ''}
-            onChange={handleInputChange('username')}
-            error={errors.username}
-            placeholder="Enter your username"
-          />
+          <FormField label="Username">
+            <Input
+              name="username"
+              type="text"
+              defaultValue={user.username || ''}
+              error={errors.username}
+              placeholder="Enter your username"
+            />
+          </FormField>
 
-          <Input
-            label="Email (changing email requires verification)"
-            type="email"
-            value={formData.email || ''}
-            onChange={handleInputChange('email')}
-            error={errors.email}
-            placeholder="Enter your email"
-          />
+          <FormField label="Email (changing email requires verification)">
+            <Input
+              name="email"
+              type="email"
+              defaultValue={user.email || ''}
+              error={errors.email}
+              placeholder="Enter your email"
+            />
+          </FormField>
 
-          <Input
-            label="Phone"
-            type="tel"
-            value={formData.phone || ''}
-            onChange={handleInputChange('phone')}
-            error={errors.phone}
-            placeholder="Enter your phone number"
-          />
+          <FormField label="Phone">
+            <Input
+              name="phone"
+              type="tel"
+              defaultValue={user.phone || ''}
+              error={errors.phone}
+              placeholder="Enter your phone number"
+            />
+          </FormField>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -183,7 +165,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
             variant="primary"
             size="large"
             className="flex-1"
-            disabled={loading}
           >
             {loading ? 'Updating...' : 'Update Profile'}
           </Button>
@@ -198,7 +179,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
             Cancel
           </Button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 };

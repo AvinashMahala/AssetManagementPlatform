@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '../common/Button';
-import { Input } from '../common/Input';
+import { Input } from '../../components/ui/input';
+import { FormField } from '../../components/ui/form-field';
+import { Form } from '../../components/ui/form';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 interface VerifyPhoneFormProps {
@@ -66,12 +68,21 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: Record<string, any>) => {
+    setError('');
+    setSuccess('');
 
     if (step === 'request') {
+      if (!data.phoneNumber) {
+        setError('Please enter your phone number');
+        return;
+      }
       await handleRequestCode();
     } else {
+      if (!data.phoneNumber || !data.code) {
+        setError('Please enter both phone number and verification code');
+        return;
+      }
       await handleVerify();
     }
   };
@@ -109,27 +120,29 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Phone Number"
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="Enter your phone number"
-            required
-            disabled={step === 'verify'}
-          />
+        <Form onSubmit={handleSubmit} loading={loading || requestLoading}>
+                    <FormField label="Phone Number" required>
+            <Input
+              name="phoneNumber"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="Enter your phone number"
+              disabled={step === 'verify'}
+            />
+          </FormField>
 
           {step === 'verify' && (
-            <Input
-              label="Verification Code"
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Enter the 6-digit code"
-              required
-              maxLength={6}
-            />
+            <FormField label="Verification Code" required>
+              <Input
+                name="code"
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Enter the 6-digit code"
+                maxLength={6}
+              />
+            </FormField>
           )}
 
           <Button
@@ -137,12 +150,11 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
             variant="primary"
             size="large"
             className="w-full"
-            disabled={loading || requestLoading || (step === 'request' && !phoneNumber) || (step === 'verify' && (!phoneNumber || !code))}
           >
             {loading || requestLoading ? 'Processing...' :
              step === 'request' ? 'Send Code' : 'Verify Phone'}
           </Button>
-        </form>
+        </Form>
 
         {step === 'verify' && (
           <div className="text-center space-y-3">

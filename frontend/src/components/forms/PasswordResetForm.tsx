@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '../common/Button';
-import { Input } from '../common/Input';
+import { Input } from '../../components/ui/input';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 interface PasswordResetFormProps {
@@ -160,7 +160,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
         {step === 'email' && (
           <div className="space-y-4">
             <Input
-              label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -189,14 +188,12 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             {securityQuestions.map((q, index) => (
               <div key={index} className="space-y-2">
                 <Input
-                  label={`Question ${index + 1}`}
                   value={q.question}
                   onChange={(e) => updateSecurityQuestion(index, 'question', e.target.value)}
                   placeholder="Enter your security question"
                   required
                 />
                 <Input
-                  label={`Answer ${index + 1}`}
                   value={q.answer}
                   onChange={(e) => updateSecurityQuestion(index, 'answer', e.target.value)}
                   placeholder="Enter your answer"
@@ -218,7 +215,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             )}
 
             <Input
-              label="New Password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -227,7 +223,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             />
 
             <Input
-              label="Confirm New Password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -262,7 +257,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             </div>
 
             <Input
-              label="Recovery Code"
               value={recoveryCode}
               onChange={(e) => setRecoveryCode(e.target.value)}
               placeholder="Enter your recovery code"
@@ -270,7 +264,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             />
 
             <Input
-              label="New Password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -279,7 +272,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             />
 
             <Input
-              label="Confirm New Password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}

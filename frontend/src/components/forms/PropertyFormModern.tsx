@@ -4,9 +4,11 @@ import { ArrowLeft, Building2, MapPin, Home } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { FormField } from '../../components/ui/form-field';
 import { Badge } from '../../components/ui/badge';
-import type { PropertyInput } from '../../types/property';
+import type { PropertyInput } from '../../types';
 import { PropertyType, PropertyStatus } from '../../types/property';
 
 interface PropertyFormModernProps {
@@ -102,40 +104,65 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Property Name *</Label>
-                <Input id="name" value={formData.name} onChange={(e) => handleChange('name', e.target.value)} />
-                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="propertyType">Property Type *</Label>
-                <select id="propertyType" value={formData.propertyType} onChange={(e) => handleChange('propertyType', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  {Object.values(PropertyType).map(type => (
-                    <option key={type} value={type}>{type.replace('_', ' ').toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
+              <FormField label="Property Name" required>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  error={errors.name}
+                  placeholder="Enter property name"
+                />
+              </FormField>
+              <FormField label="Property Type" required>
+                <Select value={formData.propertyType} onValueChange={(value) => handleChange('propertyType', value)}>
+                  <SelectTrigger error={errors.propertyType}>
+                    <SelectValue placeholder="Select property type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(PropertyType).map(type => (
+                      <SelectItem key={type} value={type}>
+                        {type.replace('_', ' ').toUpperCase()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <textarea id="description" value={formData.description} onChange={(e) => handleChange('description', e.target.value)} className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-            </div>
+            <FormField label="Description">
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleChange('description', e.target.value)}
+                placeholder="Enter property description"
+                rows={3}
+              />
+            </FormField>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="status">Status *</Label>
-                <select id="status" value={formData.status} onChange={(e) => handleChange('status', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  {Object.values(PropertyStatus).map(status => (
-                    <option key={status} value={status}>{status.replace('_', ' ').toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ownerId">Owner ID *</Label>
-                <Input id="ownerId" value={formData.ownerId} onChange={(e) => handleChange('ownerId', e.target.value)} />
-                {errors.ownerId && <p className="text-sm text-destructive">{errors.ownerId}</p>}
-              </div>
+              <FormField label="Status" required>
+                <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(PropertyStatus).map(status => (
+                      <SelectItem key={status} value={status}>
+                        {status.replace('_', ' ').toUpperCase()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+              <FormField label="Owner ID" required>
+                <Input
+                  id="ownerId"
+                  value={formData.ownerId}
+                  onChange={(e) => handleChange('ownerId', e.target.value)}
+                  error={errors.ownerId}
+                  placeholder="Enter owner ID"
+                />
+              </FormField>
             </div>
           </CardContent>
         </Card>
@@ -148,32 +175,52 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="street">Street Address *</Label>
-              <Input id="street" value={formData.address.street} onChange={(e) => handleAddressChange('street', e.target.value)} />
-              {errors.street && <p className="text-sm text-destructive">{errors.street}</p>}
-            </div>
+            <FormField label="Street Address" required>
+              <Input
+                id="street"
+                value={formData.address.street}
+                onChange={(e) => handleAddressChange('street', e.target.value)}
+                error={errors.street}
+                placeholder="Enter street address"
+              />
+            </FormField>
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="city">City *</Label>
-                <Input id="city" value={formData.address.city} onChange={(e) => handleAddressChange('city', e.target.value)} />
-                {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="state">State *</Label>
-                <Input id="state" value={formData.address.state} onChange={(e) => handleAddressChange('state', e.target.value)} />
-                {errors.state && <p className="text-sm text-destructive">{errors.state}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pincode">Pincode *</Label>
-                <Input id="pincode" value={formData.address.pincode} onChange={(e) => handleAddressChange('pincode', e.target.value)} />
-                {errors.pincode && <p className="text-sm text-destructive">{errors.pincode}</p>}
-              </div>
+              <FormField label="City" required>
+                <Input
+                  id="city"
+                  value={formData.address.city}
+                  onChange={(e) => handleAddressChange('city', e.target.value)}
+                  error={errors.city}
+                  placeholder="Enter city"
+                />
+              </FormField>
+              <FormField label="State" required>
+                <Input
+                  id="state"
+                  value={formData.address.state}
+                  onChange={(e) => handleAddressChange('state', e.target.value)}
+                  error={errors.state}
+                  placeholder="Enter state"
+                />
+              </FormField>
+              <FormField label="Pincode" required>
+                <Input
+                  id="pincode"
+                  value={formData.address.pincode}
+                  onChange={(e) => handleAddressChange('pincode', e.target.value)}
+                  error={errors.pincode}
+                  placeholder="Enter pincode"
+                />
+              </FormField>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="landmark">Landmark</Label>
-              <Input id="landmark" value={formData.address.landmark} onChange={(e) => handleAddressChange('landmark', e.target.value)} />
-            </div>
+            <FormField label="Landmark">
+              <Input
+                id="landmark"
+                value={formData.address.landmark}
+                onChange={(e) => handleAddressChange('landmark', e.target.value)}
+                placeholder="Enter landmark (optional)"
+              />
+            </FormField>
           </CardContent>
         </Card>
 
@@ -186,37 +233,61 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="totalArea">Total Area (sq ft) *</Label>
-                <Input id="totalArea" type="number" value={formData.totalArea} onChange={(e) => handleChange('totalArea', Number(e.target.value))} />
-                {errors.totalArea && <p className="text-sm text-destructive">{errors.totalArea}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="totalFloors">Total Floors</Label>
-                <Input id="totalFloors" type="number" value={formData.totalFloors || ''} onChange={(e) => handleChange('totalFloors', e.target.value ? Number(e.target.value) : undefined)} />
-              </div>
+              <FormField label="Total Area (sq ft)" required>
+                <Input
+                  id="totalArea"
+                  type="number"
+                  value={formData.totalArea}
+                  onChange={(e) => handleChange('totalArea', Number(e.target.value))}
+                  error={errors.totalArea}
+                  placeholder="Enter total area"
+                />
+              </FormField>
+              <FormField label="Total Floors">
+                <Input
+                  id="totalFloors"
+                  type="number"
+                  value={formData.totalFloors || ''}
+                  onChange={(e) => handleChange('totalFloors', e.target.value ? Number(e.target.value) : undefined)}
+                  placeholder="Enter total floors"
+                />
+              </FormField>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="yearBuilt">Year Built</Label>
-                <Input id="yearBuilt" type="number" value={formData.yearBuilt || ''} onChange={(e) => handleChange('yearBuilt', e.target.value ? Number(e.target.value) : undefined)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="parkingSpaces">Parking Spaces</Label>
-                <Input id="parkingSpaces" type="number" value={formData.parkingSpaces || ''} onChange={(e) => handleChange('parkingSpaces', e.target.value ? Number(e.target.value) : undefined)} />
-              </div>
+              <FormField label="Year Built">
+                <Input
+                  id="yearBuilt"
+                  type="number"
+                  value={formData.yearBuilt || ''}
+                  onChange={(e) => handleChange('yearBuilt', e.target.value ? Number(e.target.value) : undefined)}
+                  placeholder="Enter year built"
+                />
+              </FormField>
+              <FormField label="Parking Spaces">
+                <Input
+                  id="parkingSpaces"
+                  type="number"
+                  value={formData.parkingSpaces || ''}
+                  onChange={(e) => handleChange('parkingSpaces', e.target.value ? Number(e.target.value) : undefined)}
+                  placeholder="Enter parking spaces"
+                />
+              </FormField>
             </div>
 
-            <div className="space-y-2">
-              <Label>Amenities</Label>
+            <FormField label="Amenities">
               <div className="flex flex-wrap gap-2">
                 {AMENITIES.map(amenity => (
-                  <Badge key={amenity} variant={formData.buildingAmenities?.includes(amenity) ? 'default' : 'outline'} className="cursor-pointer" onClick={() => toggleAmenity(amenity)}>
+                  <Badge
+                    key={amenity}
+                    variant={formData.buildingAmenities?.includes(amenity) ? 'default' : 'outline'}
+                    className="cursor-pointer hover:bg-primary/80"
+                    onClick={() => toggleAmenity(amenity)}
+                  >
                     {amenity}
                   </Badge>
                 ))}
               </div>
-            </div>
+            </FormField>
           </CardContent>
         </Card>
 

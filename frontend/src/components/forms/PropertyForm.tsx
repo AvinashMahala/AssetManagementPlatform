@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
-import { Input } from '../common/Input';
+import { Input } from '../../components/ui/input';
 import { PropertyType, PropertyStatus } from '../../types';
 import type { PropertyInput, PropertyAddress } from '../../types';
 
@@ -211,7 +211,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
-              label="Property Name"
               value={formData.name}
               onChange={handleInputChange('name')}
               error={errors.name}
@@ -275,7 +274,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 mb-4">Address Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
-                label="Street Address"
                 value={formData.address.street}
                 onChange={handleAddressChange('street')}
                 error={errors.street}
@@ -284,14 +282,12 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
 
               <Input
-                label="Landmark"
                 value={formData.address.landmark}
                 onChange={handleAddressChange('landmark')}
                 placeholder="Enter nearby landmark"
               />
 
               <Input
-                label="City"
                 value={formData.address.city}
                 onChange={handleAddressChange('city')}
                 error={errors.city}
@@ -300,7 +296,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
 
               <Input
-                label="State"
                 value={formData.address.state}
                 onChange={handleAddressChange('state')}
                 error={errors.state}
@@ -309,7 +304,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
 
               <Input
-                label="Pincode"
                 value={formData.address.pincode}
                 onChange={handleAddressChange('pincode')}
                 error={errors.pincode}
@@ -324,7 +318,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             <h3 className="text-lg font-medium text-gray-900 mb-4">Building Specifications</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
-                label="Total Area (sq ft)"
                 type="number"
                 value={formData.totalArea || ''}
                 onChange={handleInputChange('totalArea')}
@@ -334,7 +327,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
 
               <Input
-                label="Total Floors"
                 type="number"
                 value={formData.totalFloors || ''}
                 onChange={handleInputChange('totalFloors')}
@@ -343,7 +335,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
 
               <Input
-                label="Year Built"
                 type="number"
                 value={formData.yearBuilt || ''}
                 onChange={handleInputChange('yearBuilt')}
@@ -352,7 +343,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
 
               <Input
-                label="Parking Spaces"
                 type="number"
                 value={formData.parkingSpaces || ''}
                 onChange={handleInputChange('parkingSpaces')}

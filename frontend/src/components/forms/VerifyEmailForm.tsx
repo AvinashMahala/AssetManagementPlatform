@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../common/Button';
-import { Input } from '../common/Input';
+import { Input } from '../../components/ui/input';
+import { FormField } from '../../components/ui/form-field';
+import { Form } from '../../components/ui/form';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 interface VerifyEmailFormProps {
@@ -51,9 +53,17 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
     }
   }, [handleVerify]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleVerify();
+  const handleSubmit = async (data: Record<string, any>) => {
+    setError('');
+    setSuccess('');
+
+    // Validate form data
+    if (!data.token) {
+      setError('Please enter the verification token');
+      return;
+    }
+
+    await handleVerify(data.token);
   };
 
   const handleResend = async () => {
@@ -103,26 +113,26 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Verification Token"
-            type="text"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            placeholder="Enter the 6-digit code from your email"
-            required
-          />
+        <Form onSubmit={handleSubmit} loading={loading}>
+          <FormField label="Verification Token" required>
+            <Input
+              name="token"
+              type="text"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="Enter the 6-digit code from your email"
+            />
+          </FormField>
 
           <Button
             type="submit"
             variant="primary"
             size="large"
             className="w-full"
-            disabled={loading || !token}
           >
             {loading ? 'Verifying...' : 'Verify Email'}
           </Button>
-        </form>
+        </Form>
 
         {email && (
           <div className="text-center">

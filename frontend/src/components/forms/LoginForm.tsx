@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '../common/Button';
-import { Input } from '../common/Input';
+import { Input } from '../../components/ui/input';
+import { FormField } from '../../components/ui/form-field';
+import { Form } from '../../components/ui/form';
 import { GoogleOAuthButton } from '../common/GoogleOAuthButton';
 import { useAuthContext } from '../../contexts';
 import type { UserCredentials } from '../../types/user';
@@ -17,42 +19,35 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onForgotPassword
 }) => {
   const { login, googleAuth, loading, devModeLogin } = useAuthContext();
-  const [formData, setFormData] = useState<UserCredentials>({
-    email: '',
-    password: ''
-  });
-  const [errors, setErrors] = useState<Partial<UserCredentials>>({});
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitError, setSubmitError] = useState<string>('');
 
-  const validateForm = (): boolean => {
-    const newErrors: Partial<UserCredentials> = {};
+  const handleSubmit = async (data: Record<string, any>) => {
+    setSubmitError('');
+    setErrors({});
 
-    if (!formData.email) {
+    // Validate form data
+    const newErrors: Partial<Record<string, string>> = {};
+
+    if (!data.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(data.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!formData.password) {
+    if (!data.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
+    } else if (data.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitError('');
-
-    if (!validateForm()) {
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     try {
-      const success = await login(formData);
+      const success = await login(data as UserCredentials);
       if (success) {
         onSuccess?.();
       } else {
@@ -70,7 +65,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       // Decode the JWT token to get user profile
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
       console.log('[LoginForm.handleGoogleSuccess] Decoded payload:', payload);
-      
+
       const googleProfile = {
         id: payload.sub,
         email: payload.email,
@@ -82,7 +77,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
       const success = await googleAuth(googleProfile);
       console.log('[LoginForm.handleGoogleSuccess] GoogleAuth result:', success);
-      
+
       if (success) {
         onSuccess?.();
       } else {
@@ -98,25 +93,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     setSubmitError(`Google authentication error: ${error}`);
   };
 
-  const handleInputChange = (field: keyof UserCredentials) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData((prev: UserCredentials) => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev: Partial<Record<keyof UserCredentials, string>>) => ({
-        ...prev,
-        [field]: undefined
-      }));
-    }
-  };
-
   return (
     <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <Form onSubmit={handleSubmit} loading={loading}>
         <div>
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
             Sign In
@@ -133,25 +112,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         )}
 
         <div className="space-y-4">
-          <Input
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange('email')}
-            error={errors.email}
-            placeholder="Enter your email"
-            required
-          />
+          <FormField label="Email" required>
+            <Input
+              name="email"
+              type="email"
+              error={errors.email}
+              placeholder="Enter your email"
+            />
+          </FormField>
 
-          <Input
-            label="Password"
-            type="password"
-            value={formData.password}
-            onChange={handleInputChange('password')}
-            error={errors.password}
-            placeholder="Enter your password"
-            required
-          />
+          <FormField label="Password" required>
+            <Input
+              name="password"
+              type="password"
+              error={errors.password}
+              placeholder="Enter your password"
+            />
+          </FormField>
         </div>
 
         <div className="flex items-center justify-between">
@@ -171,7 +148,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           variant="primary"
           size="large"
           className="w-full"
-          disabled={loading}
         >
           {loading ? 'Signing in...' : 'Sign In'}
         </Button>
@@ -220,7 +196,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             Sign up
           </button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 };

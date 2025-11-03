@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { Breadcrumbs } from '../ui';
 
 interface AppLayoutProps {
   children: React.ReactNode;
   title?: string;
+  showBreadcrumbs?: boolean;
 }
 
-export const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
+export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, showBreadcrumbs = true }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -46,6 +48,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
         
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {showBreadcrumbs && <Breadcrumbs className="mb-6" items={[]} />}
             {children}
           </div>
         </main>

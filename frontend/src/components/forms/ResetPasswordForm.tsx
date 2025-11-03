@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../common/Button';
-import { Input } from '../common/Input';
+import { Input } from '../../components/ui/input';
 import { useAuthContext } from '../../contexts/AuthContext';
 import type { PasswordResetOptions } from '../../services/authService';
 
@@ -318,14 +318,12 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             {securityQuestions.map((q, index) => (
               <div key={index} className="space-y-2">
                 <Input
-                  label={`Question ${index + 1}`}
                   value={q.question}
                   onChange={(e) => updateSecurityQuestion(index, 'question', e.target.value)}
                   placeholder="Enter your security question"
                   required
                 />
                 <Input
-                  label={`Answer ${index + 1}`}
                   value={q.answer}
                   onChange={(e) => updateSecurityQuestion(index, 'answer', e.target.value)}
                   placeholder="Enter your answer"
@@ -410,7 +408,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             <h3 className="text-lg font-semibold">Reset Password via Security Questions</h3>
 
             <Input
-              label="Email"
               type="email"
               value={resetEmail}
               onChange={(e) => setResetEmail(e.target.value)}
@@ -421,14 +418,12 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             {resetAnswers.map((a, index) => (
               <div key={index} className="space-y-2">
                 <Input
-                  label={`Question ${index + 1}`}
                   value={a.question}
                   onChange={(e) => updateResetAnswer(index, 'question', e.target.value)}
                   placeholder="Enter your security question"
                   required
                 />
                 <Input
-                  label={`Answer ${index + 1}`}
                   value={a.answer}
                   onChange={(e) => updateResetAnswer(index, 'answer', e.target.value)}
                   placeholder="Enter your answer"
@@ -438,7 +433,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             ))}
 
             <Input
-              label="New Password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -447,7 +441,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             />
 
             <Input
-              label="Confirm New Password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -478,7 +471,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             <h3 className="text-lg font-semibold">Reset Password via Recovery Code</h3>
 
             <Input
-              label="Email"
               type="email"
               value={resetEmail}
               onChange={(e) => setResetEmail(e.target.value)}
@@ -487,7 +479,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             />
 
             <Input
-              label="Recovery Code"
               value={recoveryCode}
               onChange={(e) => setRecoveryCode(e.target.value)}
               placeholder="Enter one of your recovery codes"
@@ -495,7 +486,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             />
 
             <Input
-              label="New Password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -504,7 +494,6 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             />
 
             <Input
-              label="Confirm New Password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}

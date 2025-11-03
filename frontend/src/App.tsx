@@ -12,7 +12,7 @@ import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
 import { PaymentCreatePageEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import DashboardEnhanced from './pages/DashboardEnhanced';
-import './App.css';
+import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
   return (
@@ -97,24 +97,9 @@ function App() {
                 path="/properties/:id"
                 element={
                   <ProtectedRoute>
-                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                          <div className="flex justify-between items-center py-4">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                              Property Details
-                            </h1>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              Asset Management Platform
-                            </div>
-                          </div>
-                        </div>
-                      </header>
-
-                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <PropertyDetailPage />
-                      </main>
-                    </div>
+                    <AppLayout>
+                      <PropertyDetailPage />
+                    </AppLayout>
                   </ProtectedRoute>
                 }
               />
@@ -130,50 +115,34 @@ function App() {
 
               <Route path="/tenants" element={<ProtectedRoute><TenantListPageEnhanced /></ProtectedRoute>} />
               <Route path="/tenants/create" element={<ProtectedRoute><TenantCreatePageEnhanced /></ProtectedRoute>} />
-              <Route path="/tenants/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantDetailPage /></div></ProtectedRoute>} />
+              <Route path="/tenants/:id" element={<ProtectedRoute><AppLayout><TenantDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
               <Route path="/units/create" element={<ProtectedRoute><UnitCreatePageEnhanced /></ProtectedRoute>} />
-              <Route path="/units/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitDetailPage /></div></ProtectedRoute>} />
+              <Route path="/units/:id" element={<ProtectedRoute><AppLayout><UnitDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/edit" element={<ProtectedRoute><UnitEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/leases" element={<ProtectedRoute><LeaseListPageEnhanced /></ProtectedRoute>} />
               <Route path="/leases/create" element={<ProtectedRoute><LeaseCreatePageEnhanced /></ProtectedRoute>} />
-              <Route path="/leases/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseDetailPage /></div></ProtectedRoute>} />
+              <Route path="/leases/:id" element={<ProtectedRoute><AppLayout><LeaseDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/leases/:id/edit" element={<ProtectedRoute><LeaseEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/payments" element={<ProtectedRoute><PaymentListPageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
-              <Route path="/payments/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentDetailPage /></div></ProtectedRoute>} />
+              <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
 
-              {/* Admin-only routes */}
               <Route
                 path="/admin/*"
                 element={
                   <ProtectedRoute requiredRole="admin">
-                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                          <div className="flex justify-between items-center py-4">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                              Admin Panel
-                            </h1>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              Asset Management Platform
-                            </div>
-                          </div>
-                        </div>
-                      </header>
-
-                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <div className="text-center">
-                          <h2 className="text-2xl font-bold text-gray-900 mb-4">Admin Panel</h2>
-                          <p className="text-gray-600">Admin functionality coming soon...</p>
-                        </div>
-                      </main>
-                    </div>
+                    <AppLayout title="Admin Panel">
+                      <div className="text-center py-12">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Admin Panel</h2>
+                        <p className="text-gray-600">Admin functionality coming soon...</p>
+                      </div>
+                    </AppLayout>
                   </ProtectedRoute>
                 }
               />
