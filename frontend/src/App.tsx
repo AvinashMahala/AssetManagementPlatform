@@ -3,13 +3,13 @@ import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
-import { TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
+import { TenantCreatePageEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
-import { UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
+import { UnitCreatePageEnhanced, UnitDetailPage, UnitEditPageEnhanced } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
-import { LeaseCreatePage, LeaseDetailPage, LeaseEditPage } from './pages/leases';
+import { LeaseCreatePageEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
 import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
-import { PaymentCreatePage, PaymentDetailPage, PaymentEditPage } from './pages/payments';
+import { PaymentCreatePageEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import DashboardEnhanced from './pages/DashboardEnhanced';
 import './App.css';
@@ -129,24 +129,24 @@ function App() {
               />
 
               <Route path="/tenants" element={<ProtectedRoute><TenantListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/tenants/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantCreatePage /></div></ProtectedRoute>} />
+              <Route path="/tenants/create" element={<ProtectedRoute><TenantCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/tenants/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantDetailPage /></div></ProtectedRoute>} />
-              <Route path="/tenants/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantEditPage /></div></ProtectedRoute>} />
+              <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/units/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitCreatePage /></div></ProtectedRoute>} />
+              <Route path="/units/create" element={<ProtectedRoute><UnitCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/units/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitDetailPage /></div></ProtectedRoute>} />
-              <Route path="/units/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitEditPage /></div></ProtectedRoute>} />
+              <Route path="/units/:id/edit" element={<ProtectedRoute><UnitEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/leases" element={<ProtectedRoute><LeaseListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/leases/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseCreatePage /></div></ProtectedRoute>} />
+              <Route path="/leases/create" element={<ProtectedRoute><LeaseCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/leases/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseDetailPage /></div></ProtectedRoute>} />
-              <Route path="/leases/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseEditPage /></div></ProtectedRoute>} />
+              <Route path="/leases/:id/edit" element={<ProtectedRoute><LeaseEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/payments" element={<ProtectedRoute><PaymentListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/payments/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentCreatePage /></div></ProtectedRoute>} />
+              <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentDetailPage /></div></ProtectedRoute>} />
-              <Route path="/payments/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentEditPage /></div></ProtectedRoute>} />
+              <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
 
               {/* Admin-only routes */}
               <Route
