@@ -7,8 +7,10 @@ import { TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tena
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
 import { UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
-import { LeaseListPage, LeaseCreatePage, LeaseDetailPage, LeaseEditPage } from './pages/leases';
-import { PaymentListPage, PaymentCreatePage, PaymentDetailPage, PaymentEditPage } from './pages/payments';
+import { LeaseCreatePage, LeaseDetailPage, LeaseEditPage } from './pages/leases';
+import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
+import { PaymentCreatePage, PaymentDetailPage, PaymentEditPage } from './pages/payments';
+import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import DashboardEnhanced from './pages/DashboardEnhanced';
 import './App.css';
 
@@ -174,12 +176,12 @@ function App() {
               <Route path="/units/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitDetailPage /></div></ProtectedRoute>} />
               <Route path="/units/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitEditPage /></div></ProtectedRoute>} />
               
-              <Route path="/leases" element={<ProtectedRoute><div className="min-h-screen bg-background"><LeaseListPage /></div></ProtectedRoute>} />
+              <Route path="/leases" element={<ProtectedRoute><LeaseListPageEnhanced /></ProtectedRoute>} />
               <Route path="/leases/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseCreatePage /></div></ProtectedRoute>} />
               <Route path="/leases/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseDetailPage /></div></ProtectedRoute>} />
               <Route path="/leases/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseEditPage /></div></ProtectedRoute>} />
               
-              <Route path="/payments" element={<ProtectedRoute><div className="min-h-screen bg-background"><PaymentListPage /></div></ProtectedRoute>} />
+              <Route path="/payments" element={<ProtectedRoute><PaymentListPageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentCreatePage /></div></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentDetailPage /></div></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentEditPage /></div></ProtectedRoute>} />
