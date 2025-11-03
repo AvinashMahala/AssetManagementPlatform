@@ -1,23 +1,25 @@
 import { Router } from 'express';
 import { UnitController } from '../controllers/UnitController';
-import { devAuthBypass } from '../middlewares/authMiddleware';
+import { conditionalAuth } from '../middlewares/authMiddleware';
+import { IUserService } from '../interfaces/services/IUserService';
 
-export const createUnitRoutes = (controller: UnitController) => {
+export const createUnitRoutes = (controller: UnitController, userService: IUserService) => {
   const router = Router();
+  const auth = conditionalAuth(userService);
 
   // Unit CRUD routes
-  router.get('/units', devAuthBypass, controller.getAll.bind(controller));
-  router.get('/units/:id', devAuthBypass, controller.getById.bind(controller));
-  router.post('/units', devAuthBypass, controller.create.bind(controller));
-  router.put('/units/:id', devAuthBypass, controller.update.bind(controller));
-  router.delete('/units/:id', devAuthBypass, controller.delete.bind(controller));
-  router.patch('/units/:id/status', devAuthBypass, controller.updateStatus.bind(controller));
+  router.get('/units', auth, controller.getAll.bind(controller));
+  router.get('/units/:id', auth, controller.getById.bind(controller));
+  router.post('/units', auth, controller.create.bind(controller));
+  router.put('/units/:id', auth, controller.update.bind(controller));
+  router.delete('/units/:id', auth, controller.delete.bind(controller));
+  router.patch('/units/:id/status', auth, controller.updateStatus.bind(controller));
 
   // Unit tenant management routes
-  router.get('/units/:id/tenants', devAuthBypass, controller.getTenants.bind(controller));
-  router.post('/units/:unitId/tenants', devAuthBypass, controller.assignTenant.bind(controller));
-  router.put('/units/:unitId/tenants/:tenantId', devAuthBypass, controller.updateTenantAssignment.bind(controller));
-  router.delete('/units/:unitId/tenants/:tenantId', devAuthBypass, controller.removeTenant.bind(controller));
+  router.get('/units/:id/tenants', auth, controller.getTenants.bind(controller));
+  router.post('/units/:unitId/tenants', auth, controller.assignTenant.bind(controller));
+  router.put('/units/:unitId/tenants/:tenantId', auth, controller.updateTenantAssignment.bind(controller));
+  router.delete('/units/:unitId/tenants/:tenantId', auth, controller.removeTenant.bind(controller));
 
   return router;
 };

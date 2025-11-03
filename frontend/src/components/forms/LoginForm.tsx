@@ -65,9 +65,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
   const handleGoogleSuccess = async (response: any) => {
     try {
+      console.log('[LoginForm.handleGoogleSuccess] Raw Google response:', response);
       setSubmitError('');
       // Decode the JWT token to get user profile
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      console.log('[LoginForm.handleGoogleSuccess] Decoded payload:', payload);
+      
       const googleProfile = {
         id: payload.sub,
         email: payload.email,
@@ -75,14 +78,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         picture: payload.picture,
         verified_email: payload.email_verified || true
       };
+      console.log('[LoginForm.handleGoogleSuccess] Google profile:', googleProfile);
 
       const success = await googleAuth(googleProfile);
+      console.log('[LoginForm.handleGoogleSuccess] GoogleAuth result:', success);
+      
       if (success) {
         onSuccess?.();
       } else {
         setSubmitError('Google authentication failed');
       }
-    } catch (_error) {
+    } catch (error) {
+      console.error('[LoginForm.handleGoogleSuccess] Error:', error);
       setSubmitError('An error occurred during Google authentication. Please try again.');
     }
   };

@@ -3,10 +3,10 @@ import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageModern, PropertyCreatePage, PropertyEditPage, PropertyDetailPage } from './pages/properties';
-import TenantListPage from './pages/tenants/TenantListPage';
-import UnitListPage from './pages/units/UnitListPage';
-import LeaseListPage from './pages/leases/LeaseListPage';
-import PaymentListPage from './pages/payments/PaymentListPage';
+import { TenantListPage, TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
+import { UnitListPage, UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
+import { LeaseListPage, LeaseCreatePage, LeaseDetailPage, LeaseEditPage } from './pages/leases';
+import { PaymentListPage, PaymentCreatePage, PaymentDetailPage, PaymentEditPage } from './pages/payments';
 import Dashboard from './pages/Dashboard';
 import './App.css';
 
@@ -169,9 +169,24 @@ function App() {
               />
 
               <Route path="/tenants" element={<ProtectedRoute><div className="min-h-screen bg-background"><TenantListPage /></div></ProtectedRoute>} />
+              <Route path="/tenants/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantCreatePage /></div></ProtectedRoute>} />
+              <Route path="/tenants/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantDetailPage /></div></ProtectedRoute>} />
+              <Route path="/tenants/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantEditPage /></div></ProtectedRoute>} />
+              
               <Route path="/units" element={<ProtectedRoute><div className="min-h-screen bg-background"><UnitListPage /></div></ProtectedRoute>} />
+              <Route path="/units/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitCreatePage /></div></ProtectedRoute>} />
+              <Route path="/units/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitDetailPage /></div></ProtectedRoute>} />
+              <Route path="/units/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitEditPage /></div></ProtectedRoute>} />
+              
               <Route path="/leases" element={<ProtectedRoute><div className="min-h-screen bg-background"><LeaseListPage /></div></ProtectedRoute>} />
+              <Route path="/leases/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseCreatePage /></div></ProtectedRoute>} />
+              <Route path="/leases/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseDetailPage /></div></ProtectedRoute>} />
+              <Route path="/leases/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><LeaseEditPage /></div></ProtectedRoute>} />
+              
               <Route path="/payments" element={<ProtectedRoute><div className="min-h-screen bg-background"><PaymentListPage /></div></ProtectedRoute>} />
+              <Route path="/payments/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentCreatePage /></div></ProtectedRoute>} />
+              <Route path="/payments/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentDetailPage /></div></ProtectedRoute>} />
+              <Route path="/payments/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><PaymentEditPage /></div></ProtectedRoute>} />
 
               {/* Admin-only routes */}
               <Route

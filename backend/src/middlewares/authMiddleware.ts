@@ -116,7 +116,9 @@ export const conditionalAuth = (userService: IUserService) => {
       const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; role: string };
 
       // Verify user still exists
+      console.log('[conditionalAuth] Decoded userId:', decoded.userId);
       const user = await userService.getUserById(decoded.userId);
+      console.log('[conditionalAuth] User found:', user ? 'yes' : 'no');
       if (!user) {
         return res.status(401).json({
           success: false,
@@ -132,6 +134,8 @@ export const conditionalAuth = (userService: IUserService) => {
 
       next();
     } catch (error) {
+      console.error('[conditionalAuth] Error:', error);
+      console.error('[conditionalAuth] Error type:', error instanceof jwt.TokenExpiredError ? 'TokenExpiredError' : error instanceof jwt.JsonWebTokenError ? 'JsonWebTokenError' : 'Other');
       if (error instanceof jwt.TokenExpiredError) {
         return res.status(401).json({
           success: false,
@@ -146,7 +150,8 @@ export const conditionalAuth = (userService: IUserService) => {
 
       return res.status(500).json({
         success: false,
-        message: 'Authentication error'
+        message: 'Authentication error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   };

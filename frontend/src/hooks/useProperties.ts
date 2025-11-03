@@ -7,6 +7,13 @@ export function useProperties(filters?: PropertyFilters) {
   const [currentFilters, setCurrentFilters] = useState<PropertyFilters>(filters || {});
 
   const query = useCallback(() => {
+    const token = localStorage.getItem('token');
+    console.log('[useProperties] Making API call with filters:', currentFilters);
+    console.log('[useProperties] Token in localStorage:', token ? `${token.substring(0, 20)}...` : 'NOT FOUND');
+    console.log('[useProperties] Full localStorage:', { 
+      token: token ? 'exists' : 'missing',
+      refreshToken: localStorage.getItem('refreshToken') ? 'exists' : 'missing'
+    });
     return propertyService.getAll(currentFilters);
   }, [currentFilters]);
 
@@ -22,6 +29,12 @@ export function useProperties(filters?: PropertyFilters) {
 
   // Extract properties from the response structure
   const properties = data?.properties || [];
+  
+  // Debug logging
+  console.log('[useProperties] Data received:', data);
+  console.log('[useProperties] Properties extracted:', properties);
+  console.log('[useProperties] Loading:', loading);
+  console.log('[useProperties] Error:', error);
 
   return {
     properties: Array.isArray(properties) ? properties : [],

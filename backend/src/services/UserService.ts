@@ -36,7 +36,7 @@ export class UserService implements IUserService {
   }
 
   async getUserById(id: string): Promise<User | null> {
-    const idValidation = ValidationUtils.validateId(id);
+    const idValidation = ValidationUtils.validateUUID(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
     }

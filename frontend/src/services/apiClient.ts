@@ -19,6 +19,10 @@ class ApiClient {
   private getHeaders(additionalHeaders?: Record<string, string>): Record<string, string> {
     const headers = { ...this.defaultHeaders };
 
+    // Add cache control to prevent 304 responses
+    headers['Cache-Control'] = 'no-cache';
+    headers['Pragma'] = 'no-cache';
+
     // Handle additional headers
     if (additionalHeaders) {
       Object.assign(headers, additionalHeaders);
@@ -50,7 +54,10 @@ class ApiClient {
 
     try {
       const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
+      // HTTP 304 Not Modified typically has no body
+      if (response.status === 304) {
+        responseData = null;
+      } else if (contentType && contentType.includes('application/json')) {
         responseData = await response.json();
       } else {
         responseData = await response.text();
@@ -59,7 +66,7 @@ class ApiClient {
       responseData = null;
     }
 
-    if (response.ok) {
+    if (response.ok || response.status === 304) {
       // Backend returns {success: true, data: {...}}
       // Extract the data field from the backend response
       const backendResponse = responseData as { success?: boolean; data?: T; message?: string };
@@ -87,6 +94,9 @@ class ApiClient {
 
   async get<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
+    
+    console.log('[apiClient.get] URL:', url);
+    console.log('[apiClient.get] Headers:', this.getHeaders(config?.headers));
 
     try {
       const response = await fetch(url, {
@@ -96,8 +106,15 @@ class ApiClient {
         ...config,
       });
 
-      return this.handleResponse<T>(response);
+      console.log('[apiClient.get] Response status:', response.status);
+      console.log('[apiClient.get] Response ok:', response.ok);
+      
+      const result = await this.handleResponse<T>(response);
+      console.log('[apiClient.get] Handled response:', result);
+      
+      return result;
     } catch (_error) {
+      console.error('[apiClient.get] Error:', _error);
       return {
         success: false,
         error: {

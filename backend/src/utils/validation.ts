@@ -318,6 +318,20 @@ export class ValidationUtils {
   }
 
   /**
+   * Validate UUID (for user IDs and other UUID fields)
+   */
+  static validateUUID(id: any): { isValid: boolean; message?: string } {
+    if (typeof id !== 'string') {
+      return { isValid: false, message: 'Invalid UUID. Must be a string.' };
+    }
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidPattern.test(id)) {
+      return { isValid: false, message: 'Invalid UUID format.' };
+    }
+    return { isValid: true };
+  }
+
+  /**
    * Validate tenant first name
    */
   static validateTenantFirstName(firstName: string): { isValid: boolean; message?: string } {

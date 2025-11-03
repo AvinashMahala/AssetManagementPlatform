@@ -14,6 +14,12 @@ const PropertyListPage: React.FC = () => {
   const { properties, loading, error, pagination, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
 
+  // Debug logging
+  console.log('[PropertyListPage] Render - Properties:', properties);
+  console.log('[PropertyListPage] Render - Loading:', loading);
+  console.log('[PropertyListPage] Render - Error:', error);
+  console.log('[PropertyListPage] Render - Properties length:', properties?.length);
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     updateFilters({ search: query, page: 1 });

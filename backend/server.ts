@@ -1744,8 +1744,8 @@ app.use(helmet({
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:5000', 'http://localhost:5001'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma']
 }));
 app.use(express.json());
 
@@ -1911,13 +1911,13 @@ app.get('/', (req, res) => {
 });
 
 // Mount routes
-app.use('/api/properties', createPropertyRoutes(propertyController));
+app.use('/api/properties', createPropertyRoutes(propertyController, userService));
 app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
-app.use('/api', createTenantRoutes(tenantController));
-app.use('/api', createUnitRoutes(unitController));
-app.use('/api', createUnitTenantRoutes(unitTenantController));
-app.use('/api/leases', createLeaseRoutes(leaseController));
-app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController));
+app.use('/api', createTenantRoutes(tenantController, userService));
+app.use('/api', createUnitRoutes(unitController, userService));
+app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
+app.use('/api/leases', createLeaseRoutes(leaseController, userService));
+app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
