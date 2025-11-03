@@ -138,7 +138,8 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
     };
   }, [units, propertyLeases, propertyPayments, tenants]);
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    if (amount === null || amount === undefined) return '₹0';
     return `₹${amount.toLocaleString()}`;
   };
 
