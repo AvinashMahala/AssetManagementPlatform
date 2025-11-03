@@ -90,8 +90,8 @@ const UnitListPage: React.FC = () => {
                     <TableCell className="font-medium">{unit.unitNumber}</TableCell>
                     <TableCell>{unit.unitType}</TableCell>
                     <TableCell>{unit.propertyId}</TableCell>
-                    <TableCell>₹{unit.rent.toLocaleString()}</TableCell>
-                    <TableCell>{unit.carpetArea}</TableCell>
+                    <TableCell>₹{unit.rent?.toLocaleString() || 'N/A'}</TableCell>
+                    <TableCell>{unit.carpetArea || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant={unit.status === 'available' ? 'success' : unit.status === 'occupied' ? 'warning' : 'default'}>{unit.status}</Badge>
                     </TableCell>

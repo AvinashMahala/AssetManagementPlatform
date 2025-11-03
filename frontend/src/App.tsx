@@ -5,7 +5,8 @@ import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './page
 import { PropertyListPageModern, PropertyCreatePage, PropertyEditPage, PropertyDetailPage, PropertyDashboardPage } from './pages/properties';
 import { TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
-import { UnitListPage, UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
+import { UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
+import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
 import { LeaseListPage, LeaseCreatePage, LeaseDetailPage, LeaseEditPage } from './pages/leases';
 import { PaymentListPage, PaymentCreatePage, PaymentDetailPage, PaymentEditPage } from './pages/payments';
 import DashboardEnhanced from './pages/DashboardEnhanced';
@@ -168,7 +169,7 @@ function App() {
               <Route path="/tenants/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantDetailPage /></div></ProtectedRoute>} />
               <Route path="/tenants/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantEditPage /></div></ProtectedRoute>} />
               
-              <Route path="/units" element={<ProtectedRoute><div className="min-h-screen bg-background"><UnitListPage /></div></ProtectedRoute>} />
+              <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
               <Route path="/units/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitCreatePage /></div></ProtectedRoute>} />
               <Route path="/units/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitDetailPage /></div></ProtectedRoute>} />
               <Route path="/units/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><UnitEditPage /></div></ProtectedRoute>} />
