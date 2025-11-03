@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
-import { PropertyListPageEnhanced, PropertyCreatePage, PropertyEditPage, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
+import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
 import { TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
 import { UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
@@ -79,24 +79,7 @@ function App() {
                 path="/properties/create"
                 element={
                   <ProtectedRoute>
-                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                          <div className="flex justify-between items-center py-4">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                              Create Property
-                            </h1>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              Asset Management Platform
-                            </div>
-                          </div>
-                        </div>
-                      </header>
-
-                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <PropertyCreatePage />
-                      </main>
-                    </div>
+                    <PropertyCreatePageEnhanced />
                   </ProtectedRoute>
                 }
               />
@@ -140,24 +123,7 @@ function App() {
                 path="/properties/:id/edit"
                 element={
                   <ProtectedRoute>
-                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                          <div className="flex justify-between items-center py-4">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                              Edit Property
-                            </h1>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              Asset Management Platform
-                            </div>
-                          </div>
-                        </div>
-                      </header>
-
-                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <PropertyEditPage />
-                      </main>
-                    </div>
+                    <PropertyEditPageEnhanced />
                   </ProtectedRoute>
                 }
               />
