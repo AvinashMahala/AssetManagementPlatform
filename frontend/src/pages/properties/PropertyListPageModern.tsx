@@ -242,7 +242,12 @@ const PropertyListPageModern: React.FC = () => {
                   {properties.map((property) => (
                     <TableRow key={property.id}>
                       <TableCell className="font-medium">
-                        {property.name}
+                        <button
+                          onClick={() => navigate(`/properties/${property.id}/dashboard`)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                        >
+                          {property.name}
+                        </button>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
@@ -253,7 +258,7 @@ const PropertyListPageModern: React.FC = () => {
                         {property.address.city}, {property.address.state}
                       </TableCell>
                       <TableCell>
-                        {property.totalArea.toLocaleString()}
+                        {property.totalArea ? property.totalArea.toLocaleString() : 'N/A'}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusVariant(property.status)}>
@@ -265,7 +270,8 @@ const PropertyListPageModern: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => navigate(`/properties/${property.id}`)}
+                            onClick={() => navigate(`/properties/${property.id}/dashboard`)}
+                            title="View Dashboard"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -273,6 +279,7 @@ const PropertyListPageModern: React.FC = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => navigate(`/properties/${property.id}/edit`)}
+                            title="Edit Property"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -280,6 +287,7 @@ const PropertyListPageModern: React.FC = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteClick(property.id, property.name)}
+                            title="Delete Property"
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>

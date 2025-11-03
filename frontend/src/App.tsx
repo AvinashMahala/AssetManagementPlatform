@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
-import { PropertyListPageModern, PropertyCreatePage, PropertyEditPage, PropertyDetailPage } from './pages/properties';
+import { PropertyListPageModern, PropertyCreatePage, PropertyEditPage, PropertyDetailPage, PropertyDashboardPage } from './pages/properties';
 import { TenantListPage, TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
 import { UnitListPage, UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
 import { LeaseListPage, LeaseCreatePage, LeaseDetailPage, LeaseEditPage } from './pages/leases';
@@ -111,6 +111,17 @@ function App() {
                       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <PropertyCreatePage />
                       </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/properties/:id/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <div className="min-h-screen bg-background">
+                      <PropertyDashboardPage />
                     </div>
                   </ProtectedRoute>
                 }

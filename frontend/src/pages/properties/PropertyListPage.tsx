@@ -206,7 +206,7 @@ const PropertyListPage: React.FC = () => {
                     </p>
                     <div className="flex items-center space-x-2 mt-1">
                       <span className="text-xs text-gray-500">
-                        {getTypeLabel(property.propertyType)} • {property.totalArea} sq ft
+                        {getTypeLabel(property.propertyType)} • {property.totalArea || 'N/A'} sq ft
                       </span>
                     </div>
                   </div>
