@@ -3,11 +3,12 @@ import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageModern, PropertyCreatePage, PropertyEditPage, PropertyDetailPage, PropertyDashboardPage } from './pages/properties';
-import { TenantListPage, TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
+import { TenantCreatePage, TenantDetailPage, TenantEditPage } from './pages/tenants';
+import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
 import { UnitListPage, UnitCreatePage, UnitDetailPage, UnitEditPage } from './pages/units';
 import { LeaseListPage, LeaseCreatePage, LeaseDetailPage, LeaseEditPage } from './pages/leases';
 import { PaymentListPage, PaymentCreatePage, PaymentDetailPage, PaymentEditPage } from './pages/payments';
-import Dashboard from './pages/Dashboard';
+import DashboardEnhanced from './pages/DashboardEnhanced';
 import './App.css';
 
 function App() {
@@ -48,24 +49,7 @@ function App() {
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                          <div className="flex justify-between items-center py-4">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                              Asset Management Platform
-                            </h1>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              Property Management System
-                            </div>
-                          </div>
-                        </div>
-                      </header>
-
-                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <Dashboard />
-                      </main>
-                    </div>
+                    <DashboardEnhanced />
                   </ProtectedRoute>
                 }
               />
@@ -179,7 +163,7 @@ function App() {
                 }
               />
 
-              <Route path="/tenants" element={<ProtectedRoute><div className="min-h-screen bg-background"><TenantListPage /></div></ProtectedRoute>} />
+              <Route path="/tenants" element={<ProtectedRoute><TenantListPageEnhanced /></ProtectedRoute>} />
               <Route path="/tenants/create" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantCreatePage /></div></ProtectedRoute>} />
               <Route path="/tenants/:id" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantDetailPage /></div></ProtectedRoute>} />
               <Route path="/tenants/:id/edit" element={<ProtectedRoute><div className="min-h-screen bg-background p-8"><TenantEditPage /></div></ProtectedRoute>} />

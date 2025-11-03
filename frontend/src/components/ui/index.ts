@@ -17,3 +17,11 @@ export {
   DialogTitle, 
   DialogDescription 
 } from './dialog';
+export {
+  RevenueTrendChart,
+  OccupancyRateChart,
+  PaymentCollectionChart,
+  PropertyStatusChart,
+  ComparisonChart
+} from './charts';
+

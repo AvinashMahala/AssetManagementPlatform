@@ -1,4 +1,5 @@
 export { default as TenantListPage } from './TenantListPage';
+export { default as TenantListPageEnhanced } from './TenantListPageEnhanced';
 export { default as TenantCreatePage } from './TenantCreatePage';
 export { default as TenantDetailPage } from './TenantDetailPage';
 export { default as TenantEditPage } from './TenantEditPage';
