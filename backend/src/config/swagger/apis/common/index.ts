@@ -1,0 +1,1 @@
+export { commonSchemas, commonSecuritySchemes } from './schemas.js';
