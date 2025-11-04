@@ -238,7 +238,7 @@ const swaggerUiOptions = {
   swaggerOptions: {
     persistAuthorization: true,
     displayRequestDuration: true,
-    docExpansion: 'list',
+    docExpansion: 'none',
     filter: true,
     showExtensions: true,
     showCommonExtensions: true,

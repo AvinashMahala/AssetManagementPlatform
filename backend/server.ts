@@ -19,6 +19,8 @@ import { LeaseController } from './src/controllers/leaseController.js';
 import { createLeaseRoutes } from './src/routes/leaseRoutes.js';
 import { RentPaymentController } from './src/controllers/RentPaymentController.js';
 import { createRentPaymentRoutes } from './src/routes/rentPaymentRoutes.js';
+import { RentTransactionController } from './src/controllers/RentTransactionController.js';
+import { createRentTransactionRoutes } from './src/routes/rentTransactionRoutes.js';
 import { PropertyController } from './src/controllers/propertyController.js';
 import { UserController } from './src/controllers/userController.js';
 import { TenantController } from './src/controllers/TenantController.js';
@@ -51,6 +53,7 @@ const unitService = container.unitService;
 const unitTenantService = container.unitTenantService;
 const leaseService = container.leaseService;
 const rentPaymentService = container.rentPaymentService;
+const rentTransactionService = container.rentTransactionService;
 const passwordResetService = container.passwordResetService;
 
 // Create controllers with injected services
@@ -61,6 +64,7 @@ const unitController = new UnitController(unitService);
 const unitTenantController = new UnitTenantController(unitTenantService);
 const leaseController = new LeaseController(leaseService);
 const rentPaymentController = new RentPaymentController(rentPaymentService);
+const rentTransactionController = new RentTransactionController(rentTransactionService);
 
 import { specs } from './src/config/swagger/index.js';
 import { swaggerUiOptions } from './src/config/swagger/index.js';
@@ -112,6 +116,7 @@ app.use('/api', createUnitRoutes(unitController, userService));
 app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
 app.use('/api/leases', createLeaseRoutes(leaseController, userService));
 app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
+app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionController, userService));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

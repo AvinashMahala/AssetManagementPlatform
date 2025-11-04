@@ -146,4 +146,195 @@ export const initializeTables = (pool: Pool) => {
       console.log('Recovery codes table ready');
     }
   });
-};
+
+  // Properties table
+  pool.query(`CREATE TABLE IF NOT EXISTS properties (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    property_type VARCHAR(50) NOT NULL,
+    status VARCHAR(50) DEFAULT 'active',
+    address_street VARCHAR(255) NOT NULL,
+    address_city VARCHAR(100) NOT NULL,
+    address_state VARCHAR(100) NOT NULL,
+    address_pincode VARCHAR(10) NOT NULL,
+    address_landmark VARCHAR(255),
+    area DECIMAL(10,2),
+    total_floors INTEGER,
+    year_built INTEGER,
+    parking_spaces INTEGER,
+    amenities JSONB DEFAULT '[]'::jsonb,
+    photos JSONB DEFAULT '[]'::jsonb,
+    owner_id UUID NOT NULL REFERENCES users(id),
+    co_owners JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating properties table', err);
+    } else {
+      console.log('Properties table ready');
+    }
+  });
+
+  // Units table
+  pool.query(`CREATE TABLE IF NOT EXISTS units (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+    unit_number VARCHAR(50) NOT NULL,
+    unit_name VARCHAR(255),
+    description TEXT,
+    unit_type VARCHAR(50) NOT NULL,
+    status VARCHAR(50) DEFAULT 'available',
+    floor INTEGER,
+    area DECIMAL(10,2) NOT NULL,
+    bedrooms INTEGER,
+    bathrooms INTEGER,
+    balconies INTEGER,
+    furnished BOOLEAN DEFAULT FALSE,
+    max_occupants INTEGER DEFAULT 1,
+    unit_amenities JSONB DEFAULT '[]'::jsonb,
+    unit_photos JSONB DEFAULT '[]'::jsonb,
+    monthly_rent DECIMAL(12,2) NOT NULL,
+    security_deposit DECIMAL(12,2) NOT NULL,
+    maintenance_charges DECIMAL(10,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(property_id, unit_number)
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating units table', err);
+    } else {
+      console.log('Units table ready');
+    }
+  });
+
+  // Unit tenants table
+  pool.query(`CREATE TABLE IF NOT EXISTS unit_tenants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    unit_id UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    is_primary_tenant BOOLEAN DEFAULT FALSE,
+    move_in_date DATE,
+    move_out_date DATE,
+    monthly_rent_share DECIMAL(12,2),
+    security_deposit_share DECIMAL(12,2),
+    status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(unit_id, tenant_id)
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating unit_tenants table', err);
+    } else {
+      console.log('Unit tenants table ready');
+    }
+  });
+
+  // Leases table
+  pool.query(`CREATE TABLE IF NOT EXISTS leases (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    property_id UUID NOT NULL REFERENCES properties(id),
+    unit_id UUID NOT NULL REFERENCES units(id),
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    notice_period_days INTEGER DEFAULT 30,
+    auto_renewal BOOLEAN DEFAULT FALSE,
+    monthly_rent DECIMAL(12,2) NOT NULL,
+    security_deposit DECIMAL(12,2) NOT NULL,
+    maintenance_charges DECIMAL(10,2),
+    payment_frequency VARCHAR(20) DEFAULT 'monthly',
+    rent_due_day INTEGER DEFAULT 1,
+    electricity_charges DECIMAL(10,2),
+    water_charges DECIMAL(10,2),
+    other_charges DECIMAL(10,2),
+    pets_allowed BOOLEAN DEFAULT FALSE,
+    smoking_allowed BOOLEAN DEFAULT FALSE,
+    subletting_allowed BOOLEAN DEFAULT FALSE,
+    special_conditions TEXT,
+    status VARCHAR(50) DEFAULT 'active',
+    signed_at TIMESTAMP,
+    terminated_at TIMESTAMP,
+    termination_reason TEXT,
+    lease_document_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating leases table', err);
+    } else {
+      console.log('Leases table ready');
+    }
+  });
+
+  // Rent payments table
+  pool.query(`CREATE TABLE IF NOT EXISTS rent_payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lease_id UUID NOT NULL REFERENCES leases(id),
+    property_id UUID NOT NULL REFERENCES properties(id),
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    amount DECIMAL(12,2) NOT NULL,
+    due_date DATE NOT NULL,
+    paid_date DATE,
+    status VARCHAR(50) DEFAULT 'pending',
+    payment_method VARCHAR(50),
+    transaction_id VARCHAR(255),
+    payment_reference VARCHAR(255),
+    late_fee DECIMAL(10,2),
+    penalty_amount DECIMAL(10,2),
+    rent_amount DECIMAL(12,2),
+    maintenance_charges DECIMAL(10,2),
+    other_charges DECIMAL(10,2),
+    notes TEXT,
+    created_by UUID NOT NULL REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating rent_payments table', err);
+    } else {
+      console.log('Rent payments table ready');
+    }
+  });
+
+  // Rent transactions table (comprehensive rent collection)
+  pool.query(`CREATE TABLE IF NOT EXISTS rent_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lease_id UUID NOT NULL REFERENCES leases(id) ON DELETE CASCADE,
+    unit_id UUID REFERENCES units(id),
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    property_id UUID NOT NULL REFERENCES properties(id),
+    billing_period_start DATE NOT NULL,
+    billing_period_end DATE NOT NULL,
+    billing_method VARCHAR(20) NOT NULL DEFAULT 'relative' CHECK (billing_method IN ('relative', 'fixed')),
+    days_count INTEGER NOT NULL,
+    base_rent DECIMAL(12,2) NOT NULL DEFAULT 0,
+    previous_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+    expenses JSONB NOT NULL DEFAULT '[]'::jsonb,
+    total_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    amount_paid DECIMAL(12,2) NOT NULL DEFAULT 0,
+    new_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+    paid_date DATE,
+    status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'finalized', 'paid', 'cancelled')),
+    payment_method VARCHAR(50),
+    transaction_id VARCHAR(255),
+    payment_reference VARCHAR(255),
+    late_fee DECIMAL(10,2) DEFAULT 0,
+    penalty_amount DECIMAL(10,2) DEFAULT 0,
+    receipt_number VARCHAR(100),
+    receipt_generated BOOLEAN NOT NULL DEFAULT FALSE,
+    notes TEXT,
+    created_by UUID NOT NULL REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating rent_transactions table', err);
+    } else {
+      console.log('Rent transactions table ready');
+    }
+  });
+}
