@@ -221,6 +221,8 @@ def create_schema(connection):
       year_built INTEGER,
       parking_spaces INTEGER,
       owner_id UUID NOT NULL REFERENCES users(id),
+      template_id UUID REFERENCES receipt_templates(id) ON DELETE SET NULL,
+      template_overrides JSONB DEFAULT '{}'::jsonb,
       building_amenities JSONB DEFAULT '[]'::jsonb, -- shared amenities
       building_photos JSONB DEFAULT '[]'::jsonb, -- building exterior photos
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -329,18 +331,16 @@ def create_schema(connection):
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- Create rent_payments table
-    CREATE TABLE rent_payments (
+    -- Create receipt_templates table
+    CREATE TABLE receipt_templates (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      lease_id UUID NOT NULL REFERENCES leases(id),
-      tenant_id UUID NOT NULL REFERENCES tenants(id), -- which tenant paid
-      amount DECIMAL(12,2) NOT NULL,
-      due_date DATE NOT NULL,
-      paid_date DATE,
-      status VARCHAR(50) DEFAULT 'pending', -- pending, paid, overdue, partial
-      payment_method VARCHAR(50),
-      notes TEXT,
-      created_by UUID NOT NULL REFERENCES users(id),
+      name VARCHAR(255) NOT NULL,
+      type VARCHAR(50) UNIQUE NOT NULL,
+      description TEXT,
+      default_settings JSONB NOT NULL,
+      is_active BOOLEAN DEFAULT TRUE,
+      is_default BOOLEAN DEFAULT FALSE,
+      sort_order INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -753,6 +753,81 @@ def seed_payments(connection, df):
 
     print_success(f"Seeded {len(df)} payments")
 
+def seed_receipt_templates(connection):
+    """Seed receipt templates table"""
+    print_step("Seeding receipt templates...")
+
+    templates = [
+        {
+            'name': 'Basic Template',
+            'type': 'basic',
+            'description': 'Simple and clean receipt template for basic needs',
+            'default_settings': {
+                'theme': {'primaryColor': '#2563eb', 'secondaryColor': '#64748b', 'fontFamily': 'Arial, sans-serif', 'fontSize': 'medium'},
+                'layout': {'showLogo': False, 'logoPosition': 'top-left', 'showWatermark': False, 'paperSize': 'a4', 'orientation': 'portrait'},
+                'content': {'showPropertyAddress': True, 'showTenantAddress': True, 'showPaymentBreakdown': True, 'showBalanceForward': True, 'showTermsAndConditions': False, 'showSignature': True, 'signatureText': 'Landlord Signature'},
+                'paymentOptions': {'showBankDetails': True, 'showUPI': True, 'showQRCode': False, 'showWallets': False},
+                'numbering': {'prefix': 'REC', 'startNumber': 1, 'includeYear': True, 'includeMonth': True}
+            },
+            'is_active': True,
+            'is_default': True,
+            'sort_order': 1
+        },
+        {
+            'name': 'Professional Template',
+            'type': 'professional',
+            'description': 'Professional template with enhanced styling and features',
+            'default_settings': {
+                'theme': {'primaryColor': '#1e40af', 'secondaryColor': '#374151', 'fontFamily': 'Georgia, serif', 'fontSize': 'medium'},
+                'layout': {'showLogo': True, 'logoPosition': 'top-center', 'showWatermark': True, 'watermarkText': 'OFFICIAL RECEIPT', 'paperSize': 'a4', 'orientation': 'portrait'},
+                'content': {'showPropertyAddress': True, 'showTenantAddress': True, 'showPaymentBreakdown': True, 'showBalanceForward': True, 'showTermsAndConditions': True, 'termsAndConditionsText': 'This receipt is computer generated and does not require signature.', 'showSignature': True, 'signatureText': 'Authorized Signatory'},
+                'paymentOptions': {'showBankDetails': True, 'showUPI': True, 'showQRCode': True, 'showWallets': True},
+                'numbering': {'prefix': 'RNT', 'startNumber': 1, 'includeYear': True, 'includeMonth': True}
+            },
+            'is_active': True,
+            'is_default': False,
+            'sort_order': 2
+        },
+        {
+            'name': 'Premium Template',
+            'type': 'premium',
+            'description': 'Premium template with advanced features and elegant design',
+            'default_settings': {
+                'theme': {'primaryColor': '#7c3aed', 'secondaryColor': '#1f2937', 'fontFamily': 'Times New Roman, serif', 'fontSize': 'large'},
+                'layout': {'showLogo': True, 'logoPosition': 'top-center', 'showWatermark': True, 'watermarkText': 'CONFIDENTIAL', 'paperSize': 'a4', 'orientation': 'portrait'},
+                'content': {'showPropertyAddress': True, 'showTenantAddress': True, 'showPaymentBreakdown': True, 'showBalanceForward': True, 'showTermsAndConditions': True, 'termsAndConditionsText': 'This is an official receipt. All payments are subject to verification. For any queries, please contact the property management office.', 'showSignature': True, 'signatureText': 'Property Manager'},
+                'paymentOptions': {'showBankDetails': True, 'showUPI': True, 'showQRCode': True, 'showWallets': True},
+                'numbering': {'prefix': 'PMR', 'startNumber': 1, 'includeYear': True, 'includeMonth': True}
+            },
+            'is_active': True,
+            'is_default': False,
+            'sort_order': 3
+        }
+    ]
+
+    for template in templates:
+        template_data = {
+            'name': template['name'],
+            'type': template['type'],
+            'description': template['description'],
+            'default_settings': json.dumps(template['default_settings']),
+            'is_active': template['is_active'],
+            'is_default': template['is_default'],
+            'sort_order': template['sort_order']
+        }
+
+        columns = ['name', 'type', 'description', 'default_settings', 'is_active', 'is_default', 'sort_order']
+        values = [template_data[col] for col in columns]
+
+        sql = f"""
+        INSERT INTO receipt_templates ({', '.join(columns)})
+        VALUES ({', '.join(['%s'] * len(columns))})
+        """
+
+        execute_sql(connection, sql, values)
+
+    print_success(f"Seeded {len(templates)} receipt templates")
+
 def get_lease_id(connection, property_name, unit_number, primary_tenant_email):
     """Get lease ID by property, unit, and primary tenant"""
     if not property_name or not unit_number or not primary_tenant_email:
@@ -836,6 +911,9 @@ def main():
 
     if 'rent_payments' in sheets:
         seed_payments(connection, sheets['rent_payments'])
+
+    # Seed receipt templates (always seed these)
+    seed_receipt_templates(connection)
 
     # Show credentials
     show_credentials(sheets)

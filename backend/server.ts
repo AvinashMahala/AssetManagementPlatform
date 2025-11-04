@@ -23,6 +23,10 @@ import { RentTransactionController } from './src/controllers/RentTransactionCont
 import { createRentTransactionRoutes } from './src/routes/rentTransactionRoutes.js';
 import { MeterController } from './src/controllers/MeterController.js';
 import { createMeterRoutes } from './src/routes/meterRoutes.js';
+import { ReceiptController } from './src/controllers/ReceiptController.js';
+import { createReceiptRoutes } from './src/routes/receiptRoutes.js';
+import { ReceiptTemplateController } from './src/controllers/ReceiptTemplateController.js';
+import { createReceiptTemplateRoutes } from './src/routes/receiptTemplateRoutes.js';
 import { PropertyController } from './src/controllers/propertyController.js';
 import { UserController } from './src/controllers/userController.js';
 import { TenantController } from './src/controllers/TenantController.js';
@@ -59,6 +63,8 @@ const rentTransactionService = container.rentTransactionService;
 const passwordResetService = container.passwordResetService;
 const meterService = container.meterService;
 const meterReadingService = container.meterReadingService;
+const receiptService = container.receiptService;
+const receiptTemplateService = container.receiptTemplateService;
 
 // Create controllers with injected services
 const propertyController = new PropertyController(propertyService);
@@ -70,6 +76,8 @@ const leaseController = new LeaseController(leaseService);
 const rentPaymentController = new RentPaymentController(rentPaymentService);
 const rentTransactionController = new RentTransactionController(rentTransactionService);
 const meterController = new MeterController(meterService, meterReadingService);
+const receiptController = new ReceiptController(receiptService);
+const receiptTemplateController = new ReceiptTemplateController(receiptTemplateService);
 
 import { specs } from './src/config/swagger/index.js';
 import { swaggerUiOptions } from './src/config/swagger/index.js';
@@ -123,6 +131,8 @@ app.use('/api/leases', createLeaseRoutes(leaseController, userService));
 app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
 app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionController, userService));
 app.use('/api/meters', createMeterRoutes(meterController, userService));
+app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
+app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

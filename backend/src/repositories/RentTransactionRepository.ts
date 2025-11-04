@@ -76,6 +76,18 @@ export class RentTransactionRepository implements IRentTransactionRepository {
     }
   }
 
+  async findByPropertyAndPeriod(propertyId: string, month: number, year: number): Promise<RentTransaction[]> {
+    try {
+      const result = await this.pool.query(
+        `SELECT * FROM ${TABLES.RENT_TRANSACTIONS} WHERE ${COLUMNS.RENT_TRANSACTIONS.PROPERTY_ID} = $1 AND EXTRACT(MONTH FROM ${COLUMNS.RENT_TRANSACTIONS.BILLING_PERIOD_START}) = $2 AND EXTRACT(YEAR FROM ${COLUMNS.RENT_TRANSACTIONS.BILLING_PERIOD_START}) = $3 ORDER BY ${COLUMNS.RENT_TRANSACTIONS.BILLING_PERIOD_START} DESC`,
+        [propertyId, month, year]
+      );
+      return result.rows.map(row => this.mapRowToRentTransaction(row));
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findPendingTransactions(): Promise<RentTransaction[]> {
     try {
       const result = await this.pool.query(

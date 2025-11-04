@@ -167,6 +167,8 @@ export const initializeTables = (pool: Pool) => {
     photos JSONB DEFAULT '[]'::jsonb,
     owner_id UUID NOT NULL REFERENCES users(id),
     co_owners JSONB DEFAULT '[]'::jsonb,
+    template_id UUID,
+    template_overrides JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`, (err) => {
@@ -177,7 +179,74 @@ export const initializeTables = (pool: Pool) => {
     }
   });
 
-  // Units table
+  // Add template columns to properties table if they don't exist
+  pool.query(`DO $$
+  BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'template_id') THEN
+      ALTER TABLE properties ADD COLUMN template_id UUID;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'template_overrides') THEN
+      ALTER TABLE properties ADD COLUMN template_overrides JSONB DEFAULT '{}'::jsonb;
+    END IF;
+  END $$;`, (err) => {
+    if (err) {
+      console.error('Error adding template columns to properties table', err);
+    }
+  });
+
+  // Receipt templates table
+  pool.query(`CREATE TABLE IF NOT EXISTS receipt_templates (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('basic', 'professional', 'premium')),
+    description TEXT,
+    default_settings JSONB NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    is_default BOOLEAN NOT NULL DEFAULT false,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating receipt_templates table', err);
+    } else {
+      console.log('Receipt templates table ready');
+    }
+  });
+
+  // Add foreign key constraint for template_id in properties
+  pool.query(`DO $$
+  BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'fk_properties_template_id') THEN
+      ALTER TABLE properties ADD CONSTRAINT fk_properties_template_id FOREIGN KEY (template_id) REFERENCES receipt_templates(id) ON DELETE SET NULL;
+    END IF;
+  END $$;`, (err) => {
+    if (err) {
+      console.error('Error adding template_id foreign key', err);
+    }
+  });
+
+  // Seed predefined receipt templates
+  pool.query(`
+    INSERT INTO receipt_templates (name, type, description, default_settings, is_active, is_default, sort_order)
+    VALUES
+      ('Basic Template', 'basic', 'Simple and clean receipt template for basic needs',
+       '{"theme":{"primaryColor":"#2563eb","secondaryColor":"#64748b","fontFamily":"Arial, sans-serif","fontSize":"medium"},"layout":{"showLogo":false,"logoPosition":"top-left","showWatermark":false,"paperSize":"a4","orientation":"portrait"},"content":{"showPropertyAddress":true,"showTenantAddress":true,"showPaymentBreakdown":true,"showBalanceForward":true,"showTermsAndConditions":false,"showSignature":true,"signatureText":"Landlord Signature"},"paymentOptions":{"showBankDetails":true,"showUPI":true,"showQRCode":false,"showWallets":false},"numbering":{"prefix":"REC","startNumber":1,"includeYear":true,"includeMonth":true}}',
+       true, true, 1),
+      ('Professional Template', 'professional', 'Professional template with enhanced styling and features',
+       '{"theme":{"primaryColor":"#1e40af","secondaryColor":"#374151","fontFamily":"Georgia, serif","fontSize":"medium"},"layout":{"showLogo":true,"logoPosition":"top-center","showWatermark":true,"watermarkText":"OFFICIAL RECEIPT","paperSize":"a4","orientation":"portrait"},"content":{"showPropertyAddress":true,"showTenantAddress":true,"showPaymentBreakdown":true,"showBalanceForward":true,"showTermsAndConditions":true,"termsAndConditionsText":"This receipt is computer generated and does not require signature.","showSignature":true,"signatureText":"Authorized Signatory"},"paymentOptions":{"showBankDetails":true,"showUPI":true,"showQRCode":true,"showWallets":true},"numbering":{"prefix":"RNT","startNumber":1,"includeYear":true,"includeMonth":true}}',
+       true, false, 2),
+      ('Premium Template', 'premium', 'Premium template with advanced features and elegant design',
+       '{"theme":{"primaryColor":"#7c3aed","secondaryColor":"#1f2937","fontFamily":"Times New Roman, serif","fontSize":"large"},"layout":{"showLogo":true,"logoPosition":"top-center","showWatermark":true,"watermarkText":"CONFIDENTIAL","paperSize":"a4","orientation":"portrait"},"content":{"showPropertyAddress":true,"showTenantAddress":true,"showPaymentBreakdown":true,"showBalanceForward":true,"showTermsAndConditions":true,"termsAndConditionsText":"This is an official receipt. All payments are subject to verification. For any queries, please contact the property management office.","showSignature":true,"signatureText":"Property Manager"},"paymentOptions":{"showBankDetails":true,"showUPI":true,"showQRCode":true,"showWallets":true},"numbering":{"prefix":"PMR","startNumber":1,"includeYear":true,"includeMonth":true}}',
+       true, false, 3)
+    ON CONFLICT (type) DO NOTHING
+  `, (err) => {
+    if (err) {
+      console.error('Error seeding receipt templates', err);
+    } else {
+      console.log('Receipt templates seeded');
+    }
+  });
   pool.query(`CREATE TABLE IF NOT EXISTS units (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,

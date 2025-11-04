@@ -17,6 +17,8 @@ import { ILeaseService } from '../interfaces/services/ILeaseService';
 import { IRentPaymentService } from '../interfaces/services/IRentPaymentService';
 import { IRentTransactionService } from '../interfaces/services/IRentTransactionService';
 import { IPropertyService } from '../interfaces/services/IPropertyService';
+import { IReceiptRepository } from '../interfaces/repositories/IReceiptRepository';
+import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { PropertyRepository } from '../repositories/PropertyRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { TenantRepository } from '../repositories/TenantRepository';
@@ -30,6 +32,8 @@ import { RentPaymentRepository } from '../repositories/RentPaymentRepository';
 import { RentTransactionRepository } from '../repositories/RentTransactionRepository';
 import { MeterRepository } from '../repositories/MeterRepository';
 import { MeterReadingRepository } from '../repositories/MeterReadingRepository';
+import { ReceiptRepository } from '../repositories/ReceiptRepository';
+import { ReceiptTemplateRepository } from '../repositories/ReceiptTemplateRepository';
 import { PropertyService } from '../services/PropertyService';
 import { UserService } from '../services/UserService';
 import { TenantService } from '../services/TenantService';
@@ -41,6 +45,8 @@ import { RentPaymentService } from '../services/RentPaymentService';
 import { RentTransactionService } from '../services/RentTransactionService';
 import { MeterService } from '../services/MeterService';
 import { MeterReadingService } from '../services/MeterReadingService';
+import { ReceiptService } from '../services/ReceiptService';
+import { ReceiptTemplateService } from '../services/ReceiptTemplateService';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -57,9 +63,11 @@ export class DependencyContainer {
   private _rentTransactionRepository: IRentTransactionRepository | null = null;
   private _meterRepository: IMeterRepository | null = null;
   private _meterReadingRepository: IMeterReadingRepository | null = null;
+  private _receiptRepository: IReceiptRepository | null = null;
   private _passwordResetMethodRepository: PasswordResetMethodRepository | null = null;
   private _securityQuestionRepository: SecurityQuestionRepository | null = null;
   private _recoveryCodeRepository: RecoveryCodeRepository | null = null;
+  private _receiptTemplateRepository: ReceiptTemplateRepository | null = null;
 
   // Services
   private _propertyService: IPropertyService | null = null;
@@ -72,7 +80,9 @@ export class DependencyContainer {
   private _rentTransactionService: IRentTransactionService | null = null;
   private _meterService: IMeterService | null = null;
   private _meterReadingService: IMeterReadingService | null = null;
+  private _receiptService: IReceiptService | null = null;
   private _passwordResetService: PasswordResetService | null = null;
+  private _receiptTemplateService: ReceiptTemplateService | null = null;
 
   private constructor(pool: Pool) {
     this.pool = pool;
@@ -184,6 +194,20 @@ export class DependencyContainer {
     return this._meterReadingRepository;
   }
 
+  public get receiptRepository(): IReceiptRepository {
+    if (!this._receiptRepository) {
+      this._receiptRepository = new ReceiptRepository(this.pool);
+    }
+    return this._receiptRepository;
+  }
+
+  public get receiptTemplateRepository(): ReceiptTemplateRepository {
+    if (!this._receiptTemplateRepository) {
+      this._receiptTemplateRepository = new ReceiptTemplateRepository(this.pool);
+    }
+    return this._receiptTemplateRepository;
+  }
+
   // Service getters with lazy initialization
   public get propertyService(): IPropertyService {
     if (!this._propertyService) {
@@ -277,6 +301,30 @@ export class DependencyContainer {
     return this._meterReadingService;
   }
 
+  public get receiptService(): IReceiptService {
+    if (!this._receiptService) {
+      this._receiptService = new ReceiptService(
+        this.receiptRepository,
+        this.rentTransactionRepository,
+        this.propertyRepository,
+        this.tenantRepository,
+        this.userRepository,
+        this.receiptTemplateService
+      );
+    }
+    return this._receiptService;
+  }
+
+  public get receiptTemplateService(): ReceiptTemplateService {
+    if (!this._receiptTemplateService) {
+      this._receiptTemplateService = new ReceiptTemplateService(
+        this.receiptTemplateRepository,
+        this.propertyRepository as PropertyRepository
+      );
+    }
+    return this._receiptTemplateService;
+  }
+
   // Method to register custom implementations (for testing)
   public registerPropertyRepository(repository: IPropertyRepository): void {
     this._propertyRepository = repository;
@@ -358,6 +406,14 @@ export class DependencyContainer {
     this._meterReadingService = service;
   }
 
+  public registerReceiptRepository(repository: IReceiptRepository): void {
+    this._receiptRepository = repository;
+  }
+
+  public registerReceiptService(service: IReceiptService): void {
+    this._receiptService = service;
+  }
+
     // Reset method for testing
   public reset(): void {
     this._propertyRepository = null;
@@ -370,9 +426,11 @@ export class DependencyContainer {
     this._rentTransactionRepository = null;
     this._meterRepository = null;
     this._meterReadingRepository = null;
+    this._receiptRepository = null;
     this._passwordResetMethodRepository = null;
     this._securityQuestionRepository = null;
     this._recoveryCodeRepository = null;
+    this._receiptTemplateRepository = null;
     this._propertyService = null;
     this._userService = null;
     this._tenantService = null;
@@ -383,6 +441,8 @@ export class DependencyContainer {
     this._rentTransactionService = null;
     this._meterService = null;
     this._meterReadingService = null;
+    this._receiptService = null;
     this._passwordResetService = null;
+    this._receiptTemplateService = null;
   }
 }

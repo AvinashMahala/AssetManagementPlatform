@@ -8,4 +8,5 @@ export interface IPropertyRepository {
   update(id: string, data: Partial<Omit<Property, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Property | null>;
   delete(id: string): Promise<boolean>;
   updateStatus(id: string, status: string): Promise<boolean>;
+  updateReceiptSettings(id: string, settings: any): Promise<boolean>;
 }

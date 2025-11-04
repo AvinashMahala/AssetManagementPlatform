@@ -9,7 +9,9 @@
     "dev": "tsx watch server.ts",
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
-    "test": "jest"
+    "test": "jest",
+    "init-db": "tsx ../scripts/init-db.ts",
+    "seed:templates": "tsx scripts/seed-receipt-templates.ts"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -24,7 +26,8 @@
     "openapi-types": "^12.1.3",
     "pg": "^8.11.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -34,6 +37,7 @@
     "@types/pg": "^8.10.9",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.57.0",

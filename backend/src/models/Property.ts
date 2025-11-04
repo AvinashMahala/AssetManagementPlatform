@@ -1,4 +1,5 @@
 // Property types for Indian rental market
+import { ReceiptTemplateSettings } from './ReceiptTemplate';
 export enum PropertyType {
   APARTMENT = 'apartment',
   HOUSE = 'house',
@@ -49,9 +50,49 @@ export interface Property {
   ownerId: string; // UUID reference to users table
   coOwners?: string[]; // array of user UUIDs
 
+  // Receipt customization settings
+  receiptSettings?: PropertyReceiptSettings;
+
+  // Receipt template settings
+  templateId?: string; // UUID reference to receipt_templates table
+  templateOverrides?: Partial<ReceiptTemplateSettings>; // Property-specific overrides of template settings
+
   // Metadata
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Receipt customization settings for properties
+export interface PropertyReceiptSettings {
+  // Logo
+  logoUrl?: string;
+
+  // Bank details
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
+
+  // Wallet details (PayTM, PhonePe, GPay, etc.)
+  wallets: Array<{
+    type: 'PAYTM' | 'PHONEPE' | 'GPAY' | 'AMAZONPAY' | 'OTHER';
+    number: string;
+    name: string;
+  }>;
+
+  // UPI ID
+  upiId?: string;
+
+  // QR Code for payments
+  paymentQRCodeUrl?: string;
+
+  // Signature & Watermark
+  signatureUrl?: string;
+  watermarkUrl?: string;
+
+  // Receipt numbering
+  receiptPrefix?: string; // e.g., "RNT"
+  receiptCounter: number; // auto-increment for receipt numbers
 }
 
 export interface PropertyInput {
@@ -82,4 +123,11 @@ export interface PropertyInput {
   // Ownership details
   ownerId: string;
   coOwners?: string[];
+
+  // Receipt customization settings
+  receiptSettings?: PropertyReceiptSettings;
+
+  // Receipt template settings
+  templateId?: string;
+  templateOverrides?: Partial<ReceiptTemplateSettings>;
 }

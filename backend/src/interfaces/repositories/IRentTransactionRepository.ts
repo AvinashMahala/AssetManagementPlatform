@@ -7,6 +7,7 @@ export interface IRentTransactionRepository {
   findByProperty(propertyId: string): Promise<RentTransaction[]>;
   findByTenant(tenantId: string): Promise<RentTransaction[]>;
   findByBillingPeriod(billingPeriodStart: Date, billingPeriodEnd: Date): Promise<RentTransaction[]>;
+  findByPropertyAndPeriod(propertyId: string, month: number, year: number): Promise<RentTransaction[]>;
   findPendingTransactions(): Promise<RentTransaction[]>;
   findOverdueTransactions(): Promise<RentTransaction[]>;
   findTransactionsByDateRange(startDate: Date, endDate: Date): Promise<RentTransaction[]>;

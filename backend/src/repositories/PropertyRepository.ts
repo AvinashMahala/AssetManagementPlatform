@@ -66,9 +66,12 @@ export class PropertyRepository implements IPropertyRepository {
           ${COLUMNS.PROPERTIES.PHOTOS},
           ${COLUMNS.PROPERTIES.OWNER_ID},
           ${COLUMNS.PROPERTIES.CO_OWNERS},
+          ${COLUMNS.PROPERTIES.RECEIPT_SETTINGS},
+          ${COLUMNS.PROPERTIES.TEMPLATE_ID},
+          ${COLUMNS.PROPERTIES.TEMPLATE_OVERRIDES},
           ${COLUMNS.PROPERTIES.CREATED_AT},
           ${COLUMNS.PROPERTIES.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23) RETURNING *`,
         [
           crypto.randomUUID(),
           data.name,
@@ -88,6 +91,9 @@ export class PropertyRepository implements IPropertyRepository {
           JSON.stringify(data.buildingPhotos || []),
           data.ownerId,
           JSON.stringify(data.coOwners || []),
+          JSON.stringify(data.receiptSettings || null),
+          data.templateId || null,
+          JSON.stringify(data.templateOverrides || null),
           now,
           now
         ]
@@ -172,9 +178,17 @@ export class PropertyRepository implements IPropertyRepository {
         fields.push(`${COLUMNS.PROPERTIES.CO_OWNERS} = $${paramIndex++}`);
         values.push(JSON.stringify(data.coOwners));
       }
-      if (data.buildingPhotos !== undefined) {
-        fields.push(`${COLUMNS.PROPERTIES.PHOTOS} = $${paramIndex++}`);
-        values.push(JSON.stringify(data.buildingPhotos));
+      if (data.receiptSettings !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.RECEIPT_SETTINGS} = $${paramIndex++}`);
+        values.push(JSON.stringify(data.receiptSettings));
+      }
+      if (data.templateId !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.TEMPLATE_ID} = $${paramIndex++}`);
+        values.push(data.templateId);
+      }
+      if (data.templateOverrides !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.TEMPLATE_OVERRIDES} = $${paramIndex++}`);
+        values.push(JSON.stringify(data.templateOverrides));
       }
 
       if (fields.length === 0) {
@@ -219,6 +233,18 @@ export class PropertyRepository implements IPropertyRepository {
     }
   }
 
+  async updateReceiptSettings(id: string, settings: any): Promise<boolean> {
+    try {
+      const result = await this.pool.query(
+        `UPDATE ${TABLES.PROPERTIES} SET ${COLUMNS.PROPERTIES.RECEIPT_SETTINGS} = $1, ${COLUMNS.PROPERTIES.UPDATED_AT} = $2 WHERE ${COLUMNS.PROPERTIES.ID} = $3`,
+        [JSON.stringify(settings), new Date(), id]
+      );
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      throw new Error('Failed to update property receipt settings');
+    }
+  }
+
   private mapRowToProperty(row: any): Property {
     return {
       id: row.id,
@@ -241,6 +267,9 @@ export class PropertyRepository implements IPropertyRepository {
       buildingPhotos: Array.isArray(row.photos) ? row.photos : JSON.parse(row.photos || '[]'),
       ownerId: row.owner_id,
       coOwners: Array.isArray(row.co_owners) ? row.co_owners : JSON.parse(row.co_owners || '[]'),
+      receiptSettings: row.receipt_settings ? JSON.parse(row.receipt_settings) : undefined,
+      templateId: row.template_id,
+      templateOverrides: row.template_overrides ? JSON.parse(row.template_overrides) : undefined,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     };
