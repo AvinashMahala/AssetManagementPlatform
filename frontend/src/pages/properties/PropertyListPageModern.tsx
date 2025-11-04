@@ -38,7 +38,7 @@ const PropertyListPageModern: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<{ id: string; name: string } | null>(null);
   
-  const { properties, loading, error, pagination, updateFilters } = useProperties(filters);
+  const { properties, loading, error, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
 
   const handleSearch = (query: string) => {
@@ -134,7 +134,7 @@ const PropertyListPageModern: React.FC = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pagination?.total || 0}</div>
+            <div className="text-2xl font-bold">{properties.length}</div>
             <p className="text-xs text-muted-foreground">
               Across all locations
             </p>
@@ -297,35 +297,6 @@ const PropertyListPageModern: React.FC = () => {
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-                {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-                {pagination.total} properties
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={pagination.page <= 1}
-                  onClick={() => updateFilters({ page: pagination.page - 1 })}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={pagination.page >= pagination.totalPages}
-                  onClick={() => updateFilters({ page: pagination.page + 1 })}
-                >
-                  Next
-                </Button>
-              </div>
             </div>
           )}
         </CardContent>

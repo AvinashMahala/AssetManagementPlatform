@@ -11,7 +11,7 @@ const PropertyListPage: React.FC = () => {
   const navigate = useNavigate();
   const [filters] = useState<PropertyFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const { properties, loading, error, pagination, updateFilters } = useProperties(filters);
+  const { properties, loading, error, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
 
   // Debug logging
@@ -242,35 +242,6 @@ const PropertyListPage: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
-            <div className="text-sm text-gray-700">
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-              {pagination.total} properties
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="secondary"
-                size="small"
-                disabled={pagination.page <= 1}
-                onClick={() => updateFilters({ page: pagination.page - 1 })}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="secondary"
-                size="small"
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => updateFilters({ page: pagination.page + 1 })}
-              >
-                Next
-              </Button>
-            </div>
           </div>
         )}
       </Card>

@@ -4,11 +4,13 @@ import { apiClient } from './apiClient';
 import { API_ENDPOINTS } from '../constants/api';
 
 class PaymentService {
-  async getAll(leaseId?: string, tenantId?: string): Promise<ApiResponse<{ payments: RentPayment[] }>> {
-    const params: any = {};
-    if (leaseId) params.leaseId = leaseId;
-    if (tenantId) params.tenantId = tenantId;
-    return apiClient.get<{ payments: RentPayment[] }>(API_ENDPOINTS.RENT_PAYMENTS, { params: Object.keys(params).length > 0 ? params : undefined });
+  async getAll(leaseId?: string, tenantId?: string): Promise<ApiResponse<RentPayment[]>> {
+    let url = API_ENDPOINTS.RENT_PAYMENTS;
+    const params = new URLSearchParams();
+    if (leaseId) params.append('leaseId', leaseId);
+    if (tenantId) params.append('tenantId', tenantId);
+    if (params.toString()) url += `?${params.toString()}`;
+    return apiClient.get<RentPayment[]>(url);
   }
 
   async getById(id: string): Promise<ApiResponse<RentPayment>> {

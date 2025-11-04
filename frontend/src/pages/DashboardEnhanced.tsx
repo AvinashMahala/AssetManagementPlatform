@@ -482,7 +482,7 @@ const DashboardEnhanced: React.FC = () => {
                     </div>
                   );
                 })}
-                {(!payments || payments.filter((p) => p.status === 'pending').length === 0) && (
+                {(!Array.isArray(payments) || payments.filter((p) => p.status === 'pending').length === 0) && (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     No pending payments
                   </p>

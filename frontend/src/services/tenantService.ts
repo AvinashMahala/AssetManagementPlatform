@@ -4,8 +4,8 @@ import { apiClient } from './apiClient';
 import { API_ENDPOINTS } from '../constants/api';
 
 class TenantService {
-  async getAll(): Promise<ApiResponse<{ tenants: Tenant[] }>> {
-    return apiClient.get<{ tenants: Tenant[] }>(API_ENDPOINTS.TENANTS);
+  async getAll(): Promise<ApiResponse<Tenant[]>> {
+    return apiClient.get<Tenant[]>(API_ENDPOINTS.TENANTS);
   }
 
   async getById(id: string): Promise<ApiResponse<Tenant>> {

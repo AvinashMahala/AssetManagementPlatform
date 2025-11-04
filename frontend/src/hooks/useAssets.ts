@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Asset, AssetInput, AssetFilters, AssetListResponse } from '../types/asset';
+import type { Asset, AssetInput, AssetFilters } from '../types/asset';
 import { useApi, useApiMutation } from './useApi';
 import { assetService } from '../services/assetService';
 
@@ -10,7 +10,7 @@ export function useAssets(filters?: AssetFilters) {
     return assetService.getAll(currentFilters);
   }, [currentFilters]);
 
-  const { data, loading, error, refetch } = useApi<AssetListResponse>(query, [currentFilters]);
+  const { data, loading, error, refetch } = useApi<Asset[]>(query, [currentFilters]);
 
   const updateFilters = useCallback((newFilters: Partial<AssetFilters>) => {
     setCurrentFilters(prev => ({ ...prev, ...newFilters }));
@@ -21,8 +21,7 @@ export function useAssets(filters?: AssetFilters) {
   }, []);
 
   return {
-    assets: Array.isArray(data?.data) ? data.data : [],
-    pagination: data?.pagination,
+    assets: Array.isArray(data) ? data : [],
     loading,
     error,
     refetch,
@@ -61,7 +60,7 @@ export function useAssetSearch() {
     return assetService.search(searchQuery);
   }, [searchQuery]);
 
-  const { data, loading, error, refetch } = useApi<AssetListResponse>(query, [searchQuery]);
+  const { data, loading, error, refetch } = useApi<Asset[]>(query, [searchQuery]);
 
   const search = useCallback((query: string) => {
     setSearchQuery(query);
@@ -72,8 +71,7 @@ export function useAssetSearch() {
   }, []);
 
   return {
-    assets: data?.data || [],
-    pagination: data?.pagination,
+    assets: Array.isArray(data) ? data : [],
     loading,
     error,
     refetch,

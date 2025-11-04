@@ -48,7 +48,7 @@ export class LeaseController {
   async getAllLeases(req: Request, res: Response) {
     try {
       const leases = await this.service.getAllLeases();
-      ResponseUtils.success(res, { leases });
+      ResponseUtils.success(res, leases);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch leases');
     }
@@ -154,7 +154,7 @@ export class LeaseController {
     try {
       const { propertyId } = req.params;
       const leases = await this.service.getLeasesByProperty(propertyId);
-      ResponseUtils.success(res, { leases });
+      ResponseUtils.success(res, leases);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch leases for property');
     }
@@ -205,7 +205,7 @@ export class LeaseController {
     try {
       const { tenantId } = req.params;
       const leases = await this.service.getLeasesByTenant(tenantId);
-      ResponseUtils.success(res, { leases });
+      ResponseUtils.success(res, leases);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch leases for tenant');
     }
@@ -247,7 +247,7 @@ export class LeaseController {
   async getActiveLeases(req: Request, res: Response) {
     try {
       const leases = await this.service.getActiveLeases();
-      ResponseUtils.success(res, { leases });
+      ResponseUtils.success(res, leases);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch active leases');
     }
@@ -297,7 +297,7 @@ export class LeaseController {
     try {
       const days = parseInt(req.query.days as string) || 30;
       const leases = await this.service.getExpiringLeases(days);
-      ResponseUtils.success(res, { leases });
+      ResponseUtils.success(res, leases);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch expiring leases');
     }

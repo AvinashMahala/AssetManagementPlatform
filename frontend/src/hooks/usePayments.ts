@@ -5,10 +5,10 @@ import { paymentService } from '../services/paymentService';
 
 export function usePayments(leaseId?: string, tenantId?: string) {
   const query = useCallback(() => paymentService.getAll(leaseId, tenantId), [leaseId, tenantId]);
-  const { data, loading, error, refetch } = useApi<{ payments: RentPayment[] }>(query, [leaseId, tenantId]);
+  const { data, loading, error, refetch } = useApi<RentPayment[]>(query, [leaseId, tenantId]);
 
   return {
-    payments: data?.payments || [],
+    payments: data || [],
     loading,
     error,
     refetch,

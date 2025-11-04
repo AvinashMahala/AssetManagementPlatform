@@ -66,48 +66,88 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Property Management API',
+      title: 'Asset Management Platform API',
       version: '1.0.0',
-      description: 'API for managing rental properties and users',
+      description: 'Comprehensive API for managing rental properties, tenants, leases, and financial operations. Built for property managers and landlords to streamline property management workflows including tenant screening, lease agreements, rent collection, maintenance tracking, and financial reporting.',
+      contact: {
+        name: 'Asset Management Platform Support',
+        email: 'support@assetmanagementplatform.com',
+        url: 'https://assetmanagementplatform.com/support'
+      },
+      license: {
+        name: 'MIT',
+        url: 'https://opensource.org/licenses/MIT'
+      },
+      termsOfService: 'https://assetmanagementplatform.com/terms',
     },
     servers: [
       {
         url: 'http://localhost:5001',
+        description: 'Development server'
       },
+      {
+        url: 'https://api.assetmanagementplatform.com',
+        description: 'Production server'
+      },
+      {
+        url: 'https://staging.assetmanagementplatform.com',
+        description: 'Staging server'
+      }
     ],
     tags: [
       {
         name: 'Authentication',
-        description: 'User authentication and authorization endpoints',
+        description: 'User authentication, registration, and authorization endpoints including JWT token management, email/phone verification, and password reset functionality',
+        externalDocs: {
+          description: 'Authentication Guide',
+          url: 'https://assetmanagementplatform.com/docs/authentication'
+        }
       },
       {
         name: 'Users',
-        description: 'User management endpoints',
+        description: 'User account management endpoints for administrators and regular users including profile updates, role management, and account settings',
       },
       {
         name: 'Properties',
-        description: 'Property portfolio management endpoints',
+        description: 'Property portfolio management endpoints for creating, updating, and managing rental properties including property details, amenities, and photos',
       },
       {
         name: 'Units',
-        description: 'Unit management and tenant assignment endpoints',
+        description: 'Individual unit management within properties including unit details, availability status, amenities, and rental pricing',
       },
       {
         name: 'Tenants',
-        description: 'Tenant profile and management endpoints',
+        description: 'Tenant profile and document management endpoints including tenant screening, document verification, and tenant history tracking',
+        externalDocs: {
+          description: 'Tenant Management Guide',
+          url: 'https://assetmanagementplatform.com/docs/tenants'
+        }
       },
       {
         name: 'Unit Tenants',
-        description: 'Unit tenant management endpoints',
+        description: 'Unit-tenant assignment and occupancy management endpoints for tracking tenant moves, rent sharing, and occupancy status',
       },
       {
         name: 'Leases',
-        description: 'Lease agreement management endpoints',
+        description: 'Lease agreement lifecycle management including lease creation, terms negotiation, document signing, and lease termination',
+        externalDocs: {
+          description: 'Lease Management Guide',
+          url: 'https://assetmanagementplatform.com/docs/leases'
+        }
       },
       {
         name: 'Rent Payments',
-        description: 'Rent payment tracking and collection endpoints',
+        description: 'Rent payment processing and tracking endpoints including payment collection, overdue management, late fees, and financial reporting',
+        externalDocs: {
+          description: 'Payment Processing Guide',
+          url: 'https://assetmanagementplatform.com/docs/payments'
+        }
       },
+    ],
+    security: [
+      {
+        bearerAuth: []
+      }
     ],
     components: {
       schemas: {
@@ -117,24 +157,29 @@ const options = {
             id: {
               type: 'integer',
               description: 'Property ID',
+              example: 1
             },
             name: {
               type: 'string',
               description: 'Property name',
+              example: 'Sunset Apartments'
             },
             description: {
               type: 'string',
               description: 'Property description',
+              example: 'Modern apartment complex with excellent amenities'
             },
             propertyType: {
               type: 'string',
               enum: ['apartment', 'house', 'villa', 'commercial', 'pg_hostel', 'co_living', 'office', 'shop', 'warehouse'],
               description: 'Type of property',
+              example: 'apartment'
             },
             status: {
               type: 'string',
               enum: ['available', 'occupied', 'under_maintenance', 'vacant'],
               description: 'Property status',
+              example: 'available'
             },
             address: {
               type: 'object',
@@ -142,48 +187,59 @@ const options = {
                 street: {
                   type: 'string',
                   description: 'Street address',
+                  example: '123 Main Street'
                 },
                 city: {
                   type: 'string',
                   description: 'City',
+                  example: 'Mumbai'
                 },
                 state: {
                   type: 'string',
                   description: 'State',
+                  example: 'Maharashtra'
                 },
                 pincode: {
                   type: 'string',
                   description: 'Pincode',
+                  example: '400001'
                 },
                 landmark: {
                   type: 'string',
                   description: 'Landmark',
+                  example: 'Near Central Mall'
                 },
               },
             },
             area: {
               type: 'number',
               description: 'Area in sq ft',
+              example: 1200
             },
             bedrooms: {
               type: 'integer',
               description: 'Number of bedrooms',
+              example: 2
             },
             bathrooms: {
               type: 'integer',
               description: 'Number of bathrooms',
+              example: 2
             },
             monthlyRent: {
               type: 'number',
               description: 'Monthly rent amount',
+              example: 25000
             },
             securityDeposit: {
               type: 'number',
               description: 'Security deposit amount',
+              example: 50000
             },
             ownerId: {
               type: 'integer',
               description: 'Owner user ID',
+              example: 1
             },
             amenities: {
               type: 'array',
@@ -191,6 +247,7 @@ const options = {
                 type: 'string',
               },
               description: 'List of amenities',
+              example: ['parking', 'gym', 'swimming pool', 'security']
             },
             photos: {
               type: 'array',
@@ -198,16 +255,19 @@ const options = {
                 type: 'string',
               },
               description: 'List of photo URLs',
+              example: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg']
             },
             createdAt: {
               type: 'string',
               format: 'date-time',
               description: 'Creation timestamp',
+              example: '2024-01-15T10:30:00Z'
             },
             updatedAt: {
               type: 'string',
               format: 'date-time',
               description: 'Last update timestamp',
+              example: '2024-01-15T10:30:00Z'
             },
           },
         },
@@ -307,50 +367,61 @@ const options = {
               type: 'string',
               format: 'uuid',
               description: 'User ID (UUID)',
+              example: '550e8400-e29b-41d4-a716-446655440000'
             },
             username: {
               type: 'string',
               description: 'Username',
+              example: 'john_doe'
             },
             email: {
               type: 'string',
               description: 'Email address',
+              example: 'john.doe@example.com'
             },
             phone: {
               type: 'string',
               description: 'Phone number',
+              example: '+91-9876543210'
             },
             role: {
               type: 'string',
               enum: ['admin', 'user'],
               description: 'User role',
+              example: 'user'
             },
             isEmailVerified: {
               type: 'boolean',
               description: 'Email verification status',
+              example: true
             },
             isPhoneVerified: {
               type: 'boolean',
               description: 'Phone verification status',
+              example: false
             },
             profilePicture: {
               type: 'string',
               description: 'Profile picture URL',
+              example: 'https://example.com/profile.jpg'
             },
             lastLogin: {
               type: 'string',
               format: 'date-time',
               description: 'Last login timestamp',
+              example: '2024-01-15T14:30:00Z'
             },
             createdAt: {
               type: 'string',
               format: 'date-time',
               description: 'Account creation timestamp',
+              example: '2024-01-10T09:00:00Z'
             },
             updatedAt: {
               type: 'string',
               format: 'date-time',
               description: 'Last update timestamp',
+              example: '2024-01-15T14:30:00Z'
             },
           },
         },
@@ -1749,7 +1820,270 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  customCss: `
+    /* Hide default topbar */
+    .swagger-ui .topbar { 
+      display: none; 
+    }
+    
+    /* Enhanced title styling with logo */
+    .swagger-ui .info .title { 
+      color: #2c3e50; 
+      font-size: 36px; 
+      font-weight: bold; 
+      background: url('https://via.placeholder.com/50x50/3498db/ffffff?text=AMP') no-repeat left center;
+      padding-left: 70px;
+      line-height: 50px;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    /* Enhanced description */
+    .swagger-ui .info .description { 
+      font-size: 16px; 
+      line-height: 1.6; 
+      color: #34495e; 
+      margin-bottom: 20px;
+      padding: 15px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 8px;
+      border-left: 4px solid #3498db;
+    }
+    
+    /* Contact info styling */
+    .swagger-ui .info .contact { 
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 1px solid #dee2e6;
+    }
+    
+    /* License styling */
+    .swagger-ui .info .license { 
+      background: #e8f5e8;
+      padding: 10px;
+      border-radius: 5px;
+      display: inline-block;
+      margin: 10px 0;
+    }
+    
+    /* Scheme container */
+    .swagger-ui .scheme-container { 
+      background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    
+    /* Tag styling */
+    .swagger-ui .opblock-tag { 
+      font-size: 18px; 
+      font-weight: 600; 
+      color: #2980b9; 
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      border-left: 4px solid #3498db;
+      transition: all 0.3s ease;
+    }
+    .swagger-ui .opblock-tag:hover {
+      background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+      transform: translateX(5px);
+    }
+    
+    /* Method badges */
+    .swagger-ui .opblock-summary-method { 
+      background: #27ae60; 
+      color: white;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-size: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .swagger-ui .opblock-summary-method[data-method="post"] { background: #3498db; }
+    .swagger-ui .opblock-summary-method[data-method="put"] { background: #f39c12; }
+    .swagger-ui .opblock-summary-method[data-method="delete"] { background: #e74c3c; }
+    .swagger-ui .opblock-summary-method[data-method="patch"] { background: #9b59b6; }
+    
+    /* Button styling */
+    .swagger-ui .btn { 
+      background-color: #3498db; 
+      border-color: #3498db; 
+      border-radius: 6px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .swagger-ui .btn:hover { 
+      background-color: #2980b9; 
+      border-color: #2980b9; 
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .swagger-ui .btn.execute { 
+      background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+      border: none;
+    }
+    .swagger-ui .btn.execute:hover {
+      background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+    }
+    
+    /* Response status colors */
+    .swagger-ui .response-col_status { 
+      font-weight: bold; 
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .swagger-ui .response-col_status[data-status="200"] { 
+      color: #27ae60; 
+      background: #d5f4e6;
+    }
+    .swagger-ui .response-col_status[data-status="201"] { 
+      color: #27ae60; 
+      background: #d5f4e6;
+    }
+    .swagger-ui .response-col_status[data-status="400"], 
+    .swagger-ui .response-col_status[data-status="500"] { 
+      color: #e74c3c; 
+      background: #fadbd8;
+    }
+    .swagger-ui .response-col_status[data-status="401"] { 
+      color: #f39c12; 
+      background: #fdeaa7;
+    }
+    .swagger-ui .response-col_status[data-status="403"] { 
+      color: #e74c3c; 
+      background: #fadbd8;
+    }
+    .swagger-ui .response-col_status[data-status="404"] { 
+      color: #95a5a6; 
+      background: #ecf0f1;
+    }
+    
+    /* Parameter table styling */
+    .swagger-ui .parameters { 
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    
+    /* Code blocks */
+    .swagger-ui .highlight-code { 
+      background: #2c3e50 !important;
+      border-radius: 6px;
+      border: 1px solid #34495e;
+    }
+    
+    /* Model examples */
+    .swagger-ui .model-example { 
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 15px;
+    }
+    
+    /* Loading animation */
+    .swagger-ui .loading-container { 
+      background: rgba(255,255,255,0.9);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    /* Error styling */
+    .swagger-ui .error { 
+      background: #fadbd8;
+      border: 1px solid #e74c3c;
+      border-radius: 6px;
+      padding: 10px;
+      color: #721c24;
+    }
+    
+    /* Success styling */
+    .swagger-ui .success { 
+      background: #d5f4e6;
+      border: 1px solid #27ae60;
+      border-radius: 6px;
+      padding: 10px;
+      color: #155724;
+    }
+    
+    /* Tab navigation */
+    .swagger-ui .tab { 
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px 6px 0 0;
+      padding: 10px 15px;
+      margin-right: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .swagger-ui .tab.active { 
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+    
+    /* Search/filter styling */
+    .swagger-ui .filter { 
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 8px 12px;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    
+    /* Scrollbar styling */
+    .swagger-ui ::-webkit-scrollbar { 
+      width: 8px; 
+    }
+    .swagger-ui ::-webkit-scrollbar-track { 
+      background: #f1f1f1; 
+      border-radius: 4px;
+    }
+    .swagger-ui ::-webkit-scrollbar-thumb { 
+      background: #c1c1c1; 
+      border-radius: 4px;
+    }
+    .swagger-ui ::-webkit-scrollbar-thumb:hover { 
+      background: #a8a8a8; 
+    }
+  `,
+  customSiteTitle: 'Asset Management Platform API Documentation',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    docExpansion: 'list',
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    tryItOutEnabled: true,
+    requestInterceptor: (req: any) => {
+      // Add any custom request interceptors if needed
+      return req;
+    },
+    responseInterceptor: (res: any) => {
+      // Add any custom response interceptors if needed
+      return res;
+    },
+    onComplete: () => {
+      // Custom initialization code
+      console.log('Swagger UI loaded successfully');
+    },
+    syntaxHighlight: {
+      activate: true,
+      theme: 'arta'
+    },
+    validatorUrl: null // Disable online validator
+  }
+}));
 
 pool.query(`CREATE TABLE IF NOT EXISTS tenants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

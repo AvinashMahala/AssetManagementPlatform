@@ -5,10 +5,10 @@ import { leaseService } from '../services/leaseService';
 
 export function useLeases(unitId?: string, tenantId?: string) {
   const query = useCallback(() => leaseService.getAll(unitId, tenantId), [unitId, tenantId]);
-  const { data, loading, error, refetch } = useApi<{ leases: Lease[] }>(query, [unitId, tenantId]);
+  const { data, loading, error, refetch } = useApi<Lease[]>(query, [unitId, tenantId]);
 
   return {
-    leases: data?.leases || [],
+    leases: data || [],
     loading,
     error,
     refetch,

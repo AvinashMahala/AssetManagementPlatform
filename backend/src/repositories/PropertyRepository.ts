@@ -233,7 +233,7 @@ export class PropertyRepository implements IPropertyRepository {
         pincode: row.address_pincode,
         landmark: row.address_landmark,
       },
-      totalArea: parseFloat(row.area),
+      totalArea: parseFloat(row.total_area) || 0,
       totalFloors: row.total_floors,
       yearBuilt: row.year_built,
       parkingSpaces: row.parking_spaces,

@@ -42,12 +42,12 @@ const PropertyListPageEnhanced: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<{ id: string; name: string } | null>(null);
   
-  const { properties, loading, error, pagination, updateFilters } = useProperties(filters);
+  const { properties, loading, error, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
 
   // Filter properties based on search, status, and type
   const filteredProperties = useMemo(() => {
-    return properties.filter(property => {
+    return Array.isArray(properties) ? properties.filter(property => {
       const matchesSearch = !searchQuery || 
         property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         property.address.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -57,16 +57,16 @@ const PropertyListPageEnhanced: React.FC = () => {
       const matchesType = typeFilter === 'all' || property.propertyType === typeFilter;
       
       return matchesSearch && matchesStatus && matchesType;
-    });
+    }) : [];
   }, [properties, searchQuery, statusFilter, typeFilter]);
 
   // Calculate stats
   const stats = useMemo(() => {
     return {
-      total: properties.length,
-      available: properties.filter(p => p.status === PropertyStatus.AVAILABLE).length,
-      occupied: properties.filter(p => p.status === PropertyStatus.OCCUPIED).length,
-      maintenance: properties.filter(p => p.status === PropertyStatus.UNDER_MAINTENANCE).length,
+      total: Array.isArray(properties) ? properties.length : 0,
+      available: Array.isArray(properties) ? properties.filter(p => p.status === PropertyStatus.AVAILABLE).length : 0,
+      occupied: Array.isArray(properties) ? properties.filter(p => p.status === PropertyStatus.OCCUPIED).length : 0,
+      maintenance: Array.isArray(properties) ? properties.filter(p => p.status === PropertyStatus.UNDER_MAINTENANCE).length : 0,
     };
   }, [properties]);
 
@@ -448,35 +448,6 @@ const PropertyListPageEnhanced: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-              {pagination.total} properties
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page <= 1}
-                onClick={() => updateFilters({ page: pagination.page - 1 })}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => updateFilters({ page: pagination.page + 1 })}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
         )}
       </div>
 

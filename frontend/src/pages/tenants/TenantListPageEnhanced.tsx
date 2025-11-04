@@ -16,17 +16,17 @@ const TenantListPageEnhanced: React.FC = () => {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const { tenants, loading } = useTenants();
 
-  const filteredTenants = tenants.filter(t => {
+  const filteredTenants = Array.isArray(tenants) ? tenants.filter(t => {
     const matchesSearch = `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }) : [];
 
-  const activeCount = tenants.filter(t => t.status === 'active').length;
-  const inactiveCount = tenants.filter(t => t.status !== 'active').length;
+  const activeCount = Array.isArray(tenants) ? tenants.filter(t => t.status === 'active').length : 0;
+  const inactiveCount = Array.isArray(tenants) ? tenants.filter(t => t.status !== 'active').length : 0;
 
   const stats = [
-    { label: 'Total Tenants', value: tenants.length.toString(), icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
+    { label: 'Total Tenants', value: (Array.isArray(tenants) ? tenants.length : 0).toString(), icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Active', value: activeCount.toString(), icon: UserCheck, color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Inactive', value: inactiveCount.toString(), icon: UserX, color: 'text-gray-600', bgColor: 'bg-gray-50 dark:bg-gray-900/20' },
   ];

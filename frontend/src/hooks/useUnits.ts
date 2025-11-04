@@ -5,10 +5,10 @@ import { unitService } from '../services/unitService';
 
 export function useUnits(propertyId?: string) {
   const query = useCallback(() => unitService.getAll(propertyId), [propertyId]);
-  const { data, loading, error, refetch } = useApi<{ units: Unit[] }>(query, [propertyId]);
+  const { data, loading, error, refetch } = useApi<Unit[]>(query, [propertyId]);
 
   return {
-    units: data?.units || [],
+    units: data || [],
     loading,
     error,
     refetch,

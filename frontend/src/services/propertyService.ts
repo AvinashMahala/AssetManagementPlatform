@@ -1,25 +1,17 @@
-import type { Property, PropertyInput, PropertyListResponse, PropertyFilters } from '../types/property';
+import type { Property, PropertyInput, PropertyFilters } from '../types/property';
 import type { ApiResponse } from '../types/api';
 import { apiClient } from './apiClient';
-import { API_ENDPOINTS, PAGINATION_DEFAULTS } from '../constants/api';
+import { API_ENDPOINTS } from '../constants/api';
 
 class PropertyService {
-  async getAll(filters?: PropertyFilters): Promise<ApiResponse<PropertyListResponse>> {
+  async getAll(filters?: PropertyFilters): Promise<ApiResponse<Property[]>> {
     const params = {
-      page: filters?.page || PAGINATION_DEFAULTS.PAGE,
-      limit: filters?.limit || PAGINATION_DEFAULTS.LIMIT,
       search: filters?.search,
-      propertyType: filters?.propertyType,
-      status: filters?.status,
-      city: filters?.city,
-      state: filters?.state,
-      minArea: filters?.minArea,
-      maxArea: filters?.maxArea,
       sortBy: filters?.sortBy,
       sortOrder: filters?.sortOrder,
     };
 
-    return apiClient.get<PropertyListResponse>(API_ENDPOINTS.PROPERTIES, { params });
+    return apiClient.get<Property[]>(API_ENDPOINTS.PROPERTIES, { params });
   }
 
   async getById(id: string): Promise<ApiResponse<Property>> {
@@ -43,19 +35,19 @@ class PropertyService {
   }
 
   // Utility methods
-  async search(query: string): Promise<ApiResponse<PropertyListResponse>> {
+  async search(query: string): Promise<ApiResponse<Property[]>> {
     return this.getAll({ search: query });
   }
 
-  async getByType(propertyType: string): Promise<ApiResponse<PropertyListResponse>> {
+  async getByType(propertyType: string): Promise<ApiResponse<Property[]>> {
     return this.getAll({ propertyType: propertyType as any });
   }
 
-  async getByStatus(status: string): Promise<ApiResponse<PropertyListResponse>> {
+  async getByStatus(status: string): Promise<ApiResponse<Property[]>> {
     return this.getAll({ status: status as any });
   }
 
-  async getByCity(city: string): Promise<ApiResponse<PropertyListResponse>> {
+  async getByCity(city: string): Promise<ApiResponse<Property[]>> {
     return this.getAll({ city });
   }
 }

@@ -48,7 +48,7 @@ export class RentPaymentController {
   async getAllPayments(req: Request, res: Response) {
     try {
       const payments = await this.service.getAllPayments();
-      ResponseUtils.success(res, { payments });
+      ResponseUtils.success(res, payments, 'Payments retrieved successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch payments');
     }
@@ -154,7 +154,7 @@ export class RentPaymentController {
     try {
       const { leaseId } = req.params;
       const payments = await this.service.getPaymentsByLease(leaseId);
-      ResponseUtils.success(res, { payments });
+      ResponseUtils.success(res, payments, 'Payments retrieved successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch payments for lease');
     }
@@ -205,7 +205,7 @@ export class RentPaymentController {
     try {
       const { propertyId } = req.params;
       const payments = await this.service.getPaymentsByProperty(propertyId);
-      ResponseUtils.success(res, { payments });
+      ResponseUtils.success(res, payments, 'Payments retrieved successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch payments for property');
     }
@@ -256,7 +256,7 @@ export class RentPaymentController {
     try {
       const { tenantId } = req.params;
       const payments = await this.service.getPaymentsByTenant(tenantId);
-      ResponseUtils.success(res, { payments });
+      ResponseUtils.success(res, payments, 'Payments retrieved successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch payments for tenant');
     }
@@ -298,7 +298,7 @@ export class RentPaymentController {
   async getPendingPayments(req: Request, res: Response) {
     try {
       const payments = await this.service.getPendingPayments();
-      ResponseUtils.success(res, { payments });
+      ResponseUtils.success(res, payments, 'Pending payments retrieved successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch pending payments');
     }
@@ -340,7 +340,7 @@ export class RentPaymentController {
   async getOverduePayments(req: Request, res: Response) {
     try {
       const payments = await this.service.getOverduePayments();
-      ResponseUtils.success(res, { payments });
+      ResponseUtils.success(res, payments, 'Overdue payments retrieved successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch overdue payments');
     }
@@ -409,7 +409,7 @@ export class RentPaymentController {
       }
 
       const payments = await this.service.getPaymentsByDateRange(new Date(startDate as string), new Date(endDate as string));
-      ResponseUtils.success(res, { payments });
+      ResponseUtils.success(res, payments, 'Payments retrieved successfully');
     } catch (err) {
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('Start date cannot be after end date')) {

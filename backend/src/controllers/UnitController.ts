@@ -54,7 +54,7 @@ export class UnitController {
         units = await this.service.getAllUnits();
       }
 
-      ResponseUtils.success(res, { units });
+      ResponseUtils.success(res, units);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch units');
     }
@@ -295,7 +295,7 @@ export class UnitController {
       const unitId = id;
 
       const tenants = await this.service.getUnitTenants(unitId);
-      ResponseUtils.success(res, { tenants });
+      ResponseUtils.success(res, tenants);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch unit tenants');
     }

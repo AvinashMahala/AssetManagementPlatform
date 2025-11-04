@@ -5,10 +5,10 @@ import { tenantService } from '../services/tenantService';
 
 export function useTenants() {
   const query = useCallback(() => tenantService.getAll(), []);
-  const { data, loading, error, refetch } = useApi<{ tenants: Tenant[] }>(query, []);
+  const { data, loading, error, refetch } = useApi<Tenant[]>(query, []);
 
   return {
-    tenants: data?.tenants || [],
+    tenants: data || [],
     loading,
     error,
     refetch,

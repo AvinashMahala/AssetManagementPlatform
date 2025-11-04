@@ -45,20 +45,20 @@ const LeaseListPageEnhanced: React.FC = () => {
     return days > 0 && days <= 30;
   };
 
-  const filteredLeases = leases.filter(l => {
+  const filteredLeases = Array.isArray(leases) ? leases.filter(l => {
     const tenantName = getTenantName(l.tenantId);
     const unitNumber = getUnitNumber(l.unitId);
     const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || l.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }) : [];
 
-  const activeCount = leases.filter(l => l.status === 'active').length;
-  const expiredCount = leases.filter(l => l.status === 'expired').length;
-  const expiringCount = leases.filter(l => l.status === 'active' && isExpiringSoon(l.endDate)).length;
+  const activeCount = Array.isArray(leases) ? leases.filter(l => l.status === 'active').length : 0;
+  const expiredCount = Array.isArray(leases) ? leases.filter(l => l.status === 'expired').length : 0;
+  const expiringCount = Array.isArray(leases) ? leases.filter(l => l.status === 'active' && isExpiringSoon(l.endDate)).length : 0;
 
   const stats = [
-    { label: 'Total Leases', value: leases.length.toString(), icon: FileText, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
+    { label: 'Total Leases', value: (Array.isArray(leases) ? leases.length : 0).toString(), icon: FileText, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Active', value: activeCount.toString(), icon: CheckCircle2, color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Expiring Soon', value: expiringCount.toString(), icon: AlertTriangle, color: 'text-orange-600', bgColor: 'bg-orange-50 dark:bg-orange-900/20' },
     { label: 'Expired', value: expiredCount.toString(), icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-50 dark:bg-red-900/20' },

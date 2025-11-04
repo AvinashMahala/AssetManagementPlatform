@@ -19,19 +19,19 @@ const UnitListPageEnhanced: React.FC = () => {
   const { units, loading } = useUnits();
   const { properties } = useProperties();
 
-  const filteredUnits = units.filter(u => {
+  const filteredUnits = Array.isArray(units) ? units.filter(u => {
     const matchesSearch = `${u.unitNumber} ${u.unitType}`.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
     const matchesProperty = propertyFilter === 'all' || u.propertyId === propertyFilter;
     return matchesSearch && matchesStatus && matchesProperty;
-  });
+  }) : [];
 
-  const availableCount = units.filter(u => u.status === 'available').length;
-  const occupiedCount = units.filter(u => u.status === 'occupied').length;
-  const maintenanceCount = units.filter(u => u.status === 'under_maintenance').length;
+  const availableCount = Array.isArray(units) ? units.filter(u => u.status === 'available').length : 0;
+  const occupiedCount = Array.isArray(units) ? units.filter(u => u.status === 'occupied').length : 0;
+  const maintenanceCount = Array.isArray(units) ? units.filter(u => u.status === 'under_maintenance').length : 0;
 
   const stats = [
-    { label: 'Total Units', value: units.length.toString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
+    { label: 'Total Units', value: (Array.isArray(units) ? units.length : 0).toString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Available', value: availableCount.toString(), icon: DoorOpen, color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Occupied', value: occupiedCount.toString(), icon: DoorClosed, color: 'text-orange-600', bgColor: 'bg-orange-50 dark:bg-orange-900/20' },
     { label: 'Maintenance', value: maintenanceCount.toString(), icon: Square, color: 'text-gray-600', bgColor: 'bg-gray-50 dark:bg-gray-900/20' },

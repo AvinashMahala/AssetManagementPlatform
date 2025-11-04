@@ -6,13 +6,15 @@ import { IUnitRepository } from '../interfaces/repositories/IUnitRepository';
 import { IUnitTenantRepository } from '../interfaces/repositories/IUnitTenantRepository';
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentRepository';
-import { IPropertyService } from '../interfaces/services/IPropertyService';
+import { IRentTransactionRepository } from '../interfaces/repositories/IRentTransactionRepository';
 import { IUserService } from '../interfaces/services/IUserService';
 import { ITenantService } from '../interfaces/services/ITenantService';
 import { IUnitService } from '../interfaces/services/IUnitService';
 import { IUnitTenantService } from '../interfaces/services/IUnitTenantService';
 import { ILeaseService } from '../interfaces/services/ILeaseService';
 import { IRentPaymentService } from '../interfaces/services/IRentPaymentService';
+import { IRentTransactionService } from '../interfaces/services/IRentTransactionService';
+import { IPropertyService } from '../interfaces/services/IPropertyService';
 import { PropertyRepository } from '../repositories/PropertyRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { TenantRepository } from '../repositories/TenantRepository';
@@ -23,6 +25,7 @@ import { UnitRepository } from '../repositories/UnitRepository';
 import { UnitTenantRepository } from '../repositories/UnitTenantRepository';
 import { LeaseRepository } from '../repositories/LeaseRepository';
 import { RentPaymentRepository } from '../repositories/RentPaymentRepository';
+import { RentTransactionRepository } from '../repositories/RentTransactionRepository';
 import { PropertyService } from '../services/PropertyService';
 import { UserService } from '../services/UserService';
 import { TenantService } from '../services/TenantService';
@@ -31,6 +34,7 @@ import { UnitService } from '../services/UnitService';
 import { UnitTenantService } from '../services/UnitTenantService';
 import { LeaseService } from '../services/LeaseService';
 import { RentPaymentService } from '../services/RentPaymentService';
+import { RentTransactionService } from '../services/RentTransactionService';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -44,6 +48,7 @@ export class DependencyContainer {
   private _unitTenantRepository: IUnitTenantRepository | null = null;
   private _leaseRepository: ILeaseRepository | null = null;
   private _rentPaymentRepository: IRentPaymentRepository | null = null;
+  private _rentTransactionRepository: IRentTransactionRepository | null = null;
   private _passwordResetMethodRepository: PasswordResetMethodRepository | null = null;
   private _securityQuestionRepository: SecurityQuestionRepository | null = null;
   private _recoveryCodeRepository: RecoveryCodeRepository | null = null;
@@ -56,6 +61,7 @@ export class DependencyContainer {
   private _unitTenantService: IUnitTenantService | null = null;
   private _leaseService: ILeaseService | null = null;
   private _rentPaymentService: IRentPaymentService | null = null;
+  private _rentTransactionService: IRentTransactionService | null = null;
   private _passwordResetService: PasswordResetService | null = null;
 
   private constructor(pool: Pool) {
@@ -147,6 +153,13 @@ export class DependencyContainer {
     return this._rentPaymentRepository;
   }
 
+  public get rentTransactionRepository(): IRentTransactionRepository {
+    if (!this._rentTransactionRepository) {
+      this._rentTransactionRepository = new RentTransactionRepository(this.pool);
+    }
+    return this._rentTransactionRepository;
+  }
+
   // Service getters with lazy initialization
   public get propertyService(): IPropertyService {
     if (!this._propertyService) {
@@ -214,6 +227,18 @@ export class DependencyContainer {
     return this._rentPaymentService;
   }
 
+  public get rentTransactionService(): IRentTransactionService {
+    if (!this._rentTransactionService) {
+      this._rentTransactionService = new RentTransactionService(
+        this.rentTransactionRepository,
+        this.leaseRepository,
+        this.propertyRepository,
+        this.tenantRepository
+      );
+    }
+    return this._rentTransactionService;
+  }
+
   // Method to register custom implementations (for testing)
   public registerPropertyRepository(repository: IPropertyRepository): void {
     this._propertyRepository = repository;
@@ -271,6 +296,14 @@ export class DependencyContainer {
     this._rentPaymentService = service;
   }
 
+  public registerRentTransactionRepository(repository: IRentTransactionRepository): void {
+    this._rentTransactionRepository = repository;
+  }
+
+  public registerRentTransactionService(service: IRentTransactionService): void {
+    this._rentTransactionService = service;
+  }
+
     // Reset method for testing
   public reset(): void {
     this._propertyRepository = null;
@@ -280,6 +313,7 @@ export class DependencyContainer {
     this._unitTenantRepository = null;
     this._leaseRepository = null;
     this._rentPaymentRepository = null;
+    this._rentTransactionRepository = null;
     this._passwordResetMethodRepository = null;
     this._securityQuestionRepository = null;
     this._recoveryCodeRepository = null;
@@ -290,6 +324,7 @@ export class DependencyContainer {
     this._unitTenantService = null;
     this._leaseService = null;
     this._rentPaymentService = null;
+    this._rentTransactionService = null;
     this._passwordResetService = null;
   }
 }

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Property, PropertyInput, PropertyFilters, PropertyListResponse } from '../types/property';
+import type { Property, PropertyInput, PropertyFilters } from '../types/property';
 import { useApi, useApiMutation } from './useApi';
 import { propertyService } from '../services/propertyService';
 
@@ -17,7 +17,7 @@ export function useProperties(filters?: PropertyFilters) {
     return propertyService.getAll(currentFilters);
   }, [currentFilters]);
 
-  const { data, loading, error, refetch } = useApi<PropertyListResponse>(query, [currentFilters]);
+  const { data, loading, error, refetch } = useApi<Property[]>(query, [currentFilters]);
 
   const updateFilters = useCallback((newFilters: Partial<PropertyFilters>) => {
     setCurrentFilters(prev => ({ ...prev, ...newFilters }));
@@ -27,8 +27,8 @@ export function useProperties(filters?: PropertyFilters) {
     setCurrentFilters({});
   }, []);
 
-  // Extract properties from the response structure
-  const properties = data?.properties || [];
+  // Data is now returned directly as an array
+  const properties = Array.isArray(data) ? data : [];
   
   // Debug logging
   console.log('[useProperties] Data received:', data);
@@ -38,7 +38,6 @@ export function useProperties(filters?: PropertyFilters) {
 
   return {
     properties: Array.isArray(properties) ? properties : [],
-    pagination: data?.pagination,
     loading,
     error,
     refetch,
@@ -77,7 +76,7 @@ export function usePropertySearch() {
     return propertyService.search(searchQuery);
   }, [searchQuery]);
 
-  const { data, loading, error, refetch } = useApi<PropertyListResponse>(query, [searchQuery]);
+  const { data, loading, error, refetch } = useApi<Property[]>(query, [searchQuery]);
 
   const search = useCallback((query: string) => {
     setSearchQuery(query);
@@ -87,12 +86,11 @@ export function usePropertySearch() {
     setSearchQuery('');
   }, []);
 
-  // Extract properties from the response structure
-  const properties = data?.properties || [];
+  // Data is now returned directly as an array
+  const properties = Array.isArray(data) ? data : [];
 
   return {
     properties: Array.isArray(properties) ? properties : [],
-    pagination: data?.pagination,
     loading,
     error,
     refetch,

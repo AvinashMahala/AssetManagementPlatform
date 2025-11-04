@@ -47,7 +47,7 @@ export class PropertyController {
         properties = await this.service.getAllProperties();
       }
 
-      ResponseUtils.success(res, { properties });
+      ResponseUtils.success(res, properties);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch properties');
     }

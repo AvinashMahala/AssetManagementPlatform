@@ -45,7 +45,7 @@ const PaymentListPageEnhanced: React.FC = () => {
     return new Date(dueDate) < new Date();
   };
 
-  const filteredPayments = payments.filter(p => {
+  const filteredPayments = Array.isArray(payments) ? payments.filter(p => {
     const tenantName = getTenantName(p.tenantId);
     const { unitNumber } = getLeaseInfo(p.leaseId);
     const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
@@ -53,13 +53,13 @@ const PaymentListPageEnhanced: React.FC = () => {
       (statusFilter === 'overdue' ? isOverdue(p.dueDate, p.status) : p.status === statusFilter);
     const matchesMethod = paymentMethodFilter === 'all' || p.paymentMethod === paymentMethodFilter;
     return matchesSearch && matchesStatus && matchesMethod;
-  });
+  }) : [];
 
-  const totalCollected = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
-  const paidCount = payments.filter(p => p.status === 'paid').length;
-  const pendingCount = payments.filter(p => p.status === 'pending').length;
-  const overdueCount = payments.filter(p => p.status === 'pending' && isOverdue(p.dueDate, p.status)).length;
-  const pendingAmount = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
+  const totalCollected = Array.isArray(payments) ? payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0) : 0;
+  const paidCount = Array.isArray(payments) ? payments.filter(p => p.status === 'paid').length : 0;
+  const pendingCount = Array.isArray(payments) ? payments.filter(p => p.status === 'pending').length : 0;
+  const overdueCount = Array.isArray(payments) ? payments.filter(p => p.status === 'pending' && isOverdue(p.dueDate, p.status)).length : 0;
+  const pendingAmount = Array.isArray(payments) ? payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0) : 0;
 
   const stats = [
     { 
@@ -88,7 +88,7 @@ const PaymentListPageEnhanced: React.FC = () => {
     },
     { 
       label: 'Collection Rate', 
-      value: `${payments.length > 0 ? ((paidCount / payments.length) * 100).toFixed(0) : 0}%`, 
+      value: `${Array.isArray(payments) && payments.length > 0 ? ((paidCount / payments.length) * 100).toFixed(0) : 0}%`, 
       icon: TrendingUp, 
       color: 'text-blue-600', 
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',

@@ -4,9 +4,11 @@ import { apiClient } from './apiClient';
 import { API_ENDPOINTS } from '../constants/api';
 
 class UnitService {
-  async getAll(propertyId?: string): Promise<ApiResponse<{ units: Unit[] }>> {
-    const params = propertyId ? { propertyId } : undefined;
-    return apiClient.get<{ units: Unit[] }>(API_ENDPOINTS.UNITS, { params });
+  async getAll(propertyId?: string): Promise<ApiResponse<Unit[]>> {
+    const url = propertyId 
+      ? `${API_ENDPOINTS.UNITS}?propertyId=${propertyId}` 
+      : API_ENDPOINTS.UNITS;
+    return apiClient.get<Unit[]>(url);
   }
 
   async getById(id: string): Promise<ApiResponse<Unit>> {
