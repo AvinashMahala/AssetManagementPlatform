@@ -337,4 +337,65 @@ export const initializeTables = (pool: Pool) => {
       console.log('Rent transactions table ready');
     }
   });
+
+  // Meters table (utility meter management)
+  pool.query(`CREATE TABLE IF NOT EXISTS meters (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    unit_id UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+    meter_type VARCHAR(20) NOT NULL CHECK (meter_type IN ('electricity', 'water', 'gas')),
+    meter_name VARCHAR(100) NOT NULL,
+    meter_number VARCHAR(50),
+    cost_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (cost_per_unit >= 0),
+    fixed_charge DECIMAL(10,2) DEFAULT 0 CHECK (fixed_charge >= 0),
+    remarks TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating meters table', err);
+    } else {
+      console.log('Meters table ready');
+    }
+  });
+
+  // Meter readings table (monthly utility readings)
+  pool.query(`CREATE TABLE IF NOT EXISTS meter_readings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    meter_id UUID NOT NULL REFERENCES meters(id) ON DELETE CASCADE,
+    reading_date DATE NOT NULL,
+    previous_reading DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (previous_reading >= 0),
+    current_reading DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (current_reading >= 0),
+    units_consumed DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (units_consumed >= 0),
+    total_cost DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (total_cost >= 0),
+    meter_photo_url TEXT,
+    rent_transaction_id UUID,
+    recorded_by UUID NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT check_readings CHECK (current_reading >= previous_reading)
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating meter_readings table', err);
+    } else {
+      console.log('Meter readings table ready');
+    }
+  });
+
+  // Create indexes for better performance
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_meters_unit_id ON meters(unit_id)`, (err) => {
+    if (err) console.error('Error creating meters unit index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_meters_property_id ON meters(property_id)`, (err) => {
+    if (err) console.error('Error creating meters property index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_meter_readings_meter_id ON meter_readings(meter_id)`, (err) => {
+    if (err) console.error('Error creating meter readings meter index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_meter_readings_reading_date ON meter_readings(reading_date)`, (err) => {
+    if (err) console.error('Error creating meter readings date index', err);
+  });
 }

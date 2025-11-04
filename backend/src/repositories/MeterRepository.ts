@@ -1,0 +1,210 @@
+import { Pool } from 'pg';
+import { Meter, MeterInput } from '../models/Meter.js';
+import { TABLES, COLUMNS } from '../constants/database.js';
+import { IMeterRepository } from '../interfaces/repositories/IMeterRepository.js';
+
+export class MeterRepository implements IMeterRepository {
+  private pool: Pool;
+
+  constructor(pool: Pool) {
+    this.pool = pool;
+  }
+
+  async findAll(): Promise<Meter[]> {
+    try {
+      const result = await this.pool.query(`SELECT * FROM ${TABLES.METERS} ORDER BY ${COLUMNS.METERS.CREATED_AT} DESC`);
+      return result.rows.map(row => this.mapRowToMeter(row));
+    } catch (error) {
+      throw new Error('Failed to fetch meters');
+    }
+  }
+
+  async findById(id: string): Promise<Meter | null> {
+    try {
+      const result = await this.pool.query(
+        `SELECT * FROM ${TABLES.METERS} WHERE ${COLUMNS.METERS.ID} = $1`,
+        [id]
+      );
+      return result.rows[0] ? this.mapRowToMeter(result.rows[0]) : null;
+    } catch (error) {
+      throw new Error('Failed to fetch meter');
+    }
+  }
+
+  async findByUnit(unitId: string): Promise<Meter[]> {
+    try {
+      const result = await this.pool.query(
+        `SELECT * FROM ${TABLES.METERS} WHERE ${COLUMNS.METERS.UNIT_ID} = $1 ORDER BY ${COLUMNS.METERS.METER_TYPE}, ${COLUMNS.METERS.CREATED_AT}`,
+        [unitId]
+      );
+      return result.rows.map(row => this.mapRowToMeter(row));
+    } catch (error) {
+      throw new Error('Failed to fetch meters by unit');
+    }
+  }
+
+  async findByProperty(propertyId: string): Promise<Meter[]> {
+    try {
+      const result = await this.pool.query(
+        `SELECT * FROM ${TABLES.METERS} WHERE ${COLUMNS.METERS.PROPERTY_ID} = $1 ORDER BY ${COLUMNS.METERS.UNIT_ID}, ${COLUMNS.METERS.METER_TYPE}`,
+        [propertyId]
+      );
+      return result.rows.map(row => this.mapRowToMeter(row));
+    } catch (error) {
+      throw new Error('Failed to fetch meters by property');
+    }
+  }
+
+  async findActiveByUnit(unitId: string): Promise<Meter[]> {
+    try {
+      const result = await this.pool.query(
+        `SELECT * FROM ${TABLES.METERS} WHERE ${COLUMNS.METERS.UNIT_ID} = $1 AND ${COLUMNS.METERS.IS_ACTIVE} = true ORDER BY ${COLUMNS.METERS.METER_TYPE}`,
+        [unitId]
+      );
+      return result.rows.map(row => this.mapRowToMeter(row));
+    } catch (error) {
+      throw new Error('Failed to fetch active meters by unit');
+    }
+  }
+
+  async create(data: Omit<Meter, 'id' | 'createdAt' | 'updatedAt'>): Promise<Meter> {
+    try {
+      const now = new Date();
+      const result = await this.pool.query(
+        `INSERT INTO ${TABLES.METERS} (
+          ${COLUMNS.METERS.ID},
+          ${COLUMNS.METERS.UNIT_ID},
+          ${COLUMNS.METERS.PROPERTY_ID},
+          ${COLUMNS.METERS.METER_TYPE},
+          ${COLUMNS.METERS.METER_NAME},
+          ${COLUMNS.METERS.METER_NUMBER},
+          ${COLUMNS.METERS.COST_PER_UNIT},
+          ${COLUMNS.METERS.FIXED_CHARGE},
+          ${COLUMNS.METERS.REMARKS},
+          ${COLUMNS.METERS.IS_ACTIVE},
+          ${COLUMNS.METERS.CREATED_AT},
+          ${COLUMNS.METERS.UPDATED_AT}
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+        [
+          crypto.randomUUID(),
+          data.unitId,
+          data.propertyId,
+          data.meterType,
+          data.meterName,
+          data.meterNumber,
+          data.costPerUnit,
+          data.fixedCharge,
+          data.remarks,
+          data.isActive !== undefined ? data.isActive : true,
+          now,
+          now
+        ]
+      );
+      return this.mapRowToMeter(result.rows[0]);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async update(id: string, data: Partial<Omit<Meter, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Meter | null> {
+    try {
+      const fields = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (data.unitId !== undefined) {
+        fields.push(`${COLUMNS.METERS.UNIT_ID} = $${paramIndex++}`);
+        values.push(data.unitId);
+      }
+      if (data.propertyId !== undefined) {
+        fields.push(`${COLUMNS.METERS.PROPERTY_ID} = $${paramIndex++}`);
+        values.push(data.propertyId);
+      }
+      if (data.meterType !== undefined) {
+        fields.push(`${COLUMNS.METERS.METER_TYPE} = $${paramIndex++}`);
+        values.push(data.meterType);
+      }
+      if (data.meterName !== undefined) {
+        fields.push(`${COLUMNS.METERS.METER_NAME} = $${paramIndex++}`);
+        values.push(data.meterName);
+      }
+      if (data.meterNumber !== undefined) {
+        fields.push(`${COLUMNS.METERS.METER_NUMBER} = $${paramIndex++}`);
+        values.push(data.meterNumber);
+      }
+      if (data.costPerUnit !== undefined) {
+        fields.push(`${COLUMNS.METERS.COST_PER_UNIT} = $${paramIndex++}`);
+        values.push(data.costPerUnit);
+      }
+      if (data.fixedCharge !== undefined) {
+        fields.push(`${COLUMNS.METERS.FIXED_CHARGE} = $${paramIndex++}`);
+        values.push(data.fixedCharge);
+      }
+      if (data.remarks !== undefined) {
+        fields.push(`${COLUMNS.METERS.REMARKS} = $${paramIndex++}`);
+        values.push(data.remarks);
+      }
+      if (data.isActive !== undefined) {
+        fields.push(`${COLUMNS.METERS.IS_ACTIVE} = $${paramIndex++}`);
+        values.push(data.isActive);
+      }
+
+      if (fields.length === 0) {
+        return await this.findById(id);
+      }
+
+      fields.push(`${COLUMNS.METERS.UPDATED_AT} = $${paramIndex++}`);
+      values.push(new Date());
+
+      const setClause = fields.join(', ');
+      const query = `UPDATE ${TABLES.METERS} SET ${setClause} WHERE ${COLUMNS.METERS.ID} = $${paramIndex} RETURNING *`;
+      values.push(id);
+
+      const result = await this.pool.query(query, values);
+      return result.rows[0] ? this.mapRowToMeter(result.rows[0]) : null;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      const result = await this.pool.query(
+        `DELETE FROM ${TABLES.METERS} WHERE ${COLUMNS.METERS.ID} = $1`,
+        [id]
+      );
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      throw new Error('Failed to delete meter');
+    }
+  }
+
+  async updateStatus(id: string, isActive: boolean): Promise<boolean> {
+    try {
+      const result = await this.pool.query(
+        `UPDATE ${TABLES.METERS} SET ${COLUMNS.METERS.IS_ACTIVE} = $1, ${COLUMNS.METERS.UPDATED_AT} = $2 WHERE ${COLUMNS.METERS.ID} = $3`,
+        [isActive, new Date(), id]
+      );
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      throw new Error('Failed to update meter status');
+    }
+  }
+
+  private mapRowToMeter(row: any): Meter {
+    return {
+      id: row.id,
+      unitId: row.unit_id,
+      propertyId: row.property_id,
+      meterType: row.meter_type,
+      meterName: row.meter_name,
+      meterNumber: row.meter_number,
+      costPerUnit: parseFloat(row.cost_per_unit) || 0,
+      fixedCharge: row.fixed_charge ? parseFloat(row.fixed_charge) : undefined,
+      remarks: row.remarks,
+      isActive: row.is_active,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    };
+  }
+}

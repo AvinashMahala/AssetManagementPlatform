@@ -7,6 +7,8 @@ import { IUnitTenantRepository } from '../interfaces/repositories/IUnitTenantRep
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentRepository';
 import { IRentTransactionRepository } from '../interfaces/repositories/IRentTransactionRepository';
+import { IMeterRepository, IMeterReadingRepository } from '../interfaces/repositories/IMeterRepository';
+import { IMeterService, IMeterReadingService } from '../interfaces/services/IMeterService';
 import { IUserService } from '../interfaces/services/IUserService';
 import { ITenantService } from '../interfaces/services/ITenantService';
 import { IUnitService } from '../interfaces/services/IUnitService';
@@ -26,6 +28,8 @@ import { UnitTenantRepository } from '../repositories/UnitTenantRepository';
 import { LeaseRepository } from '../repositories/LeaseRepository';
 import { RentPaymentRepository } from '../repositories/RentPaymentRepository';
 import { RentTransactionRepository } from '../repositories/RentTransactionRepository';
+import { MeterRepository } from '../repositories/MeterRepository';
+import { MeterReadingRepository } from '../repositories/MeterReadingRepository';
 import { PropertyService } from '../services/PropertyService';
 import { UserService } from '../services/UserService';
 import { TenantService } from '../services/TenantService';
@@ -35,6 +39,8 @@ import { UnitTenantService } from '../services/UnitTenantService';
 import { LeaseService } from '../services/LeaseService';
 import { RentPaymentService } from '../services/RentPaymentService';
 import { RentTransactionService } from '../services/RentTransactionService';
+import { MeterService } from '../services/MeterService';
+import { MeterReadingService } from '../services/MeterReadingService';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -49,6 +55,8 @@ export class DependencyContainer {
   private _leaseRepository: ILeaseRepository | null = null;
   private _rentPaymentRepository: IRentPaymentRepository | null = null;
   private _rentTransactionRepository: IRentTransactionRepository | null = null;
+  private _meterRepository: IMeterRepository | null = null;
+  private _meterReadingRepository: IMeterReadingRepository | null = null;
   private _passwordResetMethodRepository: PasswordResetMethodRepository | null = null;
   private _securityQuestionRepository: SecurityQuestionRepository | null = null;
   private _recoveryCodeRepository: RecoveryCodeRepository | null = null;
@@ -62,6 +70,8 @@ export class DependencyContainer {
   private _leaseService: ILeaseService | null = null;
   private _rentPaymentService: IRentPaymentService | null = null;
   private _rentTransactionService: IRentTransactionService | null = null;
+  private _meterService: IMeterService | null = null;
+  private _meterReadingService: IMeterReadingService | null = null;
   private _passwordResetService: PasswordResetService | null = null;
 
   private constructor(pool: Pool) {
@@ -160,6 +170,20 @@ export class DependencyContainer {
     return this._rentTransactionRepository;
   }
 
+  public get meterRepository(): IMeterRepository {
+    if (!this._meterRepository) {
+      this._meterRepository = new MeterRepository(this.pool);
+    }
+    return this._meterRepository;
+  }
+
+  public get meterReadingRepository(): IMeterReadingRepository {
+    if (!this._meterReadingRepository) {
+      this._meterReadingRepository = new MeterReadingRepository(this.pool);
+    }
+    return this._meterReadingRepository;
+  }
+
   // Service getters with lazy initialization
   public get propertyService(): IPropertyService {
     if (!this._propertyService) {
@@ -239,6 +263,20 @@ export class DependencyContainer {
     return this._rentTransactionService;
   }
 
+  public get meterService(): IMeterService {
+    if (!this._meterService) {
+      this._meterService = new MeterService(this.meterRepository);
+    }
+    return this._meterService;
+  }
+
+  public get meterReadingService(): IMeterReadingService {
+    if (!this._meterReadingService) {
+      this._meterReadingService = new MeterReadingService(this.meterReadingRepository);
+    }
+    return this._meterReadingService;
+  }
+
   // Method to register custom implementations (for testing)
   public registerPropertyRepository(repository: IPropertyRepository): void {
     this._propertyRepository = repository;
@@ -304,6 +342,22 @@ export class DependencyContainer {
     this._rentTransactionService = service;
   }
 
+  public registerMeterRepository(repository: IMeterRepository): void {
+    this._meterRepository = repository;
+  }
+
+  public registerMeterReadingRepository(repository: IMeterReadingRepository): void {
+    this._meterReadingRepository = repository;
+  }
+
+  public registerMeterService(service: IMeterService): void {
+    this._meterService = service;
+  }
+
+  public registerMeterReadingService(service: IMeterReadingService): void {
+    this._meterReadingService = service;
+  }
+
     // Reset method for testing
   public reset(): void {
     this._propertyRepository = null;
@@ -314,6 +368,8 @@ export class DependencyContainer {
     this._leaseRepository = null;
     this._rentPaymentRepository = null;
     this._rentTransactionRepository = null;
+    this._meterRepository = null;
+    this._meterReadingRepository = null;
     this._passwordResetMethodRepository = null;
     this._securityQuestionRepository = null;
     this._recoveryCodeRepository = null;
@@ -325,6 +381,8 @@ export class DependencyContainer {
     this._leaseService = null;
     this._rentPaymentService = null;
     this._rentTransactionService = null;
+    this._meterService = null;
+    this._meterReadingService = null;
     this._passwordResetService = null;
   }
 }
