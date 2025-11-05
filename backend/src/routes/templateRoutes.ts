@@ -7,7 +7,7 @@ export default (pool: Pool) => {
   const router = Router();
   const controller = new TemplateController(pool);
 
-  router.get('/templates', authMiddleware, controller.getAllTemplates);
+  router.get('/templates', controller.getAllTemplates);
   router.get('/templates/:id', authMiddleware, controller.getTemplateById);
   router.post('/templates/:id/preview', authMiddleware, controller.generatePreview);
   router.get('/templates/:id/export', authMiddleware, controller.exportTemplate);

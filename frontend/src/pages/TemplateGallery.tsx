@@ -20,8 +20,16 @@ export default function TemplateGallery() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
     loadTemplates();
   }, []);
 
@@ -31,12 +39,27 @@ export default function TemplateGallery() {
 
   const loadTemplates = async () => {
     try {
+      setError(null);
       const response = await templateService.getAllTemplates();
-      if (response.success) {
-        setTemplates(response.data);
+      if (response) {
+        setTemplates(Array.isArray(response) ? response : []);
+      } else {
+        console.error('Failed to load templates: No response');
+        setTemplates([]);
+        setError('Failed to load templates. Please try again.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load templates:', error);
+      setTemplates([]);
+      
+      // Check if it's an authentication error
+      if (error?.message?.includes('401') || error?.message?.includes('Unauthorized') || error?.code === 'UNAUTHORIZED') {
+        setError('Authentication required. Please log in to access templates.');
+      } else if (error?.message?.includes('timeout') || error?.message?.includes('timed out')) {
+        setError('Request timed out. Please check your connection and try again.');
+      } else {
+        setError('Failed to load templates. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +92,44 @@ export default function TemplateGallery() {
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading templates...</div>;
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading templates...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div className="text-red-600 mb-4">
+              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-red-900 mb-2">Unable to Load Templates</h3>
+            <p className="text-red-700 mb-4">{error}</p>
+            {error.includes('Authentication required') && (
+              <Button onClick={() => navigate('/login')} className="bg-red-600 hover:bg-red-700">
+                Go to Login
+              </Button>
+            )}
+            {!error.includes('Authentication required') && (
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Try Again
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
