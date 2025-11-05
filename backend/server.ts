@@ -134,7 +134,7 @@ app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionCon
 app.use('/api/meters', createMeterRoutes(meterController, userService));
 app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
 app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
-app.use('/api', createTemplateRoutes(pool));
+app.use('/api', createTemplateRoutes(pool, userService));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

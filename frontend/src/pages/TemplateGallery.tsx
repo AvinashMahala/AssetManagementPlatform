@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { templateService } from '../services/templateService';
 import { Button } from '../components/ui/button';
 import { Search, Edit, Eye, Sparkles } from 'lucide-react';
+import { AppLayout } from '../components/layout/AppLayout';
 
 interface Template {
   id: string;
@@ -23,13 +24,6 @@ export default function TemplateGallery() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is authenticated
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    
     loadTemplates();
   }, []);
 
@@ -93,138 +87,142 @@ export default function TemplateGallery() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
+      <AppLayout title="Templates">
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading templates...</p>
           </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-6 py-8">
-        <div className="max-w-md mx-auto text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
-            <div className="text-red-600 mb-4">
-              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
+      <AppLayout title="Templates">
+        <div className="container mx-auto px-6 py-8">
+          <div className="max-w-md mx-auto text-center">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+              <div className="text-red-600 mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-red-900 mb-2">Unable to Load Templates</h3>
+              <p className="text-red-700 mb-4">{error}</p>
+              {error.includes('Authentication required') && (
+                <Button onClick={() => navigate('/login')} className="bg-red-600 hover:bg-red-700">
+                  Go to Login
+                </Button>
+              )}
+              {!error.includes('Authentication required') && (
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Try Again
+                </Button>
+              )}
             </div>
-            <h3 className="text-lg font-semibold text-red-900 mb-2">Unable to Load Templates</h3>
-            <p className="text-red-700 mb-4">{error}</p>
-            {error.includes('Authentication required') && (
-              <Button onClick={() => navigate('/login')} className="bg-red-600 hover:bg-red-700">
-                Go to Login
-              </Button>
-            )}
-            {!error.includes('Authentication required') && (
-              <Button onClick={() => window.location.reload()} variant="outline">
-                Try Again
-              </Button>
-            )}
           </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Receipt Template Gallery</h1>
-        <p className="text-gray-600">Choose a template and customize it for your properties</p>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search templates..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Type Filter */}
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all">All Types</option>
-            <option value="basic">Basic</option>
-            <option value="professional">Professional</option>
-            <option value="premium">Premium</option>
-          </select>
+    <AppLayout title="Templates">
+      <div className="container mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Receipt Template Gallery</h1>
+          <p className="text-gray-600">Choose a template and customize it for your properties</p>
         </div>
-      </div>
 
-      {/* Template Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTemplates.map((template) => (
-          <div key={template.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-            {/* Preview Image */}
-            <div className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-              {template.previewImageUrl ? (
-                <img src={template.previewImageUrl} alt={template.name} className="w-full h-full object-cover" />
-              ) : (
-                <Sparkles className="w-16 h-16 text-blue-300" />
-              )}
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
 
-            {/* Content */}
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">{template.name}</h3>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(template.type)}`}>
-                  {template.type}
-                </span>
-              </div>
-              
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{template.description}</p>
+            {/* Type Filter */}
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Types</option>
+              <option value="basic">Basic</option>
+              <option value="professional">Professional</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+        </div>
 
-              {/* Actions */}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => navigate(`/templates/${template.id}/preview`)}
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Preview
-                </Button>
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => navigate(`/templates/${template.id}/editor`)}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Customize
-                </Button>
+        {/* Template Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTemplates.map((template) => (
+            <div key={template.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+              {/* Preview Image */}
+              <div className="h-48 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                {template.previewImageUrl ? (
+                  <img src={template.previewImageUrl} alt={template.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Sparkles className="w-16 h-16 text-blue-300" />
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">{template.name}</h3>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(template.type)}`}>
+                    {template.type}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{template.description}</p>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => navigate(`/templates/${template.id}/editor`)}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Preview
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => navigate(`/templates/${template.id}/editor`)}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Customize
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredTemplates.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-30" />
-          <p className="text-lg">No templates found</p>
-          <p className="text-sm">Try adjusting your search or filters</p>
+          ))}
         </div>
-      )}
-    </div>
+
+        {filteredTemplates.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <p className="text-lg">No templates found</p>
+            <p className="text-sm">Try adjusting your search or filters</p>
+          </div>
+        )}
+      </div>
+    </AppLayout>
   );
 }

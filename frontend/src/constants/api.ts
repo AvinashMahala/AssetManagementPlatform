@@ -18,7 +18,7 @@ export const API_ENDPOINTS = {
   HEALTH: '/health',
 } as const;
 
-export const API_TIMEOUT = 10000; // 10 seconds
+export const API_TIMEOUT = 30000; // 30 seconds
 
 export const HTTP_STATUS = {
   OK: 200,

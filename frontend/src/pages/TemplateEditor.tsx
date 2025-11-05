@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { templateService } from '../services/templateService';
 import { Button } from '../components/ui/button';
@@ -41,20 +41,41 @@ export default function TemplateEditor() {
     }
   };
 
-  const generatePreview = async () => {
+  const generatePreview = useCallback(async () => {
     try {
       const response = await templateService.generatePreview({
         templateId: templateId!,
         propertyId,
+        customizations: {
+          customStyles: config.styling,
+        },
         format: 'html',
-      });
-      if (response.success) {
-        setPreviewHtml(response.data.previewHtml);
+      }) as any;
+      
+      // Debug logging
+      console.log('Preview response:', response);
+      
+      if (response && response.success && response.previewHtml) {
+        setPreviewHtml(response.previewHtml);
+      } else {
+        const errorMessage = response?.message || response?.error || 'Unknown error';
+        console.error('Failed to generate preview:', errorMessage);
+        console.error('Response structure:', response);
+        // Show error message to user
+        alert('Failed to generate preview: ' + errorMessage);
       }
     } catch (error) {
       console.error('Failed to generate preview:', error);
+      alert('Failed to generate preview. Please try again.');
     }
-  };
+  }, [templateId, propertyId, config.styling]);
+
+  // Auto-generate preview when config changes
+  useEffect(() => {
+    if (templateId) {
+      generatePreview();
+    }
+  }, [generatePreview]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -90,9 +111,9 @@ export default function TemplateEditor() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={generatePreview}>
+          <Button variant="outline" onClick={generatePreview} disabled>
             <Eye className="w-4 h-4 mr-2" />
-            Preview
+            Live Preview
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
             <Save className="w-4 h-4 mr-2" />
@@ -208,7 +229,8 @@ export default function TemplateEditor() {
               ) : (
                 <div className="text-center py-20 text-gray-400">
                   <Eye className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                  <p className="text-lg">Click "Preview" to see your changes</p>
+                  <p className="text-lg">Live Preview</p>
+                  <p className="text-sm">Changes will appear here automatically</p>
                 </div>
               )}
             </div>
