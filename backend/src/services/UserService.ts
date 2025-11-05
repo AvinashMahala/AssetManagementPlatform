@@ -17,7 +17,7 @@ import { PasswordUtils } from '../utils/password.js';
 import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IUserService } from '../interfaces/services/IUserService.js';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 export class UserService implements IUserService {
   private repository: IUserRepository;
@@ -173,8 +173,6 @@ export class UserService implements IUserService {
     }
 
     console.log('✅ User found:', user.id, user.email);
-    console.log('🔐 Password hash in DB:', user.password?.substring(0, 20) + '...');
-    console.log('🔑 Password provided:', credentials.password);
     
     const isValidPassword = await PasswordUtils.verifyPassword(credentials.password, user.password || '');
     console.log('🔓 Password valid:', isValidPassword);
@@ -182,6 +180,11 @@ export class UserService implements IUserService {
     if (!isValidPassword) {
       return null;
     }
+
+    console.log('🔍 User object keys:', Object.keys(user));
+    console.log('🔍 User id type:', typeof user.id);
+    console.log('🔍 User email type:', typeof user.email);
+    console.log('🔍 User createdAt type:', typeof user.createdAt);
 
     return user;
   }
@@ -242,16 +245,30 @@ export class UserService implements IUserService {
   }
 
   async loginUser(credentials: UserCredentials): Promise<AuthResponse | null> {
+    console.log('🔑 loginUser started for:', credentials.email);
+    
     const user = await this.authenticateUser(credentials);
     if (!user) {
+      console.log('❌ authenticateUser returned null');
       return null;
     }
 
+    console.log('✅ User authenticated, generating tokens for:', user.id);
+
     // Update last login
-    await this.updateLastLogin(user.id);
+    try {
+      await this.updateLastLogin(user.id);
+      console.log('✅ Last login updated');
+    } catch (error) {
+      console.error('⚠️ Failed to update last login (non-critical):', error);
+      // Don't fail the login if this fails
+    }
 
     // Generate tokens
-    return await this.generateAuthTokens(user);
+    console.log('🎟️ Generating auth tokens...');
+    const authResponse = await this.generateAuthTokens(user);
+    console.log('✅ Tokens generated successfully');
+    return authResponse;
   }
 
   async logoutUser(userId: string): Promise<boolean> {
@@ -378,26 +395,48 @@ export class UserService implements IUserService {
 
   // Token management
   async generateAuthTokens(user: User): Promise<AuthResponse> {
-    const accessToken = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      this.jwtSecret,
-      { expiresIn: '15m' }
-    );
+    console.log('🎟️ generateAuthTokens called for user:', user.id, user.email);
+    console.log('🔍 User object has required fields:', {
+      hasId: !!user.id,
+      hasEmail: !!user.email,
+      hasUsername: !!user.username,
+      hasRole: !!user.role
+    });
+    
+    try {
+      const accessToken = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        this.jwtSecret,
+        { expiresIn: '15m' }
+      );
 
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      this.jwtRefreshSecret,
-      { expiresIn: '7d' }
-    );
+      const refreshToken = jwt.sign(
+        { userId: user.id },
+        this.jwtRefreshSecret,
+        { expiresIn: '7d' }
+      );
 
-    return {
-      user,
-      tokens: {
-        accessToken,
-        refreshToken,
-        expiresIn: 15 * 60, // 15 minutes in seconds
-      },
-    };
+      // Return minimal user info
+      const safeUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      };
+
+      console.log('✅ Tokens generated, returning auth response');
+      return {
+        user: safeUser as User,
+        tokens: {
+          accessToken,
+          refreshToken,
+          expiresIn: 15 * 60, // 15 minutes in seconds
+        },
+      };
+    } catch (error) {
+      console.error('❌ Error generating tokens:', error);
+      throw error;
+    }
   }
 
   async refreshAuthTokens(refreshToken: string): Promise<AuthResponse | null> {

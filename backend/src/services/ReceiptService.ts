@@ -5,6 +5,7 @@ import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentR
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';
+import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 import { PropertyService } from './PropertyService';
 import { TenantService } from './TenantService';
 import { RentPaymentService } from './RentPaymentService';
@@ -51,7 +52,7 @@ export class ReceiptService implements IReceiptService {
     return this.receiptRepository.findByTenant(tenantId);
   }
 
-  async generateReceipt(request: ReceiptGenerationRequest): Promise<Receipt> {
+  async generateReceipt(request: ReceiptGenerationRequest, providedTemplateSettings?: ReceiptTemplateSettings | null): Promise<Receipt> {
     // Get payment details
     const payment = await this.rentPaymentRepository.findById(request.paymentId);
     if (!payment) {
@@ -82,8 +83,24 @@ export class ReceiptService implements IReceiptService {
       throw new Error('Landlord not found');
     }
 
-    // Generate receipt number
-    const receiptNumber = await this.receiptRepository.getNextReceiptNumber(property.id, 'REC');
+    // Validate template configuration before generating receipt
+    const templateValidation = await this.templateService.validatePropertyTemplateConfiguration(property.id);
+    if (!templateValidation.isValid) {
+      throw new Error(`Template validation failed: ${templateValidation.errors.join(', ')}`);
+    }
+
+    // Log warnings if any
+    if (templateValidation.warnings.length > 0) {
+      console.warn(`Template warnings for property ${property.id}: ${templateValidation.warnings.join(', ')}`);
+    }
+
+    // Get template settings for the property (use provided or validated settings)
+    const templateSettings = providedTemplateSettings !== undefined 
+      ? providedTemplateSettings 
+      : templateValidation.templateSettings;
+
+    // Generate receipt number based on template settings
+    const receiptNumber = await this.receiptRepository.getNextReceiptNumberWithTemplate(property.id, templateSettings);
 
     // Build receipt data
     const receiptData = await this.buildReceiptData(
@@ -93,7 +110,8 @@ export class ReceiptService implements IReceiptService {
       tenant,
       payment,
       request.customSettings,
-      request.notes
+      request.notes,
+      templateSettings
     );
 
     // Create receipt record
@@ -114,6 +132,20 @@ export class ReceiptService implements IReceiptService {
   }
 
   async generateBulkReceipts(request: BulkReceiptGenerationRequest): Promise<Receipt[]> {
+    // Validate template configuration before bulk generation
+    const templateValidation = await this.templateService.validatePropertyTemplateConfiguration(request.propertyId);
+    if (!templateValidation.isValid) {
+      throw new Error(`Template validation failed for bulk receipt generation: ${templateValidation.errors.join(', ')}`);
+    }
+
+    // Log warnings if any
+    if (templateValidation.warnings.length > 0) {
+      console.warn(`Template warnings for property ${request.propertyId}: ${templateValidation.warnings.join(', ')}`);
+    }
+
+    // Get template settings for the property once
+    const templateSettings = templateValidation.templateSettings;
+
     // Get all payments for the property
     const allPayments = await this.rentPaymentRepository.findByProperty(request.propertyId);
 
@@ -125,13 +157,13 @@ export class ReceiptService implements IReceiptService {
       return matchesPeriod && matchesTenant;
     });
 
-    // Generate receipts for each payment
+    // Generate receipts for each payment using the same template settings
     const receipts: Receipt[] = [];
     for (const payment of filteredPayments) {
       try {
         const receipt = await this.generateReceipt({
           paymentId: payment.id
-        });
+        }, templateSettings);
         receipts.push(receipt);
       } catch (error) {
         console.error(`Failed to generate receipt for payment ${payment.id}:`, error);
@@ -175,8 +207,11 @@ export class ReceiptService implements IReceiptService {
       throw new Error('Receipt not found');
     }
 
-    // Generate PDF from receipt data
-    const pdfBuffer = await PDFGenerator.generateReceiptPDF(receipt.receiptData);
+    // Get template settings for the property
+    const templateSettings = await this.templateService.getPropertyTemplateSettings(receipt.propertyId);
+
+    // Generate PDF from receipt data with template settings
+    const pdfBuffer = await PDFGenerator.generateReceiptPDF(receipt.receiptData, templateSettings);
 
     // Update status to downloaded
     await this.receiptRepository.updateStatus(receiptId, ReceiptStatus.DOWNLOADED);
@@ -226,16 +261,17 @@ export class ReceiptService implements IReceiptService {
     tenant: any,
     payment: RentPayment,
     customSettings?: any,
-    notes?: string
+    notes?: string,
+    templateSettings?: ReceiptTemplateSettings | null
   ): Promise<ReceiptData> {
-    // Get template settings for the property (may be null)
-    const templateSettings = await this.templateService.getPropertyTemplateSettings(property.id);
+    // Use provided template settings or fetch if not provided
+    const finalTemplateSettings = templateSettings !== undefined ? templateSettings : await this.templateService.getPropertyTemplateSettings(property.id);
 
     // Use property receipt settings or defaults
     const propertySettings = property.receiptSettings || {};
 
     // Merge settings: template settings + property settings + custom settings
-    const mergedSettings = this.mergeReceiptSettings(templateSettings, propertySettings, customSettings);
+    const mergedSettings = this.mergeReceiptSettings(finalTemplateSettings, propertySettings, customSettings);
 
     // For payments, we don't have detailed billing period info, so we'll use the payment date
     const paymentDate = payment.paidDate || payment.dueDate;
@@ -247,38 +283,51 @@ export class ReceiptService implements IReceiptService {
     const amount = payment.amount;
     const rentAmount = amount; // Use the payment amount as rent amount since no separate field exists
 
+    // Build property info based on template settings
+    const propertyInfo = {
+      name: property.name,
+      address: finalTemplateSettings?.content?.showPropertyAddress !== false
+        ? `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`
+        : '', // Empty string when address is hidden
+      phone: property.phone,
+      email: property.email
+    };
+
+    // Build tenant info based on template settings
+    const tenantInfo = {
+      name: `${tenant.firstName} ${tenant.lastName}`,
+      phone: tenant.phone,
+      email: tenant.email,
+      address: (finalTemplateSettings?.content?.showTenantAddress !== false && tenant.currentAddress)
+        ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}`
+        : undefined
+    };
+
+    // Build breakdown based on template settings
+    const breakdown = {
+      baseRent: finalTemplateSettings?.content?.showPaymentBreakdown !== false ? rentAmount : 0,
+      previousBalance: finalTemplateSettings?.content?.showBalanceForward !== false ? 0 : 0, // Payments don't track previous balance
+      expenses: [], // Payments don't have detailed expense breakdown
+      totalAmount: amount,
+      amountPaid: amount,
+      newBalance: 0 // Payments don't track balance
+    };
+
     return {
-      property: {
-        name: property.name,
-        address: `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`,
-        phone: property.phone,
-        email: property.email
-      },
+      property: propertyInfo,
       landlord: {
         name: landlord.name || landlord.username, // Use name field or fallback to username
         phone: landlord.phone,
         email: landlord.email
       },
-      tenant: {
-        name: `${tenant.firstName} ${tenant.lastName}`,
-        phone: tenant.phone,
-        email: tenant.email,
-        address: tenant.currentAddress ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}` : undefined
-      },
+      tenant: tenantInfo,
       receiptNumber,
       receiptDate: new Date().toISOString(),
       period: {
         from: periodStart.toISOString(),
         to: periodEnd.toISOString()
       },
-      breakdown: {
-        baseRent: rentAmount,
-        previousBalance: 0, // Payments don't track previous balance
-        expenses: [], // Payments don't have detailed expense breakdown
-        totalAmount: amount,
-        amountPaid: amount,
-        newBalance: 0 // Payments don't track balance
-      },
+      breakdown,
       payment: {
         method: payment.paymentMethod || undefined,
         transactionId: undefined, // Transaction ID not available in current payment model
@@ -286,7 +335,9 @@ export class ReceiptService implements IReceiptService {
       },
       settings: mergedSettings,
       notes,
-      termsAndConditions: templateSettings?.content?.termsAndConditionsText
+      termsAndConditions: finalTemplateSettings?.content?.showTermsAndConditions !== false
+        ? finalTemplateSettings?.content?.termsAndConditionsText
+        : undefined
     };
   }
 }

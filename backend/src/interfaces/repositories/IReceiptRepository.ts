@@ -1,4 +1,5 @@
 import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '../../models/Receipt';
+import { ReceiptTemplateSettings } from '../../models/ReceiptTemplate';
 
 export interface IReceiptRepository {
   findAll(): Promise<Receipt[]>;
@@ -11,6 +12,7 @@ export interface IReceiptRepository {
   update(id: string, data: Partial<Omit<Receipt, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Receipt | null>;
   delete(id: string): Promise<boolean>;
   getNextReceiptNumber(propertyId: string, prefix?: string): Promise<string>;
+  getNextReceiptNumberWithTemplate(propertyId: string, templateSettings: ReceiptTemplateSettings | null): Promise<string>;
   updateStatus(id: string, status: string, sentTo?: string, sentAt?: Date): Promise<boolean>;
 }
 

@@ -3,12 +3,16 @@ import { Property, PropertyInput, PropertyStatus } from '../models/Property.js';
 import { ValidationUtils } from '../utils/validation.js';
 import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IPropertyService } from '../interfaces/services/IPropertyService.js';
+import { ReceiptTemplateService } from './ReceiptTemplateService.js';
+import { ReceiptTemplateSettings } from '../models/ReceiptTemplate.js';
 
 export class PropertyService implements IPropertyService {
   private repository: IPropertyRepository;
+  private templateService: ReceiptTemplateService;
 
-  constructor(repository: IPropertyRepository) {
+  constructor(repository: IPropertyRepository, templateService: ReceiptTemplateService) {
     this.repository = repository;
+    this.templateService = templateService;
   }
 
   async getAllProperties(): Promise<Property[]> {
@@ -201,5 +205,38 @@ export class PropertyService implements IPropertyService {
     }
 
     return await this.repository.updateStatus(id, status);
+  }
+
+  // Template management methods
+  async getPropertyTemplateSettings(propertyId: string): Promise<ReceiptTemplateSettings | null> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    return await this.templateService.getPropertyTemplateSettings(propertyId);
+  }
+
+  async setPropertyTemplate(propertyId: string, templateId: string, overrides?: Partial<ReceiptTemplateSettings>): Promise<boolean> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    if (!templateId || templateId.trim().length === 0) {
+      throw new Error('Template ID is required');
+    }
+
+    return await this.templateService.setPropertyTemplate(propertyId, templateId, overrides);
+  }
+
+  async removePropertyTemplate(propertyId: string): Promise<boolean> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    // Set templateId to null and clear overrides
+    return await this.repository.update(propertyId, {
+      templateId: undefined,
+      templateOverrides: undefined
+    }) !== null;
   }
 }

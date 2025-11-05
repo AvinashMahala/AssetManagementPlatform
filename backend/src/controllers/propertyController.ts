@@ -265,4 +265,150 @@ export class PropertyController {
       }
     }
   }
+
+  /**
+   * @swagger
+   * /api/properties/{id}/template:
+   *   get:
+   *     tags: ['Property Templates']
+   *     summary: Get property template settings
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     responses:
+   *       200:
+   *         description: Property template settings
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 templateId:
+   *                   type: string
+   *                   description: Template ID assigned to property
+   *                 templateOverrides:
+   *                   $ref: '#/components/schemas/ReceiptTemplateSettings'
+   *                   description: Property-specific template overrides
+   *                 effectiveSettings:
+   *                   $ref: '#/components/schemas/ReceiptTemplateSettings'
+   *                   description: Merged template settings (base + overrides)
+   *       404:
+   *         description: Property not found
+   */
+  async getPropertyTemplate(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const propertyId = id;
+
+      const property = await this.service.getPropertyById(propertyId);
+      if (!property) {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      // Get effective template settings (merged base + overrides)
+      const effectiveSettings = await this.service.getPropertyTemplateSettings(propertyId);
+
+      ResponseUtils.success(res, {
+        templateId: property.templateId,
+        templateOverrides: property.templateOverrides,
+        effectiveSettings
+      });
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to fetch property template');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/properties/{id}/template:
+   *   put:
+   *     tags: ['Property Templates']
+   *     summary: Set property template
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - templateId
+   *             properties:
+   *               templateId:
+   *                 type: string
+   *                 description: Template ID to assign
+   *               overrides:
+   *                 $ref: '#/components/schemas/ReceiptTemplateSettings'
+   *                 description: Property-specific overrides
+   *     responses:
+   *       200:
+   *         description: Property template set successfully
+   *       404:
+   *         description: Property or template not found
+   */
+  async setPropertyTemplate(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const propertyId = id;
+      const { templateId, overrides } = req.body;
+
+      if (!templateId) {
+        return ResponseUtils.badRequest(res, 'Template ID is required');
+      }
+
+      const success = await this.service.setPropertyTemplate(propertyId, templateId, overrides);
+      if (!success) {
+        return ResponseUtils.notFound(res, 'Property or template not found');
+      }
+
+      ResponseUtils.success(res, null, 'Property template set successfully');
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to set property template');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/properties/{id}/template:
+   *   delete:
+   *     tags: ['Property Templates']
+   *     summary: Remove property template (use default)
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     responses:
+   *       200:
+   *         description: Property template removed successfully
+   *       404:
+   *         description: Property not found
+   */
+  async removePropertyTemplate(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const propertyId = id;
+
+      const success = await this.service.removePropertyTemplate(propertyId);
+      if (!success) {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      ResponseUtils.success(res, null, 'Property template removed successfully');
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to remove property template');
+    }
+  }
 }

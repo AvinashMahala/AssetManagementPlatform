@@ -211,7 +211,7 @@ export class DependencyContainer {
   // Service getters with lazy initialization
   public get propertyService(): IPropertyService {
     if (!this._propertyService) {
-      this._propertyService = new PropertyService(this.propertyRepository);
+      this._propertyService = new PropertyService(this.propertyRepository, this.receiptTemplateService);
     }
     return this._propertyService;
   }

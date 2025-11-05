@@ -16,5 +16,10 @@ export const createPropertyRoutes = (controller: PropertyController, userService
   router.delete('/:id', auth, controller.delete.bind(controller));
   router.patch('/:id/status', auth, controller.updateStatus.bind(controller));
 
+  // Template management routes
+  router.get('/:id/template', auth, controller.getPropertyTemplate.bind(controller));
+  router.put('/:id/template', auth, controller.setPropertyTemplate.bind(controller));
+  router.delete('/:id/template', auth, controller.removePropertyTemplate.bind(controller));
+
   return router;
 };

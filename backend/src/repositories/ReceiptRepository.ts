@@ -1,7 +1,8 @@
 import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
-import { Receipt, ReceiptInput } from '../models/Receipt';
+import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '../models/Receipt';
 import { IReceiptRepository } from '../interfaces/repositories/IReceiptRepository';
+import { ReceiptTemplateSettings } from '../models/ReceiptTemplate';
 import { TABLES, COLUMNS } from '../constants/database';
 
 export class ReceiptRepository implements IReceiptRepository {
@@ -167,6 +168,45 @@ export class ReceiptRepository implements IReceiptRepository {
     const result = await this.db.query(query, [propertyId, `${prefix}%`]);
     const nextNumber = result.rows[0].next_number;
     return `${prefix}${nextNumber.toString().padStart(6, '0')}`;
+  }
+
+  async getNextReceiptNumberWithTemplate(propertyId: string, templateSettings: ReceiptTemplateSettings | null): Promise<string> {
+    // Use template numbering settings or defaults
+    const numberingSettings = templateSettings?.numbering || {
+      prefix: 'REC',
+      startNumber: 1,
+      includeYear: false,
+      includeMonth: false
+    };
+
+    // Build the base prefix
+    let prefix = numberingSettings.prefix;
+
+    // Add year if enabled
+    if (numberingSettings.includeYear) {
+      const currentYear = new Date().getFullYear();
+      prefix += currentYear.toString();
+    }
+
+    // Add month if enabled
+    if (numberingSettings.includeMonth) {
+      const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+      prefix += currentMonth;
+    }
+
+    // Get the next number for this prefix and property
+    const query = `
+      SELECT COALESCE(MAX(CAST(SUBSTRING(receipt_number FROM '[0-9]+$') AS INTEGER)), ${numberingSettings.startNumber - 1}) + 1 as next_number
+      FROM ${TABLES.RECEIPTS}
+      WHERE property_id = $1 AND receipt_number LIKE $2
+    `;
+    const result = await this.db.query(query, [propertyId, `${prefix}%`]);
+    const nextNumber = result.rows[0].next_number;
+
+    // Format the number with leading zeros (6 digits by default)
+    const formattedNumber = nextNumber.toString().padStart(6, '0');
+
+    return `${prefix}${formattedNumber}`;
   }
 
   async updateStatus(id: string, status: string, sentTo?: string, sentAt?: Date): Promise<boolean> {
