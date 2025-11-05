@@ -142,13 +142,17 @@ export class UserController {
 
   async login(req: Request, res: Response) {
     try {
+      console.log('🚀 Login request received:', req.body);
       const credentials: UserCredentials = req.body;
       const authResponse = await this.service.loginUser(credentials);
       if (!authResponse) {
+        console.log('❌ Login failed - invalid credentials');
         return ResponseUtils.unauthorized(res, 'Invalid email or password');
       }
+      console.log('✅ Login successful for user:', credentials.email);
       ResponseUtils.success(res, authResponse, 'Login successful');
     } catch (err) {
+      console.error('💥 Login error:', err);
       ErrorUtils.handleGenericError(res, err, 'Login failed');
     }
   }

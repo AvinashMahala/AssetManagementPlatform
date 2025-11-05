@@ -188,6 +188,9 @@ export const initializeTables = (pool: Pool) => {
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'template_overrides') THEN
       ALTER TABLE properties ADD COLUMN template_overrides JSONB DEFAULT '{}'::jsonb;
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'receipt_settings') THEN
+      ALTER TABLE properties ADD COLUMN receipt_settings JSONB DEFAULT '{}'::jsonb;
+    END IF;
   END $$;`, (err) => {
     if (err) {
       console.error('Error adding template columns to properties table', err);

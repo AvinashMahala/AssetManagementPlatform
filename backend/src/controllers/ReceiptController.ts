@@ -131,9 +131,12 @@ export class ReceiptController {
       });
     } catch (error) {
       console.error('Error generating receipt:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
       res.status(500).json({
         success: false,
-        message: 'Failed to generate receipt'
+        message: 'Failed to generate receipt',
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   }

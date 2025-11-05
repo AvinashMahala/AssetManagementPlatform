@@ -88,15 +88,24 @@ export class ReceiptTemplateService {
   }
 
   async getPropertyTemplateSettings(propertyId: string): Promise<ReceiptTemplateSettings | null> {
+    console.log('🏢 Getting template settings for property:', propertyId);
     const property = await this.propertyRepository.findById(propertyId);
+    console.log('📍 Property found:', property ? `ID: ${property.id}, Template ID: ${property.templateId}` : 'NULL');
+    
     if (!property || !property.templateId) {
       // Return default template settings if no template selected
+      console.log('⚠️ No template ID, getting default template');
       const defaultTemplate = await this.getDefaultTemplate();
+      console.log('📋 Default template:', defaultTemplate ? `ID: ${defaultTemplate.id}` : 'NULL');
       return defaultTemplate ? defaultTemplate.defaultSettings : null;
     }
 
+    console.log('🔍 Looking for template:', property.templateId);
     const template = await this.templateRepository.findById(property.templateId);
+    console.log('📝 Template found:', template ? `ID: ${template.id}, Name: ${template.name}` : 'NULL');
+    
     if (!template) {
+      console.log('❌ Template not found!');
       return null;
     }
 

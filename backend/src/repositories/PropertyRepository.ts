@@ -27,7 +27,9 @@ export class PropertyRepository implements IPropertyRepository {
       );
       return result.rows[0] ? this.mapRowToProperty(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch property');
+      console.error('PropertyRepository.findById error:', error);
+      console.error('Property ID:', id);
+      throw new Error(`Failed to fetch property: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -259,17 +261,17 @@ export class PropertyRepository implements IPropertyRepository {
         pincode: row.address_pincode,
         landmark: row.address_landmark,
       },
-      totalArea: parseFloat(row.total_area) || 0,
+      totalArea: parseFloat(row.area) || 0,
       totalFloors: row.total_floors,
       yearBuilt: row.year_built,
       parkingSpaces: row.parking_spaces,
-      buildingAmenities: Array.isArray(row.amenities) ? row.amenities : JSON.parse(row.amenities || '[]'),
-      buildingPhotos: Array.isArray(row.photos) ? row.photos : JSON.parse(row.photos || '[]'),
+      buildingAmenities: Array.isArray(row.amenities) ? row.amenities : (typeof row.amenities === 'string' ? JSON.parse(row.amenities || '[]') : (row.amenities || [])),
+      buildingPhotos: Array.isArray(row.photos) ? row.photos : (typeof row.photos === 'string' ? JSON.parse(row.photos || '[]') : (row.photos || [])),
       ownerId: row.owner_id,
-      coOwners: Array.isArray(row.co_owners) ? row.co_owners : JSON.parse(row.co_owners || '[]'),
-      receiptSettings: row.receipt_settings ? JSON.parse(row.receipt_settings) : undefined,
+      coOwners: Array.isArray(row.co_owners) ? row.co_owners : (typeof row.co_owners === 'string' ? JSON.parse(row.co_owners || '[]') : (row.co_owners || [])),
+      receiptSettings: row.receipt_settings ? (typeof row.receipt_settings === 'string' ? JSON.parse(row.receipt_settings) : row.receipt_settings) : undefined,
       templateId: row.template_id,
-      templateOverrides: row.template_overrides ? JSON.parse(row.template_overrides) : undefined,
+      templateOverrides: row.template_overrides ? (typeof row.template_overrides === 'string' ? JSON.parse(row.template_overrides) : row.template_overrides) : undefined,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     };

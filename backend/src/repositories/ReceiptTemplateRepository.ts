@@ -18,13 +18,16 @@ export class ReceiptTemplateRepository {
 
   async findById(id: string): Promise<ReceiptTemplate | null> {
     try {
+      console.log('🔍 Finding receipt template by ID:', id);
       const result = await this.pool.query(
         `SELECT * FROM ${TABLES.RECEIPT_TEMPLATES} WHERE ${COLUMNS.RECEIPT_TEMPLATES.ID} = $1`,
         [id]
       );
+      console.log('📊 Query result:', result.rows);
       return result.rows[0] ? this.mapRowToReceiptTemplate(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch receipt template by ID');
+      console.error('❌ Error in findById:', error);
+      throw error;
     }
   }
 
@@ -153,7 +156,9 @@ export class ReceiptTemplateRepository {
       type: row.type,
       name: row.name,
       description: row.description,
-      defaultSettings: JSON.parse(row.default_settings),
+      defaultSettings: typeof row.default_settings === 'string' 
+        ? JSON.parse(row.default_settings) 
+        : row.default_settings,
       isActive: row.is_active,
       isDefault: row.is_default,
       sortOrder: row.sort_order,

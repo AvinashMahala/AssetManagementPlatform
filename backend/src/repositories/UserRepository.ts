@@ -83,7 +83,8 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      console.error('❌ Error in findByEmail:', error);
+      throw error;
     }
   }
 

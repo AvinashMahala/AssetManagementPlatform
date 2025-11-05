@@ -165,12 +165,20 @@ export class UserService implements IUserService {
       throw new Error('Email and password are required');
     }
 
+    console.log('🔍 Authenticating user:', credentials.email);
     const user = await this.repository.findByEmail(credentials.email);
     if (!user) {
+      console.log('❌ User not found:', credentials.email);
       return null;
     }
 
+    console.log('✅ User found:', user.id, user.email);
+    console.log('🔐 Password hash in DB:', user.password?.substring(0, 20) + '...');
+    console.log('🔑 Password provided:', credentials.password);
+    
     const isValidPassword = await PasswordUtils.verifyPassword(credentials.password, user.password || '');
+    console.log('🔓 Password valid:', isValidPassword);
+    
     if (!isValidPassword) {
       return null;
     }

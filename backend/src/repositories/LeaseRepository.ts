@@ -25,8 +25,10 @@ export class LeaseRepository implements ILeaseRepository {
         `SELECT * FROM ${TABLES.LEASES} WHERE ${COLUMNS.LEASES.ID} = $1`,
         [id]
       );
+      console.log('[LeaseRepository.findById] Row data:', result.rows[0]);
       return result.rows[0] ? this.mapRowToLease(result.rows[0]) : null;
     } catch (error) {
+      console.error('[LeaseRepository.findById] Error:', error);
       throw new Error('Failed to fetch lease');
     }
   }
