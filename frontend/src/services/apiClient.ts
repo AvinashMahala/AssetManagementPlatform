@@ -229,9 +229,25 @@ class ApiClient {
     }
   }
 
-  // Utility method to check if user is authenticated
-  isAuthenticated(): boolean {
-    return !!this.getAuthToken();
+  async download(endpoint: string, config?: RequestConfig): Promise<Response> {
+    const url = this.buildURL(endpoint, config?.params);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(config?.headers),
+        signal: AbortSignal.timeout(API_TIMEOUT),
+        ...config,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response;
+    } catch (_error) {
+      throw new Error(_error instanceof Error ? _error.message : 'Download failed');
+    }
   }
 }
 

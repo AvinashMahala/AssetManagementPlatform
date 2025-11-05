@@ -41,15 +41,9 @@ export class RentPaymentRepository implements IRentPaymentRepository {
   }
 
   async findByProperty(propertyId: string): Promise<RentPayment[]> {
-    try {
-      const result = await this.pool.query(
-        `SELECT * FROM ${TABLES.RENT_PAYMENTS} WHERE ${COLUMNS.RENT_PAYMENTS.PROPERTY_ID} = $1 ORDER BY ${COLUMNS.RENT_PAYMENTS.DUE_DATE} DESC`,
-        [propertyId]
-      );
-      return result.rows.map(row => this.mapRowToRentPayment(row));
-    } catch (error) {
-      throw error;
-    }
+    // Note: property_id column doesn't exist in current schema
+    // This would need to be implemented by joining with leases table
+    throw new Error('findByProperty not implemented - property_id column missing from schema');
   }
 
   async findByTenant(tenantId: string): Promise<RentPayment[]> {
@@ -131,46 +125,28 @@ export class RentPaymentRepository implements IRentPaymentRepository {
         `INSERT INTO ${TABLES.RENT_PAYMENTS} (
           ${COLUMNS.RENT_PAYMENTS.ID},
           ${COLUMNS.RENT_PAYMENTS.LEASE_ID},
-          ${COLUMNS.RENT_PAYMENTS.PROPERTY_ID},
           ${COLUMNS.RENT_PAYMENTS.TENANT_ID},
           ${COLUMNS.RENT_PAYMENTS.AMOUNT},
           ${COLUMNS.RENT_PAYMENTS.DUE_DATE},
           ${COLUMNS.RENT_PAYMENTS.PAID_DATE},
           ${COLUMNS.RENT_PAYMENTS.STATUS},
           ${COLUMNS.RENT_PAYMENTS.PAYMENT_METHOD},
-          ${COLUMNS.RENT_PAYMENTS.TRANSACTION_ID},
-          ${COLUMNS.RENT_PAYMENTS.PAYMENT_REFERENCE},
-          ${COLUMNS.RENT_PAYMENTS.LATE_FEE},
-          ${COLUMNS.RENT_PAYMENTS.PENALTY_AMOUNT},
-          ${COLUMNS.RENT_PAYMENTS.RENT_AMOUNT},
-          ${COLUMNS.RENT_PAYMENTS.MAINTENANCE_CHARGES},
-          ${COLUMNS.RENT_PAYMENTS.OTHER_CHARGES},
           ${COLUMNS.RENT_PAYMENTS.NOTES},
           ${COLUMNS.RENT_PAYMENTS.CREATED_BY},
-          ${COLUMNS.RENT_PAYMENTS.UPDATED_BY},
           ${COLUMNS.RENT_PAYMENTS.CREATED_AT},
           ${COLUMNS.RENT_PAYMENTS.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
         [
           crypto.randomUUID(),
           data.leaseId,
-          data.propertyId,
           data.tenantId,
           data.amount,
           data.dueDate,
           data.paidDate,
           data.status || PaymentStatus.PENDING,
           data.paymentMethod,
-          data.transactionId,
-          data.paymentReference,
-          data.lateFee,
-          data.penaltyAmount,
-          data.rentAmount,
-          data.maintenanceCharges,
-          data.otherCharges,
           data.notes,
           data.createdBy,
-          data.updatedBy,
           now,
           now
         ]
@@ -190,10 +166,6 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       if (data.leaseId !== undefined) {
         fields.push(`${COLUMNS.RENT_PAYMENTS.LEASE_ID} = $${paramIndex++}`);
         values.push(data.leaseId);
-      }
-      if (data.propertyId !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.PROPERTY_ID} = $${paramIndex++}`);
-        values.push(data.propertyId);
       }
       if (data.tenantId !== undefined) {
         fields.push(`${COLUMNS.RENT_PAYMENTS.TENANT_ID} = $${paramIndex++}`);
@@ -219,41 +191,9 @@ export class RentPaymentRepository implements IRentPaymentRepository {
         fields.push(`${COLUMNS.RENT_PAYMENTS.PAYMENT_METHOD} = $${paramIndex++}`);
         values.push(data.paymentMethod);
       }
-      if (data.transactionId !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.TRANSACTION_ID} = $${paramIndex++}`);
-        values.push(data.transactionId);
-      }
-      if (data.paymentReference !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.PAYMENT_REFERENCE} = $${paramIndex++}`);
-        values.push(data.paymentReference);
-      }
-      if (data.lateFee !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.LATE_FEE} = $${paramIndex++}`);
-        values.push(data.lateFee);
-      }
-      if (data.penaltyAmount !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.PENALTY_AMOUNT} = $${paramIndex++}`);
-        values.push(data.penaltyAmount);
-      }
-      if (data.rentAmount !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.RENT_AMOUNT} = $${paramIndex++}`);
-        values.push(data.rentAmount);
-      }
-      if (data.maintenanceCharges !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.MAINTENANCE_CHARGES} = $${paramIndex++}`);
-        values.push(data.maintenanceCharges);
-      }
-      if (data.otherCharges !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.OTHER_CHARGES} = $${paramIndex++}`);
-        values.push(data.otherCharges);
-      }
       if (data.notes !== undefined) {
         fields.push(`${COLUMNS.RENT_PAYMENTS.NOTES} = $${paramIndex++}`);
         values.push(data.notes);
-      }
-      if (data.updatedBy !== undefined) {
-        fields.push(`${COLUMNS.RENT_PAYMENTS.UPDATED_BY} = $${paramIndex++}`);
-        values.push(data.updatedBy);
       }
 
       if (fields.length === 0) {
@@ -479,23 +419,14 @@ export class RentPaymentRepository implements IRentPaymentRepository {
     return {
       id: row.id,
       leaseId: row.lease_id,
-      propertyId: row.property_id,
       tenantId: row.tenant_id,
       amount: parseFloat(row.amount) || 0,
       dueDate: row.due_date,
       paidDate: row.paid_date,
       status: row.status,
       paymentMethod: row.payment_method,
-      transactionId: row.transaction_id,
-      paymentReference: row.payment_reference,
-      lateFee: row.late_fee ? parseFloat(row.late_fee) : undefined,
-      penaltyAmount: row.penalty_amount ? parseFloat(row.penalty_amount) : undefined,
-      rentAmount: row.rent_amount ? parseFloat(row.rent_amount) : 0,
-      maintenanceCharges: row.maintenance_charges ? parseFloat(row.maintenance_charges) : undefined,
-      otherCharges: row.other_charges ? parseFloat(row.other_charges) : undefined,
       notes: row.notes,
       createdBy: row.created_by,
-      updatedBy: row.updated_by,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };

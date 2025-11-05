@@ -239,7 +239,6 @@ export const initializeTables = (pool: Pool) => {
       ('Premium Template', 'premium', 'Premium template with advanced features and elegant design',
        '{"theme":{"primaryColor":"#7c3aed","secondaryColor":"#1f2937","fontFamily":"Times New Roman, serif","fontSize":"large"},"layout":{"showLogo":true,"logoPosition":"top-center","showWatermark":true,"watermarkText":"CONFIDENTIAL","paperSize":"a4","orientation":"portrait"},"content":{"showPropertyAddress":true,"showTenantAddress":true,"showPaymentBreakdown":true,"showBalanceForward":true,"showTermsAndConditions":true,"termsAndConditionsText":"This is an official receipt. All payments are subject to verification. For any queries, please contact the property management office.","showSignature":true,"signatureText":"Property Manager"},"paymentOptions":{"showBankDetails":true,"showUPI":true,"showQRCode":true,"showWallets":true},"numbering":{"prefix":"PMR","startNumber":1,"includeYear":true,"includeMonth":true}}',
        true, false, 3)
-    ON CONFLICT (type) DO NOTHING
   `, (err) => {
     if (err) {
       console.error('Error seeding receipt templates', err);
@@ -466,5 +465,49 @@ export const initializeTables = (pool: Pool) => {
 
   pool.query(`CREATE INDEX IF NOT EXISTS idx_meter_readings_reading_date ON meter_readings(reading_date)`, (err) => {
     if (err) console.error('Error creating meter readings date index', err);
+  });
+
+  // Receipts table
+  pool.query(`CREATE TABLE IF NOT EXISTS receipts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    receipt_number VARCHAR(100) NOT NULL UNIQUE,
+    property_id UUID NOT NULL REFERENCES properties(id),
+    rent_transaction_id UUID REFERENCES rent_transactions(id),
+    tenant_id UUID REFERENCES tenants(id),
+    receipt_date TIMESTAMP NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    description TEXT NOT NULL,
+    receipt_data JSONB NOT NULL,
+    pdf_url TEXT,
+    file_size INTEGER,
+    status VARCHAR(50) DEFAULT 'generated',
+    generated_by UUID NOT NULL REFERENCES users(id),
+    sent_to VARCHAR(255),
+    sent_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating receipts table', err);
+    } else {
+      console.log('Receipts table ready');
+    }
+  });
+
+  // Create indexes for receipts table
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_receipts_property_id ON receipts(property_id)`, (err) => {
+    if (err) console.error('Error creating receipts property index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_receipts_tenant_id ON receipts(tenant_id)`, (err) => {
+    if (err) console.error('Error creating receipts tenant index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_receipts_rent_transaction_id ON receipts(rent_transaction_id)`, (err) => {
+    if (err) console.error('Error creating receipts rent transaction index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_receipts_receipt_number ON receipts(receipt_number)`, (err) => {
+    if (err) console.error('Error creating receipts number index', err);
   });
 }

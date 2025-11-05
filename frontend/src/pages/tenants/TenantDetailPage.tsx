@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useDeleteTenant } from '../../hooks';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common';
+import { ReceiptList } from '../../components/receipts';
 
 const TenantDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -165,6 +166,8 @@ const TenantDetailPage: React.FC = () => {
               <p className="text-sm text-gray-900 whitespace-pre-wrap">{tenant.notes}</p>
             </Card>
           )}
+
+          <ReceiptList tenantId={tenant.id} showHeader={true} />
         </div>
 
         {/* Sidebar */}

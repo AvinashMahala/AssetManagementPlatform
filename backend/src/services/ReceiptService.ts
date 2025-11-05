@@ -1,16 +1,21 @@
 import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest, ReceiptStatus, ReceiptData } from '../models/Receipt';
 import { IReceiptRepository, IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { IRentTransactionRepository } from '../interfaces/repositories/IRentTransactionRepository';
+import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentRepository';
+import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 import { ReceiptTemplateService } from './ReceiptTemplateService';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate';
+import { RentPayment } from '../models/RentPayment';
 
 export class ReceiptService implements IReceiptService {
   constructor(
     private receiptRepository: IReceiptRepository,
     private rentTransactionRepository: IRentTransactionRepository,
+    private rentPaymentRepository: IRentPaymentRepository,
+    private leaseRepository: ILeaseRepository,
     private propertyRepository: IPropertyRepository,
     private tenantRepository: ITenantRepository,
     private userRepository: IUserRepository,
@@ -42,20 +47,26 @@ export class ReceiptService implements IReceiptService {
   }
 
   async generateReceipt(request: ReceiptGenerationRequest): Promise<Receipt> {
-    // Get rent transaction details
-    const rentTransaction = await this.rentTransactionRepository.findById(request.rentTransactionId);
-    if (!rentTransaction) {
-      throw new Error('Rent transaction not found');
+    // Get payment details
+    const payment = await this.rentPaymentRepository.findById(request.paymentId);
+    if (!payment) {
+      throw new Error('Payment not found');
+    }
+
+    // Get lease details to get property and tenant info
+    const lease = await this.leaseRepository.findById(payment.leaseId);
+    if (!lease) {
+      throw new Error('Lease not found');
     }
 
     // Get property details
-    const property = await this.propertyRepository.findById(rentTransaction.propertyId);
+    const property = await this.propertyRepository.findById(lease.propertyId);
     if (!property) {
       throw new Error('Property not found');
     }
 
     // Get tenant details
-    const tenant = await this.tenantRepository.findById(rentTransaction.tenantId);
+    const tenant = await this.tenantRepository.findById(lease.tenantId);
     if (!tenant) {
       throw new Error('Tenant not found');
     }
@@ -75,7 +86,7 @@ export class ReceiptService implements IReceiptService {
       property,
       landlord,
       tenant,
-      rentTransaction,
+      payment,
       request.customSettings,
       request.notes
     );
@@ -84,10 +95,10 @@ export class ReceiptService implements IReceiptService {
     const receiptInput: Omit<Receipt, 'id' | 'createdAt' | 'updatedAt'> = {
       receiptNumber,
       propertyId: property.id,
-      rentTransactionId: rentTransaction.id,
+      rentTransactionId: undefined, // Not using rent transactions
       tenantId: tenant.id,
       receiptDate: new Date(),
-      amount: rentTransaction.amountPaid || rentTransaction.totalAmount,
+      amount: payment.amount,
       description: `Rent payment receipt for ${tenant.firstName} ${tenant.lastName}`,
       receiptData,
       status: ReceiptStatus.GENERATED,
@@ -98,31 +109,27 @@ export class ReceiptService implements IReceiptService {
   }
 
   async generateBulkReceipts(request: BulkReceiptGenerationRequest): Promise<Receipt[]> {
-    // Get all rent transactions for the property in the specified month/year
-    const rentTransactions = await this.rentTransactionRepository.findByPropertyAndPeriod(
-      request.propertyId,
-      request.month,
-      request.year
-    );
+    // Get all payments for the property
+    const allPayments = await this.rentPaymentRepository.findByProperty(request.propertyId);
 
-    // Filter by tenant IDs if specified
-    let filteredTransactions = rentTransactions;
-    if (!request.includeAllTenants && request.tenantIds && request.tenantIds.length > 0) {
-      filteredTransactions = rentTransactions.filter((rt: any) =>
-        request.tenantIds!.includes(rt.tenantId)
-      );
-    }
+    // Filter by month/year and tenant IDs
+    const filteredPayments = allPayments.filter((payment: any) => {
+      const paymentDate = new Date(payment.dueDate);
+      const matchesPeriod = paymentDate.getMonth() === request.month - 1 && paymentDate.getFullYear() === request.year;
+      const matchesTenant = request.includeAllTenants || !request.tenantIds || request.tenantIds.includes(payment.tenantId);
+      return matchesPeriod && matchesTenant;
+    });
 
-    // Generate receipts for each transaction
+    // Generate receipts for each payment
     const receipts: Receipt[] = [];
-    for (const transaction of filteredTransactions) {
+    for (const payment of filteredPayments) {
       try {
         const receipt = await this.generateReceipt({
-          rentTransactionId: transaction.id
+          paymentId: payment.id
         });
         receipts.push(receipt);
       } catch (error) {
-        console.error(`Failed to generate receipt for transaction ${transaction.id}:`, error);
+        console.error(`Failed to generate receipt for payment ${payment.id}:`, error);
         // Continue with other receipts
       }
     }
@@ -190,14 +197,11 @@ export class ReceiptService implements IReceiptService {
     propertySettings: any,
     customSettings?: any
   ): ReceiptData['settings'] {
-    // Start with template settings as base
+    // Start with default settings
     const baseSettings: ReceiptData['settings'] = {};
 
-    if (templateSettings) {
-      // Apply template settings to the receipt data structure
-      // Template settings control layout and visual aspects
-      // Property settings control content like bank details, logos, etc.
-    }
+    // Template settings control layout and visual aspects, but don't directly map to receipt data settings
+    // The receipt data settings are primarily controlled by property settings
 
     // Merge with property settings (bank details, logos, etc.)
     const mergedWithProperty = {
@@ -217,11 +221,11 @@ export class ReceiptService implements IReceiptService {
     property: any,
     landlord: any,
     tenant: any,
-    rentTransaction: any,
+    payment: RentPayment,
     customSettings?: any,
     notes?: string
   ): Promise<ReceiptData> {
-    // Get template settings for the property
+    // Get template settings for the property (may be null)
     const templateSettings = await this.templateService.getPropertyTemplateSettings(property.id);
 
     // Use property receipt settings or defaults
@@ -229,6 +233,16 @@ export class ReceiptService implements IReceiptService {
 
     // Merge settings: template settings + property settings + custom settings
     const mergedSettings = this.mergeReceiptSettings(templateSettings, propertySettings, customSettings);
+
+    // For payments, we don't have detailed billing period info, so we'll use the payment date
+    const paymentDate = payment.paidDate || payment.dueDate;
+    const periodStart = new Date(paymentDate);
+    periodStart.setMonth(periodStart.getMonth() - 1); // Assume previous month
+    const periodEnd = new Date(paymentDate);
+
+    // Convert Decimal values to numbers for JSON serialization
+    const amount = payment.amount;
+    const rentAmount = amount; // Use the payment amount as rent amount since no separate field exists
 
     return {
       property: {
@@ -238,7 +252,7 @@ export class ReceiptService implements IReceiptService {
         email: property.email
       },
       landlord: {
-        name: `${landlord.firstName} ${landlord.lastName}`,
+        name: landlord.name || landlord.username, // Use name field or fallback to username
         phone: landlord.phone,
         email: landlord.email
       },
@@ -246,26 +260,26 @@ export class ReceiptService implements IReceiptService {
         name: `${tenant.firstName} ${tenant.lastName}`,
         phone: tenant.phone,
         email: tenant.email,
-        address: tenant.currentAddressStreet ? `${tenant.currentAddressStreet}, ${tenant.currentAddressCity}, ${tenant.currentAddressState} - ${tenant.currentAddressPincode}` : undefined
+        address: tenant.currentAddress ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}` : undefined
       },
       receiptNumber,
-      receiptDate: new Date(),
+      receiptDate: new Date().toISOString(),
       period: {
-        from: rentTransaction.billingPeriodStart,
-        to: rentTransaction.billingPeriodEnd
+        from: periodStart.toISOString(),
+        to: periodEnd.toISOString()
       },
       breakdown: {
-        baseRent: rentTransaction.baseRent || rentTransaction.amount,
-        previousBalance: rentTransaction.previousBalance || 0,
-        expenses: rentTransaction.expenses || [],
-        totalAmount: rentTransaction.totalAmount,
-        amountPaid: rentTransaction.amountPaid,
-        newBalance: rentTransaction.newBalance || 0
+        baseRent: rentAmount,
+        previousBalance: 0, // Payments don't track previous balance
+        expenses: [], // Payments don't have detailed expense breakdown
+        totalAmount: amount,
+        amountPaid: amount,
+        newBalance: 0 // Payments don't track balance
       },
       payment: {
-        method: rentTransaction.paymentMethod,
-        transactionId: rentTransaction.transactionId,
-        paidDate: rentTransaction.paidDate
+        method: payment.paymentMethod || undefined,
+        transactionId: undefined, // Transaction ID not available in current payment model
+        paidDate: payment.paidDate ? payment.paidDate.toISOString() : undefined
       },
       settings: mergedSettings,
       notes,

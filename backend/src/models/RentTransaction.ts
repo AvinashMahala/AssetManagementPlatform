@@ -18,6 +18,20 @@ export enum ExpenseAction {
   REMOVE = 'remove'
 }
 
+// Payment method
+export enum PaymentMethod {
+  CASH = 'cash',
+  BANK_TRANSFER = 'bank_transfer',
+  UPI = 'upi',
+  CHEQUE = 'cheque',
+  CARD = 'card',
+  NET_BANKING = 'net_banking',
+  PAYTM = 'paytm',
+  PHONEPE = 'phonepe',
+  AMAZON_PAY = 'amazon_pay',
+  OTHER = 'other'
+}
+
 // Expense line item
 export interface ExpenseLineItem {
   type: string; // Expense type (wifi_internet, food_meals, etc.)
@@ -53,6 +67,11 @@ export interface RentTransaction {
   paidDate?: Date;
   status: RentTransactionStatus;
 
+  // Payment method and reference
+  paymentMethod?: PaymentMethod;
+  transactionId?: string;
+  paymentReference?: string;
+
   // Receipt
   receiptNumber?: string;
   receiptGenerated: boolean;
@@ -86,6 +105,9 @@ export interface RentTransactionInput {
   newBalance: number;
   paidDate?: Date;
   status: RentTransactionStatus;
+  paymentMethod?: PaymentMethod;
+  transactionId?: string;
+  paymentReference?: string;
   receiptNumber?: string;
   receiptGenerated: boolean;
   notes?: string;

@@ -306,6 +306,8 @@ export class DependencyContainer {
       this._receiptService = new ReceiptService(
         this.receiptRepository,
         this.rentTransactionRepository,
+        this.rentPaymentRepository,
+        this.leaseRepository,
         this.propertyRepository,
         this.tenantRepository,
         this.userRepository,

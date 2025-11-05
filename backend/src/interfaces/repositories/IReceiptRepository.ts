@@ -1,4 +1,4 @@
-import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '../../../models/Receipt';
+import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '../../models/Receipt';
 
 export interface IReceiptRepository {
   findAll(): Promise<Receipt[]>;

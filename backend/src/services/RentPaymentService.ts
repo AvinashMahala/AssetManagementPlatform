@@ -88,10 +88,12 @@ export class RentPaymentService implements IRentPaymentService {
       throw new Error('Lease not found');
     }
 
-    // Verify property exists
-    const property = await this.propertyRepository.findById(paymentData.propertyId);
-    if (!property) {
-      throw new Error('Property not found');
+    // Verify property exists (propertyId is optional since it's not in current schema)
+    if (paymentData.propertyId) {
+      const property = await this.propertyRepository.findById(paymentData.propertyId);
+      if (!property) {
+        throw new Error('Property not found');
+      }
     }
 
     // Verify tenant exists
@@ -102,7 +104,7 @@ export class RentPaymentService implements IRentPaymentService {
 
     // Calculate total amount if not provided
     const totalAmount = paymentData.amount ||
-      (paymentData.rentAmount + (paymentData.maintenanceCharges || 0) + (paymentData.otherCharges || 0) + (paymentData.lateFee || 0) + (paymentData.penaltyAmount || 0));
+      ((paymentData.rentAmount || 0) + (paymentData.maintenanceCharges || 0) + (paymentData.otherCharges || 0) + (paymentData.lateFee || 0) + (paymentData.penaltyAmount || 0));
 
     const paymentInput = {
       ...paymentData,
@@ -137,7 +139,7 @@ export class RentPaymentService implements IRentPaymentService {
     if (paymentData.rentAmount !== undefined || paymentData.maintenanceCharges !== undefined ||
         paymentData.otherCharges !== undefined || paymentData.lateFee !== undefined ||
         paymentData.penaltyAmount !== undefined) {
-      const rentAmount = paymentData.rentAmount !== undefined ? paymentData.rentAmount : existingPayment.rentAmount;
+      const rentAmount = paymentData.rentAmount !== undefined ? paymentData.rentAmount : (existingPayment.rentAmount || 0);
       const maintenanceCharges = paymentData.maintenanceCharges !== undefined ? paymentData.maintenanceCharges : (existingPayment.maintenanceCharges || 0);
       const otherCharges = paymentData.otherCharges !== undefined ? paymentData.otherCharges : (existingPayment.otherCharges || 0);
       const lateFee = paymentData.lateFee !== undefined ? paymentData.lateFee : (existingPayment.lateFee || 0);
@@ -327,9 +329,7 @@ export class RentPaymentService implements IRentPaymentService {
       if (!paymentData.leaseId) {
         errors.push('Lease ID is required');
       }
-      if (!paymentData.propertyId) {
-        errors.push('Property ID is required');
-      }
+      // propertyId is optional since it's not in current schema
       if (!paymentData.tenantId) {
         errors.push('Tenant ID is required');
       }

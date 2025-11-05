@@ -345,6 +345,27 @@ def create_schema(connection):
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Create receipts table
+    CREATE TABLE receipts (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      receipt_number VARCHAR(50) NOT NULL UNIQUE,
+      property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+      rent_transaction_id UUID REFERENCES rent_transactions(id) ON DELETE SET NULL,
+      tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+      receipt_date DATE NOT NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      description TEXT,
+      receipt_data JSONB NOT NULL,
+      pdf_url VARCHAR(500),
+      file_size BIGINT,
+      status VARCHAR(20) NOT NULL DEFAULT 'generated' CHECK (status IN ('generated', 'sent', 'downloaded')),
+      generated_by UUID NOT NULL REFERENCES users(id),
+      sent_to VARCHAR(255),
+      sent_at TIMESTAMP WITH TIME ZONE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
     -- Create indexes for performance
     CREATE INDEX idx_users_email ON users(email);
     CREATE INDEX idx_users_username ON users(username);
@@ -359,6 +380,12 @@ def create_schema(connection):
     CREATE INDEX idx_leases_primary_tenant_id ON leases(primary_tenant_id);
     CREATE INDEX idx_rent_payments_lease_id ON rent_payments(lease_id);
     CREATE INDEX idx_rent_payments_tenant_id ON rent_payments(tenant_id);
+    CREATE INDEX idx_receipts_property_id ON receipts(property_id);
+    CREATE INDEX idx_receipts_rent_transaction_id ON receipts(rent_transaction_id);
+    CREATE INDEX idx_receipts_tenant_id ON receipts(tenant_id);
+    CREATE INDEX idx_receipts_receipt_number ON receipts(receipt_number);
+    CREATE INDEX idx_receipts_status ON receipts(status);
+    CREATE INDEX idx_receipts_created_at ON receipts(created_at);
     """
 
     try:
@@ -806,6 +833,28 @@ def seed_receipt_templates(connection):
     ]
 
     for template in templates:
+        # Check if template already exists
+        if 'docker_container' in connection:
+            container = connection['docker_container']
+            cmd = ['docker', 'exec', container, 'psql', '-U', DB_CONFIG['user'], '-d', DB_CONFIG['database'],
+                   '-t', '-c', f"SELECT COUNT(*) FROM receipt_templates WHERE type = '{template['type']}'"]
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                count = int(result.stdout.strip() or 0)
+                if count > 0:
+                    print(f"Template {template['type']} already exists, skipping...")
+                    continue
+            except:
+                pass  # Continue with insertion if check fails
+        else:
+            conn = connection['direct']
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM receipt_templates WHERE type = %s", (template['type'],))
+                count = cursor.fetchone()[0]
+                if count > 0:
+                    print(f"Template {template['type']} already exists, skipping...")
+                    continue
+
         template_data = {
             'name': template['name'],
             'type': template['type'],
@@ -826,7 +875,7 @@ def seed_receipt_templates(connection):
 
         execute_sql(connection, sql, values)
 
-    print_success(f"Seeded {len(templates)} receipt templates")
+    print_success(f"Seeded receipt templates")
 
 def get_lease_id(connection, property_name, unit_number, primary_tenant_email):
     """Get lease ID by property, unit, and primary tenant"""

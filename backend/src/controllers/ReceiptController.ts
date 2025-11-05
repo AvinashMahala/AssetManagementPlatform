@@ -114,10 +114,10 @@ export class ReceiptController {
       const request: ReceiptGenerationRequest = req.body;
 
       // Validate required fields
-      if (!request.rentTransactionId) {
+      if (!request.paymentId) {
         res.status(400).json({
           success: false,
-          message: 'rentTransactionId is required'
+          message: 'paymentId is required'
         });
         return;
       }
