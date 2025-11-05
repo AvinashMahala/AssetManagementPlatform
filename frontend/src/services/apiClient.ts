@@ -229,6 +229,12 @@ class ApiClient {
     }
   }
 
+  // Check if user is authenticated (has a stored token)
+  isAuthenticated(): boolean {
+    const token = this.getAuthToken();
+    return !!token;
+  }
+
   async download(endpoint: string, config?: RequestConfig): Promise<Response> {
     const url = this.buildURL(endpoint, config?.params);
 

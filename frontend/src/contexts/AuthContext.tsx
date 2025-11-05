@@ -56,6 +56,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Initialize token from localStorage on app start
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      apiClient.setAuthToken(storedToken);
+    }
     checkAuth();
   }, []);
 
