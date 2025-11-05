@@ -1,49 +1,72 @@
 import { Request, Response } from 'express';
 import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '../models/Receipt';
+import { createModuleLogger, PerformanceLogger } from '../utils/logger.js';
+import { AppError } from '../middlewares/errorHandler.js';
+
+const logger = createModuleLogger('ReceiptController');
 
 export class ReceiptController {
   constructor(private receiptService: IReceiptService) {}
 
   async getAllReceipts(req: Request, res: Response): Promise<void> {
+    const perfLogger = new PerformanceLogger('getAllReceipts', {
+      userId: (req as any).user?.id,
+    });
+
     try {
+      logger.info('Fetching all receipts');
       const receipts = await this.receiptService.getAllReceipts();
+      
+      logger.info('Successfully fetched receipts', { count: receipts.length });
+      perfLogger.end({ count: receipts.length });
+      
       res.json({
         success: true,
         data: receipts
       });
     } catch (error) {
-      console.error('Error fetching receipts:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch receipts'
-      });
+      logger.error('Failed to fetch receipts', error);
+      perfLogger.endWithError(error as Error);
+      
+      throw new AppError('Failed to fetch receipts', 500);
     }
   }
 
   async getReceiptById(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const perfLogger = new PerformanceLogger('getReceiptById', {
+      receiptId: id,
+      userId: (req as any).user?.id,
+    });
+
     try {
-      const { id } = req.params;
+      logger.info('Fetching receipt by ID', { receiptId: id });
       const receipt = await this.receiptService.getReceiptById(id);
 
       if (!receipt) {
-        res.status(404).json({
-          success: false,
-          message: 'Receipt not found'
-        });
-        return;
+        logger.warn('Receipt not found', { receiptId: id });
+        perfLogger.end({ found: false });
+        
+        throw new AppError('Receipt not found', 404, true, 'RECEIPT_NOT_FOUND');
       }
 
+      logger.info('Successfully fetched receipt', { receiptId: id });
+      perfLogger.end({ found: true });
+      
       res.json({
         success: true,
         data: receipt
       });
     } catch (error) {
-      console.error('Error fetching receipt:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch receipt'
-      });
+      if (error instanceof AppError) {
+        throw error;
+      }
+      
+      logger.error('Failed to fetch receipt by ID', error, { receiptId: id });
+      perfLogger.endWithError(error as Error);
+      
+      throw new AppError('Failed to fetch receipt', 500);
     }
   }
 

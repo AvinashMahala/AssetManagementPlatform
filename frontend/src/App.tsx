@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ConsentDialog, LoggingDevTools } from './components/ConsentDialog';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
 import { TenantCreatePageEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
@@ -19,11 +21,18 @@ import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
   return (
-    <Router>
-      <ThemeProvider defaultTheme="system" storageKey="asset-management-theme">
-        <NotificationProvider maxNotifications={5}>
-          <AuthProvider>
-            <Routes>
+    <ErrorBoundary>
+      <Router>
+        <ThemeProvider defaultTheme="system" storageKey="asset-management-theme">
+          <NotificationProvider maxNotifications={5}>
+            <AuthProvider>
+              {/* Consent dialog for production error reporting */}
+              <ConsentDialog />
+              
+              {/* Dev tools for development mode */}
+              <LoggingDevTools />
+              
+              <Routes>
               {/* Public routes - only accessible when not authenticated */}
               <Route
                 path="/login"
@@ -163,6 +172,7 @@ function App() {
         </NotificationProvider>
       </ThemeProvider>
     </Router>
+    </ErrorBoundary>
   );
 }
 

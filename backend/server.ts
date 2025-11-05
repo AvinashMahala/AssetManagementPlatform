@@ -5,6 +5,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Pool } from 'pg';
+import { logger } from './src/utils/logger.js';
+import { requestLoggingMiddleware, requestIdMiddleware } from './src/middlewares/loggingMiddleware.js';
+import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from './src/middlewares/errorHandler.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
@@ -40,10 +43,14 @@ import { createUnitRoutes } from './src/routes/unitRoutes.js';
 import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
 import { DependencyContainer } from './src/utils/DependencyContainer.js';
 
-console.log('Environment variables loaded:');
-console.log('EMAIL_PROVIDER:', process.env.EMAIL_PROVIDER);
-console.log('RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'Set' : 'Not set');
-console.log('NODE_ENV:', process.env.NODE_ENV);
+// Setup global process error handlers
+setupProcessErrorHandlers();
+
+logger.info('🚀 Starting Asset Management Platform Backend...', {
+  nodeEnv: process.env.NODE_ENV,
+  emailProvider: process.env.EMAIL_PROVIDER,
+  hasResendApiKey: !!process.env.RESEND_API_KEY,
+});
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -86,6 +93,7 @@ import { initializeDatabase } from './src/config/database/init/index.js';
 
 const app = express();
 
+// Security and CORS middleware
 app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP for Swagger UI to work
 }));
@@ -96,6 +104,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma']
 }));
 app.use(express.json());
+
+// Logging middleware (must be before routes)
+app.use(requestIdMiddleware);
+app.use(requestLoggingMiddleware);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
 
@@ -136,8 +148,15 @@ app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
 app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
 app.use('/api', createTemplateRoutes(pool, userService));
 
+// Error handling middleware (must be last)
+app.use(notFoundHandler);
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
+  logger.info(`✅ Server is running on port ${PORT}`, {
+    port: PORT,
+    environment: process.env.NODE_ENV,
+    swaggerUrl: `http://localhost:${PORT}/api-docs`,
+  });
 });
