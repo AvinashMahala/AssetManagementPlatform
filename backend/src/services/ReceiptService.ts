@@ -5,9 +5,14 @@ import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentR
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';
-import { IUserRepository } from '../interfaces/repositories/IUserRepository';
+import { PropertyService } from './PropertyService';
+import { TenantService } from './TenantService';
+import { RentPaymentService } from './RentPaymentService';
+import { UserService } from './UserService';
+import { LeaseService } from './LeaseService';
 import { ReceiptTemplateService } from './ReceiptTemplateService';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate';
+import { PDFGenerator } from '../utils/pdfGenerator';
 import { RentPayment } from '../models/RentPayment';
 
 export class ReceiptService implements IReceiptService {
@@ -170,13 +175,11 @@ export class ReceiptService implements IReceiptService {
       throw new Error('Receipt not found');
     }
 
+    // Generate PDF from receipt data
+    const pdfBuffer = await PDFGenerator.generateReceiptPDF(receipt.receiptData);
+
     // Update status to downloaded
     await this.receiptRepository.updateStatus(receiptId, ReceiptStatus.DOWNLOADED);
-
-    // TODO: Implement actual PDF generation
-    // This would use a library like pdfkit, puppeteer, or similar
-    // For now, return a placeholder
-    const pdfBuffer = Buffer.from('PDF content would be generated here');
 
     return pdfBuffer;
   }
