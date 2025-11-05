@@ -27,6 +27,7 @@ import { ReceiptController } from './src/controllers/ReceiptController.js';
 import { createReceiptRoutes } from './src/routes/receiptRoutes.js';
 import { ReceiptTemplateController } from './src/controllers/ReceiptTemplateController.js';
 import { createReceiptTemplateRoutes } from './src/routes/receiptTemplateRoutes.js';
+import createTemplateRoutes from './src/routes/templateRoutes.js';
 import { PropertyController } from './src/controllers/propertyController.js';
 import { UserController } from './src/controllers/userController.js';
 import { TenantController } from './src/controllers/TenantController.js';
@@ -133,6 +134,7 @@ app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionCon
 app.use('/api/meters', createMeterRoutes(meterController, userService));
 app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
 app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
+app.use('/api', createTemplateRoutes(pool));
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

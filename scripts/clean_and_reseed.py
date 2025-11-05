@@ -49,6 +49,7 @@ def drop_all_tables(conn):
     tables = [
         'meter_readings',
         'meters',
+        'template_preview_cache',
         'rent_transactions',
         'receipts',
         'rent_payments',
@@ -56,6 +57,7 @@ def drop_all_tables(conn):
         'unit_tenants',
         'tenant_documents',
         'units',
+        'property_template_customizations',
         'properties',
         'receipt_templates',
         'tenants',
@@ -195,6 +197,11 @@ def create_schema(conn):
             type VARCHAR(20) NOT NULL CHECK (type IN ('basic', 'professional', 'premium')),
             description TEXT,
             default_settings JSONB NOT NULL,
+            template_html TEXT,
+            template_css JSONB,
+            layout_config JSONB,
+            placeholders JSONB,
+            preview_image_url VARCHAR(500),
             is_active BOOLEAN NOT NULL DEFAULT true,
             is_default BOOLEAN NOT NULL DEFAULT false,
             sort_order INTEGER NOT NULL DEFAULT 0,
@@ -227,6 +234,40 @@ def create_schema(conn):
             receipt_settings JSONB,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
+        
+        # Property Template Customizations
+        """
+        CREATE TABLE property_template_customizations (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+            template_id UUID NOT NULL REFERENCES receipt_templates(id) ON DELETE CASCADE,
+            custom_styles JSONB,
+            custom_logo_url VARCHAR(500),
+            custom_header TEXT,
+            custom_footer TEXT,
+            show_qr_code BOOLEAN DEFAULT FALSE,
+            qr_code_data JSONB,
+            qr_code_position VARCHAR(50) DEFAULT 'bottom-right',
+            qr_code_size INTEGER DEFAULT 100,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(property_id, template_id)
+        )
+        """,
+        
+        # Template Preview Cache
+        """
+        CREATE TABLE template_preview_cache (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            template_id UUID REFERENCES receipt_templates(id) ON DELETE CASCADE,
+            property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+            sample_data JSONB NOT NULL,
+            preview_html TEXT,
+            preview_pdf_url VARCHAR(500),
+            preview_expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """,
         
@@ -421,12 +462,19 @@ def create_schema(conn):
     
     # Insert default receipt template
     cursor.execute("""
-        INSERT INTO receipt_templates (name, type, description, default_settings, is_active, is_default, sort_order)
+        INSERT INTO receipt_templates (
+            name, type, description, default_settings, template_html, template_css, 
+            layout_config, placeholders, is_active, is_default, sort_order
+        )
         VALUES (
             'Basic Template',
             'basic',
             'Simple and clean receipt template for basic needs',
             '{"theme":{"primaryColor":"#2563eb","secondaryColor":"#64748b","fontFamily":"Arial, sans-serif","fontSize":"medium"},"layout":{"showLogo":false,"logoPosition":"top-left","showWatermark":false,"paperSize":"a4","orientation":"portrait"},"content":{"showPropertyAddress":true,"showTenantAddress":true,"showPaymentBreakdown":true,"showBalanceForward":true,"showTermsAndConditions":false,"showSignature":true,"signatureText":"Landlord Signature"},"paymentOptions":{"showBankDetails":true,"showUPI":true,"showQRCode":false,"showWallets":false},"numbering":{"prefix":"REC","startNumber":1,"includeYear":true,"includeMonth":true}}',
+            NULL,
+            '{"colors":{"primary":"#2563eb","secondary":"#64748b","text":"#1e293b","background":"#ffffff","border":"#e2e8f0"},"fonts":{"heading":{"family":"Arial, sans-serif","size":18,"weight":"bold"},"body":{"family":"Arial, sans-serif","size":12,"weight":"normal"},"caption":{"family":"Arial, sans-serif","size":10,"weight":"normal"}},"spacing":{"section":15,"field":8},"borders":{"width":1,"color":"#e2e8f0","radius":4}}',
+            '{"margins":{"top":50,"right":50,"bottom":50,"left":50},"spacing":{"section":20,"field":10},"pageSize":"A4","orientation":"portrait","showHeader":true,"showFooter":true}',
+            '{"property":["{{property.name}}","{{property.address}}","{{property.phone}}","{{property.email}}"],"landlord":["{{landlord.name}}","{{landlord.email}}","{{landlord.phone}}"],"tenant":["{{tenant.name}}","{{tenant.email}}","{{tenant.phone}}","{{tenant.address}}"],"payment":["{{payment.amount}}","{{payment.date}}","{{payment.method}}","{{payment.reference}}"],"receipt":["{{receipt.number}}","{{receipt.date}}"],"period":["{{period.from}}","{{period.to}}"],"breakdown":["{{breakdown.baseRent}}","{{breakdown.totalAmount}}","{{breakdown.amountPaid}}","{{breakdown.balance}}"]}',
             true,
             true,
             1

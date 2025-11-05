@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Edit, Trash2, Building2, MapPin, Grid3x3, List, BarChart3 } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Building2, MapPin, Grid3x3, List, BarChart3, FileImage } from 'lucide-react';
 import { useProperties, useDeleteProperty } from '../../hooks';
 import { 
   Card, 
@@ -151,10 +151,16 @@ const PropertyListPageEnhanced: React.FC = () => {
               Manage your property portfolio
             </p>
           </div>
-          <Button onClick={() => navigate('/properties/create')}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Property
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/templates')}>
+              <FileImage className="mr-2 h-4 w-4" />
+              Templates
+            </Button>
+            <Button onClick={() => navigate('/properties/create')}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Property
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

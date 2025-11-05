@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Users, UserCheck, UserX, Mail, Phone, Briefcase, Eye, Edit } from 'lucide-react';
+import { Plus, Search, Users, UserCheck, UserX, Mail, Phone, Briefcase, Eye, Edit, FileImage } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -54,9 +54,14 @@ const TenantListPageEnhanced: React.FC = () => {
             <h1 className="text-3xl font-bold tracking-tight">Tenant Management</h1>
             <p className="text-muted-foreground">Manage and monitor all your tenants</p>
           </div>
-          <Button onClick={() => navigate('/tenants/create')} size="lg">
-            <Plus className="mr-2 h-4 w-4" /> Add Tenant
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
+              <FileImage className="mr-2 h-4 w-4" /> Templates
+            </Button>
+            <Button onClick={() => navigate('/tenants/create')} size="lg">
+              <Plus className="mr-2 h-4 w-4" /> Add Tenant
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

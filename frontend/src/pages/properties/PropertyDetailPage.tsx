@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Building2, MapPin, Home, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Building2, MapPin, Home, Calendar, FileImage } from 'lucide-react';
 import { useProperty } from '../../hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -38,7 +38,13 @@ const PropertyDetailPage: React.FC = () => {
     <div className="container mx-auto py-6 max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => navigate('/properties')}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
-        <Button onClick={() => navigate(`/properties/${id}/edit`)}><Edit className="mr-2 h-4 w-4" /> Edit Property</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
+            <FileImage className="mr-2 h-4 w-4" />
+            Templates
+          </Button>
+          <Button onClick={() => navigate(`/properties/${id}/edit`)}><Edit className="mr-2 h-4 w-4" /> Edit Property</Button>
+        </div>
       </div>
 
       <Card>

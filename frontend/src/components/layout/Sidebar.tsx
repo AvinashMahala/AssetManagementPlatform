@@ -11,6 +11,7 @@ import {
   ChevronRight,
   LogOut,
   User,
+  FileImage,
 } from 'lucide-react';
 import { useAuthContext } from '../../contexts';
 
@@ -28,6 +29,7 @@ const navItems: NavItem[] = [
   { name: 'Units', icon: Home, path: '/units' },
   { name: 'Leases', icon: FileText, path: '/leases' },
   { name: 'Payments', icon: CreditCard, path: '/payments' },
+  { name: 'Templates', icon: FileImage, path: '/templates' },
 ];
 
 interface SidebarProps {

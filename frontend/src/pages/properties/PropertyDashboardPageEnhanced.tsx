@@ -17,7 +17,8 @@ import {
   Layers,
   ParkingCircle,
   Eye,
-  BarChart3
+  BarChart3,
+  FileImage,
 } from 'lucide-react';
 import { useProperty, useUnits, useLeases, usePayments, useTenants } from '../../hooks';
 import {
@@ -248,6 +249,10 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
             <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
               <Edit className="w-4 h-4 mr-2" />
               Edit Property
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
+              <FileImage className="w-4 h-4 mr-2" />
+              Templates
             </Button>
             <Button onClick={() => navigate(`/units/create`)}>
               <Plus className="w-4 h-4 mr-2" />

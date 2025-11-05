@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, CheckCircle2, XCircle, Clock, AlertTriangle, Calendar, Eye, Edit, User, Home } from 'lucide-react';
+import { Plus, Search, FileText, CheckCircle2, XCircle, Clock, AlertTriangle, Calendar, Eye, Edit, User, Home, FileImage } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -111,9 +111,14 @@ const LeaseListPageEnhanced: React.FC = () => {
             <h1 className="text-3xl font-bold tracking-tight">Lease Management</h1>
             <p className="text-muted-foreground">Manage lease agreements and track renewals</p>
           </div>
-          <Button onClick={() => navigate('/leases/create')} size="lg">
-            <Plus className="mr-2 h-4 w-4" /> Create Lease
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
+              <FileImage className="mr-2 h-4 w-4" /> Templates
+            </Button>
+            <Button onClick={() => navigate('/leases/create')} size="lg">
+              <Plus className="mr-2 h-4 w-4" /> Create Lease
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

@@ -12,6 +12,9 @@ import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
 import { PaymentCreatePageEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import DashboardEnhanced from './pages/DashboardEnhanced';
+import TemplateEditor from './pages/TemplateEditor';
+import TemplateGallery from './pages/TemplateGallery';
+import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
 import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
@@ -132,6 +135,11 @@ function App() {
               <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
+
+              {/* Template routes */}
+              <Route path="/templates" element={<ProtectedRoute><TemplateGallery /></ProtectedRoute>} />
+              <Route path="/templates/:templateId/editor" element={<ProtectedRoute><TemplateEditor /></ProtectedRoute>} />
+              <Route path="/properties/:propertyId/template-customization" element={<ProtectedRoute><PropertyTemplateCustomization /></ProtectedRoute>} />
 
               <Route
                 path="/admin/*"

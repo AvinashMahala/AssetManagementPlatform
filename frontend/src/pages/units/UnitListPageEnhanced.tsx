@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Edit, Building2 } from 'lucide-react';
+import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Edit, Building2, FileImage } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -76,9 +76,14 @@ const UnitListPageEnhanced: React.FC = () => {
             <h1 className="text-3xl font-bold tracking-tight">Unit Management</h1>
             <p className="text-muted-foreground">Manage and monitor all your property units</p>
           </div>
-          <Button onClick={() => navigate('/units/create')} size="lg">
-            <Plus className="mr-2 h-4 w-4" /> Add Unit
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
+              <FileImage className="mr-2 h-4 w-4" /> Templates
+            </Button>
+            <Button onClick={() => navigate('/units/create')} size="lg">
+              <Plus className="mr-2 h-4 w-4" /> Add Unit
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
