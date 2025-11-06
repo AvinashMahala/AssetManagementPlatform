@@ -9,28 +9,43 @@
 
 A comprehensive Property Management Platform built with modern web technologies. Features a complete React frontend with TypeScript, Node.js/Express backend with layered architecture, PostgreSQL database, Google OAuth authentication, and comprehensive API documentation for managing rental properties, tenants, leases, and rent payments.
 
-## 🚀 Features
+## 🚀 Free Hosting Deployment
 
-- **Full-Stack TypeScript**: End-to-end type safety across frontend and backend
-- **Google OAuth Integration**: Seamless authentication with Google Identity Services API
-- **JWT Authentication**: Secure token-based authentication with refresh tokens
-- **Property Management**: Complete rental property portfolio management
-- **Tenant Management**: Comprehensive tenant profiles and document management
-- **Lease Management**: Full lease lifecycle with automatic rent generation
-- **Rent Payment Processing**: Advanced payment tracking with financial calculations
-- **Financial Reporting**: Revenue analytics and payment status monitoring
-- **Industrial-Grade Frontend Architecture**: Layered React application with contexts, hooks, and services
-- **Layered Architecture**: Clean separation of concerns with Controllers, Services, and Repositories in backend
-- **Dependency Injection**: Interface-based DI container for maximum testability and modularity
-- **Global State Management**: React Context API for authentication, theming, and notifications
-- **Component Library**: Reusable UI components with TypeScript interfaces
-- **Custom Hooks**: Business logic encapsulation with React hooks
-- **API Integration**: Centralized API client with error handling and TypeScript types
-- **Database Integration**: PostgreSQL with connection pooling and prepared statements
-- **Security**: Password hashing, input validation, CORS, and Helmet security headers
-- **Containerization**: Docker and Docker Compose for easy deployment
-- **Development Tools**: ESLint, Prettier, and comprehensive error handling
-- **Monorepo Structure**: Organized with npm workspaces for efficient development
+Deploy your Asset Management Platform using **GitHub's free services**!
+
+### 🎯 What's Free
+- **Frontend**: GitHub Pages (unlimited bandwidth, custom domains)
+- **Backend**: Free tiers from Render/Railway/Fly.io
+- **Database**: PostgreSQL included with backend hosting
+- **CI/CD**: GitHub Actions (unlimited for public repos)
+
+### 🚀 Quick Deploy
+
+1. **Enable GitHub Pages**:
+   - Go to Settings → Pages
+   - Set source to "GitHub Actions"
+
+2. **Deploy Frontend** (automatic on push to main):
+   - Frontend deploys to: `https://yourusername.github.io/repository-name`
+
+3. **Deploy Backend** (choose one free service):
+   - 🚀 **Render**: [render.com](https://render.com) - 750 hours/month free
+   - 🏃 **Railway**: [railway.app](https://railway.app) - $5/month credit
+   - 🪶 **Fly.io**: [fly.io](https://fly.io) - 3 shared CPUs free
+
+### 📋 Setup Steps
+
+1. **GitHub Pages**: Automatic via GitHub Actions
+2. **Backend**: Connect your repo to chosen hosting service
+3. **Database**: Automatic with backend deployment
+4. **Environment Variables**: Set in hosting service dashboard
+
+### 🌐 Live Demo URLs
+- **Frontend**: `https://yourusername.github.io/repository-name`
+- **Backend**: `https://your-app.onrender.com`
+- **API Docs**: `https://your-app.onrender.com/api-docs`
+
+For detailed instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 🚀 Features
 

@@ -108,7 +108,7 @@ export const LoginPage: React.FC = () => {
   const features = [
     {
       icon: Building2,
-      title: 'Property Management',
+      title: 'Asset Management',
       description: 'Manage multiple properties with ease'
     },
     {
