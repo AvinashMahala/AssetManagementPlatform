@@ -72,7 +72,6 @@ const PropertyEditPageEnhanced: React.FC = () => {
         initialData={property}
         onSubmit={handleSubmit}
         loading={updateLoading}
-        title="Edit Property"
       />
     </AppLayout>
   );

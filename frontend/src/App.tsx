@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { ConsentDialog, LoggingDevTools } from './components/ConsentDialog';
+import { ConsentDialog, DevTools } from './components/ConsentDialog';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
 import { TenantCreatePageEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
@@ -30,7 +30,7 @@ function App() {
               <ConsentDialog />
               
               {/* Dev tools for development mode */}
-              <LoggingDevTools />
+              <DevTools />
               
               <Routes>
               {/* Public routes - only accessible when not authenticated */}

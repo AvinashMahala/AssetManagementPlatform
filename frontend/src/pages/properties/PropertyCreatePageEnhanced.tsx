@@ -24,7 +24,6 @@ const PropertyCreatePageEnhanced: React.FC = () => {
       <PropertyFormModern
         onSubmit={handleSubmit}
         loading={loading}
-        title="Create New Property"
       />
     </AppLayout>
   );
