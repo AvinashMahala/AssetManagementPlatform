@@ -22,6 +22,12 @@ services:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://user:pass@db:5432/assetdb
       - PORT=5000
+      - JWT_SECRET=your-secret-key
+      - JWT_REFRESH_SECRET=your-refresh-secret-key
+      - JWT_ACCESS_TOKEN_EXPIRY=15m
+      - JWT_REFRESH_TOKEN_EXPIRY=7d
+      - JWT_ACCESS_TOKEN_EXPIRY_REMEMBER=1h
+      - JWT_REFRESH_TOKEN_EXPIRY_REMEMBER=30d
     depends_on:
       - db
 

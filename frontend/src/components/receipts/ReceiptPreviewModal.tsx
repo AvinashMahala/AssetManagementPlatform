@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { templateService } from '../../services/templateService';
 import { Button } from '../ui/button';
 import { X, Download } from 'lucide-react';
@@ -14,7 +13,6 @@ interface ReceiptPreviewModalProps {
 export default function ReceiptPreviewModal({ isOpen, onClose, paymentId, onGenerate }: ReceiptPreviewModalProps) {
   const [previewHtml, setPreviewHtml] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [templateId, setTemplateId] = useState<string>('');
 
   useEffect(() => {
     if (isOpen && paymentId) {
@@ -26,18 +24,17 @@ export default function ReceiptPreviewModal({ isOpen, onClose, paymentId, onGene
     setIsLoading(true);
     try {
       // Get default template
-      const templatesResponse = await templateService.getAllTemplates();
-      if (templatesResponse.success && templatesResponse.data.length > 0) {
+      const templatesResponse = await templateService.getAllTemplates() as { success: boolean; data?: any[] };
+      if (templatesResponse.success && templatesResponse.data && templatesResponse.data.length > 0) {
         const defaultTemplate = templatesResponse.data.find((t: any) => t.isDefault) || templatesResponse.data[0];
-        setTemplateId(defaultTemplate.id);
 
         // Generate preview with payment data
         const previewResponse = await templateService.generatePreview({
           templateId: defaultTemplate.id,
           format: 'html',
-        });
+        }) as { success: boolean; data?: { previewHtml: string } };
 
-        if (previewResponse.success) {
+        if (previewResponse.success && previewResponse.data) {
           setPreviewHtml(previewResponse.data.previewHtml);
         }
       }

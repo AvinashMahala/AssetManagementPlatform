@@ -40,7 +40,8 @@ export const LoginPage: React.FC = () => {
     firstName: '',
     lastName: '',
     company: '',
-    resetEmail: ''
+    resetEmail: '',
+    rememberMe: false
   });
 
   // Demo credentials for quick testing
@@ -77,7 +78,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleDemoLogin = async () => {
-    const success = await login(demoCredentials);
+    const success = await login({ ...demoCredentials, rememberMe: false });
     if (success) {
       // Navigation will be handled by the useEffect above
     }
@@ -87,7 +88,11 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
 
     if (currentView === 'login') {
-      await login({ email: formData.email, password: formData.password });
+      await login({ 
+        email: formData.email, 
+        password: formData.password,
+        rememberMe: formData.rememberMe
+      });
       // Navigation will be handled by the useEffect above
     } else if (currentView === 'register') {
       // For now, just switch back to login - registration would need backend implementation
@@ -335,7 +340,12 @@ export const LoginPage: React.FC = () => {
 
                     <div className="flex items-center justify-between">
                       <label className="flex items-center">
-                        <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                        <input 
+                          type="checkbox" 
+                          checked={formData.rememberMe}
+                          onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                        />
                         <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
                       </label>
                       <button

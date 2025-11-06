@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { templateService } from '../services/templateService';
 import { Button } from '../components/ui/button';
@@ -30,8 +30,8 @@ export default function TemplateEditor() {
 
   const loadTemplate = async () => {
     try {
-      const response = await templateService.getTemplateById(templateId!);
-      if (response.success) {
+      const response = await templateService.getTemplateById(templateId!) as { success: boolean; data?: any };
+      if (response.success && response.data) {
         setTemplate(response.data);
       }
     } catch (error) {

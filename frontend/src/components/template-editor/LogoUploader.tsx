@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
-import { Upload, X, Crop } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 
 interface LogoUploaderProps {
   currentLogoUrl?: string;

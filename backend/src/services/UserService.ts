@@ -16,18 +16,28 @@ import { ValidationUtils } from '../utils/validation.js';
 import { PasswordUtils } from '../utils/password.js';
 import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IUserService } from '../interfaces/services/IUserService.js';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import * as crypto from 'crypto';
 
 export class UserService implements IUserService {
   private repository: IUserRepository;
   private jwtSecret: string;
   private jwtRefreshSecret: string;
+  private accessTokenExpiry: string;
+  private refreshTokenExpiry: string;
+  private accessTokenExpiryRemember: string;
+  private refreshTokenExpiryRemember: string;
 
   constructor(repository: IUserRepository) {
     this.repository = repository;
     this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
     this.jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key';
+    
+    // Token expiration times (in JWT format: '15m', '1h', '7d', etc.)
+    this.accessTokenExpiry = process.env.JWT_ACCESS_TOKEN_EXPIRY || '15m';
+    this.refreshTokenExpiry = process.env.JWT_REFRESH_TOKEN_EXPIRY || '7d';
+    this.accessTokenExpiryRemember = process.env.JWT_ACCESS_TOKEN_EXPIRY_REMEMBER || '1h';
+    this.refreshTokenExpiryRemember = process.env.JWT_REFRESH_TOKEN_EXPIRY_REMEMBER || '30d';
   }
 
   // Basic CRUD operations
@@ -245,7 +255,7 @@ export class UserService implements IUserService {
   }
 
   async loginUser(credentials: UserCredentials): Promise<AuthResponse | null> {
-    console.log('🔑 loginUser started for:', credentials.email);
+    console.log('🔑 loginUser started for:', credentials.email, 'rememberMe:', credentials.rememberMe);
     
     const user = await this.authenticateUser(credentials);
     if (!user) {
@@ -266,7 +276,7 @@ export class UserService implements IUserService {
 
     // Generate tokens
     console.log('🎟️ Generating auth tokens...');
-    const authResponse = await this.generateAuthTokens(user);
+    const authResponse = await this.generateAuthTokens(user, credentials.rememberMe);
     console.log('✅ Tokens generated successfully');
     return authResponse;
   }
@@ -394,8 +404,8 @@ export class UserService implements IUserService {
   }
 
   // Token management
-  async generateAuthTokens(user: User): Promise<AuthResponse> {
-    console.log('🎟️ generateAuthTokens called for user:', user.id, user.email);
+  async generateAuthTokens(user: User, rememberMe: boolean = false): Promise<AuthResponse> {
+    console.log('🎟️ generateAuthTokens called for user:', user.id, user.email, 'rememberMe:', rememberMe);
     console.log('🔍 User object has required fields:', {
       hasId: !!user.id,
       hasEmail: !!user.email,
@@ -404,17 +414,26 @@ export class UserService implements IUserService {
     });
     
     try {
+      // Set token expiration based on rememberMe preference
+      const accessTokenExpiry = rememberMe ? this.accessTokenExpiryRemember : this.accessTokenExpiry;
+      const refreshTokenExpiry = rememberMe ? this.refreshTokenExpiryRemember : this.refreshTokenExpiry;
+      
+      console.log('⏰ Token expirations - Access:', accessTokenExpiry, 'Refresh:', refreshTokenExpiry);
+      
       const accessToken = jwt.sign(
         { userId: user.id, email: user.email, role: user.role },
         this.jwtSecret,
-        { expiresIn: '15m' }
+        { expiresIn: accessTokenExpiry } as SignOptions
       );
 
       const refreshToken = jwt.sign(
         { userId: user.id },
         this.jwtRefreshSecret,
-        { expiresIn: '7d' }
+        { expiresIn: refreshTokenExpiry } as SignOptions
       );
+
+      // Calculate expiresIn in seconds from the JWT expiry string
+      const expiresIn = this.parseJwtExpiryToSeconds(accessTokenExpiry);
 
       // Return minimal user info
       const safeUser = {
@@ -430,7 +449,7 @@ export class UserService implements IUserService {
         tokens: {
           accessToken,
           refreshToken,
-          expiresIn: 15 * 60, // 15 minutes in seconds
+          expiresIn,
         },
       };
     } catch (error) {
@@ -474,5 +493,24 @@ export class UserService implements IUserService {
 
   async updateLastLogin(userId: string): Promise<boolean> {
     return await this.repository.updateLastLogin(userId);
+  }
+
+  // Helper method to parse JWT expiry string to seconds
+  private parseJwtExpiryToSeconds(expiry: string): number {
+    const match = expiry.match(/^(\d+)([smhd])$/);
+    if (!match) {
+      throw new Error(`Invalid JWT expiry format: ${expiry}`);
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    switch (unit) {
+      case 's': return value; // seconds
+      case 'm': return value * 60; // minutes
+      case 'h': return value * 60 * 60; // hours
+      case 'd': return value * 24 * 60 * 60; // days
+      default: throw new Error(`Unknown time unit: ${unit}`);
+    }
   }
 }

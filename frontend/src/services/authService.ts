@@ -39,6 +39,7 @@ export interface UserRegistrationInput {
 export interface UserCredentials {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface EmailVerificationRequest {
