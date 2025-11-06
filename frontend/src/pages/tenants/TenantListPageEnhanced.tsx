@@ -51,8 +51,8 @@ const TenantListPageEnhanced: React.FC = () => {
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Tenant Management</h1>
-            <p className="text-muted-foreground">Manage and monitor all your tenants</p>
+            <h1 className="text-3xl font-bold tracking-tight">Manage & Monitor Tenants</h1>
+            <p className="text-muted-foreground">Oversee tenant information and relationships</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">

@@ -156,8 +156,8 @@ const PaymentListPageEnhanced: React.FC = () => {
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Payment Management</h1>
-            <p className="text-muted-foreground">Track and manage rent payment collections</p>
+            <h1 className="text-3xl font-bold tracking-tight">Track Rent & Payments</h1>
+            <p className="text-muted-foreground">Monitor rental payments and financial records</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">

@@ -108,8 +108,8 @@ const LeaseListPageEnhanced: React.FC = () => {
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Lease Management</h1>
-            <p className="text-muted-foreground">Manage lease agreements and track renewals</p>
+            <h1 className="text-3xl font-bold tracking-tight">Manage Agreements & Renewals</h1>
+            <p className="text-muted-foreground">Track lease agreements and monitor renewals</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">

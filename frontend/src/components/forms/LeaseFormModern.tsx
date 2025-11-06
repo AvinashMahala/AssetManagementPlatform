@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Calendar, DollarSign } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { FormField } from '../../components/ui/form-field';
+import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../cdc';
 import { useCreateLease, useUnits, useTenants } from '../../hooks';
 import type { LeaseInput } from '../../types/lease';
 
@@ -90,204 +85,160 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    navigate('/leases');
+  };
+
   return (
-    <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Lease Parties */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Lease Parties
-            </CardTitle>
-            <CardDescription>
-              Select the unit and tenant for this lease agreement
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Unit" required>
-                <Select value={formData.unitId} onValueChange={(value) => handleChange('unitId', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {units.map(unit => (
-                      <SelectItem key={unit.id} value={unit.id}>
-                        Unit {unit.unitNumber} - {unit.unitType.toUpperCase()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.unitId && <p className="text-sm text-red-600 mt-1">{errors.unitId}</p>}
-              </FormField>
+    <BaseForm
+      title="Create Lease"
+      backLabel="Back to Leases"
+      onBack={() => navigate('/leases')}
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      loading={loading}
+      cancelLabel="Cancel"
+      submitLabel="Create Lease"
+    >
+      <FormColumn
+        title="Lease Parties"
+        description="Select unit and tenant"
+        icon={<FileText className="h-5 w-5" />}
+      >
+        <FormField label="Unit" required>
+          <Select value={formData.unitId} onValueChange={(value) => handleChange('unitId', value)}>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Select a unit" />
+            </SelectTrigger>
+            <SelectContent>
+              {units.map(unit => (
+                <SelectItem key={unit.id} value={unit.id}>
+                  Unit {unit.unitNumber} - {unit.unitType.toUpperCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.unitId && <p className="text-sm text-red-600 mt-1">{errors.unitId}</p>}
+        </FormField>
 
-              <FormField label="Tenant" required>
-                <Select value={formData.tenantId} onValueChange={(value) => handleChange('tenantId', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a tenant" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tenants.map(tenant => (
-                      <SelectItem key={tenant.id} value={tenant.id}>
-                        {tenant.firstName} {tenant.lastName} - {tenant.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.tenantId && <p className="text-sm text-red-600 mt-1">{errors.tenantId}</p>}
-              </FormField>
-            </div>
-          </CardContent>
-        </Card>
+        <FormField label="Tenant" required>
+          <Select value={formData.tenantId} onValueChange={(value) => handleChange('tenantId', value)}>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Select a tenant" />
+            </SelectTrigger>
+            <SelectContent>
+              {tenants.map(tenant => (
+                <SelectItem key={tenant.id} value={tenant.id}>
+                  {tenant.firstName} {tenant.lastName} - {tenant.email}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.tenantId && <p className="text-sm text-red-600 mt-1">{errors.tenantId}</p>}
+        </FormField>
+      </FormColumn>
 
-        {/* Lease Period */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Lease Period
-            </CardTitle>
-            <CardDescription>
-              Set the start and end dates for the lease
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Start Date" required>
-                <Input
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => handleChange('startDate', e.target.value)}
-                />
-                {errors.startDate && <p className="text-sm text-red-600 mt-1">{errors.startDate}</p>}
-              </FormField>
+      <FormColumn
+        title="Lease Period"
+        description="Start and end dates"
+        icon={<Calendar className="h-5 w-5" />}
+      >
+        <FormField label="Start Date" required>
+          <Input
+            type="date"
+            value={formData.startDate}
+            onChange={(e) => handleChange('startDate', e.target.value)}
+            className="h-10"
+          />
+          {errors.startDate && <p className="text-sm text-red-600 mt-1">{errors.startDate}</p>}
+        </FormField>
 
-              <FormField label="End Date" required>
-                <Input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => handleChange('endDate', e.target.value)}
-                />
-                {errors.endDate && <p className="text-sm text-red-600 mt-1">{errors.endDate}</p>}
-              </FormField>
-            </div>
-          </CardContent>
-        </Card>
+        <FormField label="End Date" required>
+          <Input
+            type="date"
+            value={formData.endDate}
+            onChange={(e) => handleChange('endDate', e.target.value)}
+            className="h-10"
+          />
+          {errors.endDate && <p className="text-sm text-red-600 mt-1">{errors.endDate}</p>}
+        </FormField>
+      </FormColumn>
 
-        {/* Financial Terms */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Financial Terms
-            </CardTitle>
-            <CardDescription>
-              Set the rent, deposits, and payment schedule
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField label="Monthly Rent (₹)" required>
-                <Input
-                  type="number"
-                  value={formData.monthlyRent}
-                  onChange={(e) => handleChange('monthlyRent', Number(e.target.value))}
-                  min="0"
-                  step="0.01"
-                />
-                {errors.monthlyRent && <p className="text-sm text-red-600 mt-1">{errors.monthlyRent}</p>}
-              </FormField>
+      <FormColumn
+        title="Financial Terms"
+        description="Rent and deposits"
+        icon={<DollarSign className="h-5 w-5" />}
+      >
+        <FormField label="Monthly Rent (₹)" required>
+          <Input
+            type="number"
+            value={formData.monthlyRent}
+            onChange={(e) => handleChange('monthlyRent', Number(e.target.value))}
+            min="0"
+            step="0.01"
+            className="h-10"
+          />
+          {errors.monthlyRent && <p className="text-sm text-red-600 mt-1">{errors.monthlyRent}</p>}
+        </FormField>
 
-              <FormField label="Security Deposit (₹)" required>
-                <Input
-                  type="number"
-                  value={formData.securityDeposit}
-                  onChange={(e) => handleChange('securityDeposit', Number(e.target.value))}
-                  min="0"
-                  step="0.01"
-                />
-                {errors.securityDeposit && <p className="text-sm text-red-600 mt-1">{errors.securityDeposit}</p>}
-              </FormField>
+        <FormField label="Security Deposit (₹)" required>
+          <Input
+            type="number"
+            value={formData.securityDeposit}
+            onChange={(e) => handleChange('securityDeposit', Number(e.target.value))}
+            min="0"
+            step="0.01"
+            className="h-10"
+          />
+          {errors.securityDeposit && <p className="text-sm text-red-600 mt-1">{errors.securityDeposit}</p>}
+        </FormField>
 
-              <FormField label="Maintenance Charges (₹/month)">
-                <Input
-                  type="number"
-                  value={formData.maintenanceCharges}
-                  onChange={(e) => handleChange('maintenanceCharges', Number(e.target.value))}
-                  min="0"
-                  step="0.01"
-                />
-                {errors.maintenanceCharges && <p className="text-sm text-red-600 mt-1">{errors.maintenanceCharges}</p>}
-              </FormField>
-            </div>
+        <FormField label="Maintenance Charges (₹/month)">
+          <Input
+            type="number"
+            value={formData.maintenanceCharges}
+            onChange={(e) => handleChange('maintenanceCharges', Number(e.target.value))}
+            min="0"
+            step="0.01"
+            className="h-10"
+          />
+          {errors.maintenanceCharges && <p className="text-sm text-red-600 mt-1">{errors.maintenanceCharges}</p>}
+        </FormField>
 
-            <FormField
-              label="Rent Due Day (1-31)"
-              required
-            >
-              <Input
-                type="number"
-                value={formData.rentDueDay}
-                onChange={(e) => handleChange('rentDueDay', Number(e.target.value))}
-                min="1"
-                max="31"
-                className="md:w-1/3"
-              />
-              <p className="mt-1 text-sm text-gray-500">Day of the month when rent is due</p>
-              {errors.rentDueDay && <p className="text-sm text-red-600 mt-1">{errors.rentDueDay}</p>}
-            </FormField>
-          </CardContent>
-        </Card>
+        <FormField label="Rent Due Day (1-31)" required>
+          <Input
+            type="number"
+            value={formData.rentDueDay}
+            onChange={(e) => handleChange('rentDueDay', Number(e.target.value))}
+            min="1"
+            max="31"
+            className="h-10"
+          />
+          <p className="mt-1 text-sm text-gray-500">Day of the month when rent is due</p>
+          {errors.rentDueDay && <p className="text-sm text-red-600 mt-1">{errors.rentDueDay}</p>}
+        </FormField>
 
-        {/* Terms and Conditions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Terms and Conditions</CardTitle>
-            <CardDescription>
-              Define the lease terms and any special conditions
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField label="Lease Terms">
-              <Textarea
-                value={formData.terms}
-                onChange={(e) => handleChange('terms', e.target.value)}
-                placeholder="Standard terms and conditions..."
-                rows={4}
-              />
-            </FormField>
+        <FormField label="Lease Terms">
+          <Textarea
+            value={formData.terms}
+            onChange={(e) => handleChange('terms', e.target.value)}
+            placeholder="Standard terms and conditions..."
+            rows={3}
+            className="resize-none"
+          />
+        </FormField>
 
-            <FormField label="Special Conditions">
-              <Textarea
-                value={formData.specialConditions}
-                onChange={(e) => handleChange('specialConditions', e.target.value)}
-                placeholder="Any special conditions or agreements..."
-                rows={3}
-              />
-            </FormField>
-          </CardContent>
-        </Card>
-
-        {/* Form Actions */}
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/leases')}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : 'Create Lease'}
-          </Button>
-        </div>
-      </form>
-    </div>
+        <FormField label="Special Conditions">
+          <Textarea
+            value={formData.specialConditions}
+            onChange={(e) => handleChange('specialConditions', e.target.value)}
+            placeholder="Any special conditions or agreements..."
+            rows={3}
+            className="resize-none"
+          />
+        </FormField>
+      </FormColumn>
+    </BaseForm>
   );
 };
 

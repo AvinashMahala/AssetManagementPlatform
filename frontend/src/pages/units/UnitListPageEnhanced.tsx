@@ -73,8 +73,8 @@ const UnitListPageEnhanced: React.FC = () => {
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Unit Management</h1>
-            <p className="text-muted-foreground">Manage and monitor all your property units</p>
+                        <h1 className="text-3xl font-bold tracking-tight">Manage Property Units</h1>
+            <p className="text-muted-foreground">Organize and track individual rental units</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">

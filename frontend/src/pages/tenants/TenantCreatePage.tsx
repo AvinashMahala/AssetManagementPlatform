@@ -14,7 +14,6 @@ const TenantCreatePage: React.FC = () => {
     <TenantFormModern
       onSubmit={handleSubmit}
       loading={loading}
-      title="Create New Tenant"
     />
   );
 };

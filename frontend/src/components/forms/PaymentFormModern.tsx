@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Calendar, DollarSign } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { FormField } from '../../components/ui/form-field';
+import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../cdc';
 import { useCreatePayment, useLeases, useTenants } from '../../hooks';
 import type { RentPaymentInput, PaymentMethodValue } from '../../types/payment';
 import { PaymentMethod } from '../../types/payment';
@@ -82,206 +77,151 @@ const PaymentFormModern: React.FC<PaymentFormModernProps> = ({
     }
   };
 
+  const handleCancel = () => {
+    navigate('/payments');
+  };
+
   return (
-    <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Payment Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Payment Details
-            </CardTitle>
-            <CardDescription>
-              Select the lease and tenant for this payment
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Lease" required>
-                <Select value={formData.leaseId} onValueChange={(value) => handleChange('leaseId', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a lease" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {leases.map(lease => (
-                      <SelectItem key={lease.id} value={lease.id}>
-                        Lease {lease.id.substring(0, 8)} - ₹{lease.monthlyRent}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.leaseId && <p className="text-sm text-red-600 mt-1">{errors.leaseId}</p>}
-              </FormField>
+    <BaseForm
+      title="Record Payment"
+      backLabel="Back to Payments"
+      onBack={() => navigate('/payments')}
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      loading={loading}
+      cancelLabel="Cancel"
+      submitLabel="Record Payment"
+    >
+      <FormColumn
+        title="Payment Details"
+        description="Select lease and tenant"
+        icon={<CreditCard className="h-5 w-5" />}
+      >
+        <FormField label="Lease" required>
+          <Select value={formData.leaseId} onValueChange={(value) => handleChange('leaseId', value)}>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Select a lease" />
+            </SelectTrigger>
+            <SelectContent>
+              {leases.map(lease => (
+                <SelectItem key={lease.id} value={lease.id}>
+                  Lease {lease.id.substring(0, 8)} - ₹{lease.monthlyRent}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.leaseId && <p className="text-sm text-red-600 mt-1">{errors.leaseId}</p>}
+        </FormField>
 
-              <FormField label="Tenant" required>
-                <Select value={formData.tenantId} onValueChange={(value) => handleChange('tenantId', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a tenant" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tenants.map(tenant => (
-                      <SelectItem key={tenant.id} value={tenant.id}>
-                        {tenant.firstName} {tenant.lastName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.tenantId && <p className="text-sm text-red-600 mt-1">{errors.tenantId}</p>}
-              </FormField>
-            </div>
-          </CardContent>
-        </Card>
+        <FormField label="Tenant" required>
+          <Select value={formData.tenantId} onValueChange={(value) => handleChange('tenantId', value)}>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Select a tenant" />
+            </SelectTrigger>
+            <SelectContent>
+              {tenants.map(tenant => (
+                <SelectItem key={tenant.id} value={tenant.id}>
+                  {tenant.firstName} {tenant.lastName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.tenantId && <p className="text-sm text-red-600 mt-1">{errors.tenantId}</p>}
+        </FormField>
+      </FormColumn>
 
-        {/* Payment Amount */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Payment Amount
-            </CardTitle>
-            <CardDescription>
-              Enter the payment amount and any late fees
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Amount (₹)" required>
-                <Input
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => handleChange('amount', Number(e.target.value))}
-                  min="0"
-                  step="0.01"
-                />
-                {errors.amount && <p className="text-sm text-red-600 mt-1">{errors.amount}</p>}
-              </FormField>
+      <FormColumn
+        title="Payment Amount"
+        description="Amount and fees"
+        icon={<DollarSign className="h-5 w-5" />}
+      >
+        <FormField label="Amount (₹)" required>
+          <Input
+            type="number"
+            value={formData.amount}
+            onChange={(e) => handleChange('amount', Number(e.target.value))}
+            min="0"
+            step="0.01"
+            className="h-10"
+          />
+          {errors.amount && <p className="text-sm text-red-600 mt-1">{errors.amount}</p>}
+        </FormField>
 
-              <FormField label="Late Fee (₹)">
-                <Input
-                  type="number"
-                  value={formData.lateFee}
-                  onChange={(e) => handleChange('lateFee', Number(e.target.value))}
-                  min="0"
-                  step="0.01"
-                />
-                {errors.lateFee && <p className="text-sm text-red-600 mt-1">{errors.lateFee}</p>}
-              </FormField>
-            </div>
-          </CardContent>
-        </Card>
+        <FormField label="Late Fee (₹)">
+          <Input
+            type="number"
+            value={formData.lateFee}
+            onChange={(e) => handleChange('lateFee', Number(e.target.value))}
+            min="0"
+            step="0.01"
+            className="h-10"
+          />
+          {errors.lateFee && <p className="text-sm text-red-600 mt-1">{errors.lateFee}</p>}
+        </FormField>
+      </FormColumn>
 
-        {/* Payment Dates */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Payment Dates
-            </CardTitle>
-            <CardDescription>
-              Set the due date and payment date
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Due Date" required>
-                <Input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => handleChange('dueDate', e.target.value)}
-                />
-                {errors.dueDate && <p className="text-sm text-red-600 mt-1">{errors.dueDate}</p>}
-              </FormField>
+      <FormColumn
+        title="Payment Information"
+        description="Dates and method"
+        icon={<Calendar className="h-5 w-5" />}
+      >
+        <FormField label="Due Date" required>
+          <Input
+            type="date"
+            value={formData.dueDate}
+            onChange={(e) => handleChange('dueDate', e.target.value)}
+            className="h-10"
+          />
+          {errors.dueDate && <p className="text-sm text-red-600 mt-1">{errors.dueDate}</p>}
+        </FormField>
 
-              <FormField label="Paid Date">
-                <Input
-                  type="date"
-                  value={formData.paidDate}
-                  onChange={(e) => handleChange('paidDate', e.target.value)}
-                />
-              </FormField>
-            </div>
-          </CardContent>
-        </Card>
+        <FormField label="Paid Date">
+          <Input
+            type="date"
+            value={formData.paidDate}
+            onChange={(e) => handleChange('paidDate', e.target.value)}
+            className="h-10"
+          />
+        </FormField>
 
-        {/* Payment Method */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Method</CardTitle>
-            <CardDescription>
-              Select the payment method and enter transaction details
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField label="Payment Method">
-                <Select
-                  value={formData.paymentMethod || ''}
-                  onValueChange={(value) => handleChange('paymentMethod', value as PaymentMethodValue)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={PaymentMethod.CASH}>Cash</SelectItem>
-                    <SelectItem value={PaymentMethod.BANK_TRANSFER}>Bank Transfer</SelectItem>
-                    <SelectItem value={PaymentMethod.UPI}>UPI</SelectItem>
-                    <SelectItem value={PaymentMethod.CHEQUE}>Cheque</SelectItem>
-                    <SelectItem value={PaymentMethod.CARD}>Card</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-
-              <FormField label="Transaction ID">
-                <Input
-                  value={formData.transactionId}
-                  onChange={(e) => handleChange('transactionId', e.target.value)}
-                  placeholder="Enter transaction reference"
-                />
-              </FormField>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Additional Notes */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Additional Notes</CardTitle>
-            <CardDescription>
-              Any additional notes or comments about this payment
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField label="Notes">
-              <Textarea
-                value={formData.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
-                placeholder="Additional notes or comments..."
-                rows={3}
-              />
-            </FormField>
-          </CardContent>
-        </Card>
-
-        {/* Form Actions */}
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/payments')}
-            disabled={loading}
+        <FormField label="Payment Method">
+          <Select
+            value={formData.paymentMethod || ''}
+            onValueChange={(value) => handleChange('paymentMethod', value as PaymentMethodValue)}
           >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? 'Recording...' : 'Record Payment'}
-          </Button>
-        </div>
-      </form>
-    </div>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Select payment method" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={PaymentMethod.CASH}>Cash</SelectItem>
+              <SelectItem value={PaymentMethod.BANK_TRANSFER}>Bank Transfer</SelectItem>
+              <SelectItem value={PaymentMethod.UPI}>UPI</SelectItem>
+              <SelectItem value={PaymentMethod.CHEQUE}>Cheque</SelectItem>
+              <SelectItem value={PaymentMethod.CARD}>Card</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
+
+        <FormField label="Transaction ID">
+          <Input
+            value={formData.transactionId}
+            onChange={(e) => handleChange('transactionId', e.target.value)}
+            placeholder="Enter transaction reference"
+            className="h-10"
+          />
+        </FormField>
+
+        <FormField label="Notes">
+          <Textarea
+            value={formData.notes}
+            onChange={(e) => handleChange('notes', e.target.value)}
+            placeholder="Additional notes or comments..."
+            rows={3}
+            className="resize-none"
+          />
+        </FormField>
+      </FormColumn>
+    </BaseForm>
   );
 };
 
