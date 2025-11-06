@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, MapPin, Briefcase } from 'lucide-react';
-import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../cdc';
+import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import type { TenantInput } from '../../types/tenant';
 
 interface TenantFormModernProps {

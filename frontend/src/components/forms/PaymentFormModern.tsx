@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Calendar, DollarSign } from 'lucide-react';
-import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../cdc';
+import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import { useCreatePayment, useLeases, useTenants } from '../../hooks';
 import type { RentPaymentInput, PaymentMethodValue } from '../../types/payment';
 import { PaymentMethod } from '../../types/payment';

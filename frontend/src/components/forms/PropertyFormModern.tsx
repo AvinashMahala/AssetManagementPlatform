@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, MapPin, Home } from 'lucide-react';
-import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField, Badge } from '../../cdc';
+import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField, Badge } from '../../componentDesignLibrary';
 import type { PropertyInput } from '../../types';
 import { PropertyType, PropertyStatus } from '../../types/property';
 
