@@ -27,6 +27,8 @@ export interface RentPayment {
   leaseId: string; // UUID reference to leases
   propertyId?: string; // UUID reference to properties (optional - not in current schema)
   tenantId: string; // UUID reference to tenants
+  unitId?: string; // UUID reference to units (added for joined queries)
+  unitNumber?: string; // Unit number (added for joined queries)
 
   // Payment details
   amount: number;

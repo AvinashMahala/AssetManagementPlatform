@@ -9,7 +9,17 @@ export class RentPaymentRepository implements IRentPaymentRepository {
 
   async findAll(): Promise<RentPayment[]> {
     try {
-      const result = await this.pool.query(`SELECT * FROM ${TABLES.RENT_PAYMENTS} ORDER BY ${COLUMNS.RENT_PAYMENTS.CREATED_AT} DESC`);
+      const result = await this.pool.query(`
+        SELECT
+          rp.*,
+          l.unit_id,
+          u.unit_number,
+          u.property_id
+        FROM ${TABLES.RENT_PAYMENTS} rp
+        LEFT JOIN ${TABLES.LEASES} l ON rp.lease_id = l.id
+        LEFT JOIN ${TABLES.UNITS} u ON l.unit_id = u.id
+        ORDER BY rp.created_at DESC
+      `);
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
       throw error;
@@ -420,13 +430,24 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       id: row.id,
       leaseId: row.lease_id,
       tenantId: row.tenant_id,
+      propertyId: row.property_id,
+      unitId: row.unit_id,
+      unitNumber: row.unit_number,
       amount: parseFloat(row.amount) || 0,
       dueDate: row.due_date,
       paidDate: row.paid_date,
       status: row.status,
       paymentMethod: row.payment_method,
+      transactionId: row.transaction_id,
+      paymentReference: row.payment_reference,
+      lateFee: row.late_fee ? parseFloat(row.late_fee) : undefined,
+      penaltyAmount: row.penalty_amount ? parseFloat(row.penalty_amount) : undefined,
+      rentAmount: row.rent_amount ? parseFloat(row.rent_amount) : undefined,
+      maintenanceCharges: row.maintenance_charges ? parseFloat(row.maintenance_charges) : undefined,
+      otherCharges: row.other_charges ? parseFloat(row.other_charges) : undefined,
       notes: row.notes,
       createdBy: row.created_by,
+      updatedBy: row.updated_by,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };

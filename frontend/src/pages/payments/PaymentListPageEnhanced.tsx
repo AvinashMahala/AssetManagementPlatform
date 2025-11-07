@@ -29,8 +29,17 @@ const PaymentListPageEnhanced: React.FC = () => {
     return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Unknown';
   };
 
-  const getLeaseInfo = (leaseId: string) => {
-    const lease = leases.find(l => l.id === leaseId);
+  const getLeaseInfo = (payment: any) => {
+    // Use unit information directly from payment if available
+    if (payment.unitId && payment.unitNumber) {
+      return {
+        unitNumber: payment.unitNumber,
+        unitId: payment.unitId
+      };
+    }
+    
+    // Fallback to looking up through lease (for backward compatibility)
+    const lease = leases.find(l => l.id === payment.leaseId);
     if (!lease) return { unitNumber: 'Unknown', unitId: '' };
     
     const unit = units.find(u => u.id === lease.unitId);
@@ -47,7 +56,7 @@ const PaymentListPageEnhanced: React.FC = () => {
 
   const filteredPayments = Array.isArray(payments) ? payments.filter(p => {
     const tenantName = getTenantName(p.tenantId);
-    const { unitNumber } = getLeaseInfo(p.leaseId);
+    const { unitNumber } = getLeaseInfo(p);
     const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'overdue' ? isOverdue(p.dueDate, p.status) : p.status === statusFilter);
@@ -276,7 +285,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                       </TableRow>
                     ) : (
                       filteredPayments.map((payment) => {
-                        const { unitNumber } = getLeaseInfo(payment.leaseId);
+                        const { unitNumber } = getLeaseInfo(payment);
                         const tenantName = getTenantName(payment.tenantId);
                         const overdue = isOverdue(payment.dueDate, payment.status);
                         

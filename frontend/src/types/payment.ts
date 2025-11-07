@@ -8,6 +8,8 @@ export interface RentPayment {
   id: string;
   leaseId: string;
   tenantId: string;
+  unitId?: string;
+  unitNumber?: string;
   amount: number;
   dueDate: string;
   paidDate?: string;

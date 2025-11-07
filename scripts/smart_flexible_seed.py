@@ -361,6 +361,57 @@ def seed_leases(conn, df):
     cursor.close()
     print_success(f"Seeded {seeded} leases")
 
+def seed_unit_tenants(conn, df):
+    """Seed unit_tenants junction table from leases"""
+    print_step("Seeding unit tenants...")
+    
+    cursor = conn.cursor()
+    seeded = 0
+    
+    # Get all leases to create unit_tenant relationships
+    cursor.execute("""
+        SELECT l.id, l.unit_id, l.tenant_id, l.start_date, l.end_date, l.status
+        FROM leases l
+        ORDER BY l.created_at
+    """)
+    
+    leases = cursor.fetchall()
+    
+    for lease in leases:
+        try:
+            lease_id, unit_id, tenant_id, start_date, end_date, status = lease
+            
+            # Check if unit_tenant relationship already exists
+            cursor.execute("""
+                SELECT id FROM unit_tenants 
+                WHERE unit_id = %s AND tenant_id = %s
+            """, (unit_id, tenant_id))
+            
+            existing = cursor.fetchone()
+            
+            if not existing:
+                # Create unit_tenant relationship
+                unit_tenant_id = str(uuid.uuid4())
+                
+                cursor.execute("""
+                    INSERT INTO unit_tenants (
+                        id, unit_id, tenant_id, move_in_date, move_out_date, 
+                        is_primary
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s
+                    )
+                """, (
+                    unit_tenant_id, unit_id, tenant_id, start_date, 
+                    end_date if status == 'completed' else None, True
+                ))
+                seeded += 1
+        
+        except Exception as e:
+            print_error(f"Error seeding unit tenant relationship: {e}")
+    
+    cursor.close()
+    print_success(f"Seeded {seeded} unit tenant relationships")
+
 def seed_rent_payments(conn, df):
     """Seed rent payments with lease FK resolution"""
     print_step("Seeding rent payments...")
@@ -538,6 +589,9 @@ def main():
         
         if 'leases' in seed_data:
             seed_leases(conn, seed_data['leases'])
+        
+        if 'unit_tenants' in seed_data:
+            seed_unit_tenants(conn, seed_data['unit_tenants'])
         
         if 'rent_payments' in seed_data:
             seed_rent_payments(conn, seed_data['rent_payments'])

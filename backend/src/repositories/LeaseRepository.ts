@@ -12,7 +12,14 @@ export class LeaseRepository implements ILeaseRepository {
 
   async findAll(): Promise<Lease[]> {
     try {
-      const result = await this.pool.query(`SELECT * FROM ${TABLES.LEASES}`);
+      const result = await this.pool.query(`
+        SELECT
+          l.*,
+          u.unit_number,
+          u.property_id as unit_property_id
+        FROM ${TABLES.LEASES} l
+        LEFT JOIN ${TABLES.UNITS} u ON l.unit_id = u.id
+      `);
       return result.rows.map(row => this.mapRowToLease(row));
     } catch (error) {
       throw new Error('Failed to fetch leases');
