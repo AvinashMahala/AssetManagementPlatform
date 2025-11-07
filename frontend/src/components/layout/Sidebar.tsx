@@ -25,8 +25,8 @@ interface NavItem {
 const navItems: NavItem[] = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { name: 'Properties', icon: Building2, path: '/properties' },
-  { name: 'Tenants', icon: Users, path: '/tenants' },
   { name: 'Units', icon: Home, path: '/units' },
+  { name: 'Tenants', icon: Users, path: '/tenants' },
   { name: 'Leases', icon: FileText, path: '/leases' },
   { name: 'Payments', icon: CreditCard, path: '/payments' },
   { name: 'Templates', icon: FileImage, path: '/templates' },
