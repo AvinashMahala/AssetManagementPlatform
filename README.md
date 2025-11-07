@@ -276,6 +276,26 @@ cp .env.example .env
 
 ### 3. Database Setup
 
+#### Quick Setup (Recommended)
+
+For the fastest setup, use the single-command pipeline:
+
+```bash
+# Complete database setup in one command (interactive)
+python3 setup_database.py
+```
+
+This runs the 3-step pipeline with confirmation before each step:
+1. 📊 **Create Excel seed data file** (asks: Continue? y/N)
+2. 🗄️ **Seed database with sample data** (asks: Continue? y/N)  
+3. ✅ **Verify database integrity** (asks: Continue? y/N)
+
+**Test Credentials:**
+- **Admin**: `admin@assetplatform.com` / `admin123`
+- **User**: `ramesh_patel@example.com` / `owner123`
+
+#### Manual Setup
+
 ```bash
 # Start PostgreSQL with Docker Compose
 docker-compose up -d postgres

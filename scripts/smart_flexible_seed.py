@@ -47,6 +47,129 @@ def print_step(msg):
 def print_info(msg):
     print(f"{YELLOW}ℹ️  {msg}{RESET}")
 
+def print_warning(msg):
+    print(f"{RED}⚠️  {msg}{RESET}")
+
+def ask_confirmation(prompt):
+    """Ask user for confirmation with y/N default"""
+    try:
+        response = input(f"{YELLOW}{prompt} (y/N): {RESET}").strip().lower()
+        return response in ['y', 'yes']
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.")
+        return False
+
+def drop_all_tables(conn):
+    """Drop all tables in the correct order (reverse dependencies)"""
+    print_step("Dropping all tables...")
+    
+    cursor = conn.cursor()
+    
+    # Drop tables in reverse dependency order
+    tables_to_drop = [
+        'meter_readings',
+        'meters', 
+        'rent_transactions',
+        'rent_payments',
+        'receipts',
+        'leases',
+        'unit_tenants',
+        'tenant_documents',
+        'units',
+        'property_template_customizations',
+        'template_preview_cache',
+        'properties',
+        'receipt_templates',
+        'tenants',
+        'recovery_codes',
+        'security_questions',
+        'password_reset_methods',
+        'phone_verification_codes',
+        'users'
+    ]
+    
+    for table in tables_to_drop:
+        try:
+            cursor.execute(f"DROP TABLE IF EXISTS {table} CASCADE")
+            print_info(f"Dropped table: {table}")
+        except Exception as e:
+            print_error(f"Error dropping table {table}: {e}")
+    
+    cursor.close()
+    print_success("All tables dropped")
+
+def create_all_tables(conn):
+    """Create all tables from schema files"""
+    print_step("Creating database schema...")
+    
+    schema_dir = 'scripts/schema'
+    if not os.path.exists(schema_dir):
+        print_error(f"Schema directory not found: {schema_dir}")
+        return False
+    
+    cursor = conn.cursor()
+    
+    # Get all SQL files in order
+    schema_files = sorted([f for f in os.listdir(schema_dir) if f.endswith('.sql')])
+    
+    for sql_file in schema_files:
+        try:
+            file_path = os.path.join(schema_dir, sql_file)
+            with open(file_path, 'r') as f:
+                sql_content = f.read()
+            
+            # Execute the SQL
+            cursor.execute(sql_content)
+            print_info(f"Executed schema: {sql_file}")
+            
+        except Exception as e:
+            print_error(f"Error executing {sql_file}: {e}")
+            cursor.close()
+            return False
+    
+    cursor.close()
+    print_success("Database schema created")
+    return True
+
+def clear_all_data(conn):
+    """Clear all data from tables (TRUNCATE with CASCADE)"""
+    print_step("Clearing all data...")
+    
+    cursor = conn.cursor()
+    
+    # Clear tables in reverse dependency order
+    tables_to_clear = [
+        'meter_readings',
+        'meters',
+        'rent_transactions', 
+        'rent_payments',
+        'receipts',
+        'leases',
+        'unit_tenants',
+        'tenant_documents',
+        'units',
+        'property_template_customizations',
+        'template_preview_cache',
+        'properties',
+        'receipt_templates',
+        'tenants',
+        'recovery_codes',
+        'security_questions',
+        'password_reset_methods',
+        'phone_verification_codes',
+        'users'
+    ]
+    
+    for table in tables_to_clear:
+        try:
+            cursor.execute(f"TRUNCATE TABLE {table} CASCADE")
+            print_info(f"Cleared data from: {table}")
+        except Exception as e:
+            print_error(f"Error clearing table {table}: {e}")
+    
+    cursor.close()
+    print_success("All data cleared")
+
 def parse_database_url(database_url):
     """Parse DATABASE_URL into connection parameters"""
     if not database_url:
@@ -153,7 +276,7 @@ def seed_users(conn, df):
             
             cursor.execute("""
                 INSERT INTO users (
-                    id, username, email, password_hash, phone, role,
+                    id, username, email, password, phone, role,
                     is_email_verified, is_phone_verified
                 ) VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s
@@ -535,15 +658,14 @@ def seed_meter_readings(conn, df):
             cursor.execute("""
                 INSERT INTO meter_readings (
                     id, meter_id, reading_date, reading_value,
-                    reading_type, notes
+                    recorded_by, notes
                 ) VALUES (
                     %s, %s, %s, %s, %s, %s
                 )
                 ON CONFLICT (id) DO NOTHING
             """, (
                 reading_id, meter_id, row['reading_date'],
-                row['reading_value'], row.get('reading_type', 'actual'),
-                row.get('notes')
+                row['reading_value'], row.get('recorded_by'), row.get('notes')
             ))
             seeded += 1
         except Exception as e:
@@ -574,39 +696,72 @@ def main():
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         print_success("Connected to database")
         
-        # Seed in order (respecting foreign key dependencies)
-        if 'users' in seed_data:
-            seed_users(conn, seed_data['users'])
+        # STEP 1: Schema Deletion
+        print_warning("⚠️  STEP 1: Schema Deletion")
+        print_warning("This will DROP ALL TABLES in the database!")
+        if not ask_confirmation("🔴 Do you want to DROP ALL TABLES?"):
+            print_info("Schema deletion skipped")
+        else:
+            drop_all_tables(conn)
         
-        if 'tenants' in seed_data:
-            seed_tenants(conn, seed_data['tenants'])
+        # STEP 2: Schema Creation
+        print_warning("⚠️  STEP 2: Schema Creation")
+        print_warning("This will CREATE ALL TABLES in the database!")
+        if not ask_confirmation("🟡 Do you want to CREATE ALL TABLES?"):
+            print_info("Schema creation skipped")
+        else:
+            if not create_all_tables(conn):
+                print_error("Schema creation failed")
+                conn.close()
+                return
         
-        if 'properties' in seed_data:
-            seed_properties(conn, seed_data['properties'])
+        # STEP 3: Data Deletion
+        print_warning("⚠️  STEP 3: Data Deletion")
+        print_warning("This will CLEAR ALL DATA from existing tables!")
+        if not ask_confirmation("🟠 Do you want to CLEAR ALL DATA?"):
+            print_info("Data deletion skipped")
+        else:
+            clear_all_data(conn)
         
-        if 'units' in seed_data:
-            seed_units(conn, seed_data['units'])
-        
-        if 'leases' in seed_data:
-            seed_leases(conn, seed_data['leases'])
-        
-        if 'unit_tenants' in seed_data:
-            seed_unit_tenants(conn, seed_data['unit_tenants'])
-        
-        if 'rent_payments' in seed_data:
-            seed_rent_payments(conn, seed_data['rent_payments'])
-        
-        if 'meters' in seed_data:
-            seed_meters(conn, seed_data['meters'])
-        
-        if 'meter_readings' in seed_data:
-            seed_meter_readings(conn, seed_data['meter_readings'])
+        # STEP 4: Data Creation/Seeding
+        print_warning("⚠️  STEP 4: Data Creation/Seeding")
+        print_warning("This will INSERT SEED DATA into the database!")
+        if not ask_confirmation("🟢 Do you want to SEED THE DATABASE?"):
+            print_info("Data seeding skipped")
+        else:
+            # Seed in order (respecting foreign key dependencies)
+            if 'users' in seed_data:
+                seed_users(conn, seed_data['users'])
+            
+            if 'tenants' in seed_data:
+                seed_tenants(conn, seed_data['tenants'])
+            
+            if 'properties' in seed_data:
+                seed_properties(conn, seed_data['properties'])
+            
+            if 'units' in seed_data:
+                seed_units(conn, seed_data['units'])
+            
+            if 'leases' in seed_data:
+                seed_leases(conn, seed_data['leases'])
+            
+            if 'unit_tenants' in seed_data:
+                seed_unit_tenants(conn, seed_data['unit_tenants'])
+            
+            if 'rent_payments' in seed_data:
+                seed_rent_payments(conn, seed_data['rent_payments'])
+            
+            if 'meters' in seed_data:
+                seed_meters(conn, seed_data['meters'])
+            
+            if 'meter_readings' in seed_data:
+                seed_meter_readings(conn, seed_data['meter_readings'])
         
         conn.close()
         
         print()
         print("=" * 70)
-        print_success("Database seeded successfully!")
+        print_success("Database operations completed!")
         print("=" * 70)
         print()
         print("🔑 Test Credentials:")
