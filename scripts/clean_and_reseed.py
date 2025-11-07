@@ -162,28 +162,30 @@ def create_schema(conn):
         """
         CREATE TABLE tenants (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            first_name VARCHAR(255) NOT NULL,
-            last_name VARCHAR(255) NOT NULL,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
             email VARCHAR(255) UNIQUE NOT NULL,
-            phone VARCHAR(20) NOT NULL,
+            phone VARCHAR(20),
+            alternate_phone VARCHAR(20),
             date_of_birth DATE,
-            gender VARCHAR(20),
-            occupation VARCHAR(255),
-            monthly_income NUMERIC(10, 2),
-            id_proof_type VARCHAR(50),
-            id_proof_number VARCHAR(100),
-            current_address_street VARCHAR(255),
-            current_address_city VARCHAR(100),
-            current_address_state VARCHAR(100),
-            current_address_pincode VARCHAR(10),
+            gender VARCHAR(10),
+            occupation VARCHAR(100),
+            company_name VARCHAR(255),
+            monthly_income DECIMAL(12, 2),
+            current_address_street VARCHAR(255) NOT NULL,
+            current_address_city VARCHAR(100) NOT NULL,
+            current_address_state VARCHAR(100) NOT NULL,
+            current_address_pincode VARCHAR(10) NOT NULL,
             permanent_address_street VARCHAR(255),
             permanent_address_city VARCHAR(100),
             permanent_address_state VARCHAR(100),
             permanent_address_pincode VARCHAR(10),
-            emergency_contact_name VARCHAR(255),
-            emergency_contact_relationship VARCHAR(100),
+            emergency_contact_name VARCHAR(100),
+            emergency_contact_relationship VARCHAR(50),
             emergency_contact_phone VARCHAR(20),
             status VARCHAR(50) DEFAULT 'active',
+            total_rentals INTEGER DEFAULT 0,
+            current_property_id UUID,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -515,30 +517,77 @@ def seed_tenants(conn):
     
     cursor = conn.cursor()
     
-    tenants = [
-        ('2c5e1f2f-835a-4e00-bd5c-4f7491fb27ff', 'Rajesh', 'Kumar', 'rajesh.kumar@example.com', '+91-9876543214', 
-         '1985-05-15', 'male', 'Software Engineer', 35000, 'active'),
-        ('f851e65f-4f59-4c67-b840-7e4b8a6407c1', 'Priya', 'Sharma', 'priya.sharma@example.com', '+91-9876543215',
-         '1990-08-20', 'female', 'Marketing Manager', 45000, 'active'),
-    ]
+    # Tenant 1 - with phone and emergency contact
+    cursor.execute("""
+        INSERT INTO tenants (
+            id, first_name, last_name, email, phone, alternate_phone,
+            date_of_birth, gender, occupation, company_name, monthly_income,
+            current_address_street, current_address_city, current_address_state, current_address_pincode,
+            permanent_address_street, permanent_address_city, permanent_address_state, permanent_address_pincode,
+            emergency_contact_name, emergency_contact_relationship, emergency_contact_phone,
+            status, total_rentals
+        ) VALUES (
+            '2c5e1f2f-835a-4e00-bd5c-4f7491fb27ff', 'Rajesh', 'Kumar', 'rajesh.kumar@example.com', 
+            '+919876543214', NULL,
+            '1985-05-15', 'male', 'Software Engineer', 'Tech Solutions Inc', 35000.00,
+            '123 Current Street, Apartment 4B', 'Mumbai', 'Maharashtra', '400001',
+            '456 Permanent Street', 'Mumbai', 'Maharashtra', '400002',
+            'Priya Kumar', 'Spouse', '+919876543215',
+            'active', 1
+        )
+    """)
     
-    for tenant in tenants:
-        cursor.execute("""
-            INSERT INTO tenants (
-                id, first_name, last_name, email, phone, date_of_birth, gender, occupation, monthly_income, status,
-                current_address_street, current_address_city, current_address_state, current_address_pincode,
-                permanent_address_street, permanent_address_city, permanent_address_state, permanent_address_pincode,
-                emergency_contact_name, emergency_contact_relationship, emergency_contact_phone
-            ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                '123 Current St', 'Mumbai', 'Maharashtra', '400001',
-                '456 Permanent St', 'Mumbai', 'Maharashtra', '400002',
-                'Emergency Contact', 'Family', '+91-9999999999'
-            )
-        """, tenant)
+    # Tenant 2 - with phone but no emergency contact
+    cursor.execute("""
+        INSERT INTO tenants (
+            id, first_name, last_name, email, phone,
+            date_of_birth, gender, occupation, company_name, monthly_income,
+            current_address_street, current_address_city, current_address_state, current_address_pincode,
+            status, total_rentals
+        ) VALUES (
+            'f851e65f-4f59-4c67-b840-7e4b8a6407c1', 'Priya', 'Sharma', 'priya.sharma@example.com', 
+            '+919876543216',
+            '1990-08-20', 'female', 'Marketing Manager', 'Brand Corp', 45000.00,
+            '789 MG Road, Suite 12', 'Bangalore', 'Karnataka', '560001',
+            'active', 0
+        )
+    """)
+    
+    # Tenant 3 - minimal required fields only (no phone, no emergency contact)
+    cursor.execute("""
+        INSERT INTO tenants (
+            id, first_name, last_name, email,
+            current_address_street, current_address_city, current_address_state, current_address_pincode,
+            status, total_rentals
+        ) VALUES (
+            'a3b4c5d6-e7f8-9012-3456-789012345678', 'Amit', 'Patel', 'amit.patel@example.com',
+            '321 Park Avenue', 'Pune', 'Maharashtra', '411001',
+            'active', 0
+        )
+    """)
+    
+    # Tenant 4 - with all fields including permanent address
+    cursor.execute("""
+        INSERT INTO tenants (
+            id, first_name, last_name, email, phone, alternate_phone,
+            date_of_birth, gender, occupation, company_name, monthly_income,
+            current_address_street, current_address_city, current_address_state, current_address_pincode,
+            permanent_address_street, permanent_address_city, permanent_address_state, permanent_address_pincode,
+            emergency_contact_name, emergency_contact_relationship, emergency_contact_phone,
+            status, total_rentals
+        ) VALUES (
+            'b4c5d6e7-f8a9-0123-4567-890123456789', 'Sneha', 'Reddy', 'sneha.reddy@example.com',
+            '+919876543217', '+919876543218',
+            '1988-03-12', 'female', 'Business Analyst', 'Finance Corp Ltd', 55000.00,
+            '101 Richmond Road', 'Bangalore', 'Karnataka', '560025',
+            '202 Church Street', 'Bangalore', 'Karnataka', '560001',
+            'Ravi Reddy', 'Brother', '+919876543219',
+            'active', 2
+        )
+    """)
     
     cursor.close()
-    print_success(f"Seeded {len(tenants)} tenants")
+    print_success("Seeded 4 tenants with various field combinations")
 
 def seed_properties_and_units(conn):
     """Seed properties and units"""
@@ -611,7 +660,7 @@ def seed_leases(conn):
     
     cursor = conn.cursor()
     
-    # Lease 1
+    # Lease 1 - Tenant 1 (Rajesh Kumar) - active lease for 2BHK Apartment (total_rentals: 1)
     lease1_id = '15fcf874-719f-4754-a206-f0e38429e741'
     cursor.execute("""
         INSERT INTO leases (
@@ -623,20 +672,32 @@ def seed_leases(conn):
         )
     """, (lease1_id,))
     
-    # Lease 2
+    # Lease 2 - Tenant 4 (Sneha Reddy) - active lease for Villa (total_rentals: 2, currently active)
     lease2_id = '40f36bed-1bfd-46c0-98f1-d8fee56e800b'
     cursor.execute("""
         INSERT INTO leases (
             id, property_id, unit_id, tenant_id,
             start_date, end_date, monthly_rent, security_deposit, status, signed_at
         ) VALUES (
-            %s, '65fb1f2c-c4fe-4bbb-879f-2056ed1d63f9', 'b2c3d4e5-f6a7-8901-bcde-f12345678901', 'f851e65f-4f59-4c67-b840-7e4b8a6407c1',
+            %s, '65fb1f2c-c4fe-4bbb-879f-2056ed1d63f9', 'b2c3d4e5-f6a7-8901-bcde-f12345678901', 'b4c5d6e7-f8a9-0123-4567-890123456789',
             '2024-02-01', '2025-01-31', 78000, 234000, 'active', '2024-01-25'
         )
     """, (lease2_id,))
     
+    # Lease 3 - Tenant 4 (Sneha Reddy) - completed previous lease (total_rentals: 2, previous rental)
+    lease3_id = 'c5d6e7f8-a9b0-1234-5678-901234567890'
+    cursor.execute("""
+        INSERT INTO leases (
+            id, property_id, unit_id, tenant_id,
+            start_date, end_date, monthly_rent, security_deposit, status, signed_at
+        ) VALUES (
+            %s, '030912e1-e4f7-48b6-9e38-334e852c4374', 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'b4c5d6e7-f8a9-0123-4567-890123456789',
+            '2023-01-01', '2023-12-31', 38000, 114000, 'completed', '2022-12-20'
+        )
+    """, (lease3_id,))
+    
     cursor.close()
-    print_success("Seeded leases")
+    print_success("Seeded 3 leases (2 active, 1 completed)")
 
 def seed_rent_payments(conn):
     """Seed rent payments"""
@@ -644,22 +705,41 @@ def seed_rent_payments(conn):
     
     cursor = conn.cursor()
     
-    payments = [
-        ('5739859e-8f6a-4b79-9f52-d7027f674b3e', '40f36bed-1bfd-46c0-98f1-d8fee56e800b', '65fb1f2c-c4fe-4bbb-879f-2056ed1d63f9',
-         'f851e65f-4f59-4c67-b840-7e4b8a6407c1', 78000, '2024-03-01', '2024-02-28', 'paid', 'check', 'd9d19624-026c-4b54-bd1b-9eec092630ca'),
-        ('6849960f-9a0a-5c80-a063-e8137a785c4f', '15fcf874-719f-4754-a206-f0e38429e741', '030912e1-e4f7-48b6-9e38-334e852c4374',
-         '2c5e1f2f-835a-4e00-bd5c-4f7491fb27ff', 42000, '2024-02-15', '2024-02-14', 'paid', 'online', 'd9d19624-026c-4b54-bd1b-9eec092630ca'),
-    ]
+    # Payment 1 - Tenant 1 (Rajesh Kumar) - current lease payment
+    cursor.execute("""
+        INSERT INTO rent_payments (
+            id, lease_id, property_id, tenant_id, amount, due_date, paid_date, status, payment_method, created_by, notes
+        ) VALUES (
+            '6849960f-9a0a-5c80-a063-e8137a785c4f', '15fcf874-719f-4754-a206-f0e38429e741', '030912e1-e4f7-48b6-9e38-334e852c4374',
+            '2c5e1f2f-835a-4e00-bd5c-4f7491fb27ff', 42000, '2024-02-15', '2024-02-14', 'paid', 'online', 'd9d19624-026c-4b54-bd1b-9eec092630ca',
+            'Online rent payment for 2BHK Apartment'
+        )
+    """)
     
-    for payment in payments:
-        cursor.execute("""
-            INSERT INTO rent_payments (
-                id, lease_id, property_id, tenant_id, amount, due_date, paid_date, status, payment_method, created_by, notes
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (*payment, f'{payment[8].capitalize()} rent payment'))
+    # Payment 2 - Tenant 4 (Sneha Reddy) - current villa lease payment
+    cursor.execute("""
+        INSERT INTO rent_payments (
+            id, lease_id, property_id, tenant_id, amount, due_date, paid_date, status, payment_method, created_by, notes
+        ) VALUES (
+            '5739859e-8f6a-4b79-9f52-d7027f674b3e', '40f36bed-1bfd-46c0-98f1-d8fee56e800b', '65fb1f2c-c4fe-4bbb-879f-2056ed1d63f9',
+            'b4c5d6e7-f8a9-0123-4567-890123456789', 78000, '2024-03-01', '2024-02-28', 'paid', 'check', 'd9d19624-026c-4b54-bd1b-9eec092630ca',
+            'Check rent payment for Luxury Villa'
+        )
+    """)
+    
+    # Payment 3 - Tenant 4 (Sneha Reddy) - previous completed lease payment
+    cursor.execute("""
+        INSERT INTO rent_payments (
+            id, lease_id, property_id, tenant_id, amount, due_date, paid_date, status, payment_method, created_by, notes
+        ) VALUES (
+            'd6e7f8a9-b0c1-2345-6789-012345678901', 'c5d6e7f8-a9b0-1234-5678-901234567890', '030912e1-e4f7-48b6-9e38-334e852c4374',
+            'b4c5d6e7-f8a9-0123-4567-890123456789', 38000, '2023-12-01', '2023-11-28', 'paid', 'online', 'd9d19624-026c-4b54-bd1b-9eec092630ca',
+            'Online rent payment for previous lease'
+        )
+    """)
     
     cursor.close()
-    print_success(f"Seeded {len(payments)} rent payments")
+    print_success("Seeded 3 rent payments")
 
 def main():
     """Main function"""

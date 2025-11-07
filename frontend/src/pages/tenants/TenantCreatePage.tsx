@@ -14,8 +14,26 @@ const TenantCreatePage: React.FC = () => {
       const payload: TenantInput = {
         ...data,
         dateOfBirth: data.dateOfBirth && data.dateOfBirth !== '' ? data.dateOfBirth : undefined,
-        phone: data.phone && data.phone.trim() !== '' ? data.phone : undefined,
-        alternatePhone: data.alternatePhone && data.alternatePhone.trim() !== '' ? data.alternatePhone : undefined,
+        phone: data.phone && data.phone.trim() !== '' ? data.phone.trim() : undefined,
+        alternatePhone: data.alternatePhone && data.alternatePhone.trim() !== '' ? data.alternatePhone.trim() : undefined,
+        occupation: data.occupation && data.occupation.trim() !== '' ? data.occupation : undefined,
+        companyName: data.companyName && data.companyName.trim() !== '' ? data.companyName : undefined,
+        monthlyIncome: data.monthlyIncome !== undefined && data.monthlyIncome >= 0 ? data.monthlyIncome : undefined,
+        // Remove permanentAddress if not provided
+        permanentAddress: data.permanentAddress && 
+          data.permanentAddress.street && 
+          data.permanentAddress.city && 
+          data.permanentAddress.state && 
+          data.permanentAddress.pincode 
+          ? data.permanentAddress 
+          : undefined,
+        // Remove emergencyContact if not provided
+        emergencyContact: data.emergencyContact && 
+          data.emergencyContact.name && 
+          data.emergencyContact.relationship && 
+          data.emergencyContact.phone 
+          ? data.emergencyContact 
+          : undefined,
       };
 
       const response = await createTenant(payload);

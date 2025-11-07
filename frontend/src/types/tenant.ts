@@ -14,8 +14,11 @@ export interface Tenant {
   companyName?: string;
   monthlyIncome?: number;
   currentAddress: { street: string; city: string; state: string; pincode: string };
-  emergencyContact: { name: string; relationship: string; phone: string };
+  permanentAddress?: { street: string; city: string; state: string; pincode: string };
+  emergencyContact?: { name: string; relationship: string; phone: string };
   status: TenantStatusValue;
+  totalRentals?: number;
+  currentPropertyId?: string;
   preferredLocations?: string[];
   notes?: string;
   createdAt: string;
@@ -34,8 +37,11 @@ export interface TenantInput {
   companyName?: string;
   monthlyIncome?: number;
   currentAddress: { street: string; city: string; state: string; pincode: string };
-  emergencyContact: { name: string; relationship: string; phone: string };
+  permanentAddress?: { street: string; city: string; state: string; pincode: string };
+  emergencyContact?: { name: string; relationship: string; phone: string };
   status?: TenantStatusValue;
+  totalRentals?: number;
+  currentPropertyId?: string;
   preferredLocations?: string[];
   notes?: string;
 }

@@ -25,7 +25,7 @@ export const VALIDATION = {
       STREET_MAX_LENGTH: 255,
       CITY_MAX_LENGTH: 100,
       STATE_MAX_LENGTH: 100,
-      PINCODE_PATTERN: /^\d{6}$/,
+      PINCODE_PATTERN: /^\d{5,6}$/,
       LANDMARK_MAX_LENGTH: 255,
     },
     AMENITIES: {
@@ -179,7 +179,7 @@ export const ERROR_MESSAGES = {
     STATE_REQUIRED: 'State is required',
     STATE_TOO_LONG: 'State must be less than 100 characters',
     PINCODE_REQUIRED: 'Pincode is required',
-    PINCODE_INVALID: 'Pincode must be a valid 6-digit number',
+    PINCODE_INVALID: 'Pincode must be a valid 5 or 6-digit number',
     LANDMARK_TOO_LONG: 'Landmark must be less than 255 characters',
     OWNER_REQUIRED: 'Property owner is required',
     INVALID_ID: 'Invalid property ID',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Briefcase } from 'lucide-react';
+import { User, MapPin, Briefcase, Home } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import type { TenantInput } from '../../types/tenant';
 
@@ -33,15 +33,29 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
       state: initialData?.currentAddress?.state || '',
       pincode: initialData?.currentAddress?.pincode || '',
     },
-    emergencyContact: {
-      name: initialData?.emergencyContact?.name || '',
-      relationship: initialData?.emergencyContact?.relationship || '',
-      phone: initialData?.emergencyContact?.phone || '',
+    permanentAddress: initialData?.permanentAddress ? {
+      street: initialData.permanentAddress.street || '',
+      city: initialData.permanentAddress.city || '',
+      state: initialData.permanentAddress.state || '',
+      pincode: initialData.permanentAddress.pincode || '',
+    } : undefined,
+    emergencyContact: initialData?.emergencyContact ? {
+      name: initialData.emergencyContact.name || '',
+      relationship: initialData.emergencyContact.relationship || '',
+      phone: initialData.emergencyContact.phone || '',
+    } : {
+      name: '',
+      relationship: '',
+      phone: '',
     },
     status: initialData?.status || 'active',
     preferredLocations: initialData?.preferredLocations || [],
     notes: initialData?.notes || '',
   });
+
+  const [showPermanentAddress, setShowPermanentAddress] = useState(
+    !!initialData?.permanentAddress
+  );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -63,19 +77,138 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    // Validate first name
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    } else if (formData.firstName.length > 100) {
+      newErrors.firstName = 'First name must be less than 100 characters';
+    }
 
-    if (!formData.currentAddress.street.trim()) newErrors['currentAddress.street'] = 'Street is required';
-    if (!formData.currentAddress.city.trim()) newErrors['currentAddress.city'] = 'City is required';
-    if (!formData.currentAddress.state.trim()) newErrors['currentAddress.state'] = 'State is required';
-    if (!formData.currentAddress.pincode.trim()) newErrors['currentAddress.pincode'] = 'Pincode is required';
+    // Validate last name
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    } else if (formData.lastName.length > 100) {
+      newErrors.lastName = 'Last name must be less than 100 characters';
+    }
 
-    if (!formData.emergencyContact.name.trim()) newErrors['emergencyContact.name'] = 'Emergency contact name is required';
-    if (!formData.emergencyContact.relationship.trim()) newErrors['emergencyContact.relationship'] = 'Relationship is required';
-    if (!formData.emergencyContact.phone.trim()) newErrors['emergencyContact.phone'] = 'Emergency phone is required';
+    // Validate email
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (formData.email.length > 255) {
+      newErrors.email = 'Email must be less than 255 characters';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Invalid email format';
+    }
+
+    // Validate phone (optional but must be valid if provided)
+    if (formData.phone && formData.phone.trim()) {
+      const phonePattern = /^\+?[1-9]\d{1,14}$/;
+      if (!phonePattern.test(formData.phone.replace(/[-\s]/g, ''))) {
+        newErrors.phone = 'Invalid phone number format. Use international format (e.g., +1234567890)';
+      }
+    }
+
+    // Validate alternate phone (optional but must be valid if provided)
+    if (formData.alternatePhone && formData.alternatePhone.trim()) {
+      const phonePattern = /^\+?[1-9]\d{1,14}$/;
+      if (!phonePattern.test(formData.alternatePhone.replace(/[-\s]/g, ''))) {
+        newErrors.alternatePhone = 'Invalid alternate phone format. Use international format';
+      }
+    }
+
+    // Validate monthly income (must be non-negative)
+    if (formData.monthlyIncome !== undefined && formData.monthlyIncome < 0) {
+      newErrors.monthlyIncome = 'Monthly income cannot be negative';
+    }
+
+    // Validate current address
+    if (!formData.currentAddress.street.trim()) {
+      newErrors['currentAddress.street'] = 'Street address is required';
+    } else if (formData.currentAddress.street.length > 255) {
+      newErrors['currentAddress.street'] = 'Street address must be less than 255 characters';
+    }
+
+    if (!formData.currentAddress.city.trim()) {
+      newErrors['currentAddress.city'] = 'City is required';
+    } else if (formData.currentAddress.city.length > 100) {
+      newErrors['currentAddress.city'] = 'City must be less than 100 characters';
+    }
+
+    if (!formData.currentAddress.state.trim()) {
+      newErrors['currentAddress.state'] = 'State is required';
+    } else if (formData.currentAddress.state.length > 100) {
+      newErrors['currentAddress.state'] = 'State must be less than 100 characters';
+    }
+
+    if (!formData.currentAddress.pincode.trim()) {
+      newErrors['currentAddress.pincode'] = 'Pincode is required';
+    } else if (!/^\d{5,6}$/.test(formData.currentAddress.pincode)) {
+      newErrors['currentAddress.pincode'] = 'Pincode must be a valid 5 or 6-digit number';
+    }
+
+    // Validate permanent address (optional but must be complete if any field is filled)
+    if (formData.permanentAddress) {
+      const hasAnyPermanentField = 
+        formData.permanentAddress.street?.trim() ||
+        formData.permanentAddress.city?.trim() ||
+        formData.permanentAddress.state?.trim() ||
+        formData.permanentAddress.pincode?.trim();
+
+      if (hasAnyPermanentField) {
+        if (!formData.permanentAddress.street?.trim()) {
+          newErrors['permanentAddress.street'] = 'Street address is required';
+        } else if (formData.permanentAddress.street.length > 255) {
+          newErrors['permanentAddress.street'] = 'Street address must be less than 255 characters';
+        }
+
+        if (!formData.permanentAddress.city?.trim()) {
+          newErrors['permanentAddress.city'] = 'City is required';
+        } else if (formData.permanentAddress.city.length > 100) {
+          newErrors['permanentAddress.city'] = 'City must be less than 100 characters';
+        }
+
+        if (!formData.permanentAddress.state?.trim()) {
+          newErrors['permanentAddress.state'] = 'State is required';
+        } else if (formData.permanentAddress.state.length > 100) {
+          newErrors['permanentAddress.state'] = 'State must be less than 100 characters';
+        }
+
+        if (!formData.permanentAddress.pincode?.trim()) {
+          newErrors['permanentAddress.pincode'] = 'Pincode is required';
+        } else if (!/^\d{5,6}$/.test(formData.permanentAddress.pincode)) {
+          newErrors['permanentAddress.pincode'] = 'Pincode must be a valid 5 or 6-digit number';
+        }
+      }
+    }
+
+    // Validate emergency contact (optional but must be complete if any field is filled)
+    const hasAnyEmergencyField = 
+      formData.emergencyContact?.name?.trim() ||
+      formData.emergencyContact?.relationship?.trim() ||
+      formData.emergencyContact?.phone?.trim();
+
+    if (hasAnyEmergencyField) {
+      if (!formData.emergencyContact?.name?.trim()) {
+        newErrors['emergencyContact.name'] = 'Emergency contact name is required';
+      } else if (formData.emergencyContact.name.length > 255) {
+        newErrors['emergencyContact.name'] = 'Name must be less than 255 characters';
+      }
+
+      if (!formData.emergencyContact?.relationship?.trim()) {
+        newErrors['emergencyContact.relationship'] = 'Relationship is required';
+      } else if (formData.emergencyContact.relationship.length > 100) {
+        newErrors['emergencyContact.relationship'] = 'Relationship must be less than 100 characters';
+      }
+
+      if (!formData.emergencyContact?.phone?.trim()) {
+        newErrors['emergencyContact.phone'] = 'Emergency contact phone is required';
+      } else {
+        const phonePattern = /^\+?[1-9]\d{1,14}$/;
+        if (!phonePattern.test(formData.emergencyContact.phone.replace(/[-\s]/g, ''))) {
+          newErrors['emergencyContact.phone'] = 'Invalid phone format. Use international format';
+        }
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -94,14 +227,14 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
 
   return (
     <BaseForm
-      title="Create Tenant"
+      title={initialData ? "Edit Tenant" : "Create Tenant"}
       backLabel="Back to Tenants"
-      onBack={() => navigate('/tenants')}
+      onBack={() => navigate(initialData ? `/tenants/${(initialData as any).id}` : '/tenants')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}
       cancelLabel="Cancel"
-      submitLabel="Create Tenant"
+      submitLabel={initialData ? "Update Tenant" : "Create Tenant"}
     >
       <FormColumn
         title="Basic Information"
@@ -143,16 +276,23 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
           <Input
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="Enter phone number"
+            error={errors.phone}
+            placeholder="+1234567890 (international format)"
             className="h-10"
           />
+          {!errors.phone && (
+            <p className="text-xs text-gray-500 mt-1">
+              Use international format (e.g., +1234567890)
+            </p>
+          )}
         </FormField>
 
         <FormField label="Alternate Phone">
           <Input
             value={formData.alternatePhone}
             onChange={(e) => handleChange('alternatePhone', e.target.value)}
-            placeholder="Enter alternate phone"
+            error={errors.alternatePhone}
+            placeholder="+0987654321 (international format)"
             className="h-10"
           />
         </FormField>
@@ -223,10 +363,101 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
             value={formData.currentAddress.pincode}
             onChange={(e) => handleNestedChange('currentAddress', 'pincode', e.target.value)}
             error={errors['currentAddress.pincode']}
-            placeholder="Enter pincode"
+            placeholder="12345 or 123456"
+            maxLength={6}
             className="h-10"
           />
+          {!errors['currentAddress.pincode'] && (
+            <p className="text-xs text-gray-500 mt-1">
+              Enter 5 or 6 digit pincode
+            </p>
+          )}
         </FormField>
+      </FormColumn>
+
+      {/* Permanent Address (Optional) */}
+      <FormColumn
+        title="Permanent Address (Optional)"
+        description="Different from current address"
+        icon={<MapPin className="h-5 w-5" />}
+      >
+        <div className="mb-4">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showPermanentAddress}
+              onChange={(e) => {
+                setShowPermanentAddress(e.target.checked);
+                if (!e.target.checked) {
+                  setFormData(prev => ({ ...prev, permanentAddress: undefined }));
+                  // Clear permanent address errors
+                  setErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors['permanentAddress.street'];
+                    delete newErrors['permanentAddress.city'];
+                    delete newErrors['permanentAddress.state'];
+                    delete newErrors['permanentAddress.pincode'];
+                    return newErrors;
+                  });
+                } else {
+                  setFormData(prev => ({
+                    ...prev,
+                    permanentAddress: { street: '', city: '', state: '', pincode: '' }
+                  }));
+                }
+              }}
+              className="h-4 w-4 text-blue-600 rounded"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Add permanent address (if different from current)
+            </span>
+          </label>
+        </div>
+
+        {showPermanentAddress && (
+          <>
+            <FormField label="Street Address">
+              <Input
+                value={formData.permanentAddress?.street || ''}
+                onChange={(e) => handleNestedChange('permanentAddress', 'street', e.target.value)}
+                error={errors['permanentAddress.street']}
+                placeholder="Enter street address"
+                className="h-10"
+              />
+            </FormField>
+
+            <FormField label="City">
+              <Input
+                value={formData.permanentAddress?.city || ''}
+                onChange={(e) => handleNestedChange('permanentAddress', 'city', e.target.value)}
+                error={errors['permanentAddress.city']}
+                placeholder="Enter city"
+                className="h-10"
+              />
+            </FormField>
+
+            <FormField label="State">
+              <Input
+                value={formData.permanentAddress?.state || ''}
+                onChange={(e) => handleNestedChange('permanentAddress', 'state', e.target.value)}
+                error={errors['permanentAddress.state']}
+                placeholder="Enter state"
+                className="h-10"
+              />
+            </FormField>
+
+            <FormField label="Pincode">
+              <Input
+                value={formData.permanentAddress?.pincode || ''}
+                onChange={(e) => handleNestedChange('permanentAddress', 'pincode', e.target.value)}
+                error={errors['permanentAddress.pincode']}
+                placeholder="12345 or 123456"
+                maxLength={6}
+                className="h-10"
+              />
+            </FormField>
+          </>
+        )}
       </FormColumn>
 
       <FormColumn
@@ -262,17 +493,19 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
                 e.target.value === '' ? undefined : Number(e.target.value)
               )
             }
+            error={errors.monthlyIncome}
             placeholder="Enter monthly income"
+            min="0"
             className="h-10"
           />
         </FormField>
 
         <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Emergency Contact</h4>
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Emergency Contact (Optional)</h4>
 
-          <FormField label="Name" required>
+          <FormField label="Name">
             <Input
-              value={formData.emergencyContact.name}
+              value={formData.emergencyContact?.name || ''}
               onChange={(e) => handleNestedChange('emergencyContact', 'name', e.target.value)}
               error={errors['emergencyContact.name']}
               placeholder="Contact name"
@@ -280,9 +513,9 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
             />
           </FormField>
 
-          <FormField label="Relationship" required>
+          <FormField label="Relationship">
             <Input
-              value={formData.emergencyContact.relationship}
+              value={formData.emergencyContact?.relationship || ''}
               onChange={(e) => handleNestedChange('emergencyContact', 'relationship', e.target.value)}
               error={errors['emergencyContact.relationship']}
               placeholder="Relationship"
@@ -290,9 +523,9 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
             />
           </FormField>
 
-          <FormField label="Phone" required>
+          <FormField label="Phone">
             <Input
-              value={formData.emergencyContact.phone}
+              value={formData.emergencyContact?.phone || ''}
               onChange={(e) => handleNestedChange('emergencyContact', 'phone', e.target.value)}
               error={errors['emergencyContact.phone']}
               placeholder="Phone number"

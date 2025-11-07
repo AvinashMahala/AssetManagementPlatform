@@ -142,23 +142,36 @@ const TenantDetailPage: React.FC = () => {
             </address>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Emergency Contact</h2>
-            <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Name</dt>
-                <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Relationship</dt>
-                <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.relationship}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.phone}</dd>
-              </div>
-            </dl>
-          </Card>
+          {tenant.permanentAddress && (
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Permanent Address</h2>
+              <address className="not-italic text-sm text-gray-900">
+                {tenant.permanentAddress.street}
+                <br />
+                {tenant.permanentAddress.city}, {tenant.permanentAddress.state} {tenant.permanentAddress.pincode}
+              </address>
+            </Card>
+          )}
+
+          {tenant.emergencyContact && (
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Emergency Contact</h2>
+              <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Name</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Relationship</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.relationship}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.phone}</dd>
+                </div>
+              </dl>
+            </Card>
+          )}
 
           {tenant.notes && (
             <Card className="p-6">
