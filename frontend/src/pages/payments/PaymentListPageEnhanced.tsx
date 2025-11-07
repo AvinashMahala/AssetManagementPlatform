@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage } from 'lucide-react';
+import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Pagination } from '../../components/ui/pagination';
 import { AppLayout } from '../../components/layout';
 import { usePayments, useTenants, useLeases, useUnits } from '../../hooks';
-import { format } from 'date-fns';
+import { format, isWithinInterval } from 'date-fns';
 import type { Tenant } from '../../types/tenant';
 import type { Lease } from '../../types/lease';
 import type { Unit } from '../../types/unit';
@@ -21,7 +21,17 @@ const PaymentListPageEnhanced: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState<'dueDate' | 'amount' | 'status' | 'tenant'>('dueDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  
+  // Advanced filters
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateRange, setDateRange] = useState<{start?: string, end?: string}>({});
+  const [amountRange, setAmountRange] = useState<{min?: number, max?: number}>({});
+  const [selectedUnit, setSelectedUnit] = useState<string>('all');
+  const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  
   const { payments, loading } = usePayments();
   const { tenants } = useTenants();
   const { leases } = useLeases();
@@ -58,15 +68,62 @@ const PaymentListPageEnhanced: React.FC = () => {
     return new Date(dueDate) < new Date();
   };
 
-  const filteredPayments = Array.isArray(payments) ? payments.filter(p => {
-    const tenantName = getTenantName(p.tenantId);
-    const { unitNumber } = getLeaseInfo(p);
-    const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || 
-      (statusFilter === 'overdue' ? isOverdue(p.dueDate, p.status) : p.status === statusFilter);
-    const matchesMethod = paymentMethodFilter === 'all' || p.paymentMethod === paymentMethodFilter;
-    return matchesSearch && matchesStatus && matchesMethod;
-  }) : [];
+  const filteredPayments = useMemo(() => {
+    if (!Array.isArray(payments)) return [];
+    
+    let filtered = payments.filter(p => {
+      const tenantName = getTenantName(p.tenantId);
+      const { unitNumber } = getLeaseInfo(p);
+      const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || 
+        (statusFilter === 'overdue' ? isOverdue(p.dueDate, p.status) : p.status === statusFilter);
+      const matchesMethod = paymentMethodFilter === 'all' || p.paymentMethod === paymentMethodFilter;
+      
+      // Advanced filters
+      const matchesDateRange = (!dateRange.start || !dateRange.end) || 
+        isWithinInterval(new Date(p.dueDate), { start: new Date(dateRange.start), end: new Date(dateRange.end) });
+      const matchesAmountRange = (!amountRange.min || p.amount >= amountRange.min) && 
+        (!amountRange.max || p.amount <= amountRange.max);
+      const matchesUnit = selectedUnit === 'all' || p.unitId === selectedUnit;
+      const matchesTenant = selectedTenant === 'all' || p.tenantId === selectedTenant;
+      
+      return matchesSearch && matchesStatus && matchesMethod && matchesDateRange && matchesAmountRange && matchesUnit && matchesTenant;
+    });
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case 'dueDate':
+          aValue = new Date(a.dueDate).getTime();
+          bValue = new Date(b.dueDate).getTime();
+          break;
+        case 'amount':
+          aValue = a.amount;
+          bValue = b.amount;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'tenant':
+          aValue = getTenantName(a.tenantId);
+          bValue = getTenantName(b.tenantId);
+          break;
+        default:
+          return 0;
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  }, [payments, search, statusFilter, paymentMethodFilter, dateRange, amountRange, selectedUnit, selectedTenant, sortBy, sortOrder]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
@@ -74,6 +131,65 @@ const PaymentListPageEnhanced: React.FC = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearch('');
+    setStatusFilter('all');
+    setPaymentMethodFilter('all');
+    setDateRange({});
+    setAmountRange({});
+    setSelectedUnit('all');
+    setSelectedTenant('all');
+    setCurrentPage(1);
+  };
+
+  // Get active filters for display
+  const getActiveFilters = () => {
+    const filters = [];
+    if (search) filters.push({ key: 'search', label: `Search: "${search}"`, value: 'search' });
+    if (statusFilter !== 'all') filters.push({ key: 'status', label: `Status: ${statusFilter}`, value: statusFilter });
+    if (paymentMethodFilter !== 'all') filters.push({ key: 'method', label: `Method: ${paymentMethodFilter}`, value: paymentMethodFilter });
+    if (dateRange.start || dateRange.end) filters.push({ key: 'date', label: `Date: ${dateRange.start || '...'} - ${dateRange.end || '...'}` });
+    if (amountRange.min || amountRange.max) filters.push({ key: 'amount', label: `Amount: ₹${amountRange.min || 0} - ₹${amountRange.max || '∞'}` });
+    if (selectedUnit !== 'all') {
+      const unit = units.find(u => u.id === selectedUnit);
+      filters.push({ key: 'unit', label: `Unit: ${unit?.unitNumber || selectedUnit}` });
+    }
+    if (selectedTenant !== 'all') {
+      const tenant = tenants.find(t => t.id === selectedTenant);
+      filters.push({ key: 'tenant', label: `Tenant: ${tenant ? `${tenant.firstName} ${tenant.lastName}` : selectedTenant}` });
+    }
+    return filters;
+  };
+
+  // Remove specific filter
+  const removeFilter = (filterKey: string) => {
+    switch (filterKey) {
+      case 'search':
+        setSearch('');
+        break;
+      case 'status':
+        setStatusFilter('all');
+        break;
+      case 'method':
+        setPaymentMethodFilter('all');
+        break;
+      case 'date':
+        setDateRange({});
+        break;
+      case 'amount':
+        setAmountRange({});
+        break;
+      case 'unit':
+        setSelectedUnit('all');
+        break;
+      case 'tenant':
+        setSelectedTenant('all');
+        break;
+    }
+    setCurrentPage(1);
+  };
 
   const totalCollected = Array.isArray(payments) ? payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0) : 0;
   const paidCount = Array.isArray(payments) ? payments.filter(p => p.status === 'paid').length : 0;
@@ -130,6 +246,30 @@ const PaymentListPageEnhanced: React.FC = () => {
     { value: 'bank_transfer', label: 'Bank Transfer' },
     { value: 'upi', label: 'UPI' },
     { value: 'credit_card', label: 'Credit Card' },
+  ];
+
+  const unitOptions = [
+    { value: 'all', label: 'All Units' },
+    ...units.map(unit => ({ value: unit.id, label: unit.unitNumber }))
+  ];
+
+  const tenantOptions = [
+    { value: 'all', label: 'All Tenants' },
+    ...tenants.map(tenant => ({ value: tenant.id, label: `${tenant.firstName} ${tenant.lastName}` }))
+  ];
+
+  const sortOptions = [
+    { value: 'dueDate', label: 'Due Date' },
+    { value: 'amount', label: 'Amount' },
+    { value: 'status', label: 'Status' },
+    { value: 'tenant', label: 'Tenant' },
+  ];
+
+  const itemsPerPageOptions = [
+    { value: 10, label: '10 per page' },
+    { value: 25, label: '25 per page' },
+    { value: 50, label: '50 per page' },
+    { value: 100, label: '100 per page' },
   ];
 
   const getStatusVariant = (payment: any): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -227,48 +367,200 @@ const PaymentListPageEnhanced: React.FC = () => {
         {/* Filters and Search */}
         <Card>
           <CardHeader>
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search by tenant name, unit..." 
-                  value={search} 
-                  onChange={(e) => setSearch(e.target.value)} 
-                  className="pl-9"
-                />
+            <div className="flex flex-col space-y-4">
+              {/* Active Filters */}
+              {getActiveFilters().length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
+                  {getActiveFilters().map((filter) => (
+                    <Badge key={filter.key} variant="secondary" className="flex items-center gap-1">
+                      {filter.label}
+                      <X 
+                        className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                        onClick={() => removeFilter(filter.key)}
+                      />
+                    </Badge>
+                  ))}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearAllFilters}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search by tenant name, unit..." 
+                    value={search} 
+                    onChange={(e) => setSearch(e.target.value)} 
+                    className="pl-9"
+                  />
+                </div>
+
+                {/* Basic Filters */}
+                <div className="flex gap-2 flex-wrap">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {statusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={paymentMethodFilter}
+                    onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {paymentMethodOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+
+                  {/* Sort */}
+                  <select
+                    value={`${sortBy}-${sortOrder}`}
+                    onChange={(e) => {
+                      const [field, order] = e.target.value.split('-');
+                      setSortBy(field as typeof sortBy);
+                      setSortOrder(order as typeof sortOrder);
+                    }}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {sortOptions.map(option => (
+                      <>
+                        <option key={`${option.value}-asc`} value={`${option.value}-asc`}>{option.label} ↑</option>
+                        <option key={`${option.value}-desc`} value={`${option.value}-desc`}>{option.label} ↓</option>
+                      </>
+                    ))}
+                  </select>
+
+                  {/* Items per page */}
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {itemsPerPageOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Advanced
+                    {showAdvancedFilters ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
+                  </Button>
+
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
               </div>
 
-              {/* Filters */}
-              <div className="flex gap-2 flex-wrap">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {statusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
+                <div className="border-t pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Date Range */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Due Date Range</label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="date"
+                          placeholder="Start date"
+                          value={dateRange.start || ''}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                          className="flex-1"
+                        />
+                        <Input
+                          type="date"
+                          placeholder="End date"
+                          value={dateRange.end || ''}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
 
-                <select
-                  value={paymentMethodFilter}
-                  onChange={(e) => setPaymentMethodFilter(e.target.value)}
-                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {paymentMethodOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                    {/* Amount Range */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Amount Range (₹)</label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          placeholder="Min"
+                          value={amountRange.min || ''}
+                          onChange={(e) => setAmountRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
+                          className="flex-1"
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Max"
+                          value={amountRange.max || ''}
+                          onChange={(e) => setAmountRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
 
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
+                    {/* Unit Filter */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Unit</label>
+                      <select
+                        value={selectedUnit}
+                        onChange={(e) => setSelectedUnit(e.target.value)}
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {unitOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Tenant Filter */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Tenant</label>
+                      <select
+                        value={selectedTenant}
+                        onChange={(e) => setSelectedTenant(e.target.value)}
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {tenantOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
+            {/* Results Summary */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {paginatedPayments.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredPayments.length)} of {filteredPayments.length} payments
+              </div>
+            </div>
+
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -291,11 +583,11 @@ const PaymentListPageEnhanced: React.FC = () => {
                     {paginatedPayments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                          {search ? 'No payments found matching your search.' : 'No payments recorded yet. Click "Record Payment" to add one.'}
+                          {filteredPayments.length === 0 && payments.length > 0 ? 'No payments match your filters.' : 'No payments recorded yet. Click "Record Payment" to add one.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      paginatedPayments.map((payment) => {
+                      paginatedPayments.map((payment: RentPayment) => {
                         const { unitNumber } = getLeaseInfo(payment);
                         const tenantName = getTenantName(payment.tenantId);
                         const overdue = isOverdue(payment.dueDate, payment.status);
