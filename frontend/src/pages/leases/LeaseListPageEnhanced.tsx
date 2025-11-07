@@ -1,40 +1,56 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, CheckCircle2, XCircle, Clock, AlertTriangle, Calendar, Eye, Edit, User, Home, FileImage } from 'lucide-react';
+import { Plus, Search, FileText, CheckCircle2, XCircle, Clock, AlertTriangle, Calendar, Eye, Edit, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Pagination } from '../../components/ui/pagination';
 import { useLeases } from '../../hooks/useLeases';
 import { useTenants } from '../../hooks/useTenants';
 import { useUnits } from '../../hooks/useUnits';
 import { AppLayout } from '../../components/layout';
-import { format } from 'date-fns';
+import { format, isWithinInterval } from 'date-fns';
+import type { Lease } from '../../types/lease';
+import type { Tenant } from '../../types/tenant';
+import type { Unit } from '../../types/unit';
 
 const LeaseListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'table' | 'timeline'>('timeline');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState<'endDate' | 'monthlyRent' | 'status' | 'tenant'>('endDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  
+  // Advanced filters
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateRange, setDateRange] = useState<{start?: string, end?: string}>({});
+  const [rentRange, setRentRange] = useState<{min?: number, max?: number}>({});
+  const [selectedUnit, setSelectedUnit] = useState<string>('all');
+  const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  
   const { leases, loading } = useLeases();
   const { tenants } = useTenants();
   const { units } = useUnits();
 
   // Helper functions
   const getTenantName = (tenantId: string) => {
-    const tenant = tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find((t: Tenant) => t.id === tenantId);
     return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Unknown';
   };
 
-  const getUnitNumber = (lease: any) => {
+  const getUnitNumber = (lease: Lease) => {
     // Use unit number directly from lease if available
     if (lease.unitNumber) {
       return lease.unitNumber;
     }
     
     // Fallback to looking up by unitId
-    const unit = units.find(u => u.id === lease.unitId);
+    const unit = units.find((u: Unit) => u.id === lease.unitId);
     return unit?.unitNumber || 'Unknown';
   };
 
@@ -51,13 +67,121 @@ const LeaseListPageEnhanced: React.FC = () => {
     return days > 0 && days <= 30;
   };
 
-  const filteredLeases = Array.isArray(leases) ? leases.filter(l => {
-    const tenantName = getTenantName(l.tenantId);
-    const unitNumber = getUnitNumber(l);
-    const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || l.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  }) : [];
+  const filteredLeases = useMemo(() => {
+    if (!Array.isArray(leases)) return [];
+    
+    let filtered = leases.filter(lease => {
+      const tenantName = getTenantName(lease.tenantId);
+      const unitNumber = getUnitNumber(lease);
+      const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || lease.status === statusFilter;
+      
+      // Advanced filters
+      const matchesDateRange = (!dateRange.start || !dateRange.end) || 
+        isWithinInterval(new Date(lease.endDate), { start: new Date(dateRange.start), end: new Date(dateRange.end) });
+      const matchesRentRange = (!rentRange.min || lease.monthlyRent >= rentRange.min) && 
+        (!rentRange.max || lease.monthlyRent <= rentRange.max);
+      const matchesUnit = selectedUnit === 'all' || lease.unitId === selectedUnit;
+      const matchesTenant = selectedTenant === 'all' || lease.tenantId === selectedTenant;
+      
+      return matchesSearch && matchesStatus && matchesDateRange && matchesRentRange && matchesUnit && matchesTenant;
+    });
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case 'endDate':
+          aValue = new Date(a.endDate).getTime();
+          bValue = new Date(b.endDate).getTime();
+          break;
+        case 'monthlyRent':
+          aValue = a.monthlyRent;
+          bValue = b.monthlyRent;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'tenant':
+          aValue = getTenantName(a.tenantId);
+          bValue = getTenantName(b.tenantId);
+          break;
+        default:
+          return 0;
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  }, [leases, search, statusFilter, dateRange, rentRange, selectedUnit, selectedTenant, sortBy, sortOrder]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredLeases.length / itemsPerPage);
+  const paginatedLeases = filteredLeases.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearch('');
+    setStatusFilter('all');
+    setDateRange({});
+    setRentRange({});
+    setSelectedUnit('all');
+    setSelectedTenant('all');
+    setCurrentPage(1);
+  };
+
+  // Get active filters for display
+  const getActiveFilters = () => {
+    const filters = [];
+    if (search) filters.push({ key: 'search', label: `Search: "${search}"`, value: 'search' });
+    if (statusFilter !== 'all') filters.push({ key: 'status', label: `Status: ${statusFilter}`, value: statusFilter });
+    if (dateRange.start || dateRange.end) filters.push({ key: 'date', label: `End Date: ${dateRange.start || '...'} - ${dateRange.end || '...'}` });
+    if (rentRange.min || rentRange.max) filters.push({ key: 'rent', label: `Rent: ₹${rentRange.min || 0} - ₹${rentRange.max || '∞'}` });
+    if (selectedUnit !== 'all') {
+      const unit = units.find(u => u.id === selectedUnit);
+      filters.push({ key: 'unit', label: `Unit: ${unit?.unitNumber || selectedUnit}` });
+    }
+    if (selectedTenant !== 'all') {
+      const tenant = tenants.find(t => t.id === selectedTenant);
+      filters.push({ key: 'tenant', label: `Tenant: ${tenant ? `${tenant.firstName} ${tenant.lastName}` : selectedTenant}` });
+    }
+    return filters;
+  };
+
+  // Remove specific filter
+  const removeFilter = (filterKey: string) => {
+    switch (filterKey) {
+      case 'search':
+        setSearch('');
+        break;
+      case 'status':
+        setStatusFilter('all');
+        break;
+      case 'date':
+        setDateRange({});
+        break;
+      case 'rent':
+        setRentRange({});
+        break;
+      case 'unit':
+        setSelectedUnit('all');
+        break;
+      case 'tenant':
+        setSelectedTenant('all');
+        break;
+    }
+    setCurrentPage(1);
+  };
 
   const activeCount = Array.isArray(leases) ? leases.filter(l => l.status === 'active').length : 0;
   const expiredCount = Array.isArray(leases) ? leases.filter(l => l.status === 'expired').length : 0;
@@ -78,6 +202,30 @@ const LeaseListPageEnhanced: React.FC = () => {
     { value: 'terminated', label: 'Terminated' },
   ];
 
+  const unitOptions = [
+    { value: 'all', label: 'All Units' },
+    ...units.map(unit => ({ value: unit.id, label: unit.unitNumber }))
+  ];
+
+  const tenantOptions = [
+    { value: 'all', label: 'All Tenants' },
+    ...tenants.map(tenant => ({ value: tenant.id, label: `${tenant.firstName} ${tenant.lastName}` }))
+  ];
+
+  const sortOptions = [
+    { value: 'endDate', label: 'End Date' },
+    { value: 'monthlyRent', label: 'Monthly Rent' },
+    { value: 'status', label: 'Status' },
+    { value: 'tenant', label: 'Tenant' },
+  ];
+
+  const itemsPerPageOptions = [
+    { value: 10, label: '10 per page' },
+    { value: 25, label: '25 per page' },
+    { value: 50, label: '50 per page' },
+    { value: 100, label: '100 per page' },
+  ];
+
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'active': return 'default';
@@ -88,7 +236,7 @@ const LeaseListPageEnhanced: React.FC = () => {
     }
   };
 
-  const getStatusColor = (lease: any): string => {
+  const getStatusColor = (lease: Lease): string => {
     if (lease.status === 'active' && isExpiringSoon(lease.endDate)) {
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
     }
@@ -100,13 +248,6 @@ const LeaseListPageEnhanced: React.FC = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
-
-  // Sort leases by end date for timeline view
-  const sortedLeases = useMemo(() => {
-    return [...filteredLeases].sort((a, b) => {
-      return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
-    });
-  }, [filteredLeases]);
 
   return (
     <AppLayout title="Leases">
@@ -164,53 +305,210 @@ const LeaseListPageEnhanced: React.FC = () => {
         {/* Filters and Search */}
         <Card>
           <CardHeader>
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search by tenant name, unit number..." 
-                  value={search} 
-                  onChange={(e) => setSearch(e.target.value)} 
-                  className="pl-9"
-                />
-              </div>
-
-              {/* Filters */}
-              <div className="flex gap-2 flex-wrap">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {statusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+            <div className="flex flex-col space-y-4">
+              {/* Active Filters */}
+              {getActiveFilters().length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
+                  {getActiveFilters().map((filter) => (
+                    <Badge key={filter.key} variant="secondary" className="flex items-center gap-1">
+                      {filter.label}
+                      <X 
+                        className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                        onClick={() => removeFilter(filter.key)}
+                      />
+                    </Badge>
                   ))}
-                </select>
-
-                {/* View Toggle */}
-                <div className="flex border rounded-md">
-                  <Button
-                    variant={viewMode === 'table' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('table')}
-                    className="rounded-r-none"
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={clearAllFilters}
+                    className="text-muted-foreground hover:text-foreground"
                   >
-                    Table
+                    Clear all
                   </Button>
-                  <Button
-                    variant={viewMode === 'timeline' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('timeline')}
-                    className="rounded-l-none"
+                </div>
+              )}
+
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search by tenant name, unit number..." 
+                    value={search} 
+                    onChange={(e) => setSearch(e.target.value)} 
+                    className="pl-9"
+                  />
+                </div>
+
+                {/* Basic Filters */}
+                <div className="flex gap-2 flex-wrap">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Timeline
+                    {statusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+
+                  {/* Sort */}
+                  <select
+                    value={`${sortBy}-${sortOrder}`}
+                    onChange={(e) => {
+                      const [field, order] = e.target.value.split('-');
+                      setSortBy(field as typeof sortBy);
+                      setSortOrder(order as typeof sortOrder);
+                    }}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {sortOptions.map(option => (
+                      <>
+                        <option key={`${option.value}-asc`} value={`${option.value}-asc`}>{option.label} ↑</option>
+                        <option key={`${option.value}-desc`} value={`${option.value}-desc`}>{option.label} ↓</option>
+                      </>
+                    ))}
+                  </select>
+
+                  {/* Items per page */}
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {itemsPerPageOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+
+                  {/* View Toggle */}
+                  <div className="flex border rounded-md">
+                    <Button
+                      variant={viewMode === 'table' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('table')}
+                      className="rounded-r-none"
+                    >
+                      Table
+                    </Button>
+                    <Button
+                      variant={viewMode === 'timeline' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('timeline')}
+                      className="rounded-l-none"
+                    >
+                      Timeline
+                    </Button>
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Advanced
+                    {showAdvancedFilters ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
+                  </Button>
+
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
                   </Button>
                 </div>
               </div>
+
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
+                <div className="border-t pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Date Range */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">End Date Range</label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="date"
+                          placeholder="Start date"
+                          value={dateRange.start || ''}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                          className="flex-1"
+                        />
+                        <Input
+                          type="date"
+                          placeholder="End date"
+                          value={dateRange.end || ''}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Rent Range */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Monthly Rent Range (₹)</label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          placeholder="Min"
+                          value={rentRange.min || ''}
+                          onChange={(e) => setRentRange(prev => ({ ...prev, min: Number(e.target.value) || undefined }))}
+                          className="flex-1"
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Max"
+                          value={rentRange.max || ''}
+                          onChange={(e) => setRentRange(prev => ({ ...prev, max: Number(e.target.value) || undefined }))}
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Unit Filter */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Unit</label>
+                      <select
+                        value={selectedUnit}
+                        onChange={(e) => setSelectedUnit(e.target.value)}
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {unitOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Tenant Filter */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Tenant</label>
+                      <select
+                        value={selectedTenant}
+                        onChange={(e) => setSelectedTenant(e.target.value)}
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {tenantOptions.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
+            {/* Results Summary */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {paginatedLeases.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredLeases.length)} of {filteredLeases.length} leases
+              </div>
+            </div>
+
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -230,14 +528,14 @@ const LeaseListPageEnhanced: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredLeases.length === 0 ? (
+                    {paginatedLeases.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                          {search ? 'No leases found matching your search.' : 'No leases found. Click "Create Lease" to create one.'}
+                          {filteredLeases.length === 0 && leases.length > 0 ? 'No leases match your filters.' : 'No leases found. Click "Create Lease" to create one.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredLeases.map((lease) => {
+                      paginatedLeases.map((lease: Lease) => {
                         const daysUntilExpiry = getDaysUntilExpiry(lease.endDate);
                         const expiringSoon = isExpiringSoon(lease.endDate);
                         
@@ -312,12 +610,12 @@ const LeaseListPageEnhanced: React.FC = () => {
             ) : (
               /* Timeline View */
               <div className="space-y-4">
-                {sortedLeases.length === 0 ? (
+                {paginatedLeases.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
-                    {search ? 'No leases found matching your search.' : 'No leases found. Click "Create Lease" to create one.'}
+                    {filteredLeases.length === 0 && leases.length > 0 ? 'No leases match your filters.' : 'No leases found. Click "Create Lease" to create one.'}
                   </div>
                 ) : (
-                  sortedLeases.map((lease, index) => {
+                  paginatedLeases.map((lease: Lease, index: number) => {
                     const daysUntilExpiry = getDaysUntilExpiry(lease.endDate);
                     const expiringSoon = isExpiringSoon(lease.endDate);
                     const isExpired = lease.status === 'expired' || daysUntilExpiry < 0;
@@ -325,7 +623,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                     return (
                       <div key={lease.id} className="relative">
                         {/* Timeline connector */}
-                        {index !== sortedLeases.length - 1 && (
+                        {index !== paginatedLeases.length - 1 && (
                           <div className="absolute left-6 top-16 bottom-0 w-0.5 bg-border" />
                         )}
                         
@@ -440,6 +738,17 @@ const LeaseListPageEnhanced: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
     </AppLayout>
   );
