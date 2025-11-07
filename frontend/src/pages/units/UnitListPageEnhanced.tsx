@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Pagination } from '../../components/ui/pagination';
 import { useUnits } from '../../hooks/useUnits';
 import { useProperties } from '../../hooks/useProperties';
 import { AppLayout } from '../../components/layout';
@@ -19,6 +20,8 @@ const UnitListPageEnhanced: React.FC = () => {
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const { units, loading } = useUnits();
   const { properties } = useProperties();
 
@@ -28,6 +31,13 @@ const UnitListPageEnhanced: React.FC = () => {
     const matchesProperty = propertyFilter === 'all' || u.propertyId === propertyFilter;
     return matchesSearch && matchesStatus && matchesProperty;
   }) : [];
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUnits.length / itemsPerPage);
+  const paginatedUnits = filteredUnits.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const availableCount = Array.isArray(units) ? units.filter(u => u.status === 'available').length : 0;
   const occupiedCount = Array.isArray(units) ? units.filter(u => u.status === 'occupied').length : 0;
@@ -45,6 +55,13 @@ const UnitListPageEnhanced: React.FC = () => {
     { value: 'available', label: 'Available' },
     { value: 'occupied', label: 'Occupied' },
     { value: 'under_maintenance', label: 'Under Maintenance' },
+  ];
+
+  const itemsPerPageOptions = [
+    { value: 10, label: '10 per page' },
+    { value: 25, label: '25 per page' },
+    { value: 50, label: '50 per page' },
+    { value: 100, label: '100 per page' },
   ];
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -202,7 +219,10 @@ const UnitListPageEnhanced: React.FC = () => {
                 <Input 
                   placeholder="Search by unit number, type..." 
                   value={search} 
-                  onChange={(e) => setSearch(e.target.value)} 
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }} 
                   className="pl-9"
                 />
               </div>
@@ -211,7 +231,10 @@ const UnitListPageEnhanced: React.FC = () => {
               <div className="flex gap-2 flex-wrap">
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {statusOptions.map(option => (
@@ -221,12 +244,29 @@ const UnitListPageEnhanced: React.FC = () => {
 
                 <select
                   value={propertyFilter}
-                  onChange={(e) => setPropertyFilter(e.target.value)}
+                  onChange={(e) => {
+                    setPropertyFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="all">All Properties</option>
                   {properties.map(property => (
                     <option key={property.id} value={property.id}>{property.name}</option>
+                  ))}
+                </select>
+
+                {/* Items per page */}
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {itemsPerPageOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
 
@@ -298,6 +338,13 @@ const UnitListPageEnhanced: React.FC = () => {
           )}
 
           <CardContent>
+            {/* Results Summary */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {paginatedUnits.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredUnits.length)} of {filteredUnits.length} units
+              </div>
+            </div>
+
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -311,7 +358,7 @@ const UnitListPageEnhanced: React.FC = () => {
                       <TableHead className="w-12">
                         <input
                           type="checkbox"
-                          checked={selectedUnits.size === filteredUnits.length && filteredUnits.length > 0}
+                          checked={selectedUnits.size === paginatedUnits.length && paginatedUnits.length > 0}
                           onChange={(e) => handleSelectAll(e.target.checked)}
                           className="rounded border-gray-300"
                         />
@@ -326,14 +373,14 @@ const UnitListPageEnhanced: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUnits.length === 0 ? (
+                    {paginatedUnits.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                          {search ? 'No units found matching your search.' : 'No units found. Click "Add Unit" to create one.'}
+                          {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found. Click "Add Unit" to create one.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredUnits.map((unit) => (
+                      paginatedUnits.map((unit) => (
                         <TableRow 
                           key={unit.id} 
                           className="cursor-pointer hover:bg-muted/50"
@@ -395,12 +442,12 @@ const UnitListPageEnhanced: React.FC = () => {
             ) : (
               /* Grid View */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredUnits.length === 0 ? (
+                {paginatedUnits.length === 0 ? (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
-                    {search ? 'No units found matching your search.' : 'No units found. Click "Add Unit" to create one.'}
+                    {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found. Click "Add Unit" to create one.'}
                   </div>
                 ) : (
-                  filteredUnits.map((unit) => (
+                  paginatedUnits.map((unit) => (
                     <Card 
                       key={unit.id} 
                       className="hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group"
@@ -491,6 +538,17 @@ const UnitListPageEnhanced: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
     </AppLayout>
   );

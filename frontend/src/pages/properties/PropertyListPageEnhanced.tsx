@@ -28,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../components/ui/dialog';
+import { Pagination } from '../../components/ui/pagination';
 import type { PropertyFilters } from '../../types/property';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -44,6 +45,8 @@ const PropertyListPageEnhanced: React.FC = () => {
   const [selectedProperties, setSelectedProperties] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   
   const { properties, loading, error, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
@@ -63,6 +66,13 @@ const PropertyListPageEnhanced: React.FC = () => {
     }) : [];
   }, [properties, searchQuery, statusFilter, typeFilter]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
+  const paginatedProperties = filteredProperties.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   // Calculate stats
   const stats = useMemo(() => {
     return {
@@ -73,8 +83,16 @@ const PropertyListPageEnhanced: React.FC = () => {
     };
   }, [properties]);
 
+  const itemsPerPageOptions = [
+    { value: 10, label: '10 per page' },
+    { value: 25, label: '25 per page' },
+    { value: 50, label: '50 per page' },
+    { value: 100, label: '100 per page' },
+  ];
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    setCurrentPage(1);
   };
 
   const handleDeleteClick = (id: string, name: string) => {
@@ -109,7 +127,7 @@ const PropertyListPageEnhanced: React.FC = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const allIds = new Set(filteredProperties.map(p => p.id));
+      const allIds = new Set(paginatedProperties.map(p => p.id));
       setSelectedProperties(allIds);
       setShowBulkActions(true);
     } else {
@@ -141,7 +159,7 @@ const PropertyListPageEnhanced: React.FC = () => {
   };
 
   const handleBulkExport = () => {
-    const selectedData = filteredProperties.filter(p => selectedProperties.has(p.id));
+    const selectedData = paginatedProperties.filter(p => selectedProperties.has(p.id));
 
     if (selectedData.length === 0) return;
 
@@ -320,7 +338,10 @@ const PropertyListPageEnhanced: React.FC = () => {
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="all">All Status</option>
@@ -331,7 +352,10 @@ const PropertyListPageEnhanced: React.FC = () => {
           </select>
           <select
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
+            onChange={(e) => {
+              setTypeFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="all">All Types</option>
@@ -344,6 +368,19 @@ const PropertyListPageEnhanced: React.FC = () => {
             <option value={PropertyType.OFFICE}>Office</option>
             <option value={PropertyType.SHOP}>Shop</option>
             <option value={PropertyType.WAREHOUSE}>Warehouse</option>
+          </select>
+          {/* Items per page */}
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="h-10 w-[140px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {itemsPerPageOptions.map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
           </select>
           <div className="flex gap-2">
             <Button
@@ -437,10 +474,19 @@ const PropertyListPageEnhanced: React.FC = () => {
           </Card>
         )}
 
+        {/* Results Summary */}
+        {!loading && filteredProperties.length > 0 && (
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {paginatedProperties.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredProperties.length)} of {filteredProperties.length} properties
+            </div>
+          </div>
+        )}
+
         {/* Grid View */}
         {!loading && viewMode === 'grid' && filteredProperties.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProperties.map((property) => (
+            {paginatedProperties.map((property) => (
               <Card key={property.id} className="hover:shadow-lg transition-shadow group">
                 <div className={`h-2 rounded-t-lg ${getStatusColor(property.status).split(' ')[0]}`} />
                 <CardHeader className="pb-3">
@@ -526,7 +572,7 @@ const PropertyListPageEnhanced: React.FC = () => {
                       <TableHead className="w-12">
                         <input
                           type="checkbox"
-                          checked={selectedProperties.size === filteredProperties.length && filteredProperties.length > 0}
+                          checked={selectedProperties.size === paginatedProperties.length && paginatedProperties.length > 0}
                           onChange={(e) => handleSelectAll(e.target.checked)}
                           className="rounded border-gray-300"
                         />
@@ -540,7 +586,7 @@ const PropertyListPageEnhanced: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProperties.map((property) => (
+                    {paginatedProperties.map((property) => (
                       <TableRow key={property.id}>
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <input
@@ -614,6 +660,17 @@ const PropertyListPageEnhanced: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

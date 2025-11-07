@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Users, UserCheck, UserX, Mail, Phone, Briefcase, Eye, Edit, FileImage, Download, X, XCircle } from 'lucide-react';
+import { Plus, Search, Users, UserCheck, UserX, Eye, Edit, FileImage, Download, X, XCircle, Mail, Phone, Briefcase } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Pagination } from '../../components/ui/pagination';
 import { useTenants } from '../../hooks/useTenants';
 import { AppLayout } from '../../components/layout';
 
@@ -13,31 +14,47 @@ const TenantListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
   const [selectedTenants, setSelectedTenants] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const { tenants, loading } = useTenants();
 
   const filteredTenants = Array.isArray(tenants) ? tenants.filter(t => {
-    const matchesSearch = `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = `${t.firstName} ${t.lastName} ${t.email || ''} ${t.phone || ''}`.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
     return matchesSearch && matchesStatus;
   }) : [];
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTenants.length / itemsPerPage);
+  const paginatedTenants = filteredTenants.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const activeCount = Array.isArray(tenants) ? tenants.filter(t => t.status === 'active').length : 0;
-  const inactiveCount = Array.isArray(tenants) ? tenants.filter(t => t.status !== 'active').length : 0;
+  const inactiveCount = Array.isArray(tenants) ? tenants.filter(t => t.status === 'inactive').length : 0;
 
   const stats = [
     { label: 'Total Tenants', value: (Array.isArray(tenants) ? tenants.length : 0).toString(), icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Active', value: activeCount.toString(), icon: UserCheck, color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-900/20' },
-    { label: 'Inactive', value: inactiveCount.toString(), icon: UserX, color: 'text-gray-600', bgColor: 'bg-gray-50 dark:bg-gray-900/20' },
+    { label: 'Inactive', value: inactiveCount.toString(), icon: UserX, color: 'text-red-600', bgColor: 'bg-red-50 dark:bg-red-900/20' },
   ];
 
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'active', label: 'Active' },
     { value: 'inactive', label: 'Inactive' },
+  ];
+
+  const itemsPerPageOptions = [
+    { value: 10, label: '10 per page' },
+    { value: 25, label: '25 per page' },
+    { value: 50, label: '50 per page' },
+    { value: 100, label: '100 per page' },
   ];
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -177,24 +194,47 @@ const TenantListPageEnhanced: React.FC = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Search by name, email..." 
+                  placeholder="Search by name, email, phone..." 
                   value={search} 
-                  onChange={(e) => setSearch(e.target.value)} 
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }} 
                   className="pl-9"
                 />
               </div>
 
               {/* Status Filter */}
               <div className="flex gap-2">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {statusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                {/* Filters */}
+                <div className="flex gap-2 flex-wrap">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {statusOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+
+                  {/* Items per page */}
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {itemsPerPageOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </div>
 
                 {/* View Toggle */}
                 <div className="flex border rounded-md">
@@ -264,6 +304,13 @@ const TenantListPageEnhanced: React.FC = () => {
           )}
 
           <CardContent>
+            {/* Results Summary */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {paginatedTenants.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredTenants.length)} of {filteredTenants.length} tenants
+              </div>
+            </div>
+
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -277,7 +324,7 @@ const TenantListPageEnhanced: React.FC = () => {
                       <TableHead className="w-12">
                         <input
                           type="checkbox"
-                          checked={selectedTenants.size === filteredTenants.length && filteredTenants.length > 0}
+                          checked={selectedTenants.size === paginatedTenants.length && paginatedTenants.length > 0}
                           onChange={(e) => handleSelectAll(e.target.checked)}
                           className="rounded border-gray-300"
                         />
@@ -290,14 +337,14 @@ const TenantListPageEnhanced: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTenants.length === 0 ? (
+                    {paginatedTenants.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                          {search ? 'No tenants found matching your search.' : 'No tenants found. Click "Add Tenant" to create one.'}
+                          {filteredTenants.length === 0 && tenants.length > 0 ? 'No tenants match your filters.' : 'No tenants found. Click "Add Tenant" to create one.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredTenants.map((tenant) => (
+                      paginatedTenants.map((tenant) => (
                         <TableRow 
                           key={tenant.id} 
                           className="cursor-pointer hover:bg-muted/50"
@@ -380,12 +427,12 @@ const TenantListPageEnhanced: React.FC = () => {
             ) : (
               /* Grid View */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredTenants.length === 0 ? (
+                {paginatedTenants.length === 0 ? (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
-                    {search ? 'No tenants found matching your search.' : 'No tenants found. Click "Add Tenant" to create one.'}
+                    {filteredTenants.length === 0 && tenants.length > 0 ? 'No tenants match your filters.' : 'No tenants found. Click "Add Tenant" to create one.'}
                   </div>
                 ) : (
-                  filteredTenants.map((tenant) => (
+                  paginatedTenants.map((tenant) => (
                     <Card 
                       key={tenant.id} 
                       className="hover:shadow-lg transition-all duration-200 cursor-pointer"
@@ -458,6 +505,17 @@ const TenantListPageEnhanced: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
     </AppLayout>
   );
