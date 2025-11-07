@@ -228,7 +228,7 @@ def load_excel_data(filename):
             'leases': ['monthly_rent', 'security_deposit'],
             'rent_payments': ['amount'],
             'meters': [],
-            'meter_readings': ['reading_value']
+            'meter_readings': ['previous_reading', 'current_reading']
         }
         
         for sheet_name in excel_file.sheet_names:
@@ -620,15 +620,15 @@ def seed_meters(conn, df):
             cursor.execute("""
                 INSERT INTO meters (
                     id, property_id, unit_id, meter_type, meter_number,
-                    installation_date, status
+                    multiplier, installation_date, status
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s
                 )
                 ON CONFLICT (id) DO NOTHING
             """, (
                 meter_id, property_id, unit_id, row['meter_type'],
-                row['meter_number'], row['installation_date'],
-                row.get('status', 'active')
+                row['meter_number'], row.get('multiplier', 1.0),
+                row['installation_date'], row.get('status', 'active')
             ))
             seeded += 1
         except Exception as e:
@@ -657,15 +657,16 @@ def seed_meter_readings(conn, df):
             
             cursor.execute("""
                 INSERT INTO meter_readings (
-                    id, meter_id, reading_date, reading_value,
+                    id, meter_id, reading_date, previous_reading, current_reading,
                     recorded_by, notes
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s
                 )
                 ON CONFLICT (id) DO NOTHING
             """, (
                 reading_id, meter_id, row['reading_date'],
-                row['reading_value'], row.get('recorded_by'), row.get('notes')
+                row['previous_reading'], row['current_reading'],
+                row.get('recorded_by'), row.get('notes')
             ))
             seeded += 1
         except Exception as e:
@@ -775,6 +776,7 @@ def main():
         print(f"   - Units: {len(unit_uuids)}")
         print(f"   - Leases: {len(lease_uuids)}")
         print(f"   - Meters: {len(meter_uuids)}")
+        print(f"   - Meter Readings: {len(seed_data.get('meter_readings', []))}")
         print()
         print("✨ All UUIDs generated dynamically!")
         print("📝 Edit Excel file to add more data, then re-run this script")

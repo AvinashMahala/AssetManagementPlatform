@@ -455,18 +455,18 @@ def create_smart_seed_excel():
         
         # 7. Meters - Reference units by key (no property_id needed, will be derived)
         meters_data = pd.DataFrame([
-            {'unit_key': 'sn_101', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-101-E', 'installation_date': '2024-01-01', 'status': 'active'},
-            {'unit_key': 'sn_201', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-201-E', 'installation_date': '2024-03-01', 'status': 'active'},
-            {'unit_key': 'sn_301', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-301-E', 'installation_date': '2024-02-01', 'status': 'active'},
-            {'unit_key': 'sn_401', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-401-E', 'installation_date': '2024-07-01', 'status': 'active'},
-            {'unit_key': 'jv_a101', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-A101-E', 'installation_date': '2024-01-15', 'status': 'active'},
-            {'unit_key': 'jv_a201', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-A201-E', 'installation_date': '2024-04-01', 'status': 'active'},
-            {'unit_key': 'jv_b101', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-B101-E', 'installation_date': '2024-06-01', 'status': 'active'},
-            {'unit_key': 'jv_b301', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-B301-E', 'installation_date': '2024-01-10', 'status': 'inactive'},
-            {'unit_key': 'pt_g101', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-G101-E', 'installation_date': '2024-02-15', 'status': 'active'},
-            {'unit_key': 'pt_g301', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-G301-E', 'installation_date': '2024-05-01', 'status': 'active'},
-            {'unit_key': 'pt_e201', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-E201-E', 'installation_date': '2024-03-15', 'status': 'active'},
-            {'unit_key': 'pt_e501', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-E501-E', 'installation_date': '2024-08-01', 'status': 'active'}
+            {'unit_key': 'sn_101', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-101-E', 'multiplier': 1.0, 'installation_date': '2024-01-01', 'status': 'active'},
+            {'unit_key': 'sn_201', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-201-E', 'multiplier': 1.0, 'installation_date': '2024-03-01', 'status': 'active'},
+            {'unit_key': 'sn_301', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-301-E', 'multiplier': 1.0, 'installation_date': '2024-02-01', 'status': 'active'},
+            {'unit_key': 'sn_401', 'meter_type': 'electricity', 'meter_number': 'BBSR-SN-401-E', 'multiplier': 1.0, 'installation_date': '2024-07-01', 'status': 'active'},
+            {'unit_key': 'jv_a101', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-A101-E', 'multiplier': 1.0, 'installation_date': '2024-01-15', 'status': 'active'},
+            {'unit_key': 'jv_a201', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-A201-E', 'multiplier': 1.0, 'installation_date': '2024-04-01', 'status': 'active'},
+            {'unit_key': 'jv_b101', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-B101-E', 'multiplier': 1.0, 'installation_date': '2024-06-01', 'status': 'active'},
+            {'unit_key': 'jv_b301', 'meter_type': 'electricity', 'meter_number': 'BBSR-JV-B301-E', 'multiplier': 1.0, 'installation_date': '2024-01-10', 'status': 'inactive'},
+            {'unit_key': 'pt_g101', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-G101-E', 'multiplier': 1.0, 'installation_date': '2024-02-15', 'status': 'active'},
+            {'unit_key': 'pt_g301', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-G301-E', 'multiplier': 1.0, 'installation_date': '2024-05-01', 'status': 'active'},
+            {'unit_key': 'pt_e201', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-E201-E', 'multiplier': 1.0, 'installation_date': '2024-03-15', 'status': 'active'},
+            {'unit_key': 'pt_e501', 'meter_type': 'electricity', 'meter_number': 'BBSR-PT-E501-E', 'multiplier': 1.0, 'installation_date': '2024-08-01', 'status': 'active'}
         ])
         meters_data.to_excel(writer, sheet_name='meters', index=False)
         
@@ -476,48 +476,48 @@ def create_smart_seed_excel():
         
         # Simplified readings - meter_number, date, value
         readings_data = [
-            ('BBSR-SN-101-E', '2024-02-01', 320), ('BBSR-SN-101-E', '2024-03-01', 655),
-            ('BBSR-SN-101-E', '2024-04-01', 985), ('BBSR-SN-101-E', '2024-05-01', 1320),
-            ('BBSR-SN-101-E', '2024-06-01', 1650),
+            ('BBSR-SN-101-E', '2024-02-01', 0, 320), ('BBSR-SN-101-E', '2024-03-01', 320, 655),
+            ('BBSR-SN-101-E', '2024-04-01', 655, 985), ('BBSR-SN-101-E', '2024-05-01', 985, 1320),
+            ('BBSR-SN-101-E', '2024-06-01', 1320, 1650),
             
-            ('BBSR-SN-201-E', '2024-04-01', 450), ('BBSR-SN-201-E', '2024-05-01', 920),
-            ('BBSR-SN-201-E', '2024-06-01', 1380), ('BBSR-SN-201-E', '2024-07-01', 1850),
+            ('BBSR-SN-201-E', '2024-04-01', 0, 450), ('BBSR-SN-201-E', '2024-05-01', 450, 920),
+            ('BBSR-SN-201-E', '2024-06-01', 920, 1380), ('BBSR-SN-201-E', '2024-07-01', 1380, 1850),
             
-            ('BBSR-SN-301-E', '2024-03-01', 180), ('BBSR-SN-301-E', '2024-04-01', 368),
-            ('BBSR-SN-301-E', '2024-05-01', 550), ('BBSR-SN-301-E', '2024-06-01', 735),
+            ('BBSR-SN-301-E', '2024-03-01', 0, 180), ('BBSR-SN-301-E', '2024-04-01', 180, 368),
+            ('BBSR-SN-301-E', '2024-05-01', 368, 550), ('BBSR-SN-301-E', '2024-06-01', 550, 735),
             
-            ('BBSR-SN-401-E', '2024-08-01', 120), ('BBSR-SN-401-E', '2024-09-01', 245),
+            ('BBSR-SN-401-E', '2024-08-01', 0, 120), ('BBSR-SN-401-E', '2024-09-01', 120, 245),
             
-            ('BBSR-JV-A101-E', '2024-02-15', 350), ('BBSR-JV-A101-E', '2024-03-15', 715),
-            ('BBSR-JV-A101-E', '2024-04-15', 1070), ('BBSR-JV-A101-E', '2024-05-15', 1430),
-            ('BBSR-JV-A101-E', '2024-06-15', 1795),
+            ('BBSR-JV-A101-E', '2024-02-15', 0, 350), ('BBSR-JV-A101-E', '2024-03-15', 350, 715),
+            ('BBSR-JV-A101-E', '2024-04-15', 715, 1070), ('BBSR-JV-A101-E', '2024-05-15', 1070, 1430),
+            ('BBSR-JV-A101-E', '2024-06-15', 1430, 1795),
             
-            ('BBSR-JV-A201-E', '2024-05-01', 500), ('BBSR-JV-A201-E', '2024-06-01', 1030),
-            ('BBSR-JV-A201-E', '2024-07-01', 1570),
+            ('BBSR-JV-A201-E', '2024-05-01', 0, 500), ('BBSR-JV-A201-E', '2024-06-01', 500, 1030),
+            ('BBSR-JV-A201-E', '2024-07-01', 1030, 1570),
             
-            ('BBSR-JV-B101-E', '2024-07-01', 200), ('BBSR-JV-B101-E', '2024-08-01', 415),
-            ('BBSR-JV-B101-E', '2024-09-01', 630),
+            ('BBSR-JV-B101-E', '2024-07-01', 0, 200), ('BBSR-JV-B101-E', '2024-08-01', 200, 415),
+            ('BBSR-JV-B101-E', '2024-09-01', 415, 630),
             
-            ('BBSR-PT-G101-E', '2024-03-15', 380), ('BBSR-PT-G101-E', '2024-04-15', 775),
-            ('BBSR-PT-G101-E', '2024-05-15', 1165), ('BBSR-PT-G101-E', '2024-06-15', 1560),
+            ('BBSR-PT-G101-E', '2024-03-15', 0, 380), ('BBSR-PT-G101-E', '2024-04-15', 380, 775),
+            ('BBSR-PT-G101-E', '2024-05-15', 775, 1165), ('BBSR-PT-G101-E', '2024-06-15', 1165, 1560),
             
-            ('BBSR-PT-G301-E', '2024-06-01', 550), ('BBSR-PT-G301-E', '2024-07-01', 1125),
-            ('BBSR-PT-G301-E', '2024-08-01', 1705),
+            ('BBSR-PT-G301-E', '2024-06-01', 0, 550), ('BBSR-PT-G301-E', '2024-07-01', 550, 1125),
+            ('BBSR-PT-G301-E', '2024-08-01', 1125, 1705),
             
-            ('BBSR-PT-E201-E', '2024-04-15', 220), ('BBSR-PT-E201-E', '2024-05-15', 455),
-            ('BBSR-PT-E201-E', '2024-06-15', 685), ('BBSR-PT-E201-E', '2024-07-15', 920),
-            ('BBSR-PT-E201-E', '2024-08-15', 1150),
+            ('BBSR-PT-E201-E', '2024-04-15', 0, 220), ('BBSR-PT-E201-E', '2024-05-15', 220, 455),
+            ('BBSR-PT-E201-E', '2024-06-15', 455, 685), ('BBSR-PT-E201-E', '2024-07-15', 685, 920),
+            ('BBSR-PT-E201-E', '2024-08-15', 920, 1150),
             
-            ('BBSR-PT-E501-E', '2024-09-01', 140)
+            ('BBSR-PT-E501-E', '2024-09-01', 0, 140)
         ]
         
         meter_readings_data = pd.DataFrame([
-            {'meter_number': num, 'reading_date': date, 'reading_value': value, 
-             'reading_type': 'actual', 'notes': f'Reading for {date[:7]}'}
-            for num, date, value in readings_data
+            {'meter_number': num, 'reading_date': date, 'previous_reading': prev, 'current_reading': curr, 
+             'notes': f'Monthly reading for {date[:7]}'}
+            for num, date, prev, curr in readings_data
         ])
         # Convert numeric columns to proper integers
-        meter_readings_data = convert_to_proper_types(meter_readings_data, ['reading_value'])
+        meter_readings_data = convert_to_proper_types(meter_readings_data, ['previous_reading', 'current_reading'])
         meter_readings_data.to_excel(writer, sheet_name='meter_readings', index=False)
     
     print(f"✅ Created smart seed data Excel file: {output_file}")
@@ -529,8 +529,8 @@ def create_smart_seed_excel():
     print(f"   - units (12 units with property_key refs)")
     print(f"   - leases (12 leases with unit/tenant_key refs)")
     print(f"   - rent_payments (40 payments with lease_ref)")
-    print(f"   - meters (12 meters with unit_key refs)")
-    print(f"   - meter_readings (41 readings with meter_number)")
+    print(f"   - meters (12 meters with unit_key refs & multipliers)")
+    print(f"   - meter_readings (39 readings with prev/curr values)")
     print(f"")
     print(f"🎯 Key Features:")
     print(f"   ✓ No UUIDs in Excel - easier to edit!")
