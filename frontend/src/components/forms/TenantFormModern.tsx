@@ -255,8 +255,13 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
         <FormField label="Monthly Income">
           <Input
             type="number"
-            value={formData.monthlyIncome || ''}
-            onChange={(e) => handleChange('monthlyIncome', Number(e.target.value))}
+            value={formData.monthlyIncome ?? ''}
+            onChange={(e) =>
+              handleChange(
+                'monthlyIncome',
+                e.target.value === '' ? undefined : Number(e.target.value)
+              )
+            }
             placeholder="Enter monthly income"
             className="h-10"
           />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { FormLayout } from '../layouts/FormLayout';
 import { FormGrid } from '../components/FormGrid';
 
@@ -42,19 +42,25 @@ export const BaseForm: React.FC<BaseFormProps> = ({
   children,
   className = ''
 }) => {
+  // Keep a reference to the form so the bottom action bar (outside the form)
+  // can trigger a proper submit event
+  const formRef = useRef<HTMLFormElement>(null);
+
   return (
     <FormLayout
       title={title}
       subtitle={subtitle}
       backLabel={backLabel}
       onBack={onBack}
+      // Ensure the primary action in the sticky footer actually submits the form
+      onSubmit={() => formRef.current?.requestSubmit()}
       onCancel={onCancel}
       loading={loading}
       cancelLabel={cancelLabel}
       submitLabel={submitLabel}
       className={className}
     >
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
         <FormGrid gap={gridGap} className={gridClassName}>
           {children}
         </FormGrid>

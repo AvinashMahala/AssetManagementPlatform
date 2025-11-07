@@ -88,7 +88,18 @@ const TenantEditPage: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await updateTenant({ id: id!, data: formData });
+      // Normalize optional fields
+      const payload: Partial<TenantInput> = {
+        ...formData,
+        dateOfBirth: formData.dateOfBirth && formData.dateOfBirth !== '' ? formData.dateOfBirth : undefined,
+        phone: formData.phone && formData.phone.trim() !== '' ? formData.phone : undefined,
+        alternatePhone: formData.alternatePhone && formData.alternatePhone.trim() !== '' ? formData.alternatePhone : undefined,
+        monthlyIncome: formData.monthlyIncome === undefined || formData.monthlyIncome === null || formData.monthlyIncome === ('' as unknown as number)
+          ? undefined
+          : formData.monthlyIncome,
+      };
+
+      const response = await updateTenant({ id: id!, data: payload });
       if (response.success) {
         navigate(`/tenants/${id}`);
       } else {

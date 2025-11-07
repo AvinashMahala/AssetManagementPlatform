@@ -204,6 +204,20 @@ def create_schema(connection):
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Create receipt_templates table
+    CREATE TABLE receipt_templates (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      name VARCHAR(255) NOT NULL,
+      type VARCHAR(50) UNIQUE NOT NULL,
+      description TEXT,
+      default_settings JSONB NOT NULL,
+      is_active BOOLEAN DEFAULT TRUE,
+      is_default BOOLEAN DEFAULT FALSE,
+      sort_order INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Create properties table (buildings/containers)
     CREATE TABLE properties (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -331,18 +345,94 @@ def create_schema(connection):
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    -- Create receipt_templates table
-    CREATE TABLE receipt_templates (
+    -- Create rent_payments table
+    CREATE TABLE rent_payments (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      name VARCHAR(255) NOT NULL,
-      type VARCHAR(50) UNIQUE NOT NULL,
-      description TEXT,
-      default_settings JSONB NOT NULL,
-      is_active BOOLEAN DEFAULT TRUE,
-      is_default BOOLEAN DEFAULT FALSE,
-      sort_order INTEGER DEFAULT 0,
+      lease_id UUID NOT NULL REFERENCES leases(id),
+      property_id UUID NOT NULL REFERENCES properties(id),
+      tenant_id UUID NOT NULL REFERENCES tenants(id),
+      amount DECIMAL(12,2) NOT NULL,
+      due_date DATE NOT NULL,
+      paid_date DATE,
+      status VARCHAR(50) DEFAULT 'pending',
+      payment_method VARCHAR(50),
+      transaction_id VARCHAR(255),
+      payment_reference VARCHAR(255),
+      late_fee DECIMAL(10,2),
+      penalty_amount DECIMAL(10,2),
+      rent_amount DECIMAL(12,2),
+      maintenance_charges DECIMAL(10,2),
+      other_charges DECIMAL(10,2),
+      notes TEXT,
+      created_by UUID NOT NULL REFERENCES users(id),
+      updated_by UUID REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create rent_transactions table (comprehensive rent collection)
+    CREATE TABLE rent_transactions (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      lease_id UUID NOT NULL REFERENCES leases(id) ON DELETE CASCADE,
+      unit_id UUID REFERENCES units(id),
+      tenant_id UUID NOT NULL REFERENCES tenants(id),
+      property_id UUID NOT NULL REFERENCES properties(id),
+      billing_period_start DATE NOT NULL,
+      billing_period_end DATE NOT NULL,
+      billing_method VARCHAR(20) NOT NULL DEFAULT 'relative' CHECK (billing_method IN ('relative', 'fixed')),
+      days_count INTEGER NOT NULL,
+      base_rent DECIMAL(12,2) NOT NULL DEFAULT 0,
+      previous_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+      expenses JSONB NOT NULL DEFAULT '[]'::jsonb,
+      total_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+      amount_paid DECIMAL(12,2) NOT NULL DEFAULT 0,
+      new_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+      paid_date DATE,
+      status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'finalized', 'paid', 'cancelled')),
+      payment_method VARCHAR(50),
+      transaction_id VARCHAR(255),
+      payment_reference VARCHAR(255),
+      late_fee DECIMAL(10,2) DEFAULT 0,
+      penalty_amount DECIMAL(10,2) DEFAULT 0,
+      receipt_number VARCHAR(100),
+      receipt_generated BOOLEAN NOT NULL DEFAULT FALSE,
+      notes TEXT,
+      created_by UUID NOT NULL REFERENCES users(id),
+      updated_by UUID REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create meters table (utility meter management)
+    CREATE TABLE meters (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      unit_id UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE,
+      property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+      meter_type VARCHAR(20) NOT NULL CHECK (meter_type IN ('electricity', 'water', 'gas')),
+      meter_name VARCHAR(100) NOT NULL,
+      meter_number VARCHAR(50),
+      cost_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (cost_per_unit >= 0),
+      fixed_charge DECIMAL(10,2) DEFAULT 0 CHECK (fixed_charge >= 0),
+      remarks TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create meter_readings table (monthly utility readings)
+    CREATE TABLE meter_readings (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      meter_id UUID NOT NULL REFERENCES meters(id) ON DELETE CASCADE,
+      reading_date DATE NOT NULL,
+      previous_reading DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (previous_reading >= 0),
+      current_reading DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (current_reading >= 0),
+      units_consumed DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (units_consumed >= 0),
+      total_cost DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (total_cost >= 0),
+      meter_photo_url TEXT,
+      rent_transaction_id UUID,
+      recorded_by UUID NOT NULL REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT check_readings CHECK (current_reading >= previous_reading)
     );
 
     -- Create receipts table
@@ -365,8 +455,6 @@ def create_schema(connection):
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
-
-    -- Create indexes for performance
     CREATE INDEX idx_users_email ON users(email);
     CREATE INDEX idx_users_username ON users(username);
     CREATE INDEX idx_properties_owner_id ON properties(owner_id);
@@ -380,6 +468,11 @@ def create_schema(connection):
     CREATE INDEX idx_leases_primary_tenant_id ON leases(primary_tenant_id);
     CREATE INDEX idx_rent_payments_lease_id ON rent_payments(lease_id);
     CREATE INDEX idx_rent_payments_tenant_id ON rent_payments(tenant_id);
+    CREATE INDEX idx_rent_payments_property_id ON rent_payments(property_id);
+    CREATE INDEX idx_meters_unit_id ON meters(unit_id);
+    CREATE INDEX idx_meters_property_id ON meters(property_id);
+    CREATE INDEX idx_meter_readings_meter_id ON meter_readings(meter_id);
+    CREATE INDEX idx_meter_readings_reading_date ON meter_readings(reading_date);
     CREATE INDEX idx_receipts_property_id ON receipts(property_id);
     CREATE INDEX idx_receipts_rent_transaction_id ON receipts(rent_transaction_id);
     CREATE INDEX idx_receipts_tenant_id ON receipts(tenant_id);
@@ -757,6 +850,7 @@ def seed_payments(connection, df):
     for _, row in df.iterrows():
         payment_data = {
             'lease_id': get_lease_id(connection, row.get('property_name'), row.get('unit_number'), row.get('primary_tenant_email')),
+            'property_id': get_property_id_by_name(connection, row.get('property_name')),
             'tenant_id': get_tenant_id_by_email(connection, row.get('tenant_email')),
             'amount': convert_value(row.get('amount'), 'decimal'),
             'due_date': convert_value(row.get('due_date'), 'date'),
@@ -767,7 +861,7 @@ def seed_payments(connection, df):
             'created_by': get_user_id_by_username(connection, row.get('created_by_username'))
         }
 
-        columns = ['lease_id', 'tenant_id', 'amount', 'due_date', 'paid_date', 'status',
+        columns = ['lease_id', 'property_id', 'tenant_id', 'amount', 'due_date', 'paid_date', 'status',
                   'payment_method', 'notes', 'created_by']
         values = [payment_data[col] for col in columns]
 

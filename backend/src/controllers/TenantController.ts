@@ -239,6 +239,7 @@ export class TenantController {
       const tenant = await this.tenantService.createTenant(tenantData);
       ResponseUtils.created(res, tenant, 'Tenant created successfully');
     } catch (error) {
+      console.error('Error creating tenant:', error);
       ResponseUtils.error(res, 'Failed to create tenant');
     }
   }
