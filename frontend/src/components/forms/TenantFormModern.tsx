@@ -288,38 +288,54 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
     markTouched(`${parent}.${field}`);
   };
 
-  const validateForm = (): boolean => {
-    // Mark all required fields as touched to show errors
-    const requiredFields = [
-      'firstName',
-      'lastName',
-      'email',
-      'currentAddress.street',
-      'currentAddress.city',
-      'currentAddress.state',
-      'currentAddress.pincode'
-    ];
-
-    const newTouched: Record<string, boolean> = {};
-    requiredFields.forEach(field => {
-      newTouched[field] = true;
-    });
-    setTouched(prev => ({ ...prev, ...newTouched }));
-
-    // The useEffect will handle validation, just check if form is valid
-    return isFormValid;
+  const scrollToFirstError = () => {
+    // Wait a bit for errors to be rendered in DOM
+    setTimeout(() => {
+      const firstErrorField = document.querySelector('[data-error="true"]');
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+        
+        // Try to focus the input if it's an input element
+        const inputElement = firstErrorField.querySelector('input, textarea, select');
+        if (inputElement instanceof HTMLElement) {
+          inputElement.focus();
+        }
+      }
+    }, 100);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Trigger validation for all fields
-    if (!validateForm()) {
-      // Scroll to first error
-      const firstErrorField = document.querySelector('[data-error="true"]');
-      if (firstErrorField) {
-        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    // First mark all fields as touched
+    const allFields = [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'alternatePhone',
+      'currentAddress.street',
+      'currentAddress.city',
+      'currentAddress.state',
+      'currentAddress.pincode'
+    ];
+    
+    const newTouched: Record<string, boolean> = {};
+    allFields.forEach(field => {
+      newTouched[field] = true;
+    });
+    setTouched(prev => ({ ...prev, ...newTouched }));
+
+    // Wait for validation to complete
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Check if form is valid
+    if (!isFormValid) {
+      scrollToFirstError();
       return;
     }
 
