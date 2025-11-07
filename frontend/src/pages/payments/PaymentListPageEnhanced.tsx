@@ -6,18 +6,22 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { usePayments } from '../../hooks/usePayments';
-import { useTenants } from '../../hooks/useTenants';
-import { useLeases } from '../../hooks/useLeases';
-import { useUnits } from '../../hooks/useUnits';
+import { Pagination } from '../../components/ui/pagination';
 import { AppLayout } from '../../components/layout';
+import { usePayments, useTenants, useLeases, useUnits } from '../../hooks';
 import { format } from 'date-fns';
+import type { Tenant } from '../../types/tenant';
+import type { Lease } from '../../types/lease';
+import type { Unit } from '../../types/unit';
+import type { RentPayment } from '../../types/payment';
 
 const PaymentListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { payments, loading } = usePayments();
   const { tenants } = useTenants();
   const { leases } = useLeases();
@@ -25,11 +29,11 @@ const PaymentListPageEnhanced: React.FC = () => {
 
   // Helper functions
   const getTenantName = (tenantId: string) => {
-    const tenant = tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find((t: Tenant) => t.id === tenantId);
     return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Unknown';
   };
 
-  const getLeaseInfo = (payment: any) => {
+  const getLeaseInfo = (payment: RentPayment) => {
     // Use unit information directly from payment if available
     if (payment.unitId && payment.unitNumber) {
       return {
@@ -39,10 +43,10 @@ const PaymentListPageEnhanced: React.FC = () => {
     }
     
     // Fallback to looking up through lease (for backward compatibility)
-    const lease = leases.find(l => l.id === payment.leaseId);
+    const lease = leases.find((l: Lease) => l.id === payment.leaseId);
     if (!lease) return { unitNumber: 'Unknown', unitId: '' };
     
-    const unit = units.find(u => u.id === lease.unitId);
+    const unit = units.find((u: Unit) => u.id === lease.unitId);
     return {
       unitNumber: unit?.unitNumber || 'Unknown',
       unitId: lease.unitId
@@ -63,6 +67,13 @@ const PaymentListPageEnhanced: React.FC = () => {
     const matchesMethod = paymentMethodFilter === 'all' || p.paymentMethod === paymentMethodFilter;
     return matchesSearch && matchesStatus && matchesMethod;
   }) : [];
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+  const paginatedPayments = filteredPayments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const totalCollected = Array.isArray(payments) ? payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0) : 0;
   const paidCount = Array.isArray(payments) ? payments.filter(p => p.status === 'paid').length : 0;
@@ -277,14 +288,14 @@ const PaymentListPageEnhanced: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredPayments.length === 0 ? (
+                    {paginatedPayments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                           {search ? 'No payments found matching your search.' : 'No payments recorded yet. Click "Record Payment" to add one.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredPayments.map((payment) => {
+                      paginatedPayments.map((payment) => {
                         const { unitNumber } = getLeaseInfo(payment);
                         const tenantName = getTenantName(payment.tenantId);
                         const overdue = isOverdue(payment.dueDate, payment.status);
@@ -366,6 +377,17 @@ const PaymentListPageEnhanced: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
+
         {/* Monthly Summary */}
         {Object.keys(paymentsByMonth).length > 0 && (
           <Card>
@@ -376,8 +398,8 @@ const PaymentListPageEnhanced: React.FC = () => {
             <CardContent>
               <div className="space-y-4">
                 {Object.entries(paymentsByMonth).slice(0, 3).map(([month, monthPayments]) => {
-                  const monthTotal = monthPayments.reduce((sum, p) => sum + (p.status === 'paid' ? p.amount : 0), 0);
-                  const monthPending = monthPayments.reduce((sum, p) => sum + (p.status === 'pending' ? p.amount : 0), 0);
+                  const monthTotal = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'paid' ? p.amount : 0), 0);
+                  const monthPending = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'pending' ? p.amount : 0), 0);
                   
                   return (
                     <div key={month} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
