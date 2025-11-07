@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Edit, Trash2, Building2, MapPin, Grid3x3, List, BarChart3, FileImage } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Building2, MapPin, Grid3x3, List, BarChart3, FileImage, Download, X, Wrench } from 'lucide-react';
 import { useProperties, useDeleteProperty } from '../../hooks';
 import { 
   Card, 
@@ -41,6 +41,9 @@ const PropertyListPageEnhanced: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [selectedProperties, setSelectedProperties] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   
   const { properties, loading, error, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
@@ -90,6 +93,92 @@ const PropertyListPageEnhanced: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete property:', error);
     }
+  };
+
+  // Bulk selection handlers
+  const handleSelectProperty = (propertyId: string, checked: boolean) => {
+    const newSelected = new Set(selectedProperties);
+    if (checked) {
+      newSelected.add(propertyId);
+    } else {
+      newSelected.delete(propertyId);
+    }
+    setSelectedProperties(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(filteredProperties.map(p => p.id));
+      setSelectedProperties(allIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedProperties(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const handleBulkMaintenance = async () => {
+    if (selectedProperties.size === 0) return;
+
+    setBulkActionLoading(true);
+    try {
+      // TODO: Implement bulk maintenance API call
+      // For now, simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Marking properties as under maintenance:', Array.from(selectedProperties));
+
+      // Clear selection after successful operation
+      setSelectedProperties(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('Failed to mark properties as maintenance:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedData = filteredProperties.filter(p => selectedProperties.has(p.id));
+
+    if (selectedData.length === 0) return;
+
+    // Create CSV content
+    const headers = ['Name', 'Type', 'City', 'State', 'Total Area', 'Floors', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...selectedData.map(property => [
+        `"${property.name}"`,
+        `"${getTypeLabel(property.propertyType)}"`,
+        `"${property.address.city}"`,
+        `"${property.address.state}"`,
+        property.totalArea || '',
+        property.totalFloors || '',
+        `"${property.status}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `properties_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clear selection after export
+    setSelectedProperties(new Set());
+    setShowBulkActions(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedProperties(new Set());
+    setShowBulkActions(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -274,6 +363,50 @@ const PropertyListPageEnhanced: React.FC = () => {
           </div>
         </div>
 
+        {/* Bulk Actions Toolbar */}
+        {showBulkActions && selectedProperties.size > 0 && (
+          <div className="border bg-muted/50 px-4 py-3 rounded-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium">
+                  {selectedProperties.size} propert{selectedProperties.size !== 1 ? 'ies' : 'y'} selected
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearSelection}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Selection
+                </Button>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleBulkMaintenance}
+                  disabled={bulkActionLoading}
+                >
+                  {bulkActionLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                  ) : (
+                    <Wrench className="h-4 w-4 mr-2" />
+                  )}
+                  Mark as Maintenance
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkExport}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Selected
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-20">
@@ -312,6 +445,15 @@ const PropertyListPageEnhanced: React.FC = () => {
                 <div className={`h-2 rounded-t-lg ${getStatusColor(property.status).split(' ')[0]}`} />
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedProperties.has(property.id)}
+                        onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
+                        className="rounded border-gray-300"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
                     <div className="flex-1">
                       <CardTitle className="text-lg mb-2">{property.name}</CardTitle>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -381,6 +523,14 @@ const PropertyListPageEnhanced: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedProperties.size === filteredProperties.length && filteredProperties.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                      </TableHead>
                       <TableHead>Property Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Location</TableHead>
@@ -392,6 +542,14 @@ const PropertyListPageEnhanced: React.FC = () => {
                   <TableBody>
                     {filteredProperties.map((property) => (
                       <TableRow key={property.id}>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedProperties.has(property.id)}
+                            onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
+                            className="rounded border-gray-300"
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           <button
                             onClick={() => navigate(`/properties/${property.id}/dashboard`)}

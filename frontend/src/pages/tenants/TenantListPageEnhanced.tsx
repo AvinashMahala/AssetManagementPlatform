@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Users, UserCheck, UserX, Mail, Phone, Briefcase, Eye, Edit, FileImage } from 'lucide-react';
+import { Plus, Search, Users, UserCheck, UserX, Mail, Phone, Briefcase, Eye, Edit, FileImage, Download, X, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -14,6 +14,9 @@ const TenantListPageEnhanced: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  const [selectedTenants, setSelectedTenants] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const { tenants, loading } = useTenants();
 
   const filteredTenants = Array.isArray(tenants) ? tenants.filter(t => {
@@ -43,6 +46,91 @@ const TenantListPageEnhanced: React.FC = () => {
       case 'inactive': return 'secondary';
       default: return 'outline';
     }
+  };
+
+  // Bulk selection handlers
+  const handleSelectTenant = (tenantId: string, checked: boolean) => {
+    const newSelected = new Set(selectedTenants);
+    if (checked) {
+      newSelected.add(tenantId);
+    } else {
+      newSelected.delete(tenantId);
+    }
+    setSelectedTenants(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(filteredTenants.map(t => t.id));
+      setSelectedTenants(allIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedTenants(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const handleBulkDeactivate = async () => {
+    if (selectedTenants.size === 0) return;
+
+    setBulkActionLoading(true);
+    try {
+      // TODO: Implement bulk deactivate API call
+      // For now, simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Deactivating tenants:', Array.from(selectedTenants));
+
+      // Clear selection after successful operation
+      setSelectedTenants(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('Failed to deactivate tenants:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedData = filteredTenants.filter(t => selectedTenants.has(t.id));
+
+    if (selectedData.length === 0) return;
+
+    // Create CSV content
+    const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'Occupation', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...selectedData.map(tenant => [
+        `"${tenant.firstName}"`,
+        `"${tenant.lastName}"`,
+        `"${tenant.email}"`,
+        `"${tenant.phone}"`,
+        `"${tenant.occupation || 'N/A'}"`,
+        `"${tenant.status}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `tenants_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clear selection after export
+    setSelectedTenants(new Set());
+    setShowBulkActions(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedTenants(new Set());
+    setShowBulkActions(false);
   };
 
   return (
@@ -130,6 +218,51 @@ const TenantListPageEnhanced: React.FC = () => {
               </div>
             </div>
           </CardHeader>
+
+          {/* Bulk Actions Toolbar */}
+          {showBulkActions && selectedTenants.size > 0 && (
+            <div className="border-t bg-muted/50 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm font-medium">
+                    {selectedTenants.size} tenant{selectedTenants.size !== 1 ? 's' : ''} selected
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Clear Selection
+                  </Button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDeactivate}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <XCircle className="h-4 w-4 mr-2" />
+                    )}
+                    Deactivate Selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Selected
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <CardContent>
             {loading ? (
               <div className="flex justify-center py-12">
@@ -141,6 +274,14 @@ const TenantListPageEnhanced: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedTenants.size === filteredTenants.length && filteredTenants.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                      </TableHead>
                       <TableHead>Tenant</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Occupation</TableHead>
@@ -151,7 +292,7 @@ const TenantListPageEnhanced: React.FC = () => {
                   <TableBody>
                     {filteredTenants.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                           {search ? 'No tenants found matching your search.' : 'No tenants found. Click "Add Tenant" to create one.'}
                         </TableCell>
                       </TableRow>
@@ -162,6 +303,14 @@ const TenantListPageEnhanced: React.FC = () => {
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/tenants/${tenant.id}`)}
                         >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedTenants.has(tenant.id)}
+                              onChange={(e) => handleSelectTenant(tenant.id, e.target.checked)}
+                              className="rounded border-gray-300"
+                            />
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-3">
                               <div className="flex-shrink-0">

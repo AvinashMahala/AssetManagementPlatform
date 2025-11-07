@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Edit, Building2, FileImage } from 'lucide-react';
+import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Edit, Building2, FileImage, Download, X, Wrench } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -16,6 +16,9 @@ const UnitListPageEnhanced: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [propertyFilter, setPropertyFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
+  const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const { units, loading } = useUnits();
   const { properties } = useProperties();
 
@@ -65,6 +68,92 @@ const UnitListPageEnhanced: React.FC = () => {
   const getPropertyName = (propertyId: string) => {
     const property = properties.find(p => p.id === propertyId);
     return property?.name || 'Unknown Property';
+  };
+
+  // Bulk selection handlers
+  const handleSelectUnit = (unitId: string, checked: boolean) => {
+    const newSelected = new Set(selectedUnits);
+    if (checked) {
+      newSelected.add(unitId);
+    } else {
+      newSelected.delete(unitId);
+    }
+    setSelectedUnits(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(filteredUnits.map(u => u.id));
+      setSelectedUnits(allIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedUnits(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const handleBulkMaintenance = async () => {
+    if (selectedUnits.size === 0) return;
+
+    setBulkActionLoading(true);
+    try {
+      // TODO: Implement bulk maintenance API call
+      // For now, simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Marking units as under maintenance:', Array.from(selectedUnits));
+
+      // Clear selection after successful operation
+      setSelectedUnits(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('Failed to mark units as maintenance:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedData = filteredUnits.filter(u => selectedUnits.has(u.id));
+
+    if (selectedData.length === 0) return;
+
+    // Create CSV content
+    const headers = ['Unit Number', 'Unit Type', 'Property', 'Rent', 'Carpet Area', 'Bedrooms', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...selectedData.map(unit => [
+        `"${unit.unitNumber}"`,
+        `"${unit.unitType}"`,
+        `"${getPropertyName(unit.propertyId)}"`,
+        unit.rent || '',
+        unit.carpetArea || '',
+        unit.bedrooms || '',
+        `"${unit.status}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `units_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clear selection after export
+    setSelectedUnits(new Set());
+    setShowBulkActions(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedUnits(new Set());
+    setShowBulkActions(false);
   };
 
   return (
@@ -163,6 +252,51 @@ const UnitListPageEnhanced: React.FC = () => {
               </div>
             </div>
           </CardHeader>
+
+          {/* Bulk Actions Toolbar */}
+          {showBulkActions && selectedUnits.size > 0 && (
+            <div className="border-t bg-muted/50 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm font-medium">
+                    {selectedUnits.size} unit{selectedUnits.size !== 1 ? 's' : ''} selected
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Clear Selection
+                  </Button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleBulkMaintenance}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    ) : (
+                      <Wrench className="h-4 w-4 mr-2" />
+                    )}
+                    Mark as Maintenance
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Selected
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <CardContent>
             {loading ? (
               <div className="flex justify-center py-12">
@@ -174,6 +308,14 @@ const UnitListPageEnhanced: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedUnits.size === filteredUnits.length && filteredUnits.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                      </TableHead>
                       <TableHead>Unit Number</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Property</TableHead>
@@ -186,7 +328,7 @@ const UnitListPageEnhanced: React.FC = () => {
                   <TableBody>
                     {filteredUnits.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                           {search ? 'No units found matching your search.' : 'No units found. Click "Add Unit" to create one.'}
                         </TableCell>
                       </TableRow>
@@ -197,6 +339,14 @@ const UnitListPageEnhanced: React.FC = () => {
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/units/${unit.id}`)}
                         >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedUnits.has(unit.id)}
+                              onChange={(e) => handleSelectUnit(unit.id, e.target.checked)}
+                              className="rounded border-gray-300"
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">{unit.unitNumber}</TableCell>
                           <TableCell>{unit.unitType}</TableCell>
                           <TableCell>
