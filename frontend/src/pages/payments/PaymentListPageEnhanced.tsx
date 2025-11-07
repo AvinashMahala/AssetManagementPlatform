@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -20,8 +20,11 @@ const PaymentListPageEnhanced: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
+  const [selectedPayments, setSelectedPayments] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const [sortBy, setSortBy] = useState<'dueDate' | 'amount' | 'status' | 'tenant'>('dueDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
@@ -144,26 +147,7 @@ const PaymentListPageEnhanced: React.FC = () => {
     setCurrentPage(1);
   };
 
-  // Get active filters for display
-  const getActiveFilters = () => {
-    const filters = [];
-    if (search) filters.push({ key: 'search', label: `Search: "${search}"`, value: 'search' });
-    if (statusFilter !== 'all') filters.push({ key: 'status', label: `Status: ${statusFilter}`, value: statusFilter });
-    if (paymentMethodFilter !== 'all') filters.push({ key: 'method', label: `Method: ${paymentMethodFilter}`, value: paymentMethodFilter });
-    if (dateRange.start || dateRange.end) filters.push({ key: 'date', label: `Date: ${dateRange.start || '...'} - ${dateRange.end || '...'}` });
-    if (amountRange.min || amountRange.max) filters.push({ key: 'amount', label: `Amount: ₹${amountRange.min || 0} - ₹${amountRange.max || '∞'}` });
-    if (selectedUnit !== 'all') {
-      const unit = units.find(u => u.id === selectedUnit);
-      filters.push({ key: 'unit', label: `Unit: ${unit?.unitNumber || selectedUnit}` });
-    }
-    if (selectedTenant !== 'all') {
-      const tenant = tenants.find(t => t.id === selectedTenant);
-      filters.push({ key: 'tenant', label: `Tenant: ${tenant ? `${tenant.firstName} ${tenant.lastName}` : selectedTenant}` });
-    }
-    return filters;
-  };
-
-  // Remove specific filter
+  // Remove individual filter
   const removeFilter = (filterKey: string) => {
     switch (filterKey) {
       case 'search':
@@ -189,6 +173,116 @@ const PaymentListPageEnhanced: React.FC = () => {
         break;
     }
     setCurrentPage(1);
+  };
+
+  // Get active filters for display
+  const getActiveFilters = () => {
+    const filters = [];
+    if (search) filters.push({ key: 'search', label: `Search: "${search}"`, value: 'search' });
+    if (statusFilter !== 'all') filters.push({ key: 'status', label: `Status: ${statusFilter}`, value: statusFilter });
+    if (paymentMethodFilter !== 'all') filters.push({ key: 'method', label: `Method: ${paymentMethodFilter}`, value: paymentMethodFilter });
+    if (dateRange.start || dateRange.end) filters.push({ key: 'date', label: `Date: ${dateRange.start || '...'} - ${dateRange.end || '...'}` });
+    if (amountRange.min || amountRange.max) filters.push({ key: 'amount', label: `Amount: ₹${amountRange.min || 0} - ₹${amountRange.max || '∞'}` });
+    if (selectedUnit !== 'all') {
+      const unit = units.find(u => u.id === selectedUnit);
+      filters.push({ key: 'unit', label: `Unit: ${unit?.unitNumber || selectedUnit}` });
+    }
+    if (selectedTenant !== 'all') {
+      const tenant = tenants.find(t => t.id === selectedTenant);
+      filters.push({ key: 'tenant', label: `Tenant: ${tenant ? `${tenant.firstName} ${tenant.lastName}` : selectedTenant}` });
+    }
+    return filters;
+  };
+
+  // Bulk selection handlers
+  const handleSelectPayment = (paymentId: string, checked: boolean) => {
+    const newSelected = new Set(selectedPayments);
+    if (checked) {
+      newSelected.add(paymentId);
+    } else {
+      newSelected.delete(paymentId);
+    }
+    setSelectedPayments(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(paginatedPayments.map(p => p.id));
+      setSelectedPayments(allIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedPayments(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const handleBulkMarkAsPaid = async () => {
+    if (selectedPayments.size === 0) return;
+
+    setBulkActionLoading(true);
+    try {
+      // TODO: Implement bulk update API call
+      // For now, simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Update local state to reflect changes
+      // This would normally be handled by the API response and refetching data
+      console.log('Marking payments as paid:', Array.from(selectedPayments));
+
+      // Clear selection after successful operation
+      setSelectedPayments(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('Failed to mark payments as paid:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedData = paginatedPayments.filter(p => selectedPayments.has(p.id));
+
+    if (selectedData.length === 0) return;
+
+    // Create CSV content
+    const headers = ['Tenant', 'Unit', 'Amount', 'Due Date', 'Payment Method', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...selectedData.map(payment => {
+        const tenantName = getTenantName(payment.tenantId);
+        const { unitNumber } = getLeaseInfo(payment);
+        return [
+          `"${tenantName}"`,
+          `"${unitNumber}"`,
+          payment.amount || '',
+          `"${format(new Date(payment.dueDate), 'yyyy-MM-dd')}"`,
+          `"${payment.paymentMethod?.replace('_', ' ') || 'N/A'}"`,
+          `"${getStatusLabel(payment)}"`
+        ].join(',');
+      })
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `payments_export_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clear selection after export
+    setSelectedPayments(new Set());
+    setShowBulkActions(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedPayments(new Set());
+    setShowBulkActions(false);
   };
 
   const totalCollected = Array.isArray(payments) ? payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0) : 0;
@@ -553,6 +647,51 @@ const PaymentListPageEnhanced: React.FC = () => {
               )}
             </div>
           </CardHeader>
+
+          {/* Bulk Actions Toolbar */}
+          {showBulkActions && selectedPayments.size > 0 && (
+            <div className="border-t bg-muted/50 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm font-medium">
+                    {selectedPayments.size} payment{selectedPayments.size !== 1 ? 's' : ''} selected
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Clear Selection
+                  </Button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleBulkMarkAsPaid}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                    )}
+                    Mark as Paid
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Selected
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <CardContent>
             {/* Results Summary */}
             <div className="flex justify-between items-center mb-4">
@@ -570,6 +709,14 @@ const PaymentListPageEnhanced: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedPayments.size === paginatedPayments.length && paginatedPayments.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                      </TableHead>
                       <TableHead>Tenant</TableHead>
                       <TableHead>Unit</TableHead>
                       <TableHead>Amount</TableHead>
@@ -582,7 +729,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                   <TableBody>
                     {paginatedPayments.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                           {filteredPayments.length === 0 && payments.length > 0 ? 'No payments match your filters.' : 'No payments recorded yet. Click "Record Payment" to add one.'}
                         </TableCell>
                       </TableRow>
@@ -598,6 +745,14 @@ const PaymentListPageEnhanced: React.FC = () => {
                             className="cursor-pointer hover:bg-muted/50"
                             onClick={() => navigate(`/payments/${payment.id}`)}
                           >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={selectedPayments.has(payment.id)}
+                                onChange={(e) => handleSelectPayment(payment.id, e.target.checked)}
+                                className="rounded border-gray-300"
+                              />
+                            </TableCell>
                             <TableCell>
                               <div className="flex items-center space-x-2">
                                 <User className="h-4 w-4 text-muted-foreground" />
