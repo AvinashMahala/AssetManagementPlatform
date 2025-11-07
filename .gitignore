@@ -153,3 +153,7 @@ test_data/*
 # Log files
 logs/backend/*.log
 logs/backend/*-audit.json
+
+scripts/seed_data/*.xlsx
+logs/frontend/*.log
+logs/frontend/*-audit.json
