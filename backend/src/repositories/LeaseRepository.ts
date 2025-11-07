@@ -315,6 +315,8 @@ export class LeaseRepository implements ILeaseRepository {
       id: row.id,
       propertyId: row.property_id,
       tenantId: row.tenant_id,
+      unitId: row.unit_id,
+      unitNumber: row.unit_number,
       startDate: row.start_date,
       endDate: row.end_date,
       monthlyRent: parseFloat(row.monthly_rent) || 0,

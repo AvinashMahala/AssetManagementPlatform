@@ -10,6 +10,8 @@ export interface Lease {
   id: string; // UUID
   propertyId: string; // UUID reference to properties
   tenantId: string; // UUID reference to tenants
+  unitId?: string; // UUID reference to units (added for joined queries)
+  unitNumber?: string; // Unit number (added for joined queries)
 
   // Lease terms
   startDate: Date;

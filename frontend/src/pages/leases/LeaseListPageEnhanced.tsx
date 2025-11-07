@@ -27,8 +27,14 @@ const LeaseListPageEnhanced: React.FC = () => {
     return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Unknown';
   };
 
-  const getUnitNumber = (unitId: string) => {
-    const unit = units.find(u => u.id === unitId);
+  const getUnitNumber = (lease: any) => {
+    // Use unit number directly from lease if available
+    if (lease.unitNumber) {
+      return lease.unitNumber;
+    }
+    
+    // Fallback to looking up by unitId
+    const unit = units.find(u => u.id === lease.unitId);
     return unit?.unitNumber || 'Unknown';
   };
 
@@ -47,7 +53,7 @@ const LeaseListPageEnhanced: React.FC = () => {
 
   const filteredLeases = Array.isArray(leases) ? leases.filter(l => {
     const tenantName = getTenantName(l.tenantId);
-    const unitNumber = getUnitNumber(l.unitId);
+    const unitNumber = getUnitNumber(l);
     const matchesSearch = `${tenantName} ${unitNumber}`.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || l.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -250,7 +256,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                             <TableCell>
                               <div className="flex items-center space-x-2">
                                 <Home className="h-4 w-4 text-muted-foreground" />
-                                <span>{getUnitNumber(lease.unitId)}</span>
+                                <span>{getUnitNumber(lease)}</span>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -345,7 +351,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                                   {getTenantName(lease.tenantId)}
                                   <span className="text-muted-foreground">•</span>
                                   <Home className="h-4 w-4" />
-                                  Unit {getUnitNumber(lease.unitId)}
+                                  Unit {getUnitNumber(lease)}
                                 </CardTitle>
                                 <CardDescription className="flex items-center gap-2">
                                   <Calendar className="h-3 w-3" />
