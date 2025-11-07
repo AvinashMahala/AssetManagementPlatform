@@ -32,6 +32,9 @@ const LeaseListPageEnhanced: React.FC = () => {
   const [rentRange, setRentRange] = useState<{min?: number, max?: number}>({});
   const [selectedUnit, setSelectedUnit] = useState<string>('all');
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  const [selectedLeases, setSelectedLeases] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   
   const { leases, loading } = useLeases();
   const { tenants } = useTenants();
@@ -181,6 +184,96 @@ const LeaseListPageEnhanced: React.FC = () => {
         break;
     }
     setCurrentPage(1);
+  };
+
+  // Bulk selection handlers
+  const handleSelectLease = (leaseId: string, checked: boolean) => {
+    const newSelected = new Set(selectedLeases);
+    if (checked) {
+      newSelected.add(leaseId);
+    } else {
+      newSelected.delete(leaseId);
+    }
+    setSelectedLeases(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(paginatedLeases.map(l => l.id));
+      setSelectedLeases(allIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedLeases(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const handleBulkTerminate = async () => {
+    if (selectedLeases.size === 0) return;
+
+    setBulkActionLoading(true);
+    try {
+      // TODO: Implement bulk terminate API call
+      // For now, simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Terminating leases:', Array.from(selectedLeases));
+
+      // Clear selection after successful operation
+      setSelectedLeases(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('Failed to terminate leases:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedData = paginatedLeases.filter(l => selectedLeases.has(l.id));
+
+    if (selectedData.length === 0) return;
+
+    // Create CSV content
+    const headers = ['Tenant', 'Unit', 'Start Date', 'End Date', 'Monthly Rent', 'Security Deposit', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...selectedData.map(lease => {
+        const tenantName = getTenantName(lease.tenantId);
+        const unitNumber = getUnitNumber(lease);
+        return [
+          `"${tenantName}"`,
+          `"${unitNumber}"`,
+          `"${format(new Date(lease.startDate), 'yyyy-MM-dd')}"`,
+          `"${format(new Date(lease.endDate), 'yyyy-MM-dd')}"`,
+          lease.monthlyRent || '',
+          lease.securityDeposit || '',
+          `"${lease.status}"`
+        ].join(',');
+      })
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `leases_export_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clear selection after export
+    setSelectedLeases(new Set());
+    setShowBulkActions(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedLeases(new Set());
+    setShowBulkActions(false);
   };
 
   const activeCount = Array.isArray(leases) ? leases.filter(l => l.status === 'active').length : 0;
@@ -501,6 +594,51 @@ const LeaseListPageEnhanced: React.FC = () => {
               )}
             </div>
           </CardHeader>
+
+          {/* Bulk Actions Toolbar */}
+          {showBulkActions && selectedLeases.size > 0 && (
+            <div className="border-t bg-muted/50 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm font-medium">
+                    {selectedLeases.size} lease{selectedLeases.size !== 1 ? 's' : ''} selected
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Clear Selection
+                  </Button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkTerminate}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <XCircle className="h-4 w-4 mr-2" />
+                    )}
+                    Terminate Selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Selected
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <CardContent>
             {/* Results Summary */}
             <div className="flex justify-between items-center mb-4">
@@ -519,6 +657,14 @@ const LeaseListPageEnhanced: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedLeases.size === paginatedLeases.length && paginatedLeases.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                      </TableHead>
                       <TableHead>Tenant</TableHead>
                       <TableHead>Unit</TableHead>
                       <TableHead>Duration</TableHead>
@@ -530,7 +676,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                   <TableBody>
                     {paginatedLeases.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                           {filteredLeases.length === 0 && leases.length > 0 ? 'No leases match your filters.' : 'No leases found. Click "Create Lease" to create one.'}
                         </TableCell>
                       </TableRow>
@@ -545,6 +691,14 @@ const LeaseListPageEnhanced: React.FC = () => {
                             className="cursor-pointer hover:bg-muted/50"
                             onClick={() => navigate(`/leases/${lease.id}`)}
                           >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={selectedLeases.has(lease.id)}
+                                onChange={(e) => handleSelectLease(lease.id, e.target.checked)}
+                                className="rounded border-gray-300"
+                              />
+                            </TableCell>
                             <TableCell>
                               <div className="flex items-center space-x-2">
                                 <User className="h-4 w-4 text-muted-foreground" />
