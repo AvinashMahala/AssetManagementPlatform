@@ -34,6 +34,7 @@ import { MeterRepository } from '../repositories/MeterRepository';
 import { MeterReadingRepository } from '../repositories/MeterReadingRepository';
 import { ReceiptRepository } from '../repositories/ReceiptRepository';
 import { ReceiptTemplateRepository } from '../repositories/ReceiptTemplateRepository';
+import { RentTransactionMeterReadingRepository, IRentTransactionMeterReadingRepository } from '../repositories/RentTransactionMeterReadingRepository';
 import { PropertyService } from '../services/PropertyService';
 import { UserService } from '../services/UserService';
 import { TenantService } from '../services/TenantService';
@@ -64,6 +65,7 @@ export class DependencyContainer {
   private _meterRepository: IMeterRepository | null = null;
   private _meterReadingRepository: IMeterReadingRepository | null = null;
   private _receiptRepository: IReceiptRepository | null = null;
+  private _transactionMeterReadingRepository: IRentTransactionMeterReadingRepository | null = null;
   private _passwordResetMethodRepository: PasswordResetMethodRepository | null = null;
   private _securityQuestionRepository: SecurityQuestionRepository | null = null;
   private _recoveryCodeRepository: RecoveryCodeRepository | null = null;
@@ -208,6 +210,13 @@ export class DependencyContainer {
     return this._receiptTemplateRepository;
   }
 
+  public get transactionMeterReadingRepository(): IRentTransactionMeterReadingRepository {
+    if (!this._transactionMeterReadingRepository) {
+      this._transactionMeterReadingRepository = new RentTransactionMeterReadingRepository(this.pool);
+    }
+    return this._transactionMeterReadingRepository;
+  }
+
   // Service getters with lazy initialization
   public get propertyService(): IPropertyService {
     if (!this._propertyService) {
@@ -281,7 +290,12 @@ export class DependencyContainer {
         this.rentTransactionRepository,
         this.leaseRepository,
         this.propertyRepository,
-        this.tenantRepository
+        this.tenantRepository,
+        this.meterRepository,
+        this.meterReadingRepository,
+        this.receiptService,
+        this.transactionMeterReadingRepository,
+        this.userRepository
       );
     }
     return this._rentTransactionService;
@@ -429,6 +443,7 @@ export class DependencyContainer {
     this._meterRepository = null;
     this._meterReadingRepository = null;
     this._receiptRepository = null;
+    this._transactionMeterReadingRepository = null;
     this._passwordResetMethodRepository = null;
     this._securityQuestionRepository = null;
     this._recoveryCodeRepository = null;

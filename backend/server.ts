@@ -105,6 +105,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve static PDF files
+app.use('/api/invoices', express.static('public/invoices'));
+app.use('/api/receipts', express.static('public/receipts'));
+
 // Logging middleware (must be before routes)
 app.use(requestIdMiddleware);
 app.use(requestLoggingMiddleware);

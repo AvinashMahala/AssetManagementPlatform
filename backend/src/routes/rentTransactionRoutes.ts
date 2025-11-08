@@ -44,5 +44,13 @@ export const createRentTransactionRoutes = (controller: RentTransactionControlle
   router.get('/revenue/outstanding', auth, controller.getOutstandingTransactions.bind(controller));
   router.get('/revenue/monthly/:year/:month', auth, controller.getMonthlyRevenueReport.bind(controller));
 
+  // MVP-specific routes
+  router.get('/unit/:unitId/current-month', auth, controller.getCurrentMonthTransaction.bind(controller));
+  router.get('/unit/:unitId/last-meter-readings', auth, controller.getLastMeterReadings.bind(controller));
+  router.post('/:id/record-payment', auth, controller.recordPayment.bind(controller));
+  router.post('/generate-invoice', auth, controller.generateInvoice.bind(controller));
+  router.post('/generate-receipt', auth, controller.generateReceipt.bind(controller));
+  router.get('/property/:propertyId/monthly-summary', auth, controller.getMonthlySummary.bind(controller));
+
   return router;
 };

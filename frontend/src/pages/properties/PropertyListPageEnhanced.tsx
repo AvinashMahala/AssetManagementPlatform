@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Eye, Edit, Trash2, Building2, MapPin, Grid3x3, List, BarChart3, FileImage, Download, X, Wrench } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Building2, MapPin, Grid3x3, List, BarChart3, FileImage, Download, X, Wrench, Receipt } from 'lucide-react';
 import { useProperties, useDeleteProperty } from '../../hooks';
 import { 
   Card, 
@@ -535,6 +535,15 @@ const PropertyListPageEnhanced: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="flex-1"
+                      onClick={() => navigate(`/properties/${property.id}/rent-collection`)}
+                    >
+                      <Receipt className="h-4 w-4 mr-2" />
+                      Rent
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
                       onClick={() => navigate(`/properties/${property.id}/dashboard`)}
                     >
                       <BarChart3 className="h-4 w-4 mr-2" />
@@ -625,6 +634,14 @@ const PropertyListPageEnhanced: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => navigate(`/properties/${property.id}/rent-collection`)}
+                              title="Rent Collection"
+                            >
+                              <Receipt className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"

@@ -1,9 +1,12 @@
-# Property Management Platform - API Documentation
+# Asset Management Platform - Documentation
 
-[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/)
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0.0-blue?style=for-the-badge)](https://www.openapis.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=flat-square)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?style=flat-square)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square)](https://reactjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square)](https://www.postgresql.org/)
+[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black)](https://swagger.io/)
 
-Comprehensive API documentation for the Property Management Platform backend. The API is built with Express.js, TypeScript, and follows RESTful conventions with automatic Swagger documentation.
+Comprehensive documentation for the Asset Management Platform - a full-stack property, tenant, and rent management system.
 
 ## 🌐 Live Documentation
 

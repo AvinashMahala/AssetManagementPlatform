@@ -67,6 +67,7 @@ def drop_all_tables(conn):
     
     # Drop tables in reverse dependency order
     tables_to_drop = [
+        'rent_transaction_meter_readings',
         'meter_readings',
         'meters', 
         'rent_transactions',
@@ -139,6 +140,7 @@ def clear_all_data(conn):
     
     # Clear tables in reverse dependency order
     tables_to_clear = [
+        'rent_transaction_meter_readings',
         'meter_readings',
         'meters',
         'rent_transactions', 

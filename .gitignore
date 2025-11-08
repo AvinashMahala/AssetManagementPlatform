@@ -157,3 +157,5 @@ logs/backend/*-audit.json
 scripts/seed_data/*.xlsx
 logs/frontend/*.log
 logs/frontend/*-audit.json
+
+/docs/*

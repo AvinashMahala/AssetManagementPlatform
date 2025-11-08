@@ -215,6 +215,10 @@ const totals = useMemo(() => {
 
 ## Backend APIs Needed
 
+### ✅ IMPLEMENTED - See [Backend Implementation Documentation](./RENT_COLLECTION_BACKEND_IMPLEMENTATION.md)
+
+All required backend endpoints have been implemented! The following endpoints are now available:
+
 ### 1. Rent Transactions Endpoints
 
 #### `GET /api/rent-transactions`

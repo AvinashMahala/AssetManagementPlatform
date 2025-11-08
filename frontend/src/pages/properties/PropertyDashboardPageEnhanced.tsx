@@ -19,6 +19,7 @@ import {
   Eye,
   BarChart3,
   FileImage,
+  Receipt,
 } from 'lucide-react';
 import { useProperty, useUnits, useLeases, usePayments, useTenants } from '../../hooks';
 import {
@@ -246,6 +247,10 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button variant="default" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
+              <Receipt className="w-4 h-4 mr-2" />
+              Rent Collection
+            </Button>
             <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
               <Edit className="w-4 h-4 mr-2" />
               Edit Property

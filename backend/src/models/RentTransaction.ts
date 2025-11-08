@@ -40,6 +40,23 @@ export interface ExpenseLineItem {
   action: ExpenseAction;
 }
 
+// Meter reading for transaction
+export interface MeterReadingForTransaction {
+  meterId: string;
+  meterReadingId?: string;
+  meterName?: string;
+  meterType?: string;
+  meterNumber?: string;
+  previousReading: number;
+  currentReading: number;
+  unitsConsumed: number;
+  costPerUnit: number;
+  fixedCharge: number;
+  totalCost: number;
+  readingDate?: Date;
+  meterPhotoUrl?: string;
+}
+
 export interface RentTransaction {
   id: string; // UUID
 
@@ -100,6 +117,7 @@ export interface RentTransactionInput {
   baseRent: number;
   previousBalance: number;
   expenses: ExpenseLineItem[];
+  meterReadings?: MeterReadingForTransaction[]; // Optional meter readings
   totalAmount: number;
   amountPaid: number;
   newBalance: number;
