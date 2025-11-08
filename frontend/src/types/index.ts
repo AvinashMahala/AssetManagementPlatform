@@ -5,3 +5,4 @@ export * from './api';
 export * from './common';
 export * from './asset';
 export * from './receipt';
+export * from './meter';

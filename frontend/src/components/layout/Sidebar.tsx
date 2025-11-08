@@ -12,6 +12,7 @@ import {
   LogOut,
   User,
   FileImage,
+  Zap,
 } from 'lucide-react';
 import { useAuthContext } from '../../contexts';
 
@@ -29,6 +30,7 @@ const navItems: NavItem[] = [
   { name: 'Tenants', icon: Users, path: '/tenants' },
   { name: 'Leases', icon: FileText, path: '/leases' },
   { name: 'Payments', icon: CreditCard, path: '/payments' },
+  { name: 'Meters', icon: Zap, path: '/meters' },
   { name: 'Templates', icon: FileImage, path: '/templates' },
 ];
 

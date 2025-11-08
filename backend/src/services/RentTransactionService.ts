@@ -777,79 +777,82 @@ export class RentTransactionService implements IRentTransactionService {
     // Get meter readings for this transaction
     const meterReadings = await this.transactionMeterReadingRepository.findByTransaction(transactionId);
 
-    // Build invoice data structure similar to receipt data
-    const invoiceData = {
-      documentType: 'Invoice',
-      documentNumber: invoiceNumber,
-      issueDate: new Date(),
-      dueDate: transaction.billingPeriodEnd,
-      
-      // Property details
-      propertyName: property.name,
-      propertyAddress: property.address,
-      
-      // Tenant details
-      tenantName: `${tenant.firstName} ${tenant.lastName}`,
-      tenantEmail: tenant.email,
-      tenantPhone: tenant.phone,
-      
-      // Transaction details
-      billingPeriod: {
-        start: transaction.billingPeriodStart,
-        end: transaction.billingPeriodEnd
-      },
-      baseRent: transaction.baseRent,
-      previousBalance: transaction.previousBalance,
-      
-      // Utility charges from expenses
-      utilityCharges: (transaction.expenses || [])
-        .filter((e: any) => e.type && ['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
-        .map((e: any) => ({
-          type: e.type,
-          description: e.description,
-          amount: e.amount
-        })),
-      
-      // Meter charges
-      meterCharges: meterReadings.map(mr => ({
-        meterName: mr.meterId, // Will need to join with meter table for name
-        previousReading: mr.previousReading,
-        currentReading: mr.currentReading,
-        unitsConsumed: mr.unitsConsumed,
-        costPerUnit: mr.costPerUnit,
-        fixedCharge: mr.fixedCharge,
-        totalCost: mr.totalCost
-      })),
-      
-      // Other expenses
-      otherExpenses: (transaction.expenses || [])
-        .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
-        .map((e: any) => ({
-          type: e.type,
-          description: e.description,
-          amount: e.amount
-        })),
-      
-      // Totals
-      subtotal: transaction.baseRent,
-      utilityChargesTotal: (transaction.expenses || [])
-        .filter((e: any) => e.type && ['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
-        .reduce((sum: number, e: any) => sum + e.amount, 0),
-      meterChargesTotal: meterReadings.reduce((sum, mr) => sum + mr.totalCost, 0),
-      otherExpensesTotal: (transaction.expenses || [])
-        .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
-        .reduce((sum: number, e: any) => sum + e.amount, 0),
-      totalAmount: transaction.totalAmount,
-      amountPaid: transaction.amountPaid,
-      balanceDue: transaction.newBalance,
-      
-      // Notes
-      notes: transaction.notes || 'Thank you for your payment'
-    };
-
     try {
       // Get property owner (landlord) details from user repository
       const landlord = await this.userRepository.findById(property.ownerId);
+      
+      // Get configured utilities for this unit and calculate their charges
+      const configuredUtilities = await this.calculateUnitUtilityCharges(
+        transaction.unitId,
+        transaction.billingPeriodStart,
+        transaction.billingPeriodEnd
+      );
+      
+      // Build invoice data structure similar to receipt data
+      const invoiceData = {
+        documentType: 'Invoice',
+        documentNumber: invoiceNumber,
+        issueDate: new Date(),
+        dueDate: transaction.billingPeriodEnd,
+        
+        // Property details
+        propertyName: property.name,
+        propertyAddress: property.address,
+        
+        // Tenant details
+        tenantName: `${tenant.firstName} ${tenant.lastName}`,
+        tenantEmail: tenant.email,
+        tenantPhone: tenant.phone,
+        
+        // Transaction details
+        billingPeriod: {
+          start: transaction.billingPeriodStart,
+          end: transaction.billingPeriodEnd
+        },
+        baseRent: transaction.baseRent,
+        previousBalance: transaction.previousBalance,
+        
+        // Utility charges from configured utilities
+        utilityCharges: configuredUtilities.map((u: any) => ({
+          type: u.utilityType,
+          description: `${u.utilityName} (${u.billingMethod === 'fixed' ? 'Fixed' : 'Meter-based'})`,
+          amount: u.amount
+        })),
+        
+        // Meter charges
+        meterCharges: meterReadings.map(mr => ({
+          meterName: mr.meterId, // Will need to join with meter table for name
+          previousReading: mr.previousReading,
+          currentReading: mr.currentReading,
+          unitsConsumed: mr.unitsConsumed,
+          costPerUnit: mr.costPerUnit,
+          fixedCharge: mr.fixedCharge,
+          totalCost: mr.totalCost
+        })),
+        
+        // Other expenses (additional expenses added during rent collection)
+        otherExpenses: (transaction.expenses || [])
+          .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
+          .map((e: any) => ({
+            type: e.type,
+            description: e.description,
+            amount: e.amount
+          })),
+        
+        // Totals
+        subtotal: transaction.baseRent,
+        utilityChargesTotal: configuredUtilities.reduce((sum: number, u: any) => sum + u.amount, 0),
+        meterChargesTotal: meterReadings.reduce((sum, mr) => sum + mr.totalCost, 0),
+        otherExpensesTotal: (transaction.expenses || [])
+          .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
+          .reduce((sum: number, e: any) => sum + e.amount, 0),
+        totalAmount: transaction.totalAmount,
+        amountPaid: transaction.amountPaid,
+        balanceDue: transaction.newBalance,
+        
+        // Notes
+        notes: transaction.notes || 'Thank you for your payment'
+      };
       
       // Build receipt data for PDF generation
       const receiptData: ReceiptData = {
@@ -881,11 +884,20 @@ export class RentTransactionService implements IRentTransactionService {
         breakdown: {
           baseRent: transaction.baseRent,
           previousBalance: transaction.previousBalance,
-          expenses: (transaction.expenses || []).map((e: any) => ({
-            type: e.action || 'other',
-            description: e.description,
-            amount: e.amount
-          })),
+          expenses: [
+            // Include configured utilities as expenses
+            ...configuredUtilities.map((u: any) => ({
+              type: u.utilityType,
+              description: `${u.utilityName} (${u.billingMethod === 'fixed' ? 'Fixed' : 'Meter-based'})`,
+              amount: u.amount
+            })),
+            // Include additional expenses
+            ...(transaction.expenses || []).map((e: any) => ({
+              type: e.type || 'other',
+              description: e.description,
+              amount: e.amount
+            }))
+          ],
           totalAmount: transaction.totalAmount,
           amountPaid: transaction.amountPaid,
           newBalance: transaction.newBalance

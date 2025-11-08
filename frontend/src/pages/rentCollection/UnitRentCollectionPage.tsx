@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { AppLayout } from '../../components/layout';
 import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory, useDeleteRentTransaction } from '../../hooks';
+import { useUnitUtilities } from '../../hooks/useUnitUtilities';
 import { useAuthContext } from '../../contexts';
 import { rentTransactionService } from '../../services/rentTransactionService';
 import type { MeterReadingInput, ExpenseItem } from '../../types/rentTransaction';
@@ -26,6 +27,7 @@ export const UnitRentCollectionPage: React.FC = () => {
   const { data: unit, loading: unitLoading } = useUnit(unitId!);
   const { data: property } = useProperty(propertyId!);
   const { loading: readingsLoading } = useLastMeterReadings(unitId!);
+  const { utilities, loading: utilitiesLoading } = useUnitUtilities(unitId, propertyId);
   const { leases } = useLeases(unitId);
   const { history: recentInvoices, loading: historyLoading, refetch: refetchHistory } = useUnitTransactionHistory(unitId!, 5);
   const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
@@ -40,11 +42,13 @@ export const UnitRentCollectionPage: React.FC = () => {
   const [validationSummary, setValidationSummary] = useState<{
     lease: { valid: boolean; message: string };
     meterReadings: { valid: boolean; message: string };
+    utilities: { valid: boolean; message: string };
     expenses: { valid: boolean; message: string };
     overall: { valid: boolean; message: string };
   }>({
     lease: { valid: false, message: 'Checking lease...' },
     meterReadings: { valid: false, message: 'Checking meter readings...' },
+    utilities: { valid: true, message: 'Checking utilities...' },
     expenses: { valid: true, message: 'No additional expenses' },
     overall: { valid: false, message: 'Validating data...' }
   });
@@ -88,12 +92,18 @@ export const UnitRentCollectionPage: React.FC = () => {
         ? `${expenses.length} expense(s) added` 
         : 'Some expenses are incomplete';
 
+    const utilitiesValid = utilities.filter(u => u.isEnabled).length >= 0; // Always valid, just informational
+    const utilitiesMessage = utilities.filter(u => u.isEnabled).length === 0 
+      ? 'No utilities configured' 
+      : `${utilities.filter(u => u.isEnabled).length} utility configuration(s) active`;
+
     const overallValid = leaseValid && meterReadingsValid && expensesValid;
     const overallMessage = overallValid ? 'All data complete' : 'Some issues need to be resolved';
 
     setValidationSummary({
       lease: { valid: leaseValid, message: leaseMessage },
       meterReadings: { valid: meterReadingsValid, message: meterReadingsMessage },
+      utilities: { valid: utilitiesValid, message: utilitiesMessage },
       expenses: { valid: expensesValid, message: expensesMessage },
       overall: { valid: overallValid, message: overallMessage }
     });
@@ -105,20 +115,36 @@ export const UnitRentCollectionPage: React.FC = () => {
     const maintenanceCharges = unit?.maintenanceCharges || 0;
     const totalMeterCharges = meterReadings.reduce((sum, r) => sum + r.totalCost, 0);
     const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    // Calculate utility charges from configured utilities
+    const totalUtilityCharges = utilities
+      .filter(u => u.isEnabled)
+      .reduce((sum, utility) => {
+        if (utility.billingMethod === 'fixed') {
+          return sum + (utility.fixedAmount || 0);
+        } else if (utility.billingMethod === 'meter_based') {
+          // For meter-based utilities, the charge is already calculated in meterReadings
+          // So we don't double-count here
+          return sum;
+        }
+        return sum;
+      }, 0);
+
     const previousBalance = 0; // TODO: Get from last transaction
-    const totalAmount = baseRent + maintenanceCharges + totalMeterCharges + totalExpenses + previousBalance;
+    const totalAmount = baseRent + maintenanceCharges + totalMeterCharges + totalUtilityCharges + totalExpenses + previousBalance;
 
     return {
       baseRent,
       maintenanceCharges,
       totalMeterCharges,
+      totalUtilityCharges,
       totalExpenses,
       previousBalance,
       totalAmount,
     };
   };
 
-  const totals = useMemo(calculateTotals, [unit, meterReadings, expenses]);
+  const totals = useMemo(calculateTotals, [unit, meterReadings, expenses, utilities]);
 
   // Perform auto-save
   const performAutoSave = useCallback(async () => {
@@ -163,6 +189,7 @@ export const UnitRentCollectionPage: React.FC = () => {
           isRemoved: false
         })),
         totalMeterCharges: totals.totalMeterCharges,
+        totalUtilityCharges: totals.totalUtilityCharges,
         totalExpenses: totals.totalExpenses,
         totalAmount: totals.totalAmount,
         amountPaid: 0,
@@ -421,6 +448,12 @@ export const UnitRentCollectionPage: React.FC = () => {
                 <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0", fontWeight: 700, color: "#2d3748"}}>{data.maintenanceCharges}</td>
               </tr>
             )}
+            {data.utilityCharges && parseFloat(data.utilityCharges.replace(/[^0-9.-]+/g,"")) > 0 && (
+              <tr>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0"}}>Utility Charges</td>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0", fontWeight: 700, color: "#2d3748"}}>{data.utilityCharges}</td>
+              </tr>
+            )}
             {data.meterCharges && parseFloat(data.meterCharges.replace(/[^0-9.-]+/g,"")) > 0 && (
               <tr>
                 <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0"}}>Electricity Charges</td>
@@ -554,6 +587,7 @@ export const UnitRentCollectionPage: React.FC = () => {
           isRemoved: false
         })),
         totalMeterCharges: totals.totalMeterCharges,
+        totalUtilityCharges: totals.totalUtilityCharges,
         totalExpenses: totals.totalExpenses,
         totalAmount: totals.totalAmount,
         amountPaid: 0,
@@ -641,6 +675,7 @@ export const UnitRentCollectionPage: React.FC = () => {
         propertyUnit: unit.unitNumber,
         baseRent: formatCurrency(totals.baseRent),
         maintenanceCharges: formatCurrency(totals.maintenanceCharges),
+        utilityCharges: formatCurrency(totals.totalUtilityCharges),
         meterCharges: formatCurrency(totals.totalMeterCharges),
         expenses: formatCurrency(totals.totalExpenses),
         previousBalance: formatCurrency(totals.previousBalance),
@@ -691,6 +726,21 @@ export const UnitRentCollectionPage: React.FC = () => {
       </tr>`);
     }
     
+    // Configured utilities
+    if (totals.totalUtilityCharges > 0) {
+      utilities
+        .filter(u => u.isEnabled)
+        .forEach(utility => {
+          const amount = utility.billingMethod === 'fixed' ? (utility.fixedAmount || 0) : 0;
+          if (amount > 0) {
+            rows.push(`<tr>
+              <td>${utility.utilityName} (${utility.utilityType})</td>
+              <td>${formatCurrency(amount)}</td>
+            </tr>`);
+          }
+        });
+    }
+    
     // Meter charges
     if (totals.totalMeterCharges > 0) {
       rows.push(`<tr>
@@ -730,6 +780,7 @@ export const UnitRentCollectionPage: React.FC = () => {
     setValidationSummary({
       lease: { valid: false, message: 'Validating...' },
       meterReadings: { valid: false, message: 'Validating...' },
+      utilities: { valid: false, message: 'Validating...' },
       expenses: { valid: false, message: 'Validating...' },
       overall: { valid: false, message: 'Generating invoice...' }
     });
@@ -787,6 +838,7 @@ export const UnitRentCollectionPage: React.FC = () => {
           isRemoved: false
         })),
         totalMeterCharges: totals.totalMeterCharges,
+        totalUtilityCharges: totals.totalUtilityCharges,
         totalExpenses: totals.totalExpenses,
         totalAmount: totals.totalAmount,
         amountPaid: 0,
@@ -921,7 +973,7 @@ export const UnitRentCollectionPage: React.FC = () => {
     }
   };
 
-  if (unitLoading || readingsLoading) {
+  if (unitLoading || readingsLoading || utilitiesLoading) {
     return (
       <AppLayout title="Collect Rent">
         <div className="flex justify-center items-center h-64">
@@ -1074,7 +1126,7 @@ export const UnitRentCollectionPage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-3 p-3 rounded-lg border">
                 {validationSummary.lease.valid ? (
                   <span className="text-green-600 text-lg">✅</span>
@@ -1096,6 +1148,18 @@ export const UnitRentCollectionPage: React.FC = () => {
                 <div>
                   <p className="font-medium text-sm">Meter Readings</p>
                   <p className="text-xs text-gray-600">{validationSummary.meterReadings.message}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                {validationSummary.utilities.valid ? (
+                  <span className="text-blue-600 text-lg">ℹ️</span>
+                ) : (
+                  <span className="text-gray-600 text-lg">ℹ️</span>
+                )}
+                <div>
+                  <p className="font-medium text-sm">Utilities</p>
+                  <p className="text-xs text-gray-600">{validationSummary.utilities.message}</p>
                 </div>
               </div>
               
@@ -1192,14 +1256,18 @@ export const UnitRentCollectionPage: React.FC = () => {
         {/* Summary Card */}
         <Card className="bg-gradient-to-r from-blue-50 to-purple-50">
           <CardContent className="pt-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="text-center">
                 <p className="text-sm text-gray-600">Base Rent</p>
                 <p className="text-xl font-bold">{formatCurrency(totals.baseRent)}</p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Utilities</p>
-                <p className="text-xl font-bold text-blue-600">{formatCurrency(totals.totalMeterCharges)}</p>
+                <p className="text-xl font-bold text-blue-600">{formatCurrency(totals.totalUtilityCharges)}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Meter Charges</p>
+                <p className="text-xl font-bold text-purple-600">{formatCurrency(totals.totalMeterCharges)}</p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Expenses</p>
@@ -1328,6 +1396,61 @@ export const UnitRentCollectionPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Configured Utilities */}
+        {utilities.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Configured Utilities</span>
+                <Badge variant="outline">{utilities.filter(u => u.isEnabled).length} active</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {utilities
+                .filter(utility => utility.isEnabled)
+                .map((utility) => (
+                  <div key={utility.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        utility.utilityType === 'electricity' ? 'bg-yellow-100' :
+                        utility.utilityType === 'water' ? 'bg-blue-100' :
+                        utility.utilityType === 'gas' ? 'bg-orange-100' : 'bg-gray-100'
+                      }`}>
+                        {utility.utilityType === 'electricity' && <Zap className="h-4 w-4 text-yellow-600" />}
+                        {utility.utilityType === 'water' && <Droplet className="h-4 w-4 text-blue-600" />}
+                        {utility.utilityType === 'gas' && <Flame className="h-4 w-4 text-orange-600" />}
+                        {!['electricity', 'water', 'gas'].includes(utility.utilityType) && <Eye className="h-4 w-4 text-gray-600" />}
+                      </div>
+                      <div>
+                        <p className="font-medium">{utility.utilityName}</p>
+                        <p className="text-sm text-gray-600 capitalize">
+                          {utility.billingMethod === 'fixed' ? 'Fixed Rate' : 'Meter-based'} • {utility.utilityType}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">
+                        {utility.billingMethod === 'fixed' 
+                          ? formatCurrency(utility.fixedAmount || 0)
+                          : 'Meter-based'
+                        }
+                      </p>
+                      {utility.billingMethod === 'fixed' && (
+                        <p className="text-xs text-gray-500">Fixed charge</p>
+                      )}
+                      {utility.billingMethod === 'meter_based' && (
+                        <p className="text-xs text-gray-500">Calculated from meter</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              {utilities.filter(u => u.isEnabled).length === 0 && (
+                <p className="text-center text-gray-500 py-4">No active utilities configured</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Meter Readings */}
         {meterReadings.length > 0 && (
           <Card>
@@ -1398,67 +1521,113 @@ export const UnitRentCollectionPage: React.FC = () => {
         {/* Expenses */}
         <Card>
           <CardHeader>
-            <CardTitle>Additional Expenses</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              <span>Miscellaneous Expenses</span>
+              <Badge variant="outline">{expenses.length} expense(s)</Badge>
+            </CardTitle>
+            <p className="text-sm text-gray-600">Add any additional charges for this billing period</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Add Expense Form */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <select
-                value={newExpense.category}
-                onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="">Category</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Repairs">Repairs</option>
-                <option value="Cleaning">Cleaning</option>
-                <option value="Internet">Internet</option>
-                <option value="Other">Other</option>
-              </select>
-              <Input
-                placeholder="Description"
-                value={newExpense.description}
-                onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-              />
-              <Input
-                type="number"
-                placeholder="Amount"
-                value={newExpense.amount || ''}
-                onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) || 0 })}
-                min="0"
-                step="0.01"
-              />
-              <Button onClick={handleAddExpense} className="w-full">
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 bg-gray-50 rounded-lg">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  value={newExpense.category}
+                  onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Select Category</option>
+                  <option value="Maintenance">🏠 Maintenance</option>
+                  <option value="Repairs">🔧 Repairs</option>
+                  <option value="Cleaning">🧹 Cleaning</option>
+                  <option value="Internet">🌐 Internet</option>
+                  <option value="Parking">🚗 Parking</option>
+                  <option value="Late Fee">⏰ Late Fee</option>
+                  <option value="Security">🔒 Security</option>
+                  <option value="Other">📝 Other</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                <Input
+                  placeholder="e.g., Plumbing repair, WiFi charges"
+                  value={newExpense.description}
+                  onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+                  className="focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Amount (₹)</label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={newExpense.amount || ''}
+                  onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) || 0 })}
+                  min="0"
+                  step="0.01"
+                  className="focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button 
+                  onClick={handleAddExpense} 
+                  className="w-full"
+                  disabled={!newExpense.category || !newExpense.description || newExpense.amount <= 0}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
             </div>
 
             {/* Expense List */}
             {expenses.length > 0 ? (
               <div className="space-y-2">
-                {expenses.map((expense) => (
-                  <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{expense.description}</p>
-                      <p className="text-xs text-gray-600">{expense.category}</p>
+                {expenses.map((expense, index) => (
+                  <div key={expense.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="flex-shrink-0">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-xs font-medium">
+                          {index + 1}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{expense.description}</p>
+                        <p className="text-xs text-gray-600 flex items-center gap-1">
+                          <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">{expense.category}</span>
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-bold text-orange-600">₹{expense.amount.toFixed(2)}</span>
+                      <span className="font-bold text-green-600">₹{expense.amount.toFixed(2)}</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveExpense(expense.id!)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 h-8 w-8"
+                        title="Remove expense"
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 ))}
+                
+                {/* Expenses Total */}
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-green-800">Total Additional Expenses</span>
+                    <span className="font-bold text-green-700 text-lg">₹{totals.totalExpenses.toFixed(2)}</span>
+                  </div>
+                </div>
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-4">No additional expenses added</p>
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">💰</div>
+                <p className="text-sm">No additional expenses added</p>
+                <p className="text-xs text-gray-400 mt-1">Use the form above to add maintenance, repairs, or other charges</p>
+              </div>
             )}
           </CardContent>
         </Card>

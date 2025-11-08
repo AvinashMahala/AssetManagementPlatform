@@ -18,6 +18,7 @@ import TemplateEditor from './pages/TemplateEditor';
 import TemplateGallery from './pages/TemplateGallery';
 import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
 import { PropertyRentCollectionPage, UnitRentCollectionPage } from './pages/rentCollection';
+import { MeterListPage, MeterCreatePage, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
 import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
@@ -146,6 +147,12 @@ function App() {
               <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
+
+              <Route path="/meters" element={<ProtectedRoute><MeterListPage /></ProtectedRoute>} />
+              <Route path="/meters/create" element={<ProtectedRoute><MeterCreatePage /></ProtectedRoute>} />
+              <Route path="/meters/:id" element={<ProtectedRoute><MeterDetailPage /></ProtectedRoute>} />
+              <Route path="/meters/:id/edit" element={<ProtectedRoute><MeterEditPage /></ProtectedRoute>} />
+              <Route path="/meters/:id/readings/create" element={<ProtectedRoute><MeterReadingCreatePage /></ProtectedRoute>} />
 
               {/* Template routes */}
               <Route path="/templates" element={<ProtectedRoute><TemplateGallery /></ProtectedRoute>} />

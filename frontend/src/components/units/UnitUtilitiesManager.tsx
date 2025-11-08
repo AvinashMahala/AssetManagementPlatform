@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { UnitUtility, UtilityTypeValue, UtilityBillingMethodValue } from '../../types/unit';
 import { UtilityType, UtilityBillingMethod } from '../../types/unit';
 import { useUnitUtilities, useCreateUnitUtility, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility } from '../../hooks';
+import { useLastMeterReadings } from '../../hooks/useRentTransactions';
 
 interface UnitUtilitiesManagerProps {
   unitId: string;
@@ -10,10 +11,14 @@ interface UnitUtilitiesManagerProps {
 
 export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unitId, propertyId }) => {
   const { utilities, loading, error, refetch } = useUnitUtilities(unitId);
+  const { loading: readingsLoading } = useLastMeterReadings(unitId);
   const { mutate: createUtility, loading: creating } = useCreateUnitUtility();
   const { mutate: updateUtility, loading: updating } = useUpdateUnitUtility();
   const { mutate: deleteUtility, loading: deleting } = useDeleteUnitUtility();
   const { mutate: toggleUtility, loading: toggling } = useToggleUnitUtility();
+
+  // Define which utility types support meter-based billing
+  const METERED_UTILITY_TYPES = [UtilityType.ELECTRICITY, UtilityType.WATER, UtilityType.GAS];
 
   const [showForm, setShowForm] = useState(false);
   const [editingUtility, setEditingUtility] = useState<UnitUtility | null>(null);
@@ -24,11 +29,45 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
     isEnabled: true,
   });
 
+  // Get available meters for auto-resolution
+  const { data: availableMeters } = useLastMeterReadings(unitId);
+
+  // Auto-set billing method and resolve meter ID when utility type changes
+  useEffect(() => {
+    const isMeteredType = METERED_UTILITY_TYPES.includes(formData.utilityType as any);
+    const newBillingMethod = isMeteredType ? UtilityBillingMethod.METER_BASED : UtilityBillingMethod.FIXED;
+    
+    setFormData(prev => ({
+      ...prev,
+      billingMethod: newBillingMethod,
+      // Clear meter-related fields for non-metered utilities
+      ...(newBillingMethod === UtilityBillingMethod.FIXED && {
+        meterId: undefined,
+        multiplier: undefined
+      })
+    }));
+
+    // Auto-resolve meter ID for metered utilities
+    if (isMeteredType && availableMeters && formData.utilityType) {
+      const matchingMeter = availableMeters.find(meter => 
+        meter.meterType.toLowerCase() === formData.utilityType?.toLowerCase()
+      );
+      
+      if (matchingMeter && (!formData.meterId || editingUtility)) {
+        setFormData(prev => ({
+          ...prev,
+          meterId: matchingMeter.meterId,
+          multiplier: prev.multiplier || 1.0 // Default multiplier
+        }));
+      }
+    }
+  }, [formData.utilityType, availableMeters, editingUtility]);
+
   const resetForm = () => {
     setFormData({
       utilityType: UtilityType.ELECTRICITY,
       utilityName: '',
-      billingMethod: UtilityBillingMethod.FIXED,
+      billingMethod: UtilityBillingMethod.METER_BASED, // Default for electricity
       isEnabled: true,
     });
     setEditingUtility(null);
@@ -37,12 +76,16 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
 
   const handleCreate = () => {
     setEditingUtility(null);
+    // Start with electricity (metered) as default
+    const defaultType = UtilityType.ELECTRICITY;
+    const isMeteredType = METERED_UTILITY_TYPES.includes(defaultType);
+    
     setFormData({
       unitId,
       propertyId,
-      utilityType: UtilityType.ELECTRICITY,
+      utilityType: defaultType,
       utilityName: '',
-      billingMethod: UtilityBillingMethod.FIXED,
+      billingMethod: isMeteredType ? UtilityBillingMethod.METER_BASED : UtilityBillingMethod.FIXED,
       isEnabled: true,
     });
     setShowForm(true);
@@ -105,10 +148,10 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
     return method === UtilityBillingMethod.FIXED ? 'Fixed Amount' : 'Meter Based';
   };
 
-  if (loading) {
+  if (loading || readingsLoading) {
     return (
       <div className="flex justify-center items-center h-32">
-        <div className="text-gray-600">Loading utilities...</div>
+        <div className="text-gray-600">Loading utilities and meters...</div>
       </div>
     );
   }
@@ -237,20 +280,35 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Billing Method
-                </label>
-                <select
-                  value={formData.billingMethod}
-                  onChange={(e) => setFormData({ ...formData, billingMethod: e.target.value as UtilityBillingMethodValue })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value={UtilityBillingMethod.FIXED}>Fixed Amount</option>
-                  <option value={UtilityBillingMethod.METER_BASED}>Meter Based</option>
-                </select>
-              </div>
+              {/* Billing Method - Only show for metered utilities */}
+              {METERED_UTILITY_TYPES.includes(formData.utilityType as any) && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Billing Method
+                  </label>
+                  <select
+                    value={formData.billingMethod}
+                    onChange={(e) => setFormData({ ...formData, billingMethod: e.target.value as UtilityBillingMethodValue })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value={UtilityBillingMethod.FIXED}>Fixed Amount</option>
+                    <option value={UtilityBillingMethod.METER_BASED}>Meter Based</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 {formData.utilityType} supports both fixed and meter-based billing
+                  </p>
+                </div>
+              )}
+
+              {/* Fixed billing info for non-metered utilities */}
+              {!METERED_UTILITY_TYPES.includes(formData.utilityType as any) && (
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <p className="text-sm text-blue-800">
+                    <span className="font-medium">Fixed Billing:</span> {getUtilityTypeLabel(formData.utilityType as any)} utilities use fixed monthly charges only.
+                  </p>
+                </div>
+              )}
 
               {formData.billingMethod === UtilityBillingMethod.FIXED && (
                 <div>
@@ -270,20 +328,32 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
                 </div>
               )}
 
-              {formData.billingMethod === UtilityBillingMethod.METER_BASED && (
+              {formData.billingMethod === UtilityBillingMethod.METER_BASED && METERED_UTILITY_TYPES.includes(formData.utilityType as any) && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Meter ID
+                      {formData.meterId && (
+                        <span className="ml-2 text-xs text-green-600 font-normal">
+                          ✓ Auto-resolved from {formData.utilityType} meter
+                        </span>
+                      )}
                     </label>
                     <input
                       type="text"
                       value={formData.meterId || ''}
                       onChange={(e) => setFormData({ ...formData, meterId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Meter ID"
+                      className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        formData.meterId ? 'bg-green-50 border-green-300' : ''
+                      }`}
+                      placeholder={availableMeters ? "Select utility type to auto-resolve meter" : "Loading meters..."}
                       required
                     />
+                    {availableMeters && !formData.meterId && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        No {formData.utilityType?.toLowerCase()} meter found. Please add a meter first or enter manually.
+                      </p>
+                    )}
                   </div>
 
                   <div>
