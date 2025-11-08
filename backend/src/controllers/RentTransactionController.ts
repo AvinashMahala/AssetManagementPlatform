@@ -1771,4 +1771,194 @@ export class RentTransactionController {
       ErrorUtils.handleGenericError(res, err, 'Failed to get monthly summary');
     }
   }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/utility-revenue/property/{propertyId}:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get utility revenue breakdown by property
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Property ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for revenue calculation (optional)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for revenue calculation (optional)
+   *     responses:
+   *       200:
+   *         description: Utility revenue breakdown for the property
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUtilityRevenueByProperty(req: Request, res: Response) {
+    try {
+      const { propertyId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const revenue = await this.service.getUtilityRevenueByProperty(
+        propertyId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      ResponseUtils.success(res, revenue);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get utility revenue by property');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/utility-revenue/unit/{unitId}:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get utility revenue breakdown by unit
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: unitId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Unit ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for revenue calculation (optional)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for revenue calculation (optional)
+   *     responses:
+   *       200:
+   *         description: Utility revenue breakdown for the unit
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUtilityRevenueByUnit(req: Request, res: Response) {
+    try {
+      const { unitId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const revenue = await this.service.getUtilityRevenueByUnit(
+        unitId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      ResponseUtils.success(res, revenue);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get utility revenue by unit');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/utility-revenue/summary:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get overall utility revenue summary
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: propertyId
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Filter by property ID (optional)
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for revenue calculation (optional)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for revenue calculation (optional)
+   *     responses:
+   *       200:
+   *         description: Overall utility revenue summary
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUtilityRevenueSummary(req: Request, res: Response) {
+    try {
+      const { propertyId, startDate, endDate } = req.query;
+
+      const summary = await this.service.getUtilityRevenueSummary(
+        propertyId as string | undefined,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      ResponseUtils.success(res, summary);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get utility revenue summary');
+    }
+  }
 }

@@ -155,6 +155,21 @@ export const VALIDATION = {
     },
     STATUSES: ['active', 'inactive', 'evicted'] as const,
   },
+  UNIT_UTILITY: {
+    UTILITY_NAME: {
+      MIN_LENGTH: 1,
+      MAX_LENGTH: 100,
+    },
+    FIXED_AMOUNT: {
+      MIN_VALUE: 0,
+    },
+    MULTIPLIER: {
+      MIN_VALUE: 0.1,
+      MAX_VALUE: 10.0,
+    },
+    UTILITY_TYPES: ['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'] as const,
+    BILLING_METHODS: ['fixed', 'meter_based'] as const,
+  },
 } as const;
 
 // Error messages
@@ -275,6 +290,24 @@ export const ERROR_MESSAGES = {
     STATUS_INVALID: 'Invalid unit-tenant status',
     INVALID_ID: 'Invalid unit-tenant ID',
     NOT_FOUND: 'Unit-tenant relationship not found',
+  },
+  UNIT_UTILITY: {
+    UNIT_ID_REQUIRED: 'Unit ID is required',
+    PROPERTY_ID_REQUIRED: 'Property ID is required',
+    UTILITY_TYPE_REQUIRED: 'Utility type is required',
+    UTILITY_TYPE_INVALID: 'Invalid utility type',
+    UTILITY_NAME_REQUIRED: 'Utility name is required',
+    UTILITY_NAME_TOO_SHORT: 'Utility name must be at least 1 character',
+    UTILITY_NAME_TOO_LONG: 'Utility name must be less than 100 characters',
+    BILLING_METHOD_REQUIRED: 'Billing method is required',
+    BILLING_METHOD_INVALID: 'Invalid billing method. Must be either "fixed" or "meter_based"',
+    FIXED_AMOUNT_NEGATIVE: 'Fixed amount cannot be negative',
+    METER_ID_REQUIRED: 'Meter ID is required for meter-based billing',
+    MULTIPLIER_INVALID: 'Multiplier must be between 0.1 and 10.0',
+    INVALID_ID: 'Invalid unit utility ID',
+    NOT_FOUND: 'Unit utility not found',
+    METER_NOT_FOUND: 'Associated meter not found',
+    UNIT_NOT_FOUND: 'Unit not found',
   },
   GENERAL: {
     INTERNAL_ERROR: 'Internal server error',

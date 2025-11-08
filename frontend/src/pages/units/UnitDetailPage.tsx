@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useDeleteUnit } from '../../hooks';
 import { PhotoCarousel } from '../../componentDesignLibrary';
+import { UnitUtilitiesManager } from '../../components/units/UnitUtilitiesManager';
 
 export const UnitDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -160,6 +161,11 @@ export const UnitDetailPage: React.FC = () => {
             <p className="text-gray-700">{unit.description}</p>
           </div>
         )}
+
+        {/* Utilities */}
+        <div className="p-6 border-b">
+          <UnitUtilitiesManager unitId={unit.id} propertyId={unit.propertyId} />
+        </div>
 
         {/* Metadata */}
         <div className="p-6 bg-gray-50">

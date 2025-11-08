@@ -721,6 +721,98 @@ export class ValidationUtils {
   }
 
   /**
+   * Validate unit utility unit ID
+   */
+  static validateUnitUtilityUnitId(unitId: string): { isValid: boolean; message?: string } {
+    if (!unitId || unitId.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.UNIT_ID_REQUIRED };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit utility property ID
+   */
+  static validateUnitUtilityPropertyId(propertyId: string): { isValid: boolean; message?: string } {
+    if (!propertyId || propertyId.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.PROPERTY_ID_REQUIRED };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit utility type
+   */
+  static validateUnitUtilityType(utilityType: string): { isValid: boolean; message?: string } {
+    if (!utilityType || utilityType.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.UTILITY_TYPE_REQUIRED };
+    }
+    if (!VALIDATION.UNIT_UTILITY.UTILITY_TYPES.includes(utilityType as any)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.UTILITY_TYPE_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit utility name
+   */
+  static validateUnitUtilityName(utilityName: string): { isValid: boolean; message?: string } {
+    if (!utilityName || utilityName.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.UTILITY_NAME_REQUIRED };
+    }
+    if (utilityName.length < VALIDATION.UNIT_UTILITY.UTILITY_NAME.MIN_LENGTH) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.UTILITY_NAME_TOO_SHORT };
+    }
+    if (utilityName.length > VALIDATION.UNIT_UTILITY.UTILITY_NAME.MAX_LENGTH) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.UTILITY_NAME_TOO_LONG };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit utility billing method
+   */
+  static validateUnitUtilityBillingMethod(billingMethod: string): { isValid: boolean; message?: string } {
+    if (!billingMethod || billingMethod.trim().length === 0) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.BILLING_METHOD_REQUIRED };
+    }
+    if (!VALIDATION.UNIT_UTILITY.BILLING_METHODS.includes(billingMethod as any)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.BILLING_METHOD_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit utility fixed amount
+   */
+  static validateUnitUtilityFixedAmount(fixedAmount?: number): { isValid: boolean; message?: string } {
+    if (fixedAmount !== undefined && !this.isPositiveNumber(fixedAmount)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.FIXED_AMOUNT_NEGATIVE };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit utility meter ID
+   */
+  static validateUnitUtilityMeterId(meterId?: string, billingMethod?: string): { isValid: boolean; message?: string } {
+    if (billingMethod === 'meter_based' && (!meterId || meterId.trim().length === 0)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.METER_ID_REQUIRED };
+    }
+    return { isValid: true };
+  }
+
+  /**
+   * Validate unit utility multiplier
+   */
+  static validateUnitUtilityMultiplier(multiplier?: number): { isValid: boolean; message?: string } {
+    if (multiplier !== undefined && (multiplier < VALIDATION.UNIT_UTILITY.MULTIPLIER.MIN_VALUE || multiplier > VALIDATION.UNIT_UTILITY.MULTIPLIER.MAX_VALUE)) {
+      return { isValid: false, message: ERROR_MESSAGES.UNIT_UTILITY.MULTIPLIER_INVALID };
+    }
+    return { isValid: true };
+  }
+
+  /**
    * Validate rent payment lease ID
    */
   static validateRentPaymentLeaseId(leaseId: string): { isValid: boolean; message?: string } {

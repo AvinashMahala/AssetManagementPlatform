@@ -4,6 +4,7 @@ export * from './useProperties';
 export * from './useUsers';
 export * from './useTenants';
 export * from './useUnits';
+export * from './useUnitUtilities';
 export * from './useLeases';
 export * from './usePayments';
 export * from './useRentTransactions';

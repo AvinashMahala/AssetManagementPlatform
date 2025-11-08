@@ -19,6 +19,8 @@ import { IRentTransactionService } from '../interfaces/services/IRentTransaction
 import { IPropertyService } from '../interfaces/services/IPropertyService';
 import { IReceiptRepository } from '../interfaces/repositories/IReceiptRepository';
 import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
+import { IUnitUtilityRepository } from '../interfaces/repositories/IUnitUtilityRepository';
+import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService';
 import { PropertyRepository } from '../repositories/PropertyRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { TenantRepository } from '../repositories/TenantRepository';
@@ -35,6 +37,7 @@ import { MeterReadingRepository } from '../repositories/MeterReadingRepository';
 import { ReceiptRepository } from '../repositories/ReceiptRepository';
 import { ReceiptTemplateRepository } from '../repositories/ReceiptTemplateRepository';
 import { RentTransactionMeterReadingRepository, IRentTransactionMeterReadingRepository } from '../repositories/RentTransactionMeterReadingRepository';
+import { UnitUtilityRepository } from '../repositories/UnitUtilityRepository';
 import { PropertyService } from '../services/PropertyService';
 import { UserService } from '../services/UserService';
 import { TenantService } from '../services/TenantService';
@@ -48,6 +51,7 @@ import { MeterService } from '../services/MeterService';
 import { MeterReadingService } from '../services/MeterReadingService';
 import { ReceiptService } from '../services/ReceiptService';
 import { ReceiptTemplateService } from '../services/ReceiptTemplateService';
+import { UnitUtilityService } from '../services/UnitUtilityService';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -70,6 +74,7 @@ export class DependencyContainer {
   private _securityQuestionRepository: SecurityQuestionRepository | null = null;
   private _recoveryCodeRepository: RecoveryCodeRepository | null = null;
   private _receiptTemplateRepository: ReceiptTemplateRepository | null = null;
+  private _unitUtilityRepository: IUnitUtilityRepository | null = null;
 
   // Services
   private _propertyService: IPropertyService | null = null;
@@ -85,6 +90,7 @@ export class DependencyContainer {
   private _receiptService: IReceiptService | null = null;
   private _passwordResetService: PasswordResetService | null = null;
   private _receiptTemplateService: ReceiptTemplateService | null = null;
+  private _unitUtilityService: IUnitUtilityService | null = null;
 
   private constructor(pool: Pool) {
     this.pool = pool;
@@ -210,6 +216,13 @@ export class DependencyContainer {
     return this._receiptTemplateRepository;
   }
 
+  public get unitUtilityRepository(): IUnitUtilityRepository {
+    if (!this._unitUtilityRepository) {
+      this._unitUtilityRepository = new UnitUtilityRepository(this.pool);
+    }
+    return this._unitUtilityRepository;
+  }
+
   public get transactionMeterReadingRepository(): IRentTransactionMeterReadingRepository {
     if (!this._transactionMeterReadingRepository) {
       this._transactionMeterReadingRepository = new RentTransactionMeterReadingRepository(this.pool);
@@ -253,7 +266,7 @@ export class DependencyContainer {
 
   public get unitService(): IUnitService {
     if (!this._unitService) {
-      this._unitService = new UnitService(this.unitRepository, this.rentPaymentService, this.meterService, this.meterReadingService);
+      this._unitService = new UnitService(this.unitRepository, this.rentPaymentService, this.meterService, this.meterReadingService, this.unitUtilityService);
     }
     return this._unitService;
   }
@@ -295,7 +308,8 @@ export class DependencyContainer {
         this.meterReadingRepository,
         this.receiptService,
         this.transactionMeterReadingRepository,
-        this.userRepository
+        this.userRepository,
+        this.unitUtilityService
       );
     }
     return this._rentTransactionService;
@@ -339,6 +353,13 @@ export class DependencyContainer {
       );
     }
     return this._receiptTemplateService;
+  }
+
+  public get unitUtilityService(): IUnitUtilityService {
+    if (!this._unitUtilityService) {
+      this._unitUtilityService = new UnitUtilityService(this.unitUtilityRepository, this.meterService);
+    }
+    return this._unitUtilityService;
   }
 
   // Method to register custom implementations (for testing)
@@ -430,6 +451,14 @@ export class DependencyContainer {
     this._receiptService = service;
   }
 
+  public registerUnitUtilityRepository(repository: IUnitUtilityRepository): void {
+    this._unitUtilityRepository = repository;
+  }
+
+  public registerUnitUtilityService(service: IUnitUtilityService): void {
+    this._unitUtilityService = service;
+  }
+
     // Reset method for testing
   public reset(): void {
     this._propertyRepository = null;
@@ -448,6 +477,7 @@ export class DependencyContainer {
     this._securityQuestionRepository = null;
     this._recoveryCodeRepository = null;
     this._receiptTemplateRepository = null;
+    this._unitUtilityRepository = null;
     this._propertyService = null;
     this._userService = null;
     this._tenantService = null;
@@ -461,5 +491,6 @@ export class DependencyContainer {
     this._receiptService = null;
     this._passwordResetService = null;
     this._receiptTemplateService = null;
+    this._unitUtilityService = null;
   }
 }

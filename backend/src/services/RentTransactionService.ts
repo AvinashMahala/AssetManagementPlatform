@@ -10,6 +10,7 @@ import { IMeterRepository, IMeterReadingRepository } from '../interfaces/reposit
 import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { IRentTransactionMeterReadingRepository } from '../repositories/RentTransactionMeterReadingRepository';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
+import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService';
 import { PDFGenerator } from '../utils/pdfGenerator';
 import { ReceiptData } from '../models/Receipt';
 import * as fs from 'fs';
@@ -29,6 +30,7 @@ export class RentTransactionService implements IRentTransactionService {
   private receiptService: IReceiptService;
   private transactionMeterReadingRepository: IRentTransactionMeterReadingRepository;
   private userRepository: IUserRepository;
+  private unitUtilityService: IUnitUtilityService;
 
   constructor(
     repository: IRentTransactionRepository,
@@ -39,7 +41,8 @@ export class RentTransactionService implements IRentTransactionService {
     meterReadingRepository: IMeterReadingRepository,
     receiptService: IReceiptService,
     transactionMeterReadingRepository: IRentTransactionMeterReadingRepository,
-    userRepository: IUserRepository
+    userRepository: IUserRepository,
+    unitUtilityService: IUnitUtilityService
   ) {
     this.repository = repository;
     this.leaseRepository = leaseRepository;
@@ -50,6 +53,7 @@ export class RentTransactionService implements IRentTransactionService {
     this.receiptService = receiptService;
     this.transactionMeterReadingRepository = transactionMeterReadingRepository;
     this.userRepository = userRepository;
+    this.unitUtilityService = unitUtilityService;
   }
 
   async getAllTransactions(): Promise<RentTransaction[]> {
@@ -308,6 +312,10 @@ export class RentTransactionService implements IRentTransactionService {
       throw new Error('Lease not found');
     }
 
+    if (!lease.unitId) {
+      throw new Error('Lease must be associated with a unit to calculate utility charges');
+    }
+
     const transactions: RentTransaction[] = [];
     const currentDate = new Date(startDate);
 
@@ -331,12 +339,17 @@ export class RentTransactionService implements IRentTransactionService {
       // Get previous balance (simplified - would need more complex logic)
       const previousBalance = 0; // TODO: Calculate from previous transactions
 
-      // Calculate expenses
+      // Calculate utility charges from unit utilities
+      const utilityCharges = await this.calculateUnitUtilityCharges(lease.unitId, billingPeriodStart, billingPeriodEnd);
+
+      // Calculate expenses (legacy charges from lease + utility charges)
       const expenses = [];
+
+      // Add legacy charges from lease (for backward compatibility)
       if (lease.electricityCharges) {
         expenses.push({
           type: 'electricity',
-          description: 'Electricity charges',
+          description: 'Electricity charges (legacy)',
           amount: lease.electricityCharges,
           action: ExpenseAction.ADD
         });
@@ -344,7 +357,7 @@ export class RentTransactionService implements IRentTransactionService {
       if (lease.waterCharges) {
         expenses.push({
           type: 'water',
-          description: 'Water charges',
+          description: 'Water charges (legacy)',
           amount: lease.waterCharges,
           action: ExpenseAction.ADD
         });
@@ -352,15 +365,25 @@ export class RentTransactionService implements IRentTransactionService {
       if (lease.otherCharges) {
         expenses.push({
           type: 'other',
-          description: 'Other charges',
+          description: 'Other charges (legacy)',
           amount: lease.otherCharges,
           action: ExpenseAction.ADD
         });
       }
 
+      // Add utility charges from unit utilities system
+      utilityCharges.forEach((utility: any) => {
+        expenses.push({
+          type: utility.utilityType,
+          description: `${utility.utilityName} (${utility.billingMethod === 'meter_based' ? 'Meter-based' : 'Fixed'})`,
+          amount: utility.amount,
+          action: ExpenseAction.ADD
+        });
+      });
+
       const transactionInput: RentTransactionInput = {
         leaseId: lease.id,
-        unitId: '', // TODO: Determine unit from lease or make optional
+        unitId: lease.unitId,
         propertyId: lease.propertyId,
         tenantId: lease.tenantId,
         billingPeriodStart: billingPeriodStart,
@@ -469,6 +492,152 @@ export class RentTransactionService implements IRentTransactionService {
     }
 
     return await this.repository.getMonthlyRevenueReport(undefined, year, month);
+  }
+
+  /**
+   * Get utility revenue breakdown by property
+   */
+  async getUtilityRevenueByProperty(propertyId: string, startDate?: Date, endDate?: Date): Promise<any> {
+    if (!propertyId) {
+      throw new Error('Property ID is required');
+    }
+
+    const transactions = await this.repository.findTransactionsByDateRange(
+      startDate || new Date(new Date().getFullYear(), 0, 1),
+      endDate || new Date()
+    );
+
+    // Filter by property
+    const propertyTransactions = transactions.filter(t => t.propertyId === propertyId);
+
+    // Aggregate utility charges
+    const utilityRevenue: { [key: string]: number } = {};
+    let totalUtilityRevenue = 0;
+
+    for (const transaction of propertyTransactions) {
+      if (transaction.expenses) {
+        for (const expense of transaction.expenses) {
+          // Check if this is a utility expense (based on type)
+          if (['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(expense.type)) {
+            utilityRevenue[expense.type] = (utilityRevenue[expense.type] || 0) + expense.amount;
+            totalUtilityRevenue += expense.amount;
+          }
+        }
+      }
+    }
+
+    return {
+      propertyId,
+      period: {
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString()
+      },
+      utilityRevenue,
+      totalUtilityRevenue,
+      transactionCount: propertyTransactions.length
+    };
+  }
+
+  /**
+   * Get utility revenue breakdown by unit
+   */
+  async getUtilityRevenueByUnit(unitId: string, startDate?: Date, endDate?: Date): Promise<any> {
+    if (!unitId) {
+      throw new Error('Unit ID is required');
+    }
+
+    const transactions = await this.repository.findTransactionsByDateRange(
+      startDate || new Date(new Date().getFullYear(), 0, 1),
+      endDate || new Date()
+    );
+
+    // Filter by unit
+    const unitTransactions = transactions.filter(t => t.unitId === unitId);
+
+    // Aggregate utility charges
+    const utilityRevenue: { [key: string]: number } = {};
+    let totalUtilityRevenue = 0;
+
+    for (const transaction of unitTransactions) {
+      if (transaction.expenses) {
+        for (const expense of transaction.expenses) {
+          // Check if this is a utility expense (based on type)
+          if (['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(expense.type)) {
+            utilityRevenue[expense.type] = (utilityRevenue[expense.type] || 0) + expense.amount;
+            totalUtilityRevenue += expense.amount;
+          }
+        }
+      }
+    }
+
+    return {
+      unitId,
+      period: {
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString()
+      },
+      utilityRevenue,
+      totalUtilityRevenue,
+      transactionCount: unitTransactions.length
+    };
+  }
+
+  /**
+   * Get overall utility revenue summary
+   */
+  async getUtilityRevenueSummary(propertyId?: string, startDate?: Date, endDate?: Date): Promise<any> {
+    let transactions: RentTransaction[];
+
+    if (propertyId) {
+      transactions = await this.repository.findTransactionsByDateRange(
+        startDate || new Date(new Date().getFullYear(), 0, 1),
+        endDate || new Date()
+      );
+      transactions = transactions.filter(t => t.propertyId === propertyId);
+    } else {
+      transactions = await this.repository.findTransactionsByDateRange(
+        startDate || new Date(new Date().getFullYear(), 0, 1),
+        endDate || new Date()
+      );
+    }
+
+    // Aggregate utility charges by type and property
+    const utilityRevenueByType: { [key: string]: number } = {};
+    const utilityRevenueByProperty: { [key: string]: { [key: string]: number } } = {};
+    let totalUtilityRevenue = 0;
+
+    for (const transaction of transactions) {
+      if (transaction.expenses) {
+        for (const expense of transaction.expenses) {
+          // Check if this is a utility expense (based on type)
+          if (['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(expense.type)) {
+            // By type
+            utilityRevenueByType[expense.type] = (utilityRevenueByType[expense.type] || 0) + expense.amount;
+
+            // By property
+            if (!utilityRevenueByProperty[transaction.propertyId]) {
+              utilityRevenueByProperty[transaction.propertyId] = {};
+            }
+            utilityRevenueByProperty[transaction.propertyId][expense.type] =
+              (utilityRevenueByProperty[transaction.propertyId][expense.type] || 0) + expense.amount;
+
+            totalUtilityRevenue += expense.amount;
+          }
+        }
+      }
+    }
+
+    return {
+      period: {
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString()
+      },
+      propertyId: propertyId || null,
+      utilityRevenueByType,
+      utilityRevenueByProperty,
+      totalUtilityRevenue,
+      transactionCount: transactions.length
+    };
   }
 
   async getCurrentMonthTransaction(unitId: string): Promise<RentTransaction | null> {
@@ -632,6 +801,15 @@ export class RentTransactionService implements IRentTransactionService {
       baseRent: transaction.baseRent,
       previousBalance: transaction.previousBalance,
       
+      // Utility charges from expenses
+      utilityCharges: (transaction.expenses || [])
+        .filter((e: any) => e.type && ['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
+        .map((e: any) => ({
+          type: e.type,
+          description: e.description,
+          amount: e.amount
+        })),
+      
       // Meter charges
       meterCharges: meterReadings.map(mr => ({
         meterName: mr.meterId, // Will need to join with meter table for name
@@ -643,14 +821,23 @@ export class RentTransactionService implements IRentTransactionService {
         totalCost: mr.totalCost
       })),
       
-      // Expenses
-      expenses: transaction.expenses || [],
+      // Other expenses
+      otherExpenses: (transaction.expenses || [])
+        .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
+        .map((e: any) => ({
+          type: e.type,
+          description: e.description,
+          amount: e.amount
+        })),
       
       // Totals
       subtotal: transaction.baseRent,
+      utilityChargesTotal: (transaction.expenses || [])
+        .filter((e: any) => e.type && ['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
+        .reduce((sum: number, e: any) => sum + e.amount, 0),
       meterChargesTotal: meterReadings.reduce((sum, mr) => sum + mr.totalCost, 0),
-      expensesTotal: (transaction.expenses || [])
-        .filter((e: any) => e.action === 'add')
+      otherExpensesTotal: (transaction.expenses || [])
+        .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
         .reduce((sum: number, e: any) => sum + e.amount, 0),
       totalAmount: transaction.totalAmount,
       amountPaid: transaction.amountPaid,
@@ -812,7 +999,7 @@ export class RentTransactionService implements IRentTransactionService {
           baseRent: transaction.baseRent,
           previousBalance: transaction.previousBalance,
           expenses: (transaction.expenses || []).map((e: any) => ({
-            type: e.action || 'other',
+            type: e.type || 'other',
             description: e.description,
             amount: e.amount
           })),
@@ -896,6 +1083,62 @@ export class RentTransactionService implements IRentTransactionService {
       },
       transactions
     };
+  }
+
+  /**
+   * Calculate utility charges for a unit during a billing period
+   */
+  private async calculateUnitUtilityCharges(unitId: string, startDate: Date, endDate: Date): Promise<any[]> {
+    try {
+      // Get all enabled utilities for the unit
+      const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(unitId);
+      const enabledUtilities = utilities.filter(u => u.isEnabled);
+
+      const utilityCharges = [];
+
+      for (const utility of enabledUtilities) {
+        let amount = 0;
+
+        if (utility.billingMethod === 'fixed') {
+          // Fixed amount utility
+          amount = utility.fixedAmount || 0;
+        } else if (utility.billingMethod === 'meter_based' && utility.meterId) {
+          // Meter-based utility - calculate usage
+          try {
+            const charges = await this.unitUtilityService.calculateUtilityCharges(
+              unitId,
+              startDate,
+              endDate
+            );
+
+            // Find the charge for this specific utility
+            const utilityCharge = charges.find((c: any) => c.utilityId === utility.id);
+            if (utilityCharge) {
+              amount = utilityCharge.amount;
+            }
+          } catch (error) {
+            console.error(`Error calculating meter-based charges for utility ${utility.id}:`, error);
+            // Fall back to 0 if calculation fails
+            amount = 0;
+          }
+        }
+
+        if (amount > 0) {
+          utilityCharges.push({
+            utilityId: utility.id,
+            utilityType: utility.utilityType,
+            utilityName: utility.utilityName,
+            billingMethod: utility.billingMethod,
+            amount: amount
+          });
+        }
+      }
+
+      return utilityCharges;
+    } catch (error) {
+      console.error('Error calculating unit utility charges:', error);
+      return []; // Return empty array if calculation fails
+    }
   }
 
   private generateInvoiceNumber(): string {

@@ -38,4 +38,9 @@ export interface IRentTransactionService {
   getTotalRevenueByOwner(ownerId: string, startDate?: Date, endDate?: Date): Promise<number>;
   getOutstandingTransactions(): Promise<number>;
   getMonthlyRevenueReport(year: number, month: number): Promise<any>;
+
+  // Utility reporting
+  getUtilityRevenueByProperty(propertyId: string, startDate?: Date, endDate?: Date): Promise<any>;
+  getUtilityRevenueByUnit(unitId: string, startDate?: Date, endDate?: Date): Promise<any>;
+  getUtilityRevenueSummary(propertyId?: string, startDate?: Date, endDate?: Date): Promise<any>;
 }

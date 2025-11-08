@@ -6,29 +6,38 @@ import { IUnitService } from '../interfaces/services/IUnitService.js';
 import { IRentPaymentService } from '../interfaces/services/IRentPaymentService.js';
 import { IMeterService } from '../interfaces/services/IMeterService.js';
 import { IMeterReadingService } from '../interfaces/services/IMeterService.js';
+import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService.js';
 
 export class UnitService implements IUnitService {
   private repository: IUnitRepository;
   private rentPaymentService: IRentPaymentService;
   private meterService: IMeterService;
   private meterReadingService: IMeterReadingService;
+  private unitUtilityService: IUnitUtilityService;
 
-  constructor(repository: IUnitRepository, rentPaymentService: IRentPaymentService, meterService: IMeterService, meterReadingService: IMeterReadingService) {
+  constructor(repository: IUnitRepository, rentPaymentService: IRentPaymentService, meterService: IMeterService, meterReadingService: IMeterReadingService, unitUtilityService: IUnitUtilityService) {
     this.repository = repository;
     this.rentPaymentService = rentPaymentService;
     this.meterService = meterService;
     this.meterReadingService = meterReadingService;
+    this.unitUtilityService = unitUtilityService;
   }
 
   async getAllUnits(): Promise<Unit[]> {
-    return await this.repository.findAll();
+    const units = await this.repository.findAll();
+    return await this.loadUtilitiesForUnits(units);
   }
 
   async getUnitById(id: string): Promise<Unit | null> {
     if (!id || id.trim().length === 0) {
       throw new Error(ERROR_MESSAGES.UNIT.INVALID_ID);
     }
-    return await this.repository.findById(id);
+    const unit = await this.repository.findById(id);
+    if (unit) {
+      const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(unit.id);
+      unit.utilities = utilities;
+    }
+    return unit;
   }
 
   async getUnitsByProperty(propertyId: string): Promise<Unit[]> {
@@ -36,7 +45,8 @@ export class UnitService implements IUnitService {
     if (!propertyValidation.isValid) {
       throw new Error(propertyValidation.message);
     }
-    return await this.repository.findByProperty(propertyId);
+    const units = await this.repository.findByProperty(propertyId);
+    return await this.loadUtilitiesForUnits(units);
   }
 
   async getUnitsByStatus(status: string): Promise<Unit[]> {
@@ -44,7 +54,8 @@ export class UnitService implements IUnitService {
     if (!statusValidation.isValid) {
       throw new Error(statusValidation.message);
     }
-    return await this.repository.findByStatus(status);
+    const units = await this.repository.findByStatus(status);
+    return await this.loadUtilitiesForUnits(units);
   }
 
   async createUnit(unitData: UnitInput): Promise<Unit> {
@@ -315,7 +326,12 @@ export class UnitService implements IUnitService {
       }
     }
 
-    return await this.repository.update(id, unitData);
+    const updatedUnit = await this.repository.update(id, unitData);
+    if (updatedUnit) {
+      const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(updatedUnit.id);
+      updatedUnit.utilities = utilities;
+    }
+    return updatedUnit;
   }
 
   async deleteUnit(id: string): Promise<boolean> {
@@ -787,5 +803,21 @@ export class UnitService implements IUnitService {
     }
 
     return meterCount > 0 ? Math.round(totalScore / meterCount) : null;
+  }
+
+  /**
+   * Load utilities for units
+   */
+  private async loadUtilitiesForUnits(units: Unit[]): Promise<Unit[]> {
+    for (const unit of units) {
+      try {
+        const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(unit.id);
+        unit.utilities = utilities;
+      } catch (error) {
+        console.error(`Error loading utilities for unit ${unit.id}:`, error);
+        unit.utilities = [];
+      }
+    }
+    return units;
   }
 }
