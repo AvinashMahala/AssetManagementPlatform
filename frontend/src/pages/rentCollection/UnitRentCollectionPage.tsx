@@ -1453,47 +1453,61 @@ export const UnitRentCollectionPage: React.FC = () => {
 
         {/* Invoice Preview Modal */}
         <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Invoice Preview & Edit</DialogTitle>
+          <DialogContent className="max-w-[95vw] lg:max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-50 to-blue-50">
+            <DialogHeader className="border-b pb-4">
+              <DialogTitle className="text-2xl font-bold text-gray-900">Invoice Preview & Edit</DialogTitle>
+              <p className="text-sm text-gray-600 mt-1">Edit details on the left, preview updates instantly on the right</p>
             </DialogHeader>
             <div className="flex flex-col lg:flex-row gap-6 h-[70vh]">
               {/* Edit Panel */}
-              <div className="w-full lg:w-80 border-r pr-4 overflow-y-auto">
-                <h3 className="font-semibold mb-4">Edit Invoice Details</h3>
-                <div className="space-y-4">
+              <div className="w-full lg:w-96 bg-white rounded-lg shadow-sm p-5 overflow-y-auto border border-gray-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-lg text-gray-900">Edit Invoice Details</h3>
+                </div>
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Property Name</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Property Name</label>
                     <Input
                       value={editablePreviewData?.propertyName || ''}
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, propertyName: e.target.value };
                         setEditablePreviewData(updated);
                       }}
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter property name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Property Address</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Property Address</label>
                     <Input
                       value={editablePreviewData?.propertyAddress || ''}
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, propertyAddress: e.target.value };
                         setEditablePreviewData(updated);
                       }}
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter property address"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Tenant Name</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tenant Name</label>
                     <Input
                       value={editablePreviewData?.tenantName || ''}
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, tenantName: e.target.value };
                         setEditablePreviewData(updated);
                       }}
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter tenant name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Invoice Date</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Invoice Date</label>
                     <Input
                       type="date"
                       value={editablePreviewData?.invoiceDate || ''}
@@ -1501,24 +1515,26 @@ export const UnitRentCollectionPage: React.FC = () => {
                         const updated = { ...editablePreviewData, invoiceDate: e.target.value };
                         setEditablePreviewData(updated);
                       }}
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Terms & Conditions</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Terms & Conditions</label>
                     <textarea
                       value={editablePreviewData?.termsAndConditions || ''}
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, termsAndConditions: e.target.value };
                         setEditablePreviewData(updated);
                       }}
-                      className="w-full min-h-[80px] rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      className="w-full min-h-[100px] rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      placeholder="Enter terms and conditions"
                     />
                   </div>
                 </div>
               </div>
               
               {/* Preview Panel */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 bg-white rounded-lg shadow-sm p-5 overflow-y-auto border border-gray-200">
                 {generatingPreview ? (
                   <div className="flex justify-center items-center h-64">
                     <div className="flex items-center gap-3">
@@ -1528,23 +1544,32 @@ export const UnitRentCollectionPage: React.FC = () => {
                   </div>
                 ) : (
                     <div className="space-y-4">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <p className="text-sm text-gray-600">
-                          Preview your invoice. Make edits on the left panel and see changes instantly.
-                        </p>
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
+                        <div>
+                          <h3 className="font-semibold text-lg text-gray-900 flex items-center gap-2">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Live Preview
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Your changes appear instantly here
+                          </p>
+                        </div>
                         <Button
                           onClick={() => {
                             setShowPreviewModal(false);
                             handleGenerateInvoice();
                           }}
-                          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow"
                         >
                           <FileText className="h-4 w-4 mr-2" />
                           Generate Invoice
                         </Button>
                       </div>
                       <div 
-                        className="border rounded-lg p-4 bg-white overflow-auto max-h-[600px]"
+                        className="rounded-lg overflow-auto max-h-[550px] bg-gray-50 p-4"
                       >
                         <InvoicePreview data={editablePreviewData} />
                       </div>
