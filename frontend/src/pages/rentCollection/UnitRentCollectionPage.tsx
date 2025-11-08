@@ -96,66 +96,31 @@ export const UnitRentCollectionPage: React.FC = () => {
       expenses: { valid: expensesValid, message: expensesMessage },
       overall: { valid: overallValid, message: overallMessage }
     });
-  }, [meterReadings, expenses, leases]);
+  }, [meterReadings, expenses, activeLease]);
 
-  // Auto-save functionality
-  useEffect(() => {
-    const autoSaveKey = `rent-collection-draft-${unitId}`;
-    
-    // Load saved data on mount
-    const savedData = localStorage.getItem(autoSaveKey);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.meterReadings && meterReadings.length === 0) {
-          setMeterReadings(parsed.meterReadings);
-        }
-        if (parsed.expenses) {
-          setExpenses(parsed.expenses);
-        }
-        if (parsed.notes) {
-          setNotes(parsed.notes);
-        }
-        if (parsed.lastSavedAt) {
-          setLastSavedAt(new Date(parsed.lastSavedAt));
-        }
-      } catch (error) {
-        console.error('Failed to load saved draft:', error);
-      }
-    }
+  // Calculate totals
+  const calculateTotals = () => {
+    const baseRent = unit?.monthlyRent || 0;
+    const maintenanceCharges = unit?.maintenanceCharges || 0;
+    const totalMeterCharges = meterReadings.reduce((sum, r) => sum + r.totalCost, 0);
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const previousBalance = 0; // TODO: Get from last transaction
+    const totalAmount = baseRent + maintenanceCharges + totalMeterCharges + totalExpenses + previousBalance;
 
-    // Auto-save every 30 seconds
-    const autoSaveInterval = setInterval(async () => {
-      if (unit && activeLease && user && (meterReadings.length > 0 || expenses.length > 0 || notes)) {
-        try {
-          await performAutoSave();
-        } catch (error) {
-          console.error('Auto-save failed:', error);
-        }
-      }
-    }, 30000); // 30 seconds
-
-    // Save before browser close
-    const handleBeforeUnload = () => {
-      const draftData = {
-        meterReadings,
-        expenses,
-        notes,
-        lastSavedAt: new Date().toISOString(),
-      };
-      localStorage.setItem(autoSaveKey, JSON.stringify(draftData));
+    return {
+      baseRent,
+      maintenanceCharges,
+      totalMeterCharges,
+      totalExpenses,
+      previousBalance,
+      totalAmount,
     };
+  };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      clearInterval(autoSaveInterval);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [unitId, unit, activeLease, user, meterReadings, expenses, notes]);
+  const totals = useMemo(calculateTotals, [unit, meterReadings, expenses]);
 
   // Perform auto-save
-  const performAutoSave = async () => {
+  const performAutoSave = useCallback(async () => {
     if (!unit || !activeLease || !user) return;
 
     try {
@@ -223,7 +188,73 @@ export const UnitRentCollectionPage: React.FC = () => {
       console.error('Auto-save failed:', error);
       // Don't show alert for auto-save failures to avoid interrupting user
     }
-  };
+  }, [unit, activeLease, user, billingPeriod, totals, meterReadings, expenses, notes, unitId, createTransaction]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSaveKey = `rent-collection-draft-${unitId}`;
+    
+    // Load saved data on mount only
+    const savedData = localStorage.getItem(autoSaveKey);
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed.meterReadings && meterReadings.length === 0) {
+          setMeterReadings(parsed.meterReadings);
+        }
+        if (parsed.expenses) {
+          setExpenses(parsed.expenses);
+        }
+        if (parsed.notes) {
+          setNotes(parsed.notes);
+        }
+        if (parsed.lastSavedAt) {
+          setLastSavedAt(new Date(parsed.lastSavedAt));
+        }
+      } catch (error) {
+        console.error('Failed to load saved draft:', error);
+      }
+    }
+  }, [unitId]); // Only run on mount and when unitId changes
+
+  // Auto-save interval - separate effect
+  useEffect(() => {
+    // Auto-save every 30 seconds
+    const autoSaveInterval = setInterval(async () => {
+      if (unit && activeLease && user && (meterReadings.length > 0 || expenses.length > 0 || notes)) {
+        try {
+          await performAutoSave();
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+        }
+      }
+    }, 30000); // 30 seconds
+
+    return () => {
+      clearInterval(autoSaveInterval);
+    };
+  }, [unit, activeLease, user, meterReadings, expenses, notes, performAutoSave]);
+
+  // Save before browser close
+  useEffect(() => {
+    const autoSaveKey = `rent-collection-draft-${unitId}`;
+    
+    const handleBeforeUnload = () => {
+      const draftData = {
+        meterReadings,
+        expenses,
+        notes,
+        lastSavedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(autoSaveKey, JSON.stringify(draftData));
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [unitId, meterReadings, expenses, notes]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -257,134 +288,173 @@ export const UnitRentCollectionPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [saving, creating, invoiceGenerationStatus.step, validationSummary.overall.valid, generatingPreview]);
 
-  // Memoize the preview HTML generation function
-  const generatePreviewHtml = useCallback((data: any) => {
-    // Use a simplified version of the invoice template for preview
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice Preview - ${data.invoiceNumber}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1a202c; background: white; font-size: 11px; line-height: 1.3; }
-    .invoice-container { width: 210mm; min-height: 297mm; margin: 0 auto; background: white; padding: 12mm 10mm; }
-    .top-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; color: white; margin-bottom: 3px; }
-    .property-info { flex: 1; padding-left: 15px; }
-    .property-name { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .property-details { font-size: 10px; opacity: 0.95; line-height: 1.5; }
-    .receipt-banner { background: linear-gradient(to right, #f7fafc, #edf2f7); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #667eea; margin-bottom: 15px; }
-    .receipt-title { font-size: 16px; font-weight: 700; color: #2d3748; text-transform: uppercase; letter-spacing: 1px; }
-    .receipt-date { font-size: 11px; color: #4a5568; font-weight: 600; }
-    .bill-info { display: flex; gap: 20px; padding: 10px 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; font-size: 10px; }
-    .bill-info-item { flex: 1; }
-    .bill-info-label { color: #718096; font-weight: 600; margin-bottom: 2px; }
-    .bill-info-value { color: #2d3748; font-weight: 700; font-size: 11px; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-    .info-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 12px; }
-    .info-card-header { font-size: 9px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .info-card-name { font-size: 13px; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
-    .info-card-details { font-size: 10px; color: #4a5568; line-height: 1.6; }
-    .payment-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px; }
-    .payment-table th { background: #2d3748; color: white; padding: 8px; text-align: center; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
-    .payment-table td { padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-    .payment-table .amount-col { font-weight: 700; color: #2d3748; }
-    .payment-table .total-row { background: #1a202c; color: white; font-weight: 700; font-size: 11px; }
-    .balance-due-box { background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%); border: 3px solid #e74c3c; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 15px; }
-    .balance-due-label { font-size: 11px; color: #7f1d1d; font-weight: 700; margin-bottom: 4px; }
-    .balance-due-amount { font-size: 24px; font-weight: 700; color: #991b1b; }
-    .footer-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 10px; font-size: 9px; font-weight: 600; border-radius: 0 0 12px 12px; margin-top: 10px; }
-  </style>
-</head>
-<body>
-  <div class="invoice-container">
-    <!-- Top Header -->
-    <div class="top-header">
-      <div style="width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid rgba(255, 255, 255, 0.3);">🏠</div>
-      <div class="property-info">
-        <div class="property-name">${data.propertyName}</div>
-        <div class="property-details">
-          📍 ${data.propertyAddress}<br>
-          📞 ${data.propertyPhone} | 📧 ${data.propertyEmail}
+  // Invoice Preview Component
+  const InvoicePreview: React.FC<{ data: any }> = ({ data }) => {
+    if (!data) return null;
+
+    return (
+      <div 
+        className="invoice-preview-container"
+        style={{
+          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+          color: "#1a202c",
+          background: "white",
+          maxWidth: "210mm",
+          margin: "0 auto",
+          padding: "12mm 10mm",
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+        }}
+      >
+        {/* Top Header */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          padding: "15px 20px",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          borderRadius: "12px 12px 0 0",
+          color: "white",
+          marginBottom: "3px",
+        }}>
+          <div style={{width: "60px", height: "60px", background: "rgba(255, 255, 255, 0.2)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", border: "2px solid rgba(255, 255, 255, 0.3)"}}>🏠</div>
+          <div style={{flex: 1, paddingLeft: "15px"}}>
+            <div style={{fontSize: "18px", fontWeight: 700, letterSpacing: "0.5px", marginBottom: "4px"}}>{data.propertyName}</div>
+            <div style={{fontSize: "10px", opacity: 0.95, lineHeight: "1.5"}}>
+              📍 {data.propertyAddress}<br/>
+              📞 {data.propertyPhone || 'N/A'} | 📧 {data.propertyEmail || 'N/A'}
+            </div>
+          </div>
+          <div style={{width: "50px", height: "50px", background: "rgba(255, 255, 255, 0.2)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px"}}>🏢</div>
+        </div>
+
+        {/* Receipt Banner */}
+        <div style={{
+          background: "linear-gradient(to right, #f7fafc, #edf2f7)",
+          padding: "12px 20px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: "3px solid #667eea",
+          marginBottom: "15px",
+        }}>
+          <div style={{fontSize: "16px", fontWeight: 700, color: "#2d3748", textTransform: "uppercase", letterSpacing: "1px"}}>INVOICE PREVIEW</div>
+          <div style={{fontSize: "11px", color: "#4a5568", fontWeight: 600}}>{data.invoiceDate}</div>
+        </div>
+
+        {/* Bill Info Bar */}
+        <div style={{
+          display: "flex",
+          gap: "20px",
+          padding: "10px 20px",
+          background: "#f7fafc",
+          borderRadius: "6px",
+          marginBottom: "15px",
+          fontSize: "10px",
+        }}>
+          <div style={{flex: 1}}>
+            <div style={{color: "#718096", fontWeight: 600, marginBottom: "2px"}}>Bill No</div>
+            <div style={{color: "#2d3748", fontWeight: 700, fontSize: "11px"}}>{data.invoiceNumber}</div>
+          </div>
+          <div style={{flex: 1}}>
+            <div style={{color: "#718096", fontWeight: 600, marginBottom: "2px"}}>Period</div>
+            <div style={{color: "#2d3748", fontWeight: 700, fontSize: "11px"}}>{data.billingPeriod}</div>
+          </div>
+        </div>
+
+        {/* Tenant & Room Info Grid */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "12px",
+          marginBottom: "15px",
+        }}>
+          <div style={{
+            background: "white",
+            border: "1.5px solid #e2e8f0",
+            borderRadius: "8px",
+            padding: "12px",
+          }}>
+            <div style={{fontSize: "9px", color: "#718096", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px"}}>Room</div>
+            <div style={{fontSize: "13px", fontWeight: 700, color: "#2d3748", marginBottom: "4px"}}>Property Unit</div>
+            <div style={{fontSize: "10px", color: "#4a5568", lineHeight: "1.6"}}>
+              {data.propertyName} - Unit {data.propertyUnit}
+            </div>
+          </div>
+          <div style={{
+            background: "white",
+            border: "1.5px solid #e2e8f0",
+            borderRadius: "8px",
+            padding: "12px",
+          }}>
+            <div style={{fontSize: "9px", color: "#718096", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px"}}>Tenant</div>
+            <div style={{fontSize: "13px", fontWeight: 700, color: "#2d3748", marginBottom: "4px"}}>{data.tenantName}</div>
+            <div style={{fontSize: "10px", color: "#4a5568", lineHeight: "1.6"}}>
+              📱 {data.tenantPhone || 'N/A'}<br/>
+              📧 {data.tenantEmail || 'N/A'}
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Details Table */}
+        <table style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginBottom: "15px",
+          fontSize: "10px",
+        }}>
+          <thead>
+            <tr>
+              <th style={{background: "#2d3748", color: "white", padding: "8px", textAlign: "center", fontWeight: 600, fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.3px"}}>Description</th>
+              <th style={{background: "#2d3748", color: "white", padding: "8px", textAlign: "center", fontWeight: 600, fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.3px"}}>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0"}}>Rent ({data.billingPeriod})</td>
+              <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0", fontWeight: 700, color: "#2d3748"}}>{data.baseRent}</td>
+            </tr>
+            {data.maintenanceCharges && parseFloat(data.maintenanceCharges.replace(/[^0-9.-]+/g,"")) > 0 && (
+              <tr>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0"}}>Maintenance Charges</td>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0", fontWeight: 700, color: "#2d3748"}}>{data.maintenanceCharges}</td>
+              </tr>
+            )}
+            {data.meterCharges && parseFloat(data.meterCharges.replace(/[^0-9.-]+/g,"")) > 0 && (
+              <tr>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0"}}>Electricity Charges</td>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0", fontWeight: 700, color: "#2d3748"}}>{data.meterCharges}</td>
+              </tr>
+            )}
+            {data.expenses && parseFloat(data.expenses.replace(/[^0-9.-]+/g,"")) > 0 && (
+              <tr>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0"}}>Additional Expenses</td>
+                <td style={{padding: "8px", textAlign: "center", borderBottom: "1px solid #e2e8f0", fontWeight: 700, color: "#2d3748"}}>{data.expenses}</td>
+              </tr>
+            )}
+            <tr style={{background: "#1a202c", color: "white", fontWeight: 700, fontSize: "11px"}}>
+              <td colSpan={1} style={{padding: "8px", textAlign: "center"}}>TOTAL AMOUNT</td>
+              <td style={{padding: "8px", textAlign: "center"}}>{data.totalAmount}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Footer */}
+        <div style={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          textAlign: "center",
+          padding: "10px",
+          fontSize: "9px",
+          fontWeight: 600,
+          borderRadius: "0 0 12px 12px",
+          marginTop: "10px",
+        }}>
+          🙏 Invoice Preview | For actual invoice, click "Generate Invoice"
         </div>
       </div>
-      <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏢</div>
-    </div>
-
-    <!-- Receipt Banner -->
-    <div class="receipt-banner">
-      <div class="receipt-title">INVOICE PREVIEW</div>
-      <div class="receipt-date">${data.invoiceDate}</div>
-    </div>
-
-    <!-- Bill Info Bar -->
-    <div class="bill-info">
-      <div class="bill-info-item">
-        <div class="bill-info-label">Bill No</div>
-        <div class="bill-info-value">${data.invoiceNumber}</div>
-      </div>
-      <div class="bill-info-item">
-        <div class="bill-info-label">Period</div>
-        <div class="bill-info-value">${data.billingPeriod}</div>
-      </div>
-    </div>
-
-    <!-- Tenant & Room Info Grid -->
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="info-card-header">Room</div>
-        <div class="info-card-name">Property Unit</div>
-        <div class="info-card-details">
-          ${data.propertyName} - Unit ${data.propertyUnit}
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-header">Tenant</div>
-        <div class="info-card-name">${data.tenantName}</div>
-        <div class="info-card-details">
-          📱 ${data.tenantPhone}<br>
-          📧 ${data.tenantEmail}
-        </div>
-      </div>
-    </div>
-
-    <!-- Payment Details Table -->
-    <table class="payment-table">
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.chargesRows}
-        <tr class="total-row">
-          <td colspan="1">TOTAL AMOUNT</td>
-          <td>${data.totalAmount}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    ${data.balanceRow}
-
-    <!-- Footer -->
-    <div class="footer-bar">
-      🙏 Invoice Preview | For actual invoice, click "Generate Invoice"
-    </div>
-  </div>
-</body>
-</html>`;
-  }, []);
-
-  // Generate preview HTML when editable data changes
-  const previewHtml = useMemo(() => {
-    if (editablePreviewData) {
-      return generatePreviewHtml(editablePreviewData);
-    }
-    return '';
-  }, [editablePreviewData, generatePreviewHtml]);
+    );
+  };
 
   const handleMeterReadingChange = (index: number, value: string) => {
     const updated = [...meterReadings];
@@ -420,26 +490,6 @@ export const UnitRentCollectionPage: React.FC = () => {
   const handleRemoveExpense = (id: string) => {
     setExpenses(expenses.filter(e => e.id !== id));
   };
-
-  const calculateTotals = () => {
-    const baseRent = unit?.monthlyRent || 0;
-    const maintenanceCharges = unit?.maintenanceCharges || 0;
-    const totalMeterCharges = meterReadings.reduce((sum, r) => sum + r.totalCost, 0);
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const previousBalance = 0; // TODO: Get from last transaction
-    const totalAmount = baseRent + maintenanceCharges + totalMeterCharges + totalExpenses + previousBalance;
-
-    return {
-      baseRent,
-      maintenanceCharges,
-      totalMeterCharges,
-      totalExpenses,
-      previousBalance,
-      totalAmount,
-    };
-  };
-
-  const totals = useMemo(calculateTotals, [unit, meterReadings, expenses]);
 
   const handleSaveDraft = async () => {
     if (!unit || !activeLease || !user) {
@@ -527,6 +577,24 @@ export const UnitRentCollectionPage: React.FC = () => {
 
     setGeneratingPreview(true);
     try {
+      // Try to fetch tenant data
+      let tenantData = { firstName: 'Tenant', lastName: '', phone: '', email: '' };
+      try {
+        const tenantResponse = await fetch(`/api/tenants/${activeLease.tenantId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (tenantResponse.ok) {
+          const tenantResult = await tenantResponse.json();
+          if (tenantResult.data) {
+            tenantData = tenantResult.data;
+          }
+        }
+      } catch (error) {
+        console.warn('Could not fetch tenant data for preview:', error);
+      }
+
       // Build preview data
       const previewData = {
         propertyName: property.name,
@@ -542,9 +610,9 @@ export const UnitRentCollectionPage: React.FC = () => {
         })} - ${new Date(billingPeriod.end).toLocaleDateString('en-IN', {
           day: '2-digit', month: 'short', year: 'numeric'
         })}`,
-        tenantName: 'Tenant',
-        tenantEmail: '',
-        tenantPhone: '',
+        tenantName: `${tenantData.firstName} ${tenantData.lastName}`.trim() || 'Tenant',
+        tenantEmail: tenantData.email || '',
+        tenantPhone: tenantData.phone || '',
         landlordName: 'Property Owner',
         landlordEmail: '',
         totalAmount: formatCurrency(totals.totalAmount),
@@ -562,10 +630,16 @@ export const UnitRentCollectionPage: React.FC = () => {
         balanceDue: formatCurrency(totals.totalAmount),
         chargesRows: buildChargesTable(),
         balanceRow: totals.totalAmount > 0 ? `
-          <!-- Balance Due -->
-          <div class="balance-due-box">
-            <div class="balance-due-label">Balance Due</div>
-            <div class="balance-due-amount">${formatCurrency(totals.totalAmount)}</div>
+          <div style="
+            background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%);
+            border: 3px solid #e74c3c;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+          ">
+            <div style="font-size: 11px; color: #7f1d1d; font-weight: 700; margin-bottom: 4px;">Balance Due</div>
+            <div style="font-size: 24px; font-weight: 700; color: #991b1b;">${formatCurrency(totals.totalAmount)}</div>
           </div>` : ''
       };
 
@@ -1383,9 +1457,9 @@ export const UnitRentCollectionPage: React.FC = () => {
             <DialogHeader>
               <DialogTitle>Invoice Preview & Edit</DialogTitle>
             </DialogHeader>
-            <div className="flex gap-6 h-[70vh]">
+            <div className="flex flex-col lg:flex-row gap-6 h-[70vh]">
               {/* Edit Panel */}
-              <div className="w-80 border-r pr-4 overflow-y-auto">
+              <div className="w-full lg:w-80 border-r pr-4 overflow-y-auto">
                 <h3 className="font-semibold mb-4">Edit Invoice Details</h3>
                 <div className="space-y-4">
                   <div>
@@ -1453,33 +1527,28 @@ export const UnitRentCollectionPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm text-gray-600">
-                        Preview your invoice. Make edits on the left panel and see changes instantly.
-                      </p>
-                      <Button
-                        onClick={() => {
-                          setShowPreviewModal(false);
-                          handleGenerateInvoice();
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <p className="text-sm text-gray-600">
+                          Preview your invoice. Make edits on the left panel and see changes instantly.
+                        </p>
+                        <Button
+                          onClick={() => {
+                            setShowPreviewModal(false);
+                            handleGenerateInvoice();
+                          }}
+                          className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          Generate Invoice
+                        </Button>
+                      </div>
+                      <div 
+                        className="border rounded-lg p-4 bg-white overflow-auto max-h-[600px]"
                       >
-                        <FileText className="h-4 w-4 mr-2" />
-                        Generate Invoice
-                      </Button>
+                        <InvoicePreview data={editablePreviewData} />
+                      </div>
                     </div>
-                    <div 
-                      className="border rounded-lg p-4 bg-white"
-                      dangerouslySetInnerHTML={{ __html: previewHtml }}
-                      style={{ 
-                        transform: 'scale(0.7)', 
-                        transformOrigin: 'top center',
-                        width: '142.86%',
-                        margin: '0 auto'
-                      }}
-                    />
-                  </div>
                 )}
               </div>
             </div>
