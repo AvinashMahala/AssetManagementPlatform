@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rent Receipt - {{invoiceNumber}}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #1a202c;
+      background: white;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .invoice-container {
+      width: 210mm;
+      min-height: 297mm;
+      max-height: 297mm;
+      margin: 0 auto;
+      background: white;
+      padding: 12mm 10mm;
+      position: relative;
+    }
+
+    /* Top Header with Property Info */
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px 12px 0 0;
+      color: white;
+      margin-bottom: 3px;
+    }
+
+    .property-logo {
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .property-info {
+      flex: 1;
+      padding-left: 15px;
+    }
+
+    .property-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .property-details {
+      font-size: 10px;
+      opacity: 0.95;
+      line-height: 1.5;
+    }
+
+    .header-icon {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    /* Receipt Title Banner */
+    .receipt-banner {
+      background: linear-gradient(to right, #f7fafc, #edf2f7);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #667eea;
+      margin-bottom: 15px;
+    }
+
+    .receipt-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2d3748;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .receipt-date {
+      font-size: 11px;
+      color: #4a5568;
+      font-weight: 600;
+    }
+
+    /* Bill Info Bar */
+    .bill-info {
+      display: flex;
+      gap: 20px;
+      padding: 10px 20px;
+      background: #f7fafc;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 10px;
+    }
+
+    .bill-info-item {
+      flex: 1;
+    }
+
+    .bill-info-label {
+      color: #718096;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .bill-info-value {
+      color: #2d3748;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    /* Two Column Layout for Tenant/Room */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .info-card {
+      background: white;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .info-card-header {
+      font-size: 9px;
+      color: #718096;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .info-card-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 4px;
+    }
+
+    .info-card-details {
+      font-size: 10px;
+      color: #4a5568;
+      line-height: 1.6;
+    }
+
+    /* Meter Details Section */
+    .meter-section {
+      background: #fefcbf;
+      border: 1.5px solid #ecc94b;
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+    }
+
+    .meter-header {
+      font-size: 10px;
+      font-weight: 700;
+      color: #744210;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .meter-item {
+      text-align: center;
+      padding: 6px;
+      background: white;
+      border-radius: 4px;
+    }
+
+    .meter-label {
+      font-size: 8px;
+      color: #744210;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .meter-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    /* Expenses Section */
+    .expenses-section {
+      margin-bottom: 15px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .expenses-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .expense-card {
+      padding: 10px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid;
+    }
+
+    .expense-card.added {
+      background: #fef5e7;
+      border-color: #f59e0b;
+    }
+
+    .expense-card.removed {
+      background: #fee2e2;
+      border-color: #ef4444;
+      opacity: 0.7;
+      text-decoration: line-through;
+    }
+
+    .expense-icon {
+      font-size: 20px;
+    }
+
+    .expense-info {
+      flex: 1;
+    }
+
+    .expense-name {
+      font-size: 9px;
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    .expense-amount {
+      font-size: 11px;
+      font-weight: 700;
+      color: #d97706;
+    }
+
+    .expense-type {
+      font-size: 8px;
+      color: #6b7280;
+      margin-top: 1px;
+    }
+
+    /* Payment Details Table */
+    .payment-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+      font-size: 10px;
+    }
+
+    .payment-table th {
+      background: #2d3748;
+      color: white;
+      padding: 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .payment-table td {
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .payment-table .amount-col {
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    .payment-table .total-row {
+      background: #1a202c;
+      color: white;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    /* Payment Summary Grid */
+    .payment-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .summary-card {
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .summary-card.paid {
+      background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+      border: 2px solid #48bb78;
+    }
+
+    .summary-card.balance {
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      border: 2px solid #f59e0b;
+    }
+
+    .summary-date {
+      font-size: 8px;
+      color: #2d3748;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .summary-amount {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 2px;
+    }
+
+    .summary-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .balance-due-box {
+      background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%);
+      border: 3px solid #e74c3c;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .balance-due-label {
+      font-size: 11px;
+      color: #7f1d1d;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .balance-due-amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: #991b1b;
+    }
+
+    /* Signature Area */
+    .signature-area {
+      margin: 20px 0;
+      text-align: right;
+      padding: 15px 20px;
+      border-top: 2px dashed #cbd5e0;
+    }
+
+    .signature-line {
+      width: 200px;
+      display: inline-block;
+      border-bottom: 2px solid #2d3748;
+      margin-bottom: 5px;
+      height: 40px;
+    }
+
+    .signature-text {
+      font-size: 9px;
+      color: #718096;
+      font-weight: 600;
+    }
+
+    /* Footer */
+    .invoice-footer {
+      border-top: 2px solid #e2e8f0;
+      padding-top: 10px;
+      margin-top: 15px;
+    }
+
+    .payment-options {
+      background: #f7fafc;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .payment-options-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+
+    .payment-method {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      background: white;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .payment-icon {
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+
+    .payment-details {
+      flex: 1;
+      font-size: 9px;
+    }
+
+    .payment-bank {
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 2px;
+    }
+
+    .payment-info {
+      color: #718096;
+    }
+
+    .qr-section {
+      text-align: center;
+      padding: 10px;
+      background: white;
+      border: 2px dashed #667eea;
+      border-radius: 8px;
+    }
+
+    .qr-code {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      margin-bottom: 5px;
+      border: 2px solid #cbd5e0;
+    }
+
+    .qr-text {
+      font-size: 8px;
+      color: #667eea;
+      font-weight: 700;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 8px;
+      color: #a0aec0;
+      margin-top: 10px;
+      padding: 8px;
+      line-height: 1.5;
+    }
+
+    .footer-bar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 9px;
+      font-weight: 600;
+      border-radius: 0 0 12px 12px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <!-- Top Header -->
+    <div class="top-header">
+      <div class="property-logo">🏠</div>
+      <div class="property-info">
+        <div class="property-name">{{propertyName}}</div>
+        <div class="property-details">
+          📍 {{propertyAddress}}<br>
+          📞 {{propertyPhone}} | 📧 {{propertyEmail}}
+        </div>
+      </div>
+      <div class="header-icon">🏢</div>
+    </div>
+
+    <!-- Receipt Banner -->
+    <div class="receipt-banner">
+      <div class="receipt-title">RENT RECEIPT</div>
+      <div class="receipt-date">{{invoiceDate}}</div>
+    </div>
+
+    <!-- Bill Info Bar -->
+    <div class="bill-info">
+      <div class="bill-info-item">
+        <div class="bill-info-label">Bill No</div>
+        <div class="bill-info-value">{{invoiceNumber}}</div>
+      </div>
+      <div class="bill-info-item">
+        <div class="bill-info-label">Month</div>
+        <div class="bill-info-value">{{billingPeriod}}</div>
+      </div>
+    </div>
+
+    <!-- Tenant & Room Info Grid -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-header">Room</div>
+        <div class="info-card-name">Property Unit</div>
+        <div class="info-card-details">
+          {{propertyName}}
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-header">Tenant</div>
+        <div class="info-card-name">{{tenantName}}</div>
+        <div class="info-card-details">
+          📱 {{tenantPhone}}<br>
+          📧 {{tenantEmail}}
+        </div>
+      </div>
+    </div>
+
+    <!-- Meter Details -->
+    <div class="meter-section">
+      <div class="meter-header">⚡ Electricity Details | Meter No: ELEC-001 | Per Unit Cost: Variable</div>
+      <div class="meter-grid">
+        <div class="meter-item">
+          <div class="meter-label">OLD</div>
+          <div class="meter-value">-</div>
+        </div>
+        <div class="meter-item">
+          <div class="meter-label">NEW</div>
+          <div class="meter-value">-</div>
+        </div>
+        <div class="meter-item">
+          <div class="meter-label">UNITS</div>
+          <div class="meter-value">-</div>
+        </div>
+        <div class="meter-item">
+          <div class="meter-label">COST</div>
+          <div class="meter-value">₹0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expenses -->
+    <div class="expenses-section">
+      <div class="section-title">Expenses</div>
+      <div class="expenses-grid">
+        <div class="expense-card added">
+          <div class="expense-icon">🧺</div>
+          <div class="expense-info">
+            <div class="expense-name">Services</div>
+            <div class="expense-amount">Included</div>
+            <div class="expense-type">Monthly</div>
+          </div>
+        </div>
+        <div class="expense-card added">
+          <div class="expense-icon">📶</div>
+          <div class="expense-info">
+            <div class="expense-name">Internet</div>
+            <div class="expense-amount">Included</div>
+            <div class="expense-type">Monthly</div>
+          </div>
+        </div>
+        <div class="expense-card removed">
+          <div class="expense-icon">❌</div>
+          <div class="expense-info">
+            <div class="expense-name">Extra</div>
+            <div class="expense-amount">₹0</div>
+            <div class="expense-type">Removed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Details Table -->
+    <div class="section-title">Payment Details</div>
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th>Rent ({{billingPeriod}})</th>
+          <th>Electricity</th>
+          <th>Old Balance</th>
+          <th>Expense Added</th>
+          <th>Total Due Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {{chargesRows}}
+        </tr>
+        <tr class="total-row">
+          <td colspan="4">TOTAL AMOUNT</td>
+          <td>₹{{totalAmount}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Payment Summary -->
+    <div class="payment-summary">
+      <div class="summary-card paid">
+        <div class="summary-date">{{paymentDate}}</div>
+        <div class="summary-amount">₹{{amountPaid}}</div>
+        <div class="summary-label">Total Amount Paid</div>
+      </div>
+      <div class="summary-card paid">
+        <div class="summary-date">{{paymentDate}}</div>
+        <div class="summary-amount">₹{{amountPaid}}</div>
+        <div class="summary-label">Secondary Payment</div>
+      </div>
+    </div>
+
+    <!-- Balance Due -->
+    {{balanceRow}}
+
+    <!-- Signature -->
+    <div class="signature-area">
+      <div class="signature-line"></div>
+      <div class="signature-text">Authorized Signature</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="invoice-footer">
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+        <div class="payment-options">
+          <div class="payment-options-title">Payment Options</div>
+          <div class="payment-method">
+            <div class="payment-icon">🏦</div>
+            <div class="payment-details">
+              <div class="payment-bank">Bank: {{landlordName}}</div>
+              <div class="payment-info">Acc No: XXXX1234 | IFSC: ABCD1234</div>
+            </div>
+          </div>
+          <div class="payment-method">
+            <div class="payment-icon">💳</div>
+            <div class="payment-details">
+              <div class="payment-bank">UPI ID: {{landlordEmail}}</div>
+              <div class="payment-info">Payment via UPI/PhonePe/GPay</div>
+            </div>
+          </div>
+        </div>
+        <div class="qr-section">
+          <div class="qr-code">QR</div>
+          <div class="qr-text">Scan to Pay</div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        {{termsAndConditions}}<br>
+        This is a computer-generated receipt and does not require a physical signature.
+      </div>
+
+      <div class="footer-bar">
+        🙏 Thank you for your payment | For queries: {{propertyPhone}}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
