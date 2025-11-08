@@ -64,6 +64,18 @@ export class RentTransactionRepository implements IRentTransactionRepository {
     }
   }
 
+  async findByUnit(unitId: string): Promise<RentTransaction[]> {
+    try {
+      const result = await this.pool.query(
+        `SELECT * FROM ${TABLES.RENT_TRANSACTIONS} WHERE ${COLUMNS.RENT_TRANSACTIONS.UNIT_ID} = $1 ORDER BY ${COLUMNS.RENT_TRANSACTIONS.BILLING_PERIOD_START} DESC`,
+        [unitId]
+      );
+      return result.rows.map(row => this.mapRowToRentTransaction(row));
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findByBillingPeriod(billingPeriodStart: Date, billingPeriodEnd: Date): Promise<RentTransaction[]> {
     try {
       const result = await this.pool.query(

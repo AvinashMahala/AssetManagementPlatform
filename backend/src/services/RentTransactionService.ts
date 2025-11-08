@@ -84,6 +84,21 @@ export class RentTransactionService implements IRentTransactionService {
     return await this.repository.findByTenant(tenantId);
   }
 
+  async getUnitHistory(unitId: string, limit?: number): Promise<RentTransaction[]> {
+    if (!unitId) {
+      throw new Error('Unit ID is required');
+    }
+    
+    const transactions = await this.repository.findByUnit(unitId);
+    
+    // Sort by billing period start date descending (most recent first)
+    transactions.sort((a, b) => b.billingPeriodStart.getTime() - a.billingPeriodStart.getTime());
+    
+    // Apply limit if specified, default to 5
+    const maxResults = limit || 5;
+    return transactions.slice(0, maxResults);
+  }
+
   async getTransactionsByBillingPeriod(billingPeriodStart: Date, billingPeriodEnd: Date): Promise<RentTransaction[]> {
     if (!billingPeriodStart || !billingPeriodEnd) {
       throw new Error('Billing period start and end dates are required');

@@ -11,6 +11,7 @@ export interface IRentTransactionService {
   getOverdueTransactions(): Promise<RentTransaction[]>;
   getTransactionsByDateRange(startDate: Date, endDate: Date): Promise<RentTransaction[]>;
   getCurrentMonthTransaction(unitId: string): Promise<RentTransaction | null>;
+  getUnitHistory(unitId: string, limit?: number): Promise<RentTransaction[]>;
   createTransaction(transactionData: RentTransactionInput): Promise<RentTransaction>;
   updateTransaction(id: string, transactionData: Partial<RentTransactionInput>): Promise<RentTransaction | null>;
   deleteTransaction(id: string): Promise<boolean>;

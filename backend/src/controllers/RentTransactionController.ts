@@ -264,6 +264,68 @@ export class RentTransactionController {
 
   /**
    * @swagger
+   * /api/rent-transactions/unit/{unitId}/history:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get transaction history for a unit
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: unitId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Unit ID
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 5
+   *         description: Maximum number of transactions to return (optional, defaults to 5)
+   *     responses:
+   *       200:
+   *         description: Transaction history for the unit
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     transactions:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/RentTransaction'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUnitHistory(req: Request, res: Response) {
+    try {
+      const { unitId } = req.params;
+      const { limit } = req.query;
+      
+      const limitNum = limit ? parseInt(limit as string) : undefined;
+      const transactions = await this.service.getUnitHistory(unitId, limitNum);
+      ResponseUtils.success(res, transactions, 'Unit transaction history retrieved successfully');
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to fetch unit transaction history');
+    }
+  }
+
+  /**
+   * @swagger
    * /api/rent-transactions/pending:
    *   get:
    *     tags: [Rent Transactions]

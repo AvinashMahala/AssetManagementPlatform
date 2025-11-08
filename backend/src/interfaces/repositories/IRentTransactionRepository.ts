@@ -4,6 +4,7 @@ export interface IRentTransactionRepository {
   findAll(): Promise<RentTransaction[]>;
   findById(id: string): Promise<RentTransaction | null>;
   findByLease(leaseId: string): Promise<RentTransaction[]>;
+  findByUnit(unitId: string): Promise<RentTransaction[]>;
   findByProperty(propertyId: string): Promise<RentTransaction[]>;
   findByTenant(tenantId: string): Promise<RentTransaction[]>;
   findByBillingPeriod(billingPeriodStart: Date, billingPeriodEnd: Date): Promise<RentTransaction[]>;

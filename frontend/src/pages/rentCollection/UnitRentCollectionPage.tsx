@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
@@ -25,7 +25,7 @@ export const UnitRentCollectionPage: React.FC = () => {
 
   const { data: unit, loading: unitLoading } = useUnit(unitId!);
   const { data: property } = useProperty(propertyId!);
-  const { data: lastReadings, loading: readingsLoading } = useLastMeterReadings(unitId!);
+  const { loading: readingsLoading } = useLastMeterReadings(unitId!);
   const { leases } = useLeases(unitId);
   const { history: recentInvoices, loading: historyLoading } = useUnitTransactionHistory(unitId!, 5);
   const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
@@ -48,7 +48,6 @@ export const UnitRentCollectionPage: React.FC = () => {
     overall: { valid: false, message: 'Validating data...' }
   });
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState('');
   const [generatingPreview, setGeneratingPreview] = useState(false);
   const [editablePreviewData, setEditablePreviewData] = useState<any>(null);
   const [invoiceGenerationStatus, setInvoiceGenerationStatus] = useState<{
@@ -258,6 +257,135 @@ export const UnitRentCollectionPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [saving, creating, invoiceGenerationStatus.step, validationSummary.overall.valid, generatingPreview]);
 
+  // Memoize the preview HTML generation function
+  const generatePreviewHtml = useCallback((data: any) => {
+    // Use a simplified version of the invoice template for preview
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Preview - ${data.invoiceNumber}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1a202c; background: white; font-size: 11px; line-height: 1.3; }
+    .invoice-container { width: 210mm; min-height: 297mm; margin: 0 auto; background: white; padding: 12mm 10mm; }
+    .top-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; color: white; margin-bottom: 3px; }
+    .property-info { flex: 1; padding-left: 15px; }
+    .property-name { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .property-details { font-size: 10px; opacity: 0.95; line-height: 1.5; }
+    .receipt-banner { background: linear-gradient(to right, #f7fafc, #edf2f7); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #667eea; margin-bottom: 15px; }
+    .receipt-title { font-size: 16px; font-weight: 700; color: #2d3748; text-transform: uppercase; letter-spacing: 1px; }
+    .receipt-date { font-size: 11px; color: #4a5568; font-weight: 600; }
+    .bill-info { display: flex; gap: 20px; padding: 10px 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; font-size: 10px; }
+    .bill-info-item { flex: 1; }
+    .bill-info-label { color: #718096; font-weight: 600; margin-bottom: 2px; }
+    .bill-info-value { color: #2d3748; font-weight: 700; font-size: 11px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+    .info-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+    .info-card-header { font-size: 9px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .info-card-name { font-size: 13px; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
+    .info-card-details { font-size: 10px; color: #4a5568; line-height: 1.6; }
+    .payment-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px; }
+    .payment-table th { background: #2d3748; color: white; padding: 8px; text-align: center; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .payment-table td { padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+    .payment-table .amount-col { font-weight: 700; color: #2d3748; }
+    .payment-table .total-row { background: #1a202c; color: white; font-weight: 700; font-size: 11px; }
+    .balance-due-box { background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%); border: 3px solid #e74c3c; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 15px; }
+    .balance-due-label { font-size: 11px; color: #7f1d1d; font-weight: 700; margin-bottom: 4px; }
+    .balance-due-amount { font-size: 24px; font-weight: 700; color: #991b1b; }
+    .footer-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 10px; font-size: 9px; font-weight: 600; border-radius: 0 0 12px 12px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <!-- Top Header -->
+    <div class="top-header">
+      <div style="width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid rgba(255, 255, 255, 0.3);">🏠</div>
+      <div class="property-info">
+        <div class="property-name">${data.propertyName}</div>
+        <div class="property-details">
+          📍 ${data.propertyAddress}<br>
+          📞 ${data.propertyPhone} | 📧 ${data.propertyEmail}
+        </div>
+      </div>
+      <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏢</div>
+    </div>
+
+    <!-- Receipt Banner -->
+    <div class="receipt-banner">
+      <div class="receipt-title">INVOICE PREVIEW</div>
+      <div class="receipt-date">${data.invoiceDate}</div>
+    </div>
+
+    <!-- Bill Info Bar -->
+    <div class="bill-info">
+      <div class="bill-info-item">
+        <div class="bill-info-label">Bill No</div>
+        <div class="bill-info-value">${data.invoiceNumber}</div>
+      </div>
+      <div class="bill-info-item">
+        <div class="bill-info-label">Period</div>
+        <div class="bill-info-value">${data.billingPeriod}</div>
+      </div>
+    </div>
+
+    <!-- Tenant & Room Info Grid -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-header">Room</div>
+        <div class="info-card-name">Property Unit</div>
+        <div class="info-card-details">
+          ${data.propertyName} - Unit ${data.propertyUnit}
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-header">Tenant</div>
+        <div class="info-card-name">${data.tenantName}</div>
+        <div class="info-card-details">
+          📱 ${data.tenantPhone}<br>
+          📧 ${data.tenantEmail}
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Details Table -->
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.chargesRows}
+        <tr class="total-row">
+          <td colspan="1">TOTAL AMOUNT</td>
+          <td>${data.totalAmount}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    ${data.balanceRow}
+
+    <!-- Footer -->
+    <div class="footer-bar">
+      🙏 Invoice Preview | For actual invoice, click "Generate Invoice"
+    </div>
+  </div>
+</body>
+</html>`;
+  }, []);
+
+  // Generate preview HTML when editable data changes
+  const previewHtml = useMemo(() => {
+    if (editablePreviewData) {
+      return generatePreviewHtml(editablePreviewData);
+    }
+    return '';
+  }, [editablePreviewData, generatePreviewHtml]);
+
   const handleMeterReadingChange = (index: number, value: string) => {
     const updated = [...meterReadings];
     const currentReading = parseFloat(value) || 0;
@@ -445,8 +573,8 @@ export const UnitRentCollectionPage: React.FC = () => {
       setEditablePreviewData(previewData);
 
       // Generate HTML using the template structure
-      const html = generatePreviewHtml(previewData);
-      setPreviewHtml(html);
+      // const html = generatePreviewHtml(previewData);
+      // setPreviewHtml(html);
       setShowPreviewModal(true);
     } catch (error) {
       console.error('Failed to generate preview:', error);
@@ -501,125 +629,6 @@ export const UnitRentCollectionPage: React.FC = () => {
     return rows.join('');
   };
 
-  const generatePreviewHtml = (data: any) => {
-    // Use a simplified version of the invoice template for preview
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice Preview - ${data.invoiceNumber}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1a202c; background: white; font-size: 11px; line-height: 1.3; }
-    .invoice-container { width: 210mm; min-height: 297mm; margin: 0 auto; background: white; padding: 12mm 10mm; }
-    .top-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; color: white; margin-bottom: 3px; }
-    .property-info { flex: 1; padding-left: 15px; }
-    .property-name { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .property-details { font-size: 10px; opacity: 0.95; line-height: 1.5; }
-    .receipt-banner { background: linear-gradient(to right, #f7fafc, #edf2f7); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #667eea; margin-bottom: 15px; }
-    .receipt-title { font-size: 16px; font-weight: 700; color: #2d3748; text-transform: uppercase; letter-spacing: 1px; }
-    .receipt-date { font-size: 11px; color: #4a5568; font-weight: 600; }
-    .bill-info { display: flex; gap: 20px; padding: 10px 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; font-size: 10px; }
-    .bill-info-item { flex: 1; }
-    .bill-info-label { color: #718096; font-weight: 600; margin-bottom: 2px; }
-    .bill-info-value { color: #2d3748; font-weight: 700; font-size: 11px; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-    .info-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 12px; }
-    .info-card-header { font-size: 9px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .info-card-name { font-size: 13px; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
-    .info-card-details { font-size: 10px; color: #4a5568; line-height: 1.6; }
-    .payment-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px; }
-    .payment-table th { background: #2d3748; color: white; padding: 8px; text-align: center; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
-    .payment-table td { padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-    .payment-table .amount-col { font-weight: 700; color: #2d3748; }
-    .payment-table .total-row { background: #1a202c; color: white; font-weight: 700; font-size: 11px; }
-    .balance-due-box { background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%); border: 3px solid #e74c3c; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 15px; }
-    .balance-due-label { font-size: 11px; color: #7f1d1d; font-weight: 700; margin-bottom: 4px; }
-    .balance-due-amount { font-size: 24px; font-weight: 700; color: #991b1b; }
-    .footer-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 10px; font-size: 9px; font-weight: 600; border-radius: 0 0 12px 12px; margin-top: 10px; }
-  </style>
-</head>
-<body>
-  <div class="invoice-container">
-    <!-- Top Header -->
-    <div class="top-header">
-      <div style="width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid rgba(255, 255, 255, 0.3);">🏠</div>
-      <div class="property-info">
-        <div class="property-name">${data.propertyName}</div>
-        <div class="property-details">
-          📍 ${data.propertyAddress}<br>
-          📞 ${data.propertyPhone} | 📧 ${data.propertyEmail}
-        </div>
-      </div>
-      <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏢</div>
-    </div>
-
-    <!-- Receipt Banner -->
-    <div class="receipt-banner">
-      <div class="receipt-title">INVOICE PREVIEW</div>
-      <div class="receipt-date">${data.invoiceDate}</div>
-    </div>
-
-    <!-- Bill Info Bar -->
-    <div class="bill-info">
-      <div class="bill-info-item">
-        <div class="bill-info-label">Bill No</div>
-        <div class="bill-info-value">${data.invoiceNumber}</div>
-      </div>
-      <div class="bill-info-item">
-        <div class="bill-info-label">Period</div>
-        <div class="bill-info-value">${data.billingPeriod}</div>
-      </div>
-    </div>
-
-    <!-- Tenant & Room Info Grid -->
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="info-card-header">Room</div>
-        <div class="info-card-name">Property Unit</div>
-        <div class="info-card-details">
-          ${data.propertyName} - Unit ${data.propertyUnit}
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-header">Tenant</div>
-        <div class="info-card-name">${data.tenantName}</div>
-        <div class="info-card-details">
-          📱 ${data.tenantPhone}<br>
-          📧 ${data.tenantEmail}
-        </div>
-      </div>
-    </div>
-
-    <!-- Payment Details Table -->
-    <table class="payment-table">
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.chargesRows}
-        <tr class="total-row">
-          <td colspan="1">TOTAL AMOUNT</td>
-          <td>${data.totalAmount}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    ${data.balanceRow}
-
-    <!-- Footer -->
-    <div class="footer-bar">
-      🙏 Invoice Preview | For actual invoice, click "Generate Invoice"
-    </div>
-  </div>
-</body>
-</html>`;
-  };
   const handleGenerateInvoice = async () => {
     if (!unit || !activeLease || !property || !user) {
       alert('Missing required data: unit, lease, property, or user');
@@ -1386,7 +1395,6 @@ export const UnitRentCollectionPage: React.FC = () => {
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, propertyName: e.target.value };
                         setEditablePreviewData(updated);
-                        setPreviewHtml(generatePreviewHtml(updated));
                       }}
                     />
                   </div>
@@ -1397,7 +1405,6 @@ export const UnitRentCollectionPage: React.FC = () => {
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, propertyAddress: e.target.value };
                         setEditablePreviewData(updated);
-                        setPreviewHtml(generatePreviewHtml(updated));
                       }}
                     />
                   </div>
@@ -1408,7 +1415,6 @@ export const UnitRentCollectionPage: React.FC = () => {
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, tenantName: e.target.value };
                         setEditablePreviewData(updated);
-                        setPreviewHtml(generatePreviewHtml(updated));
                       }}
                     />
                   </div>
@@ -1420,7 +1426,6 @@ export const UnitRentCollectionPage: React.FC = () => {
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, invoiceDate: e.target.value };
                         setEditablePreviewData(updated);
-                        setPreviewHtml(generatePreviewHtml(updated));
                       }}
                     />
                   </div>
@@ -1431,7 +1436,6 @@ export const UnitRentCollectionPage: React.FC = () => {
                       onChange={(e) => {
                         const updated = { ...editablePreviewData, termsAndConditions: e.target.value };
                         setEditablePreviewData(updated);
-                        setPreviewHtml(generatePreviewHtml(updated));
                       }}
                       className="w-full min-h-[80px] rounded-md border border-gray-300 px-3 py-2 text-sm"
                     />

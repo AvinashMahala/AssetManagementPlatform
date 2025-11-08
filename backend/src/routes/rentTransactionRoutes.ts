@@ -46,6 +46,7 @@ export const createRentTransactionRoutes = (controller: RentTransactionControlle
 
   // MVP-specific routes
   router.get('/unit/:unitId/current-month', auth, controller.getCurrentMonthTransaction.bind(controller));
+  router.get('/unit/:unitId/history', auth, controller.getUnitHistory.bind(controller));
   router.get('/unit/:unitId/last-meter-readings', auth, controller.getLastMeterReadings.bind(controller));
   router.post('/:id/record-payment', auth, controller.recordPayment.bind(controller));
   router.post('/generate-invoice', auth, controller.generateInvoice.bind(controller));
