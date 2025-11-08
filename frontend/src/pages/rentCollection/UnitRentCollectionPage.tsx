@@ -25,7 +25,7 @@ export const UnitRentCollectionPage: React.FC = () => {
   const { data: unit, loading: unitLoading } = useUnit(unitId!);
   const { data: property } = useProperty(propertyId!);
   const { data: lastReadings, loading: readingsLoading } = useLastMeterReadings(unitId!);
-  const { leases, loading: leasesLoading } = useLeases(unitId);
+  const { leases } = useLeases(unitId);
   const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
 
   const [meterReadings, setMeterReadings] = useState<MeterReadingInput[]>([]);
@@ -33,6 +33,10 @@ export const UnitRentCollectionPage: React.FC = () => {
   const [newExpense, setNewExpense] = useState({ category: '', description: '', amount: 0 });
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [invoiceGenerationStatus, setInvoiceGenerationStatus] = useState<{
+    step: 'idle' | 'creating' | 'generating' | 'downloading' | 'complete' | 'error';
+    message: string;
+  }>({ step: 'idle', message: '' });
 
   const billingPeriod = getCurrentBillingPeriod();
 
@@ -202,6 +206,8 @@ export const UnitRentCollectionPage: React.FC = () => {
     }
 
     setSaving(true);
+    setInvoiceGenerationStatus({ step: 'creating', message: 'Creating transaction...' });
+    
     try {
       const billingDays = Math.ceil(
         (new Date(billingPeriod.end).getTime() - new Date(billingPeriod.start).getTime()) 
@@ -262,7 +268,10 @@ export const UnitRentCollectionPage: React.FC = () => {
           ? response.error 
           : response.error?.message || 'Failed to create transaction';
         console.error('Transaction creation failed:', errorMsg);
-        alert(`Failed to create transaction: ${errorMsg}`);
+        setInvoiceGenerationStatus({ 
+          step: 'error', 
+          message: `Failed to create transaction: ${errorMsg}` 
+        });
         throw new Error(errorMsg);
       }
 
@@ -270,6 +279,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       console.log('Transaction created successfully:', transaction);
 
       // Step 2: Generate the invoice PDF
+      setInvoiceGenerationStatus({ step: 'generating', message: 'Generating invoice PDF...' });
       console.log('Calling generateInvoice with transaction ID:', transaction.id);
       const invoiceResponse = await rentTransactionService.generateInvoice({
         transactionId: transaction.id
@@ -281,13 +291,17 @@ export const UnitRentCollectionPage: React.FC = () => {
           ? invoiceResponse.error 
           : invoiceResponse.error?.message || 'Failed to generate invoice PDF';
         console.error('Invoice generation failed:', errorMsg);
-        alert(`Failed to generate invoice: ${errorMsg}`);
+        setInvoiceGenerationStatus({ 
+          step: 'error', 
+          message: `Failed to generate invoice: ${errorMsg}` 
+        });
         throw new Error(errorMsg);
       }
 
       const { pdfUrl, invoiceNumber } = invoiceResponse.data;
 
       // Step 3: Download the PDF with custom filename
+      setInvoiceGenerationStatus({ step: 'downloading', message: 'Preparing download...' });
       const date = new Date(billingPeriod.start);
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
@@ -312,10 +326,12 @@ export const UnitRentCollectionPage: React.FC = () => {
       const pdfFullUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${pdfUrl}`;
 
       // Open PDF in new tab
+      setInvoiceGenerationStatus({ step: 'downloading', message: 'Opening invoice in new tab...' });
       window.open(pdfFullUrl, '_blank');
 
       // Also trigger download (using fetch to avoid navigation)
-      fetch(pdfFullUrl)
+      setInvoiceGenerationStatus({ step: 'downloading', message: 'Downloading invoice...' });
+      await fetch(pdfFullUrl)
         .then(response => response.blob())
         .then(blob => {
           const blobUrl = window.URL.createObjectURL(blob);
@@ -331,10 +347,28 @@ export const UnitRentCollectionPage: React.FC = () => {
         })
         .catch(err => console.error('Download failed:', err));
 
+      // Success!
+      setInvoiceGenerationStatus({ 
+        step: 'complete', 
+        message: `Invoice ${invoiceNumber} generated successfully!` 
+      });
+      
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setInvoiceGenerationStatus({ step: 'idle', message: '' });
+      }, 3000);
+
       alert(`Invoice generated successfully! (${invoiceNumber})`);
     } catch (error) {
       console.error('Failed to generate invoice:', error);
-      alert('Failed to generate invoice: ' + (error as Error).message);
+      setInvoiceGenerationStatus({ 
+        step: 'error', 
+        message: 'Failed to generate invoice: ' + (error as Error).message 
+      });
+      // Reset status after 5 seconds
+      setTimeout(() => {
+        setInvoiceGenerationStatus({ step: 'idle', message: '' });
+      }, 5000);
     } finally {
       setSaving(false);
     }
@@ -390,27 +424,96 @@ export const UnitRentCollectionPage: React.FC = () => {
             <p className="mt-2 text-gray-600">
               {property?.name} - Unit {unit.unitNumber}
             </p>
-            <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500">
               Billing Period: {billingPeriod.start} to {billingPeriod.end}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleSaveDraft}
-              disabled={saving || creating}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Draft
-            </Button>
-            <Button
-              onClick={handleGenerateInvoice}
-              disabled={saving || creating}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Generate Invoice
-            </Button>
-          </div>
+        </div>
+
+        {/* Invoice Generation Status */}
+        {invoiceGenerationStatus.step !== 'idle' && (
+          <Card className={`border-2 ${
+            invoiceGenerationStatus.step === 'error' ? 'border-red-500 bg-red-50' :
+            invoiceGenerationStatus.step === 'complete' ? 'border-green-500 bg-green-50' :
+            'border-blue-500 bg-blue-50'
+          }`}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                {invoiceGenerationStatus.step === 'creating' && (
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div>
+                      <p className="font-semibold text-blue-900">Creating Transaction</p>
+                      <p className="text-sm text-blue-700">{invoiceGenerationStatus.message}</p>
+                    </div>
+                  </div>
+                )}
+                {invoiceGenerationStatus.step === 'generating' && (
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <div>
+                      <p className="font-semibold text-purple-900">Generating PDF</p>
+                      <p className="text-sm text-purple-700">{invoiceGenerationStatus.message}</p>
+                    </div>
+                  </div>
+                )}
+                {invoiceGenerationStatus.step === 'downloading' && (
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <div>
+                      <p className="font-semibold text-indigo-900">Downloading</p>
+                      <p className="text-sm text-indigo-700">{invoiceGenerationStatus.message}</p>
+                    </div>
+                  </div>
+                )}
+                {invoiceGenerationStatus.step === 'complete' && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-green-900">Success!</p>
+                      <p className="text-sm text-green-700">{invoiceGenerationStatus.message}</p>
+                    </div>
+                  </div>
+                )}
+                {invoiceGenerationStatus.step === 'error' && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-red-900">Error</p>
+                      <p className="text-sm text-red-700">{invoiceGenerationStatus.message}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleSaveDraft}
+            disabled={saving || creating}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save Draft
+          </Button>
+          <Button
+            onClick={handleGenerateInvoice}
+            disabled={saving || creating}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Generate Invoice
+          </Button>
         </div>
 
         {/* Summary Card */}
