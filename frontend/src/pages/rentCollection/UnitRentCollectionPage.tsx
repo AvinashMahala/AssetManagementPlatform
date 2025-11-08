@@ -7,7 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { AppLayout } from '../../components/layout';
-import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases } from '../../hooks';
+import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory } from '../../hooks';
 import { useAuthContext } from '../../contexts';
 import { rentTransactionService } from '../../services/rentTransactionService';
 import type { MeterReadingInput, ExpenseItem } from '../../types/rentTransaction';
@@ -27,6 +27,7 @@ export const UnitRentCollectionPage: React.FC = () => {
   const { data: property } = useProperty(propertyId!);
   const { data: lastReadings, loading: readingsLoading } = useLastMeterReadings(unitId!);
   const { leases } = useLeases(unitId);
+  const { history: recentInvoices, loading: historyLoading } = useUnitTransactionHistory(unitId!, 5);
   const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
 
   const [meterReadings, setMeterReadings] = useState<MeterReadingInput[]>([]);
@@ -49,10 +50,13 @@ export const UnitRentCollectionPage: React.FC = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
   const [generatingPreview, setGeneratingPreview] = useState(false);
+  const [editablePreviewData, setEditablePreviewData] = useState<any>(null);
   const [invoiceGenerationStatus, setInvoiceGenerationStatus] = useState<{
     step: 'idle' | 'creating' | 'generating' | 'downloading' | 'complete' | 'error';
     message: string;
-  }>({ step: 'idle', message: '' });
+    currentStep: number;
+    totalSteps: number;
+  }>({ step: 'idle', message: '', currentStep: 0, totalSteps: 4 });
 
   const billingPeriod = getCurrentBillingPeriod();
 
@@ -93,7 +97,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       expenses: { valid: expensesValid, message: expensesMessage },
       overall: { valid: overallValid, message: overallMessage }
     });
-  }, [activeLease, meterReadings, expenses, leases]);
+  }, [meterReadings, expenses, leases]);
 
   // Auto-save functionality
   useEffect(() => {
@@ -222,25 +226,37 @@ export const UnitRentCollectionPage: React.FC = () => {
     }
   };
 
-  // Initialize meter readings
+  // Keyboard shortcuts
   useEffect(() => {
-    if (lastReadings && lastReadings.length > 0 && meterReadings.length === 0) {
-      const initialReadings: MeterReadingInput[] = lastReadings.map((reading: any) => ({
-        meterId: reading.meterId,
-        meterName: reading.meterName,
-        meterType: reading.meterType,
-        meterNumber: reading.meterNumber || '',
-        previousReading: reading.lastReading,
-        currentReading: reading.lastReading,
-        unitsConsumed: 0,
-        costPerUnit: reading.costPerUnit,
-        fixedCharge: reading.fixedCharge || 0,
-        totalCost: 0,
-        readingDate: new Date().toISOString().split('T')[0],
-      }));
-      setMeterReadings(initialReadings);
-    }
-  }, [lastReadings, meterReadings.length]);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + S to save draft
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        if (!saving && !creating) {
+          handleSaveDraft();
+        }
+      }
+      
+      // Ctrl/Cmd + G to generate invoice
+      if ((event.ctrlKey || event.metaKey) && event.key === 'g') {
+        event.preventDefault();
+        if (!saving && !creating && invoiceGenerationStatus.step === 'idle' && validationSummary.overall.valid) {
+          handleGenerateInvoice();
+        }
+      }
+      
+      // Ctrl/Cmd + P to preview invoice
+      if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
+        event.preventDefault();
+        if (!generatingPreview && validationSummary.overall.valid) {
+          handlePreviewInvoice();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [saving, creating, invoiceGenerationStatus.step, validationSummary.overall.valid, generatingPreview]);
 
   const handleMeterReadingChange = (index: number, value: string) => {
     const updated = [...meterReadings];
@@ -424,6 +440,9 @@ export const UnitRentCollectionPage: React.FC = () => {
             <div class="balance-due-amount">${formatCurrency(totals.totalAmount)}</div>
           </div>` : ''
       };
+
+      // Store editable data
+      setEditablePreviewData(previewData);
 
       // Generate HTML using the template structure
       const html = generatePreviewHtml(previewData);
@@ -627,7 +646,7 @@ export const UnitRentCollectionPage: React.FC = () => {
     }
 
     setSaving(true);
-    setInvoiceGenerationStatus({ step: 'creating', message: 'Creating transaction...' });
+    setInvoiceGenerationStatus({ step: 'creating', message: 'Step 1 of 4: Creating transaction...', currentStep: 1, totalSteps: 4 });
     
     try {
       const billingDays = Math.ceil(
@@ -691,7 +710,9 @@ export const UnitRentCollectionPage: React.FC = () => {
         console.error('Transaction creation failed:', errorMsg);
         setInvoiceGenerationStatus({ 
           step: 'error', 
-          message: `Failed to create transaction: ${errorMsg}` 
+          message: `Failed to create transaction: ${errorMsg}`,
+          currentStep: 1,
+          totalSteps: 4
         });
         throw new Error(errorMsg);
       }
@@ -700,7 +721,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       console.log('Transaction created successfully:', transaction);
 
       // Step 2: Generate the invoice PDF
-      setInvoiceGenerationStatus({ step: 'generating', message: 'Generating invoice PDF...' });
+      setInvoiceGenerationStatus({ step: 'generating', message: 'Step 2 of 4: Generating invoice PDF...', currentStep: 2, totalSteps: 4 });
       console.log('Calling generateInvoice with transaction ID:', transaction.id);
       const invoiceResponse = await rentTransactionService.generateInvoice({
         transactionId: transaction.id
@@ -714,7 +735,9 @@ export const UnitRentCollectionPage: React.FC = () => {
         console.error('Invoice generation failed:', errorMsg);
         setInvoiceGenerationStatus({ 
           step: 'error', 
-          message: `Failed to generate invoice: ${errorMsg}` 
+          message: `Failed to generate invoice: ${errorMsg}`,
+          currentStep: 2,
+          totalSteps: 4
         });
         throw new Error(errorMsg);
       }
@@ -722,7 +745,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       const { pdfUrl, invoiceNumber } = invoiceResponse.data;
 
       // Step 3: Download the PDF with custom filename
-      setInvoiceGenerationStatus({ step: 'downloading', message: 'Preparing download...' });
+      setInvoiceGenerationStatus({ step: 'downloading', message: 'Step 3 of 4: Preparing download...', currentStep: 3, totalSteps: 4 });
       const date = new Date(billingPeriod.start);
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
@@ -747,11 +770,11 @@ export const UnitRentCollectionPage: React.FC = () => {
       const pdfFullUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${pdfUrl}`;
 
       // Open PDF in new tab
-      setInvoiceGenerationStatus({ step: 'downloading', message: 'Opening invoice in new tab...' });
+      setInvoiceGenerationStatus({ step: 'downloading', message: 'Step 4 of 4: Opening invoice in new tab...', currentStep: 4, totalSteps: 4 });
       window.open(pdfFullUrl, '_blank');
 
       // Also trigger download (using fetch to avoid navigation)
-      setInvoiceGenerationStatus({ step: 'downloading', message: 'Downloading invoice...' });
+      setInvoiceGenerationStatus({ step: 'downloading', message: 'Step 4 of 4: Downloading invoice...', currentStep: 4, totalSteps: 4 });
       await fetch(pdfFullUrl)
         .then(response => response.blob())
         .then(blob => {
@@ -771,23 +794,27 @@ export const UnitRentCollectionPage: React.FC = () => {
       // Success!
       setInvoiceGenerationStatus({ 
         step: 'complete', 
-        message: `Invoice ${invoiceNumber} generated successfully! Check your downloads.` 
+        message: `Invoice ${invoiceNumber} generated successfully! Check your downloads.`,
+        currentStep: 4,
+        totalSteps: 4
       });
       
       // Reset status after 5 seconds (increased to give user time to read)
       setTimeout(() => {
-        setInvoiceGenerationStatus({ step: 'idle', message: '' });
+        setInvoiceGenerationStatus({ step: 'idle', message: '', currentStep: 0, totalSteps: 4 });
       }, 5000);
       
     } catch (error) {
       console.error('Failed to generate invoice:', error);
       setInvoiceGenerationStatus({ 
         step: 'error', 
-        message: 'Failed to generate invoice: ' + (error as Error).message 
+        message: 'Failed to generate invoice: ' + (error as Error).message,
+        currentStep: 0,
+        totalSteps: 4
       });
       // Reset status after 5 seconds
       setTimeout(() => {
-        setInvoiceGenerationStatus({ step: 'idle', message: '' });
+        setInvoiceGenerationStatus({ step: 'idle', message: '', currentStep: 0, totalSteps: 4 });
       }, 5000);
     } finally {
       setSaving(false);
@@ -870,6 +897,9 @@ export const UnitRentCollectionPage: React.FC = () => {
                     <div>
                       <p className="font-semibold text-blue-900">Creating Transaction</p>
                       <p className="text-sm text-blue-700">{invoiceGenerationStatus.message}</p>
+                      <div className="mt-2 w-full bg-blue-200 rounded-full h-2">
+                        <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${(invoiceGenerationStatus.currentStep / invoiceGenerationStatus.totalSteps) * 100}%` }}></div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -879,6 +909,9 @@ export const UnitRentCollectionPage: React.FC = () => {
                     <div>
                       <p className="font-semibold text-purple-900">Generating PDF</p>
                       <p className="text-sm text-purple-700">{invoiceGenerationStatus.message}</p>
+                      <div className="mt-2 w-full bg-purple-200 rounded-full h-2">
+                        <div className="bg-purple-600 h-2 rounded-full transition-all duration-300" style={{ width: `${(invoiceGenerationStatus.currentStep / invoiceGenerationStatus.totalSteps) * 100}%` }}></div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -888,6 +921,9 @@ export const UnitRentCollectionPage: React.FC = () => {
                     <div>
                       <p className="font-semibold text-indigo-900">Downloading</p>
                       <p className="text-sm text-indigo-700">{invoiceGenerationStatus.message}</p>
+                      <div className="mt-2 w-full bg-indigo-200 rounded-full h-2">
+                        <div className="bg-indigo-600 h-2 rounded-full transition-all duration-300" style={{ width: `${(invoiceGenerationStatus.currentStep / invoiceGenerationStatus.totalSteps) * 100}%` }}></div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -901,6 +937,9 @@ export const UnitRentCollectionPage: React.FC = () => {
                     <div>
                       <p className="font-semibold text-green-900">Success!</p>
                       <p className="text-sm text-green-700">{invoiceGenerationStatus.message}</p>
+                      <div className="mt-2 w-full bg-green-200 rounded-full h-2">
+                        <div className="bg-green-600 h-2 rounded-full" style={{ width: '100%' }}></div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -999,7 +1038,7 @@ export const UnitRentCollectionPage: React.FC = () => {
                   variant="outline"
                   onClick={handlePreviewInvoice}
                   disabled={generatingPreview || !validationSummary.overall.valid}
-                  title="Preview invoice before generating (Ctrl+P)"
+                  title={`Preview invoice before generating (Ctrl/Cmd + P)${!validationSummary.overall.valid ? ' - Complete required fields first' : ''}`}
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   Preview
@@ -1008,6 +1047,7 @@ export const UnitRentCollectionPage: React.FC = () => {
                   variant="outline"
                   onClick={handleSaveDraft}
                   disabled={saving || creating}
+                  title={`Save current data as draft (Ctrl/Cmd + S)${saving || creating ? ' - Operation in progress' : ''}`}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save Draft
@@ -1016,6 +1056,7 @@ export const UnitRentCollectionPage: React.FC = () => {
                   onClick={handleGenerateInvoice}
                   disabled={saving || creating || invoiceGenerationStatus.step !== 'idle'}
                   className="bg-green-600 hover:bg-green-700"
+                  title={`Generate final invoice (Ctrl/Cmd + G)${invoiceGenerationStatus.step !== 'idle' ? ' - Generation in progress' : !validationSummary.overall.valid ? ' - Complete required fields first' : ''}`}
                 >
                   {invoiceGenerationStatus.step !== 'idle' ? (
                     <>
@@ -1069,6 +1110,92 @@ export const UnitRentCollectionPage: React.FC = () => {
                 <p className="text-2xl font-bold text-green-600">{formatCurrency(totals.totalAmount)}</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Invoices */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Recent Invoices</span>
+              <Badge variant="outline">{recentInvoices.length} invoice(s)</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {historyLoading ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            ) : recentInvoices.length > 0 ? (
+              <div className="space-y-3">
+                {recentInvoices.map((invoice) => (
+                  <div key={invoice.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <FileText className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {invoice.invoiceNumber || `Invoice ${invoice.id.slice(-8)}`}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(invoice.billingPeriodStart).toLocaleDateString('en-IN', {
+                              month: 'short',
+                              year: 'numeric'
+                            })} - {formatCurrency(invoice.totalAmount)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {invoice.status === 'paid' ? 'Paid' : 
+                             invoice.status === 'partial' ? 'Partially Paid' : 
+                             invoice.status === 'draft' ? 'Draft' : 'Pending'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // View/Edit invoice
+                          navigate(`/properties/${propertyId}/rent-collection/${unitId}/invoice/${invoice.id}`);
+                        }}
+                        title="View/Edit Invoice"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {invoice.invoiceNumber && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const response = await rentTransactionService.generateInvoice({
+                                transactionId: invoice.id
+                              });
+                              if (response.success && response.data?.pdfUrl) {
+                                const pdfFullUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${response.data.pdfUrl}`;
+                                window.open(pdfFullUrl, '_blank');
+                              }
+                            } catch (error) {
+                              console.error('Failed to download invoice:', error);
+                            }
+                          }}
+                          title="Download Invoice"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-4">No recent invoices found</p>
+            )}
           </CardContent>
         </Card>
 
@@ -1243,47 +1370,114 @@ export const UnitRentCollectionPage: React.FC = () => {
 
         {/* Invoice Preview Modal */}
         <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden">
             <DialogHeader>
-              <DialogTitle>Invoice Preview</DialogTitle>
+              <DialogTitle>Invoice Preview & Edit</DialogTitle>
             </DialogHeader>
-            <div className="mt-4">
-              {generatingPreview ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="flex items-center gap-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p className="text-gray-600">Generating preview...</p>
-                  </div>
-                </div>
-              ) : (
+            <div className="flex gap-6 h-[70vh]">
+              {/* Edit Panel */}
+              <div className="w-80 border-r pr-4 overflow-y-auto">
+                <h3 className="font-semibold mb-4">Edit Invoice Details</h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-600">
-                      This is how your invoice will look. Review and make any final edits before generating.
-                    </p>
-                    <Button
-                      onClick={() => {
-                        setShowPreviewModal(false);
-                        handleGenerateInvoice();
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Property Name</label>
+                    <Input
+                      value={editablePreviewData?.propertyName || ''}
+                      onChange={(e) => {
+                        const updated = { ...editablePreviewData, propertyName: e.target.value };
+                        setEditablePreviewData(updated);
+                        setPreviewHtml(generatePreviewHtml(updated));
                       }}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Generate Invoice
-                    </Button>
+                    />
                   </div>
-                  <div 
-                    className="border rounded-lg p-4 bg-white"
-                    dangerouslySetInnerHTML={{ __html: previewHtml }}
-                    style={{ 
-                      transform: 'scale(0.8)', 
-                      transformOrigin: 'top center',
-                      width: '125%',
-                      margin: '0 auto'
-                    }}
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Property Address</label>
+                    <Input
+                      value={editablePreviewData?.propertyAddress || ''}
+                      onChange={(e) => {
+                        const updated = { ...editablePreviewData, propertyAddress: e.target.value };
+                        setEditablePreviewData(updated);
+                        setPreviewHtml(generatePreviewHtml(updated));
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Tenant Name</label>
+                    <Input
+                      value={editablePreviewData?.tenantName || ''}
+                      onChange={(e) => {
+                        const updated = { ...editablePreviewData, tenantName: e.target.value };
+                        setEditablePreviewData(updated);
+                        setPreviewHtml(generatePreviewHtml(updated));
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Invoice Date</label>
+                    <Input
+                      type="date"
+                      value={editablePreviewData?.invoiceDate || ''}
+                      onChange={(e) => {
+                        const updated = { ...editablePreviewData, invoiceDate: e.target.value };
+                        setEditablePreviewData(updated);
+                        setPreviewHtml(generatePreviewHtml(updated));
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Terms & Conditions</label>
+                    <textarea
+                      value={editablePreviewData?.termsAndConditions || ''}
+                      onChange={(e) => {
+                        const updated = { ...editablePreviewData, termsAndConditions: e.target.value };
+                        setEditablePreviewData(updated);
+                        setPreviewHtml(generatePreviewHtml(updated));
+                      }}
+                      className="w-full min-h-[80px] rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
                 </div>
-              )}
+              </div>
+              
+              {/* Preview Panel */}
+              <div className="flex-1 overflow-y-auto">
+                {generatingPreview ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="flex items-center gap-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <p className="text-gray-600">Generating preview...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-gray-600">
+                        Preview your invoice. Make edits on the left panel and see changes instantly.
+                      </p>
+                      <Button
+                        onClick={() => {
+                          setShowPreviewModal(false);
+                          handleGenerateInvoice();
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate Invoice
+                      </Button>
+                    </div>
+                    <div 
+                      className="border rounded-lg p-4 bg-white"
+                      dangerouslySetInnerHTML={{ __html: previewHtml }}
+                      style={{ 
+                        transform: 'scale(0.7)', 
+                        transformOrigin: 'top center',
+                        width: '142.86%',
+                        margin: '0 auto'
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
