@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Edit, Building2, FileImage, Download, X, Wrench } from 'lucide-react';
+import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -16,7 +16,7 @@ const UnitListPageEnhanced: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [propertyFilter, setPropertyFilter] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
@@ -426,10 +426,10 @@ const UnitListPageEnhanced: React.FC = () => {
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate(`/units/${unit.id}/edit`);
+                                  navigate(`/units/${unit.id}/dashboard`);
                                 }}
                               >
-                                <Edit className="h-4 w-4" />
+                                📊
                               </Button>
                             </div>
                           </TableCell>
@@ -523,11 +523,10 @@ const UnitListPageEnhanced: React.FC = () => {
                             className="flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/units/${unit.id}/edit`);
+                              navigate(`/units/${unit.id}/dashboard`);
                             }}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
+                            📊 Dashboard
                           </Button>
                         </div>
                       </CardContent>

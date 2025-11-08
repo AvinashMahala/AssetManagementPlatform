@@ -7,7 +7,7 @@ import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './page
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
 import { TenantCreatePageEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
-import { UnitCreatePageEnhanced, UnitDetailPage, UnitEditPageEnhanced } from './pages/units';
+import { UnitCreatePageEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
 import { LeaseCreatePageEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
 import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
@@ -133,6 +133,7 @@ function App() {
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
               <Route path="/units/create" element={<ProtectedRoute><UnitCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/units/:id" element={<ProtectedRoute><AppLayout><UnitDetailPage /></AppLayout></ProtectedRoute>} />
+              <Route path="/units/:id/dashboard" element={<ProtectedRoute><AppLayout><UnitDashboardPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/edit" element={<ProtectedRoute><UnitEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/leases" element={<ProtectedRoute><LeaseListPageEnhanced /></ProtectedRoute>} />

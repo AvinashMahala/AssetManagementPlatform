@@ -448,4 +448,52 @@ export class UnitController {
       ErrorUtils.handleGenericError(res, err, 'Failed to remove tenant from unit');
     }
   }
+
+  /**
+   * @swagger
+   * /api/units/{id}/analytics:
+   *   get:
+   *     tags: ['Units']
+   *     summary: Get comprehensive analytics for a unit
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Unit analytics data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 unit:
+   *                   $ref: '#/components/schemas/Unit'
+   *                 financialSummary:
+   *                   type: object
+   *                 occupancyAnalytics:
+   *                   type: object
+   *                 paymentHistory:
+   *                   type: object
+   *                 currentTenants:
+   *                   type: array
+   *                 generatedAt:
+   *                   type: string
+   *                   format: date-time
+   *       404:
+   *         description: Unit not found
+   */
+  async getAnalytics(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const unitId = id;
+
+      const analytics = await this.service.getUnitAnalytics(unitId);
+      ResponseUtils.success(res, analytics);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to fetch unit analytics');
+    }
+  }
 }

@@ -33,6 +33,9 @@ export type { LoadingSpinnerProps } from './components/loading-spinner';
 export { StatusBadge } from './components/status-badge';
 export type { StatusBadgeProps, StatusType } from './components/status-badge';
 
+export { PhotoCarousel } from './components/PhotoCarousel';
+export type { PhotoCarouselProps } from './components/PhotoCarousel';
+
 // Re-export common UI components for convenience
 export { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 export { Button } from '../components/ui/button';

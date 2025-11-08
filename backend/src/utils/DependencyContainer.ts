@@ -244,7 +244,7 @@ export class DependencyContainer {
 
   public get unitService(): IUnitService {
     if (!this._unitService) {
-      this._unitService = new UnitService(this.unitRepository);
+      this._unitService = new UnitService(this.unitRepository, this.rentPaymentService, this.meterService, this.meterReadingService);
     }
     return this._unitService;
   }

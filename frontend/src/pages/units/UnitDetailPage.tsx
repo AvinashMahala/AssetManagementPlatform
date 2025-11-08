@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useDeleteUnit } from '../../hooks';
+import { PhotoCarousel } from '../../componentDesignLibrary';
 
 export const UnitDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,15 +71,12 @@ export const UnitDetailPage: React.FC = () => {
 
       {/* Photos */}
       {unit.unitPhotos && unit.unitPhotos.length > 0 && (
-        <div className="mb-6 grid grid-cols-2 md:grid-cols-3 gap-4">
-          {unit.unitPhotos.map((photo, index) => (
-            <img
-              key={index}
-              src={photo}
-              alt={`Unit ${unit.unitNumber} - Photo ${index + 1}`}
-              className="w-full h-48 object-cover rounded-lg shadow-md"
-            />
-          ))}
+        <div className="mb-6">
+          <PhotoCarousel
+            photos={unit.unitPhotos}
+            altPrefix={`Unit ${unit.unitNumber}`}
+            className="mb-4"
+          />
         </div>
       )}
 
@@ -187,8 +185,14 @@ export const UnitDetailPage: React.FC = () => {
           Back to Units
         </button>
         <button
-          onClick={() => navigate(`/units/${id}/edit`)}
+          onClick={() => navigate(`/units/${id}/dashboard`)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          View Dashboard
+        </button>
+        <button
+          onClick={() => navigate(`/units/${id}/edit`)}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
         >
           Edit Unit
         </button>

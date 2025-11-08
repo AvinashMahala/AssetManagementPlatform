@@ -96,7 +96,10 @@ const UnitListPage: React.FC = () => {
                       <Badge variant={unit.status === 'available' ? 'success' : unit.status === 'occupied' ? 'warning' : 'default'}>{unit.status}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/units/${unit.id}`)}>View</Button>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/units/${unit.id}`)}>View</Button>
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/units/${unit.id}/dashboard`)}>Dashboard</Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

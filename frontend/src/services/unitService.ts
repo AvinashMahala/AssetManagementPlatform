@@ -26,6 +26,10 @@ class UnitService {
   async delete(id: string): Promise<ApiResponse<void>> {
     return apiClient.delete<void>(`${API_ENDPOINTS.UNITS}/${id}`);
   }
+
+  async getAnalytics(id: string): Promise<ApiResponse<any>> {
+    return apiClient.get<any>(`${API_ENDPOINTS.UNITS}/${id}/analytics`);
+  }
 }
 
 export const unitService = new UnitService();
