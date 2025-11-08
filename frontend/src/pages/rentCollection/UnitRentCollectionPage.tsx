@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { AppLayout } from '../../components/layout';
-import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction } from '../../hooks';
+import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases } from '../../hooks';
+import { useAuthContext } from '../../contexts';
 import type { MeterReadingInput, ExpenseItem } from '../../types/rentTransaction';
 import { 
   formatCurrency, 
@@ -18,10 +19,12 @@ import {
 export const UnitRentCollectionPage: React.FC = () => {
   const { propertyId, unitId } = useParams<{ propertyId: string; unitId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthContext();
 
   const { data: unit, loading: unitLoading } = useUnit(unitId!);
   const { data: property } = useProperty(propertyId!);
   const { data: lastReadings, loading: readingsLoading } = useLastMeterReadings(unitId!);
+  const { leases, loading: leasesLoading } = useLeases(unitId);
   const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
 
   const [meterReadings, setMeterReadings] = useState<MeterReadingInput[]>([]);
@@ -31,6 +34,12 @@ export const UnitRentCollectionPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   const billingPeriod = getCurrentBillingPeriod();
+
+  // Get active lease for the unit
+  const activeLease = leases.find(lease => 
+    lease.status === 'active' && 
+    lease.unitId === unitId
+  );
 
   // Initialize meter readings
   useEffect(() => {
@@ -108,23 +117,50 @@ export const UnitRentCollectionPage: React.FC = () => {
   const totals = calculateTotals();
 
   const handleSaveDraft = async () => {
-    if (!unit) return;
+    if (!unit || !activeLease || !user) {
+      alert('Missing required data: unit, lease, or user');
+      return;
+    }
 
     setSaving(true);
     try {
+      const billingDays = Math.ceil(
+        (new Date(billingPeriod.end).getTime() - new Date(billingPeriod.start).getTime()) 
+        / (1000 * 60 * 60 * 24)
+      );
+
       const transactionData = {
-        leaseId: '', // TODO: Get from active lease
+        leaseId: activeLease.id,
         unitId: unit.id,
         propertyId: unit.propertyId,
-        tenantId: '', // TODO: Get from active lease
+        tenantId: activeLease.tenantId,
         billingPeriodStart: billingPeriod.start,
         billingPeriodEnd: billingPeriod.end,
         billingMethod: 'monthly' as const,
+        daysCount: billingDays,
         baseRent: totals.baseRent,
         maintenanceCharges: totals.maintenanceCharges,
         previousBalance: totals.previousBalance,
-        meterReadings,
-        expenses,
+        meterReadings: meterReadings.map(m => ({
+          meterId: m.meterId,
+          meterName: m.meterName,
+          meterType: m.meterType,
+          meterNumber: m.meterNumber || '',
+          previousReading: m.previousReading,
+          currentReading: m.currentReading,
+          unitsConsumed: m.unitsConsumed,
+          costPerUnit: m.costPerUnit,
+          fixedCharge: m.fixedCharge,
+          totalCost: m.totalCost,
+          readingDate: new Date().toISOString()
+        })),
+        expenses: expenses.map(e => ({
+          id: e.id,
+          category: e.category,
+          description: e.description,
+          amount: e.amount,
+          isRemoved: false
+        })),
         totalMeterCharges: totals.totalMeterCharges,
         totalExpenses: totals.totalExpenses,
         totalAmount: totals.totalAmount,
@@ -132,6 +168,7 @@ export const UnitRentCollectionPage: React.FC = () => {
         newBalance: totals.totalAmount,
         payments: [],
         status: 'draft' as const,
+        receiptGenerated: false,
         notes,
       };
 
@@ -140,14 +177,17 @@ export const UnitRentCollectionPage: React.FC = () => {
       navigate(`/properties/${propertyId}/rent-collection`);
     } catch (error) {
       console.error('Failed to save draft:', error);
-      alert('Failed to save draft');
+      alert('Failed to save draft: ' + (error as Error).message);
     } finally {
       setSaving(false);
     }
   };
 
   const handleGenerateInvoice = async () => {
-    if (!unit) return;
+    if (!unit || !activeLease || !user) {
+      alert('Missing required data: unit, lease, or user');
+      return;
+    }
 
     // Validate meter readings
     const hasInvalidReadings = meterReadings.some(r => {
@@ -162,19 +202,43 @@ export const UnitRentCollectionPage: React.FC = () => {
 
     setSaving(true);
     try {
+      const billingDays = Math.ceil(
+        (new Date(billingPeriod.end).getTime() - new Date(billingPeriod.start).getTime()) 
+        / (1000 * 60 * 60 * 24)
+      );
+
       const transactionData = {
-        leaseId: '', // TODO: Get from active lease
+        leaseId: activeLease.id,
         unitId: unit.id,
         propertyId: unit.propertyId,
-        tenantId: '', // TODO: Get from active lease
+        tenantId: activeLease.tenantId,
         billingPeriodStart: billingPeriod.start,
         billingPeriodEnd: billingPeriod.end,
         billingMethod: 'monthly' as const,
+        daysCount: billingDays,
         baseRent: totals.baseRent,
         maintenanceCharges: totals.maintenanceCharges,
         previousBalance: totals.previousBalance,
-        meterReadings,
-        expenses,
+        meterReadings: meterReadings.map(m => ({
+          meterId: m.meterId,
+          meterName: m.meterName,
+          meterType: m.meterType,
+          meterNumber: m.meterNumber || '',
+          previousReading: m.previousReading,
+          currentReading: m.currentReading,
+          unitsConsumed: m.unitsConsumed,
+          costPerUnit: m.costPerUnit,
+          fixedCharge: m.fixedCharge,
+          totalCost: m.totalCost,
+          readingDate: new Date().toISOString()
+        })),
+        expenses: expenses.map(e => ({
+          id: e.id,
+          category: e.category,
+          description: e.description,
+          amount: e.amount,
+          isRemoved: false
+        })),
         totalMeterCharges: totals.totalMeterCharges,
         totalExpenses: totals.totalExpenses,
         totalAmount: totals.totalAmount,
@@ -182,6 +246,7 @@ export const UnitRentCollectionPage: React.FC = () => {
         newBalance: totals.totalAmount,
         payments: [],
         status: 'pending' as const,
+        receiptGenerated: false,
         notes,
       };
 
@@ -192,7 +257,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       navigate(`/properties/${propertyId}/rent-collection`);
     } catch (error) {
       console.error('Failed to generate invoice:', error);
-      alert('Failed to generate invoice');
+      alert('Failed to generate invoice: ' + (error as Error).message);
     } finally {
       setSaving(false);
     }
