@@ -309,18 +309,29 @@ export const UnitRentCollectionPage: React.FC = () => {
       // Format: RentInvoice_MM_YYYY_TenantNameFull_PropertyName_UnitNum.pdf
       const filename = `RentInvoice_${month}_${year}_${tenantName}_${propertyName}_${unitNum}.pdf`;
 
-      // Download the PDF
-      const link = document.createElement('a');
-      link.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${pdfUrl}`;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const pdfFullUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${pdfUrl}`;
+
+      // Open PDF in new tab
+      window.open(pdfFullUrl, '_blank');
+
+      // Also trigger download (using fetch to avoid navigation)
+      fetch(pdfFullUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = filename;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          // Clean up the blob URL
+          window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch(err => console.error('Download failed:', err));
 
       alert(`Invoice generated successfully! (${invoiceNumber})`);
-      
-      // Navigate to property rent collection page
-      navigate(`/properties/${propertyId}/rent-collection`);
     } catch (error) {
       console.error('Failed to generate invoice:', error);
       alert('Failed to generate invoice: ' + (error as Error).message);
