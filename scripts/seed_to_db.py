@@ -7,6 +7,7 @@ while maintaining foreign key relationships through mappings.
 
 import os
 import sys
+import json
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import bcrypt
@@ -34,6 +35,8 @@ property_uuids = {}
 unit_uuids = {}
 lease_uuids = {}
 meter_uuids = {}
+rent_transaction_uuids = {}
+receipt_uuids = {}
 
 def print_success(msg):
     print(f"{GREEN}✅ {msg}{RESET}")
@@ -225,12 +228,16 @@ def load_excel_data(filename):
         integer_columns = {
             'users': [],
             'tenants': ['monthly_income', 'total_rentals'],
-            'properties': ['total_units', 'total_floors', 'parking_spaces'],
-            'units': ['floor', 'bedrooms', 'bathrooms', 'area', 'monthly_rent', 'security_deposit', 'maintenance_charges'],
+            'properties': ['total_units', 'total_floors', 'parking_spaces', 'area'],
+            'units': ['floor', 'bedrooms', 'bathrooms', 'area', 'monthly_rent', 'security_deposit', 'maintenance_charges', 'balconies', 'max_occupants'],
             'leases': ['monthly_rent', 'security_deposit'],
             'rent_payments': ['amount'],
             'meters': [],
-            'meter_readings': ['previous_reading', 'current_reading']
+            'meter_readings': ['previous_reading', 'current_reading'],
+            'rent_transactions': ['days_count', 'base_rent', 'maintenance_charges', 'previous_balance', 'total_meter_charges', 'total_expenses', 'total_amount', 'amount_paid', 'new_balance'],
+            'rent_transaction_meter_readings': ['previous_reading', 'current_reading', 'units_consumed', 'fixed_charge', 'total_cost'],
+            'receipts': ['amount', 'file_size'],
+            'tenant_documents': ['file_size']
         }
         
         for sheet_name in excel_file.sheet_names:
@@ -679,6 +686,286 @@ def seed_meter_readings(conn, df):
     cursor.close()
     print_success(f"Seeded {seeded} meter readings")
 
+def seed_rent_transactions(conn, df):
+    """Seed rent transactions with lease FK resolution"""
+    print_step("Seeding rent transactions...")
+    
+    cursor = conn.cursor()
+    seeded = 0
+    
+    for _, row in df.iterrows():
+        try:
+            # Generate UUID
+            transaction_id = str(uuid.uuid4())
+            rent_transaction_uuids[row['key']] = transaction_id
+            
+            # Resolve lease FK using composite key
+            lease_id = lease_uuids.get(row['lease_ref'])
+            if not lease_id:
+                print_error(f"Lease ref '{row['lease_ref']}' not found")
+                continue
+            
+            # Get property_id, unit_id, tenant_id from lease
+            cursor.execute("""
+                SELECT property_id, unit_id, tenant_id 
+                FROM leases WHERE id = %s
+            """, (lease_id,))
+            result = cursor.fetchone()
+            if not result:
+                print_error(f"Could not find lease details for '{row['lease_ref']}'")
+                continue
+            property_id, unit_id, tenant_id = result
+            
+            # Get created_by from property owner
+            cursor.execute("SELECT owner_id FROM properties WHERE id = %s", (property_id,))
+            owner_result = cursor.fetchone()
+            created_by = owner_result[0] if owner_result else None
+            
+            if not created_by:
+                print_error(f"Could not find owner for property")
+                continue
+            
+            cursor.execute("""
+                INSERT INTO rent_transactions (
+                    id, lease_id, property_id, unit_id, tenant_id,
+                    billing_period_start, billing_period_end, billing_method,
+                    days_count, base_rent, maintenance_charges, previous_balance,
+                    total_meter_charges, total_expenses, total_amount,
+                    amount_paid, new_balance, status, invoice_number,
+                    invoice_date, receipt_number, receipt_generated, notes,
+                    created_by
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s
+                )
+                ON CONFLICT (id) DO NOTHING
+            """, (
+                transaction_id, lease_id, property_id, unit_id, tenant_id,
+                row['billing_period_start'], row['billing_period_end'],
+                row.get('billing_method', 'relative'), row.get('days_count'),
+                row.get('base_rent'), row.get('maintenance_charges'),
+                row.get('previous_balance', 0), row.get('total_meter_charges', 0),
+                row.get('total_expenses', 0), row.get('total_amount'),
+                row.get('amount_paid', 0), row.get('new_balance', 0),
+                row.get('status', 'pending'), row.get('invoice_number'),
+                row.get('invoice_date'), row.get('receipt_number'),
+                row.get('receipt_generated', False), row.get('notes'),
+                created_by
+            ))
+            seeded += 1
+        except Exception as e:
+            print_error(f"Error seeding rent transaction: {e}")
+    
+    cursor.close()
+    print_success(f"Seeded {seeded} rent transactions")
+
+def seed_rent_transaction_meter_readings(conn, df):
+    """Seed rent transaction meter readings junction table"""
+    print_step("Seeding rent transaction meter readings...")
+    
+    cursor = conn.cursor()
+    seeded = 0
+    
+    for _, row in df.iterrows():
+        try:
+            # Generate UUID
+            junction_id = str(uuid.uuid4())
+            
+            # Resolve transaction FK
+            transaction_id = rent_transaction_uuids.get(row['transaction_key'])
+            if not transaction_id:
+                print_error(f"Transaction key '{row['transaction_key']}' not found")
+                continue
+            
+            # Resolve meter FK
+            meter_id = meter_uuids.get(row['meter_number'])
+            if not meter_id:
+                print_error(f"Meter number '{row['meter_number']}' not found")
+                continue
+            
+            cursor.execute("""
+                INSERT INTO rent_transaction_meter_readings (
+                    id, transaction_id, meter_id, meter_name, meter_type,
+                    previous_reading, current_reading, units_consumed,
+                    cost_per_unit, fixed_charge, total_cost, reading_date
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                )
+                ON CONFLICT (id) DO NOTHING
+            """, (
+                junction_id, transaction_id, meter_id, row.get('meter_name'),
+                row.get('meter_type'), row.get('previous_reading'),
+                row.get('current_reading'), row.get('units_consumed'),
+                row.get('cost_per_unit', 5.0), row.get('fixed_charge', 0),
+                row.get('total_cost'), row.get('reading_date')
+            ))
+            seeded += 1
+        except Exception as e:
+            print_error(f"Error seeding rent transaction meter reading: {e}")
+    
+    cursor.close()
+    print_success(f"Seeded {seeded} rent transaction meter readings")
+
+def seed_receipts(conn, df):
+    """Seed receipts with transaction FK resolution"""
+    print_step("Seeding receipts...")
+    
+    cursor = conn.cursor()
+    seeded = 0
+    
+    for _, row in df.iterrows():
+        try:
+            # Generate UUID
+            receipt_id = str(uuid.uuid4())
+            receipt_uuids[row['receipt_number']] = receipt_id
+            
+            # Resolve transaction FK
+            transaction_id = rent_transaction_uuids.get(row['transaction_key'])
+            if not transaction_id:
+                print_error(f"Transaction key '{row['transaction_key']}' not found")
+                continue
+            
+            # Get property_id, tenant_id, and created_by from transaction
+            cursor.execute("""
+                SELECT rt.property_id, rt.tenant_id, rt.created_by,
+                       rt.billing_period_start, rt.billing_period_end,
+                       rt.base_rent, rt.maintenance_charges, rt.total_amount,
+                       u.unit_number, t.first_name, t.last_name, t.email,
+                       p.name as property_name
+                FROM rent_transactions rt
+                JOIN units u ON rt.unit_id = u.id
+                JOIN tenants t ON rt.tenant_id = t.id
+                JOIN properties p ON rt.property_id = p.id
+                WHERE rt.id = %s
+            """, (transaction_id,))
+            result = cursor.fetchone()
+            if not result:
+                print_error(f"Could not find transaction details for '{row['transaction_key']}'")
+                continue
+            
+            property_id, tenant_id, generated_by, billing_start, billing_end, \
+                base_rent, maintenance, total_amount, unit_number, \
+                tenant_first, tenant_last, tenant_email, property_name = result
+            
+            # Create receipt_data JSONB with transaction details
+            receipt_data = {
+                "receipt_number": row['receipt_number'],
+                "receipt_date": str(row['receipt_date']),
+                "property": {
+                    "name": property_name
+                },
+                "unit": {
+                    "number": unit_number
+                },
+                "tenant": {
+                    "name": f"{tenant_first} {tenant_last}",
+                    "email": tenant_email
+                },
+                "billing_period": {
+                    "start": str(billing_start),
+                    "end": str(billing_end)
+                },
+                "charges": {
+                    "base_rent": float(base_rent),
+                    "maintenance": float(maintenance),
+                    "total": float(total_amount)
+                }
+            }
+            
+            cursor.execute("""
+                INSERT INTO receipts (
+                    id, rent_transaction_id, property_id, tenant_id,
+                    receipt_number, receipt_date, amount, description,
+                    receipt_data, status, pdf_url, file_size, generated_by
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s, %s
+                )
+                ON CONFLICT (receipt_number) DO NOTHING
+            """, (
+                receipt_id, transaction_id, property_id, tenant_id,
+                row['receipt_number'], row['receipt_date'], row['amount'],
+                row.get('description'), 
+                json.dumps(receipt_data),  # Properly serialize to JSON
+                row.get('status', 'generated'),
+                row.get('pdf_url'), row.get('file_size'),
+                generated_by
+            ))
+            seeded += 1
+        except Exception as e:
+            print_error(f"Error seeding receipt: {e}")
+    
+    cursor.close()
+    print_success(f"Seeded {seeded} receipts")
+
+def seed_tenant_documents(conn, df):
+    """Seed tenant documents with tenant FK resolution"""
+    print_step("Seeding tenant documents...")
+    
+    cursor = conn.cursor()
+    seeded = 0
+    
+    for _, row in df.iterrows():
+        try:
+            # Generate UUID
+            document_id = str(uuid.uuid4())
+            
+            # Resolve tenant FK
+            tenant_id = tenant_uuids.get(row['tenant_key'])
+            if not tenant_id:
+                print_error(f"Tenant key '{row['tenant_key']}' not found")
+                continue
+            
+            cursor.execute("""
+                INSERT INTO tenant_documents (
+                    id, tenant_id, document_type, document_name,
+                    document_url, file_size
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s
+                )
+                ON CONFLICT (id) DO NOTHING
+            """, (
+                document_id, tenant_id, row['document_type'],
+                row.get('document_name'), row.get('file_path'),
+                row.get('file_size')
+            ))
+            seeded += 1
+        except Exception as e:
+            print_error(f"Error seeding tenant document: {e}")
+    
+    cursor.close()
+    print_success(f"Seeded {seeded} tenant documents")
+
+def seed_receipt_templates(conn):
+    """Seed receipt templates from SQL file"""
+    print_step("Seeding receipt templates...")
+    
+    cursor = conn.cursor()
+    
+    try:
+        template_file = 'scripts/seed_data/receipt_templates.sql'
+        if not os.path.exists(template_file):
+            print_warning(f"Receipt templates file not found: {template_file}")
+            print_info("Skipping receipt templates seeding")
+            cursor.close()
+            return
+        
+        with open(template_file, 'r') as f:
+            sql_content = f.read()
+        
+        # Execute the SQL
+        cursor.execute(sql_content)
+        
+        # Count seeded templates
+        cursor.execute("SELECT COUNT(*) FROM receipt_templates")
+        count = cursor.fetchone()[0]
+        
+        cursor.close()
+        print_success(f"Seeded {count} receipt templates")
+        
+    except Exception as e:
+        print_error(f"Error seeding receipt templates: {e}")
+        cursor.close()
+
 def main():
     """Main seeding function"""
     print("\n" + "=" * 70)
@@ -761,6 +1048,21 @@ def main():
             
             if 'meter_readings' in seed_data:
                 seed_meter_readings(conn, seed_data['meter_readings'])
+            
+            if 'rent_transactions' in seed_data:
+                seed_rent_transactions(conn, seed_data['rent_transactions'])
+            
+            if 'rent_transaction_meter_readings' in seed_data:
+                seed_rent_transaction_meter_readings(conn, seed_data['rent_transaction_meter_readings'])
+            
+            if 'receipts' in seed_data:
+                seed_receipts(conn, seed_data['receipts'])
+            
+            if 'tenant_documents' in seed_data:
+                seed_tenant_documents(conn, seed_data['tenant_documents'])
+            
+            # Seed receipt templates from SQL file
+            seed_receipt_templates(conn)
         
         conn.close()
         
@@ -781,9 +1083,14 @@ def main():
         print(f"   - Leases: {len(lease_uuids)}")
         print(f"   - Meters: {len(meter_uuids)}")
         print(f"   - Meter Readings: {len(seed_data.get('meter_readings', []))}")
+        print(f"   - Rent Transactions: {len(rent_transaction_uuids)}")
+        print(f"   - Rent Transaction Meter Readings: {len(seed_data.get('rent_transaction_meter_readings', []))}")
+        print(f"   - Receipts: {len(receipt_uuids)}")
+        print(f"   - Tenant Documents: {len(seed_data.get('tenant_documents', []))}")
         print()
         print("✨ All UUIDs generated dynamically!")
-        print("📝 Edit Excel file to add more data, then re-run this script")
+        print("📝 Edit JSON file (seed_data_templates.json) to add more data")
+        print("📝 Then run smart_seed_excel.py to generate Excel, and re-run this script")
         print()
         
     except Exception as e:
