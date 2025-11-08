@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { AppLayout } from '../../components/layout';
-import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory } from '../../hooks';
+import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory, useDeleteRentTransaction } from '../../hooks';
 import { useAuthContext } from '../../contexts';
 import { rentTransactionService } from '../../services/rentTransactionService';
 import type { MeterReadingInput, ExpenseItem } from '../../types/rentTransaction';
@@ -27,8 +27,9 @@ export const UnitRentCollectionPage: React.FC = () => {
   const { data: property } = useProperty(propertyId!);
   const { loading: readingsLoading } = useLastMeterReadings(unitId!);
   const { leases } = useLeases(unitId);
-  const { history: recentInvoices, loading: historyLoading } = useUnitTransactionHistory(unitId!, 5);
+  const { history: recentInvoices, loading: historyLoading, refetch: refetchHistory } = useUnitTransactionHistory(unitId!, 5);
   const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
+  const { mutate: deleteTransaction, loading: deleting } = useDeleteRentTransaction();
 
   const [meterReadings, setMeterReadings] = useState<MeterReadingInput[]>([]);
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
@@ -489,6 +490,22 @@ export const UnitRentCollectionPage: React.FC = () => {
 
   const handleRemoveExpense = (id: string) => {
     setExpenses(expenses.filter(e => e.id !== id));
+  };
+
+  const handleDeleteInvoice = async (invoiceId: string) => {
+    if (!confirm('Are you sure you want to delete this invoice? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await deleteTransaction(invoiceId);
+      // Refresh the invoice history
+      refetchHistory();
+      alert('Invoice deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete invoice:', error);
+      alert('Failed to delete invoice: ' + (error as Error).message);
+    }
   };
 
   const handleSaveDraft = async () => {
@@ -1272,6 +1289,16 @@ export const UnitRentCollectionPage: React.FC = () => {
                           </svg>
                         </Button>
                       )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteInvoice(invoice.id)}
+                        disabled={deleting}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Delete Invoice"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}

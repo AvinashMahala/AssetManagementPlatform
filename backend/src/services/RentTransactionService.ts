@@ -242,11 +242,7 @@ export class RentTransactionService implements IRentTransactionService {
       throw new Error('Transaction not found');
     }
 
-    // Only allow deletion of draft transactions
-    if (transaction.status !== RentTransactionStatus.DRAFT) {
-      throw new Error('Only draft transactions can be deleted');
-    }
-
+    // Allow deletion of all transaction types (business decision)
     return await this.repository.delete(id);
   }
 
