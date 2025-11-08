@@ -6,3 +6,4 @@ export * from './useTenants';
 export * from './useUnits';
 export * from './useLeases';
 export * from './usePayments';
+export * from './useRentTransactions';

@@ -17,6 +17,7 @@ import DashboardEnhanced from './pages/DashboardEnhanced';
 import TemplateEditor from './pages/TemplateEditor';
 import TemplateGallery from './pages/TemplateGallery';
 import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
+import { PropertyRentCollectionPage, UnitRentCollectionPage } from './pages/rentCollection';
 import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
@@ -150,6 +151,10 @@ function App() {
               <Route path="/templates" element={<ProtectedRoute><TemplateGallery /></ProtectedRoute>} />
               <Route path="/templates/:templateId/editor" element={<ProtectedRoute><TemplateEditor /></ProtectedRoute>} />
               <Route path="/properties/:propertyId/template-customization" element={<ProtectedRoute><PropertyTemplateCustomization /></ProtectedRoute>} />
+
+              {/* Rent Collection routes */}
+              <Route path="/properties/:propertyId/rent-collection" element={<ProtectedRoute><PropertyRentCollectionPage /></ProtectedRoute>} />
+              <Route path="/properties/:propertyId/units/:unitId/collect-rent" element={<ProtectedRoute><UnitRentCollectionPage /></ProtectedRoute>} />
 
               <Route
                 path="/admin/*"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, DollarSign, TrendingUp, Home } from 'lucide-react';
+import { ArrowLeft, FileText, DollarSign, TrendingUp, Home, Receipt } from 'lucide-react';
 import { useProperty, useUnits, useLeases, usePayments } from '../../hooks';
 import {
   Card,
@@ -115,6 +115,10 @@ export const PropertyDashboardPage: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
+            <Receipt className="h-4 w-4 mr-2" />
+            Rent Collection
+          </Button>
           <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
             Edit Property
           </Button>
