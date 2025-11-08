@@ -60,10 +60,10 @@ export const UnitRentCollectionPage: React.FC = () => {
   const billingPeriod = getCurrentBillingPeriod();
 
   // Get active lease for the unit
-  const activeLease = leases.find(lease => 
+  const activeLease = useMemo(() => leases.find(lease => 
     lease.status === 'active' && 
     lease.unitId === unitId
-  );
+  ), [leases, unitId]);
 
   // Validation summary
   useEffect(() => {
@@ -439,7 +439,7 @@ export const UnitRentCollectionPage: React.FC = () => {
     };
   };
 
-  const totals = calculateTotals();
+  const totals = useMemo(calculateTotals, [unit, meterReadings, expenses]);
 
   const handleSaveDraft = async () => {
     if (!unit || !activeLease || !user) {
