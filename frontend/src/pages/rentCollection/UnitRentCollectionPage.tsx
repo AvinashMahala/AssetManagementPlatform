@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/badge';
 import { AppLayout } from '../../components/layout';
 import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases } from '../../hooks';
 import { useAuthContext } from '../../contexts';
+import { rentTransactionService } from '../../services/rentTransactionService';
 import type { MeterReadingInput, ExpenseItem } from '../../types/rentTransaction';
 import { 
   formatCurrency, 
@@ -136,7 +137,7 @@ export const UnitRentCollectionPage: React.FC = () => {
         tenantId: activeLease.tenantId,
         billingPeriodStart: billingPeriod.start,
         billingPeriodEnd: billingPeriod.end,
-        billingMethod: 'monthly' as const,
+        billingMethod: 'relative' as const,
         daysCount: billingDays,
         baseRent: totals.baseRent,
         maintenanceCharges: totals.maintenanceCharges,
@@ -184,8 +185,8 @@ export const UnitRentCollectionPage: React.FC = () => {
   };
 
   const handleGenerateInvoice = async () => {
-    if (!unit || !activeLease || !user) {
-      alert('Missing required data: unit, lease, or user');
+    if (!unit || !activeLease || !user || !property) {
+      alert('Missing required data: unit, lease, property, or user');
       return;
     }
 
@@ -214,7 +215,7 @@ export const UnitRentCollectionPage: React.FC = () => {
         tenantId: activeLease.tenantId,
         billingPeriodStart: billingPeriod.start,
         billingPeriodEnd: billingPeriod.end,
-        billingMethod: 'monthly' as const,
+        billingMethod: 'relative' as const,
         daysCount: billingDays,
         baseRent: totals.baseRent,
         maintenanceCharges: totals.maintenanceCharges,
@@ -245,13 +246,78 @@ export const UnitRentCollectionPage: React.FC = () => {
         amountPaid: 0,
         newBalance: totals.totalAmount,
         payments: [],
-        status: 'pending' as const,
+        status: 'draft' as const,
         receiptGenerated: false,
         notes,
+        createdBy: user.id,
       };
 
-      await createTransaction(transactionData);
-      alert('Invoice generated successfully!');
+      // Step 1: Create the transaction
+      console.log('Creating transaction with data:', transactionData);
+      const response = await createTransaction(transactionData);
+      console.log('Transaction creation response:', response);
+      
+      if (!response.success || !response.data) {
+        const errorMsg = typeof response.error === 'string' 
+          ? response.error 
+          : response.error?.message || 'Failed to create transaction';
+        console.error('Transaction creation failed:', errorMsg);
+        alert(`Failed to create transaction: ${errorMsg}`);
+        throw new Error(errorMsg);
+      }
+
+      const transaction = response.data;
+      console.log('Transaction created successfully:', transaction);
+
+      // Step 2: Generate the invoice PDF
+      console.log('Calling generateInvoice with transaction ID:', transaction.id);
+      const invoiceResponse = await rentTransactionService.generateInvoice({
+        transactionId: transaction.id
+      });
+      console.log('Invoice generation response:', invoiceResponse);
+
+      if (!invoiceResponse.success || !invoiceResponse.data) {
+        const errorMsg = typeof invoiceResponse.error === 'string' 
+          ? invoiceResponse.error 
+          : invoiceResponse.error?.message || 'Failed to generate invoice PDF';
+        console.error('Invoice generation failed:', errorMsg);
+        alert(`Failed to generate invoice: ${errorMsg}`);
+        throw new Error(errorMsg);
+      }
+
+      const { pdfUrl, invoiceNumber } = invoiceResponse.data;
+
+      // Step 3: Download the PDF with custom filename
+      const date = new Date(billingPeriod.start);
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      // Get tenant name
+      const tenant = await fetch(`/api/tenants/${activeLease.tenantId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      }).then(r => r.json());
+      
+      const tenantName = tenant.data 
+        ? `${tenant.data.firstName}${tenant.data.lastName}`.replace(/\s+/g, '')
+        : 'Tenant';
+      
+      const propertyName = property.name.replace(/\s+/g, '');
+      const unitNum = unit.unitNumber.replace(/\s+/g, '');
+      
+      // Format: RentInvoice_MM_YYYY_TenantNameFull_PropertyName_UnitNum.pdf
+      const filename = `RentInvoice_${month}_${year}_${tenantName}_${propertyName}_${unitNum}.pdf`;
+
+      // Download the PDF
+      const link = document.createElement('a');
+      link.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${pdfUrl}`;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert(`Invoice generated successfully! (${invoiceNumber})`);
       
       // Navigate to property rent collection page
       navigate(`/properties/${propertyId}/rent-collection`);

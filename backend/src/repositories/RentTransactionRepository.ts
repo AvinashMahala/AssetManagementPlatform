@@ -143,6 +143,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
         `INSERT INTO ${TABLES.RENT_TRANSACTIONS} (
           ${COLUMNS.RENT_TRANSACTIONS.ID},
           ${COLUMNS.RENT_TRANSACTIONS.LEASE_ID},
+          ${COLUMNS.RENT_TRANSACTIONS.UNIT_ID},
           ${COLUMNS.RENT_TRANSACTIONS.PROPERTY_ID},
           ${COLUMNS.RENT_TRANSACTIONS.TENANT_ID},
           ${COLUMNS.RENT_TRANSACTIONS.BILLING_PERIOD_START},
@@ -169,10 +170,11 @@ export class RentTransactionRepository implements IRentTransactionRepository {
           ${COLUMNS.RENT_TRANSACTIONS.UPDATED_BY},
           ${COLUMNS.RENT_TRANSACTIONS.CREATED_AT},
           ${COLUMNS.RENT_TRANSACTIONS.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29) RETURNING *`,
         [
           crypto.randomUUID(),
           data.leaseId,
+          data.unitId,
           data.propertyId,
           data.tenantId,
           data.billingPeriodStart,
