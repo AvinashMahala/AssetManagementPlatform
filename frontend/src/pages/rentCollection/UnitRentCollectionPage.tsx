@@ -350,15 +350,14 @@ export const UnitRentCollectionPage: React.FC = () => {
       // Success!
       setInvoiceGenerationStatus({ 
         step: 'complete', 
-        message: `Invoice ${invoiceNumber} generated successfully!` 
+        message: `Invoice ${invoiceNumber} generated successfully! Check your downloads.` 
       });
       
-      // Reset status after 3 seconds
+      // Reset status after 5 seconds (increased to give user time to read)
       setTimeout(() => {
         setInvoiceGenerationStatus({ step: 'idle', message: '' });
-      }, 3000);
-
-      alert(`Invoice generated successfully! (${invoiceNumber})`);
+      }, 5000);
+      
     } catch (error) {
       console.error('Failed to generate invoice:', error);
       setInvoiceGenerationStatus({ 
@@ -498,23 +497,57 @@ export const UnitRentCollectionPage: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleSaveDraft}
-            disabled={saving || creating}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save Draft
-          </Button>
-          <Button
-            onClick={handleGenerateInvoice}
-            disabled={saving || creating}
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Generate Invoice
-          </Button>
-        </div>
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-gray-600 mb-1">Ready to generate invoice for:</p>
+                <p className="text-3xl font-bold text-green-700">{formatCurrency(totals.totalAmount)}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  disabled={saving || creating}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Draft
+                </Button>
+                <Button
+                  onClick={handleGenerateInvoice}
+                  disabled={saving || creating || invoiceGenerationStatus.step !== 'idle'}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {invoiceGenerationStatus.step !== 'idle' ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      {invoiceGenerationStatus.step === 'creating' && 'Creating...'}
+                      {invoiceGenerationStatus.step === 'generating' && 'Generating...'}
+                      {invoiceGenerationStatus.step === 'downloading' && 'Downloading...'}
+                      {invoiceGenerationStatus.step === 'complete' && 'Complete!'}
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Generate Invoice
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Help Text */}
+        {!activeLease && (
+          <Card className="border-yellow-500 bg-yellow-50">
+            <CardContent className="pt-6">
+              <p className="text-sm text-yellow-800">
+                ⚠️ No active lease found for this unit. Please create a lease before generating an invoice.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Summary Card */}
         <Card className="bg-gradient-to-r from-blue-50 to-purple-50">
