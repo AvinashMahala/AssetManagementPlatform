@@ -255,64 +255,76 @@ def create_smart_seed_excel():
             # Saheed Nagar units
             {'key': 'sn_101', 'property_key': 'saheed_nagar', 'unit_number': '101', 'unit_name': 'Ground Floor 2BHK',
              'description': 'Spacious 2BHK with balcony', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 1, 'area': 1050, 'bedrooms': 2, 'bathrooms': 2, 'furnished': True,
+             'floor': 1, 'area': 1050, 'bedrooms': 2, 'bathrooms': 2, 'balconies': 1, 'max_occupants': 4,
+             'furnished': True, 'unit_amenities': '["WiFi", "Parking", "Security", "Gym"]', 'unit_photos': '["living_room.jpg", "kitchen.jpg", "bedroom.jpg"]',
              'monthly_rent': 12000, 'security_deposit': 36000, 'maintenance_charges': 1500},
             
             {'key': 'sn_201', 'property_key': 'saheed_nagar', 'unit_number': '201', 'unit_name': 'First Floor 3BHK',
              'description': 'Premium 3BHK with modern kitchen', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 2, 'area': 1450, 'bedrooms': 3, 'bathrooms': 3, 'furnished': True,
+             'floor': 2, 'area': 1450, 'bedrooms': 3, 'bathrooms': 3, 'balconies': 2, 'max_occupants': 6,
+             'furnished': True, 'unit_amenities': '["WiFi", "Parking", "Security", "Gym", "Swimming Pool", "Garden"]', 'unit_photos': '["master_bedroom.jpg", "dining_area.jpg", "balcony_view.jpg", "kitchen_modern.jpg"]',
              'monthly_rent': 18000, 'security_deposit': 54000, 'maintenance_charges': 2000},
             
             {'key': 'sn_301', 'property_key': 'saheed_nagar', 'unit_number': '301', 'unit_name': 'Second Floor 1BHK',
              'description': 'Cozy 1BHK for small families', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 3, 'area': 650, 'bedrooms': 1, 'bathrooms': 1, 'furnished': False,
+             'floor': 3, 'area': 650, 'bedrooms': 1, 'bathrooms': 1, 'balconies': 1, 'max_occupants': 2,
+             'furnished': False, 'unit_amenities': '["WiFi", "Parking", "Security"]', 'unit_photos': '["living_bedroom.jpg", "kitchen.jpg"]',
              'monthly_rent': 8000, 'security_deposit': 24000, 'maintenance_charges': 1000},
             
             {'key': 'sn_401', 'property_key': 'saheed_nagar', 'unit_number': '401', 'unit_name': 'Third Floor 1RK',
              'description': 'Compact 1RK ideal for students', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 4, 'area': 350, 'bedrooms': 1, 'bathrooms': 1, 'furnished': False,
+             'floor': 4, 'area': 350, 'bedrooms': 1, 'bathrooms': 1, 'balconies': 0, 'max_occupants': 1,
+             'furnished': False, 'unit_amenities': '["WiFi", "Parking"]', 'unit_photos': '["studio_room.jpg", "bathroom.jpg"]',
              'monthly_rent': 5500, 'security_deposit': 16500, 'maintenance_charges': 800},
             
             # Jaydev Vihar units
             {'key': 'jv_a101', 'property_key': 'jaydev_vihar', 'unit_number': 'A-101', 'unit_name': 'Block A 2BHK',
              'description': 'Well-ventilated 2BHK near university', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 1, 'area': 980, 'bedrooms': 2, 'bathrooms': 2, 'furnished': True,
+             'floor': 1, 'area': 980, 'bedrooms': 2, 'bathrooms': 2, 'balconies': 1, 'max_occupants': 4,
+             'furnished': True, 'unit_amenities': '["WiFi", "Parking", "Security", "Study Room"]', 'unit_photos': '["living_room.jpg", "bedroom1.jpg", "bedroom2.jpg", "kitchen.jpg"]',
              'monthly_rent': 14000, 'security_deposit': 42000, 'maintenance_charges': 1800},
             
             {'key': 'jv_a201', 'property_key': 'jaydev_vihar', 'unit_number': 'A-201', 'unit_name': 'Block A 3BHK Premium',
              'description': 'Luxurious 3BHK with city view', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 2, 'area': 1550, 'bedrooms': 3, 'bathrooms': 3, 'furnished': True,
+             'floor': 2, 'area': 1550, 'bedrooms': 3, 'bathrooms': 3, 'balconies': 2, 'max_occupants': 6,
+             'furnished': True, 'unit_amenities': '["WiFi", "Parking", "Security", "Gym", "Swimming Pool", "Garden", "Servant Quarter"]', 'unit_photos': '["master_suite.jpg", "living_dining.jpg", "kitchen_island.jpg", "balcony_cityview.jpg", "servant_room.jpg"]',
              'monthly_rent': 22000, 'security_deposit': 66000, 'maintenance_charges': 2500},
             
             {'key': 'jv_b101', 'property_key': 'jaydev_vihar', 'unit_number': 'B-101', 'unit_name': 'Block B 1BHK',
              'description': 'Affordable 1BHK with good light', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 1, 'area': 720, 'bedrooms': 1, 'bathrooms': 1, 'furnished': False,
+             'floor': 1, 'area': 720, 'bedrooms': 1, 'bathrooms': 1, 'balconies': 1, 'max_occupants': 2,
+             'furnished': False, 'unit_amenities': '["WiFi", "Parking", "Security"]', 'unit_photos': '["combined_living_bedroom.jpg", "kitchen.jpg", "balcony.jpg"]',
              'monthly_rent': 9500, 'security_deposit': 28500, 'maintenance_charges': 1200},
             
             {'key': 'jv_b301', 'property_key': 'jaydev_vihar', 'unit_number': 'B-301', 'unit_name': 'Block B 1RK',
              'description': 'Budget-friendly 1RK for students', 'unit_type': 'apartment', 'status': 'available',
-             'floor': 3, 'area': 380, 'bedrooms': 1, 'bathrooms': 1, 'furnished': False,
+             'floor': 3, 'area': 380, 'bedrooms': 1, 'bathrooms': 1, 'balconies': 0, 'max_occupants': 1,
+             'furnished': False, 'unit_amenities': '["WiFi", "Parking"]', 'unit_photos': '["studio_interior.jpg", "bathroom.jpg"]',
              'monthly_rent': 6000, 'security_deposit': 18000, 'maintenance_charges': 900},
             
             # Patia Green units
             {'key': 'pt_g101', 'property_key': 'patia_green', 'unit_number': 'G-101', 'unit_name': 'Green Wing 2BHK',
              'description': 'Modern 2BHK near IT parks', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 1, 'area': 1100, 'bedrooms': 2, 'bathrooms': 2, 'furnished': True,
+             'floor': 1, 'area': 1100, 'bedrooms': 2, 'bathrooms': 2, 'balconies': 1, 'max_occupants': 4,
+             'furnished': True, 'unit_amenities': '["WiFi", "Parking", "Security", "Gym", "Play Area"]', 'unit_photos': '["modern_living.jpg", "bedroom_master.jpg", "kitchen_modern.jpg", "balcony_green.jpg"]',
              'monthly_rent': 15000, 'security_deposit': 45000, 'maintenance_charges': 1800},
             
             {'key': 'pt_g301', 'property_key': 'patia_green', 'unit_number': 'G-301', 'unit_name': 'Green Wing 3BHK Deluxe',
              'description': 'Spacious 3BHK with premium fittings', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 3, 'area': 1600, 'bedrooms': 3, 'bathrooms': 3, 'furnished': True,
+             'floor': 3, 'area': 1600, 'bedrooms': 3, 'bathrooms': 3, 'balconies': 2, 'max_occupants': 6,
+             'furnished': True, 'unit_amenities': '["WiFi", "Parking", "Security", "Gym", "Swimming Pool", "Garden", "Home Theater", "Servant Quarter"]', 'unit_photos': '["grand_living.jpg", "master_bedroom_luxury.jpg", "home_theater.jpg", "swimming_pool_view.jpg", "garden_access.jpg", "servant_quarter.jpg"]',
              'monthly_rent': 25000, 'security_deposit': 75000, 'maintenance_charges': 3000},
             
             {'key': 'pt_e201', 'property_key': 'patia_green', 'unit_number': 'E-201', 'unit_name': 'East Wing 1BHK',
              'description': 'Comfortable 1BHK with ventilation', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 2, 'area': 750, 'bedrooms': 1, 'bathrooms': 1, 'furnished': True,
+             'floor': 2, 'area': 750, 'bedrooms': 1, 'bathrooms': 1, 'balconies': 1, 'max_occupants': 2,
+             'furnished': True, 'unit_amenities': '["WiFi", "Parking", "Security", "Study Area"]', 'unit_photos': '["cozy_living.jpg", "bedroom.jpg", "kitchen.jpg", "study_nook.jpg"]',
              'monthly_rent': 10000, 'security_deposit': 30000, 'maintenance_charges': 1300},
             
             {'key': 'pt_e501', 'property_key': 'patia_green', 'unit_number': 'E-501', 'unit_name': 'East Wing 1RK',
              'description': 'Top floor 1RK with view', 'unit_type': 'apartment', 'status': 'occupied',
-             'floor': 5, 'area': 400, 'bedrooms': 1, 'bathrooms': 1, 'furnished': False,
+             'floor': 5, 'area': 400, 'bedrooms': 1, 'bathrooms': 1, 'balconies': 0, 'max_occupants': 1,
+             'furnished': False, 'unit_amenities': '["WiFi", "Parking", "Security"]', 'unit_photos': '["penthouse_view.jpg", "compact_kitchen.jpg", "bathroom.jpg"]',
              'monthly_rent': 7000, 'security_deposit': 21000, 'maintenance_charges': 1000}
         ])
         # Convert numeric columns to proper integers

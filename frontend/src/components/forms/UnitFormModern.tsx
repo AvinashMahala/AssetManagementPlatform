@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../../components/ui/badge';
 import { BaseForm, FormColumn, FormField } from '../../componentDesignLibrary';
 import type { UnitInput } from '../../types/unit';
-import { UnitStatus, UnitType, FurnishingType } from '../../types/unit';
+import { UnitStatus, UnitType } from '../../types/unit';
 
 interface UnitFormModernProps {
   initialData?: Partial<UnitInput>;
@@ -32,20 +32,18 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
     propertyId: initialData?.propertyId || '',
     unitNumber: initialData?.unitNumber || '',
     floor: initialData?.floor || 0,
-    unitType: initialData?.unitType || UnitType.TWO_BHK,
+    unitType: initialData?.unitType || UnitType.APARTMENT,
     status: initialData?.status || UnitStatus.AVAILABLE,
-    carpetArea: initialData?.carpetArea || 0,
-    builtUpArea: initialData?.builtUpArea || 0,
+    area: initialData?.area || 0,
     bedrooms: initialData?.bedrooms || 2,
     bathrooms: initialData?.bathrooms || 2,
     balconies: initialData?.balconies || 1,
-    furnishingType: initialData?.furnishingType || FurnishingType.SEMI_FURNISHED,
-    rent: initialData?.rent || 0,
+    furnished: initialData?.furnished || false,
+    monthlyRent: initialData?.monthlyRent || 0,
     securityDeposit: initialData?.securityDeposit || 0,
     maintenanceCharges: initialData?.maintenanceCharges || 0,
-    amenities: initialData?.amenities || [],
-    photos: initialData?.photos || [],
-    availableFrom: initialData?.availableFrom || '',
+    unitAmenities: initialData?.unitAmenities || [],
+    unitPhotos: initialData?.unitPhotos || [],
     description: initialData?.description || '',
   });
 
@@ -59,7 +57,7 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
   const handleRemoveAmenity = (amenity: string) => {
     setFormData(prev => ({
       ...prev,
-      amenities: (prev.amenities || []).filter(a => a !== amenity)
+      unitAmenities: (prev.unitAmenities || []).filter((a: string) => a !== amenity)
     }));
   };
 
@@ -68,10 +66,10 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
 
     if (!formData.propertyId) newErrors.propertyId = 'Property is required';
     if (!formData.unitNumber.trim()) newErrors.unitNumber = 'Unit number is required';
-    if (formData.carpetArea <= 0) newErrors.carpetArea = 'Carpet area must be greater than 0';
-    if (formData.bedrooms < 0) newErrors.bedrooms = 'Bedrooms cannot be negative';
-    if (formData.bathrooms < 0) newErrors.bathrooms = 'Bathrooms cannot be negative';
-    if (formData.rent < 0) newErrors.rent = 'Rent cannot be negative';
+    if (formData.area <= 0) newErrors.area = 'Area must be greater than 0';
+    if (formData.bedrooms && formData.bedrooms < 0) newErrors.bedrooms = 'Bedrooms cannot be negative';
+    if (formData.bathrooms && formData.bathrooms < 0) newErrors.bathrooms = 'Bathrooms cannot be negative';
+    if (formData.monthlyRent < 0) newErrors.monthlyRent = 'Monthly rent cannot be negative';
     if (formData.securityDeposit < 0) newErrors.securityDeposit = 'Security deposit cannot be negative';
 
     setErrors(newErrors);
@@ -155,14 +153,14 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
               <SelectValue placeholder="Select unit type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={UnitType.ONE_BHK}>1 BHK</SelectItem>
-              <SelectItem value={UnitType.TWO_BHK}>2 BHK</SelectItem>
-              <SelectItem value={UnitType.THREE_BHK}>3 BHK</SelectItem>
-              <SelectItem value={UnitType.FOUR_BHK}>4 BHK</SelectItem>
+              <SelectItem value={UnitType.APARTMENT}>Apartment</SelectItem>
+              <SelectItem value={UnitType.HOUSE}>House</SelectItem>
+              <SelectItem value={UnitType.VILLA}>Villa</SelectItem>
               <SelectItem value={UnitType.STUDIO}>Studio</SelectItem>
               <SelectItem value={UnitType.ROOM}>Room</SelectItem>
-              <SelectItem value={UnitType.SHOP}>Shop</SelectItem>
+              <SelectItem value={UnitType.COMMERCIAL}>Commercial</SelectItem>
               <SelectItem value={UnitType.OFFICE}>Office</SelectItem>
+              <SelectItem value={UnitType.SHOP}>Shop</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
@@ -179,25 +177,24 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
               <SelectItem value={UnitStatus.AVAILABLE}>Available</SelectItem>
               <SelectItem value={UnitStatus.OCCUPIED}>Occupied</SelectItem>
               <SelectItem value={UnitStatus.UNDER_MAINTENANCE}>Under Maintenance</SelectItem>
-              <SelectItem value={UnitStatus.RESERVED}>Reserved</SelectItem>
+              <SelectItem value={UnitStatus.VACANT}>Vacant</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
 
-        <FormField label="Furnishing Type" required>
-          <Select
-            value={formData.furnishingType}
-            onValueChange={(value) => handleChange('furnishingType', value)}
-          >
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Select furnishing" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={FurnishingType.FURNISHED}>Furnished</SelectItem>
-              <SelectItem value={FurnishingType.SEMI_FURNISHED}>Semi-Furnished</SelectItem>
-              <SelectItem value={FurnishingType.UNFURNISHED}>Unfurnished</SelectItem>
-            </SelectContent>
-          </Select>
+        <FormField label="Furnished">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="furnished"
+              checked={formData.furnished}
+              onChange={(e) => handleChange('furnished', e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            <label htmlFor="furnished" className="text-sm font-medium">
+              This unit is furnished
+            </label>
+          </div>
         </FormField>
       </FormColumn>
 
@@ -206,22 +203,12 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
         description="Physical specifications"
         icon={<Settings className="h-5 w-5" />}
       >
-        <FormField label="Carpet Area (sq ft)" required>
+        <FormField label="Area (sq ft)" required>
           <Input
             type="number"
-            value={formData.carpetArea}
-            onChange={(e) => handleChange('carpetArea', Number(e.target.value))}
-            error={errors.carpetArea}
-            min="0"
-            className="h-10"
-          />
-        </FormField>
-
-        <FormField label="Built-up Area (sq ft)">
-          <Input
-            type="number"
-            value={formData.builtUpArea}
-            onChange={(e) => handleChange('builtUpArea', Number(e.target.value))}
+            value={formData.area}
+            onChange={(e) => handleChange('area', Number(e.target.value))}
+            error={errors.area}
             min="0"
             className="h-10"
           />
@@ -268,9 +255,9 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
         <FormField label="Monthly Rent (₹)" required>
           <Input
             type="number"
-            value={formData.rent}
-            onChange={(e) => handleChange('rent', Number(e.target.value))}
-            error={errors.rent}
+            value={formData.monthlyRent}
+            onChange={(e) => handleChange('monthlyRent', Number(e.target.value))}
+            error={errors.monthlyRent}
             min="0"
             className="h-10"
           />
@@ -297,15 +284,6 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
           />
         </FormField>
 
-        <FormField label="Available From">
-          <Input
-            type="date"
-            value={formData.availableFrom}
-            onChange={(e) => handleChange('availableFrom', e.target.value)}
-            className="h-10"
-          />
-        </FormField>
-
         <FormField label="Description">
           <Textarea
             value={formData.description}
@@ -321,15 +299,15 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
             {COMMON_AMENITIES.map(amenity => (
               <Badge
                 key={amenity}
-                variant={formData.amenities?.includes(amenity) ? 'default' : 'outline'}
+                variant={formData.unitAmenities?.includes(amenity) ? 'default' : 'outline'}
                 className="cursor-pointer hover:bg-primary/80 transition-colors justify-center py-2 px-3 text-xs h-auto"
                 onClick={() => {
-                  if (formData.amenities?.includes(amenity)) {
+                  if (formData.unitAmenities?.includes(amenity)) {
                     handleRemoveAmenity(amenity);
                   } else {
                     setFormData(prev => ({
                       ...prev,
-                      amenities: [...(prev.amenities || []), amenity]
+                      unitAmenities: [...(prev.unitAmenities || []), amenity]
                     }));
                   }
                 }}

@@ -230,7 +230,7 @@ export const PropertyDashboardPage: React.FC = () => {
                           <TableCell>
                             <Badge variant="outline">{unit.unitType.toUpperCase()}</Badge>
                           </TableCell>
-                          <TableCell>{formatCurrency(unit.rent)}/mo</TableCell>
+                          <TableCell>{formatCurrency(unit.monthlyRent)}/mo</TableCell>
                           <TableCell>
                             <Badge variant={getUnitStatusColor(unit.status)}>
                               {unit.status.replace('_', ' ')}

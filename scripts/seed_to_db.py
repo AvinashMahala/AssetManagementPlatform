@@ -407,9 +407,10 @@ def seed_units(conn, df):
                 INSERT INTO units (
                     id, property_id, unit_number, unit_name, description,
                     unit_type, status, floor, area, bedrooms, bathrooms,
-                    furnished, monthly_rent, security_deposit, maintenance_charges
+                    balconies, max_occupants, furnished, unit_amenities, unit_photos,
+                    monthly_rent, security_deposit, maintenance_charges
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
                 ON CONFLICT (id) DO NOTHING
             """, (
@@ -417,8 +418,9 @@ def seed_units(conn, df):
                 row.get('description'), row.get('unit_type', 'apartment'),
                 row.get('status', 'available'), row.get('floor'),
                 row.get('area'), row.get('bedrooms'), row.get('bathrooms'),
-                row.get('furnished', False), row.get('monthly_rent'),
-                row.get('security_deposit'), row.get('maintenance_charges')
+                row.get('balconies'), row.get('max_occupants'), row.get('furnished', False),
+                row.get('unit_amenities'), row.get('unit_photos'),
+                row.get('monthly_rent'), row.get('security_deposit'), row.get('maintenance_charges')
             ))
             seeded += 1
         except Exception as e:

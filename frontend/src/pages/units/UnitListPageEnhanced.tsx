@@ -138,15 +138,15 @@ const UnitListPageEnhanced: React.FC = () => {
     if (selectedData.length === 0) return;
 
     // Create CSV content
-    const headers = ['Unit Number', 'Unit Type', 'Property', 'Rent', 'Carpet Area', 'Bedrooms', 'Status'];
+    const headers = ['Unit Number', 'Unit Type', 'Property', 'Monthly Rent', 'Area', 'Bedrooms', 'Status'];
     const csvContent = [
       headers.join(','),
       ...selectedData.map(unit => [
         `"${unit.unitNumber}"`,
         `"${unit.unitType}"`,
         `"${getPropertyName(unit.propertyId)}"`,
-        unit.rent || '',
-        unit.carpetArea || '',
+        unit.monthlyRent || '',
+        unit.area || '',
         unit.bedrooms || '',
         `"${unit.status}"`
       ].join(','))
@@ -366,8 +366,8 @@ const UnitListPageEnhanced: React.FC = () => {
                       <TableHead>Unit Number</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Property</TableHead>
-                      <TableHead>Rent</TableHead>
-                      <TableHead>Area (sq ft)</TableHead>
+                      <TableHead>Monthly Rent</TableHead>
+                      <TableHead>Area</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -402,8 +402,8 @@ const UnitListPageEnhanced: React.FC = () => {
                               {getPropertyName(unit.propertyId)}
                             </div>
                           </TableCell>
-                          <TableCell>₹{unit.rent?.toLocaleString() || 'N/A'}</TableCell>
-                          <TableCell>{unit.carpetArea || 'N/A'}</TableCell>
+                          <TableCell>₹{unit.monthlyRent?.toLocaleString() || 'N/A'}</TableCell>
+                          <TableCell>{unit.area || 'N/A'}</TableCell>
                           <TableCell>
                             <Badge variant={getStatusVariant(unit.status)}>
                               {unit.status.replace('_', ' ').charAt(0).toUpperCase() + unit.status.replace('_', ' ').slice(1)}
@@ -491,11 +491,11 @@ const UnitListPageEnhanced: React.FC = () => {
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-muted-foreground">Rent</span>
-                            <span className="font-bold text-primary">₹{unit.rent?.toLocaleString() || 'N/A'}/mo</span>
+                            <span className="font-bold text-primary">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}/mo</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Carpet Area</span>
-                            <span className="font-medium">{unit.carpetArea || 'N/A'} sq ft</span>
+                            <span className="text-muted-foreground">Area</span>
+                            <span className="font-medium">{unit.area || 'N/A'} sq ft</span>
                           </div>
                           {unit.bedrooms && (
                             <div className="flex items-center justify-between">

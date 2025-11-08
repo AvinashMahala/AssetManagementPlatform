@@ -459,11 +459,11 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                     <CardContent className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Monthly Rent</span>
-                        <span className="font-semibold">{formatCurrency(unit.rent)}</span>
+                        <span className="font-semibold">{formatCurrency(unit.monthlyRent)}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Carpet Area</span>
-                        <span className="font-semibold">{unit.carpetArea?.toLocaleString() || 'N/A'} sq ft</span>
+                        <span className="text-sm text-muted-foreground">Area</span>
+                        <span className="font-semibold">{unit.area?.toLocaleString() || 'N/A'} sq ft</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Bedrooms</span>

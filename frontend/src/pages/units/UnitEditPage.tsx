@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useUpdateUnit, useProperties } from '../../hooks';
 import type { UnitInput } from '../../types/unit';
-import { UnitStatus, UnitType, FurnishingType } from '../../types/unit';
+import { UnitStatus, UnitType } from '../../types/unit';
 
 export const UnitEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,20 +15,18 @@ export const UnitEditPage: React.FC = () => {
     propertyId: '',
     unitNumber: '',
     floor: 0,
-    unitType: UnitType.TWO_BHK,
+    unitType: UnitType.APARTMENT,
     status: UnitStatus.AVAILABLE,
-    carpetArea: 0,
-    builtUpArea: 0,
+    area: 0,
     bedrooms: 2,
     bathrooms: 2,
     balconies: 1,
-    furnishingType: FurnishingType.SEMI_FURNISHED,
-    rent: 0,
+    furnished: false,
+    monthlyRent: 0,
     securityDeposit: 0,
     maintenanceCharges: 0,
-    amenities: [],
-    photos: [],
-    availableFrom: '',
+    unitAmenities: [],
+    unitPhotos: [],
     description: '',
   });
 
@@ -40,22 +38,20 @@ export const UnitEditPage: React.FC = () => {
       setFormData({
         propertyId: unit.propertyId,
         unitNumber: unit.unitNumber,
-        floor: unit.floor,
+        floor: unit.floor || 0,
         unitType: unit.unitType,
         status: unit.status,
-        carpetArea: unit.carpetArea,
-        builtUpArea: unit.builtUpArea,
-        bedrooms: unit.bedrooms,
-        bathrooms: unit.bathrooms,
-        balconies: unit.balconies,
-        furnishingType: unit.furnishingType,
-        rent: unit.rent,
+        area: unit.area,
+        bedrooms: unit.bedrooms || 2,
+        bathrooms: unit.bathrooms || 2,
+        balconies: unit.balconies || 1,
+        furnished: unit.furnished,
+        monthlyRent: unit.monthlyRent,
         securityDeposit: unit.securityDeposit,
-        maintenanceCharges: unit.maintenanceCharges,
-        amenities: unit.amenities || [],
-        photos: unit.photos || [],
-        availableFrom: unit.availableFrom ? unit.availableFrom.split('T')[0] : '',
-        description: unit.description,
+        maintenanceCharges: unit.maintenanceCharges || 0,
+        unitAmenities: unit.unitAmenities || [],
+        unitPhotos: unit.unitPhotos || [],
+        description: unit.description || '',
       });
     }
   }, [unit]);
@@ -74,7 +70,7 @@ export const UnitEditPage: React.FC = () => {
     if (amenityInput.trim()) {
       setFormData(prev => ({
         ...prev,
-        amenities: [...(prev.amenities || []), amenityInput.trim()]
+        unitAmenities: [...(prev.unitAmenities || []), amenityInput.trim()]
       }));
       setAmenityInput('');
     }
@@ -83,7 +79,7 @@ export const UnitEditPage: React.FC = () => {
   const handleRemoveAmenity = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      amenities: (prev.amenities || []).filter((_, i) => i !== index)
+      unitAmenities: (prev.unitAmenities || []).filter((_: string, i: number) => i !== index)
     }));
   };
 
@@ -91,7 +87,7 @@ export const UnitEditPage: React.FC = () => {
     if (photoInput.trim()) {
       setFormData(prev => ({
         ...prev,
-        photos: [...(prev.photos || []), photoInput.trim()]
+        unitPhotos: [...(prev.unitPhotos || []), photoInput.trim()]
       }));
       setPhotoInput('');
     }
@@ -100,7 +96,7 @@ export const UnitEditPage: React.FC = () => {
   const handleRemovePhoto = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      photos: (prev.photos || []).filter((_, i) => i !== index)
+      unitPhotos: (prev.unitPhotos || []).filter((_: string, i: number) => i !== index)
     }));
   };
 
@@ -211,14 +207,14 @@ export const UnitEditPage: React.FC = () => {
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
-              <option value={UnitType.ONE_BHK}>1 BHK</option>
-              <option value={UnitType.TWO_BHK}>2 BHK</option>
-              <option value={UnitType.THREE_BHK}>3 BHK</option>
-              <option value={UnitType.FOUR_BHK}>4 BHK</option>
+              <option value={UnitType.APARTMENT}>Apartment</option>
+              <option value={UnitType.HOUSE}>House</option>
+              <option value={UnitType.VILLA}>Villa</option>
               <option value={UnitType.STUDIO}>Studio</option>
               <option value={UnitType.ROOM}>Room</option>
-              <option value={UnitType.SHOP}>Shop</option>
+              <option value={UnitType.COMMERCIAL}>Commercial</option>
               <option value={UnitType.OFFICE}>Office</option>
+              <option value={UnitType.SHOP}>Shop</option>
             </select>
           </div>
 
@@ -237,39 +233,24 @@ export const UnitEditPage: React.FC = () => {
               <option value={UnitStatus.AVAILABLE}>Available</option>
               <option value={UnitStatus.OCCUPIED}>Occupied</option>
               <option value={UnitStatus.UNDER_MAINTENANCE}>Under Maintenance</option>
-              <option value={UnitStatus.RESERVED}>Reserved</option>
+              <option value={UnitStatus.VACANT}>Vacant</option>
             </select>
           </div>
         </div>
 
         {/* Area Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div>
-            <label htmlFor="carpetArea" className="block text-sm font-medium text-gray-700">
-              Carpet Area (sq ft) *
+            <label htmlFor="area" className="block text-sm font-medium text-gray-700">
+              Area (sq ft) *
             </label>
             <input
               type="number"
-              id="carpetArea"
-              name="carpetArea"
-              value={formData.carpetArea}
+              id="area"
+              name="area"
+              value={formData.area}
               onChange={handleChange}
               required
-              min="0"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="builtUpArea" className="block text-sm font-medium text-gray-700">
-              Built-up Area (sq ft)
-            </label>
-            <input
-              type="number"
-              id="builtUpArea"
-              name="builtUpArea"
-              value={formData.builtUpArea}
-              onChange={handleChange}
               min="0"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
@@ -326,36 +307,37 @@ export const UnitEditPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Furnishing */}
+        {/* Furnished */}
         <div>
-          <label htmlFor="furnishingType" className="block text-sm font-medium text-gray-700">
-            Furnishing Type *
+          <label className="block text-sm font-medium text-gray-700">
+            Furnished
           </label>
-          <select
-            id="furnishingType"
-            name="furnishingType"
-            value={formData.furnishingType}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value={FurnishingType.FURNISHED}>Furnished</option>
-            <option value={FurnishingType.SEMI_FURNISHED}>Semi-Furnished</option>
-            <option value={FurnishingType.UNFURNISHED}>Unfurnished</option>
-          </select>
+          <div className="mt-2">
+            <input
+              type="checkbox"
+              id="furnished"
+              name="furnished"
+              checked={formData.furnished}
+              onChange={(e) => setFormData(prev => ({ ...prev, furnished: e.target.checked }))}
+              className="rounded border-gray-300"
+            />
+            <label htmlFor="furnished" className="ml-2 text-sm text-gray-700">
+              This unit is furnished
+            </label>
+          </div>
         </div>
 
         {/* Financial Details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="rent" className="block text-sm font-medium text-gray-700">
-              Rent (₹/month) *
+            <label htmlFor="monthlyRent" className="block text-sm font-medium text-gray-700">
+              Monthly Rent (₹) *
             </label>
             <input
               type="number"
-              id="rent"
-              name="rent"
-              value={formData.rent}
+              id="monthlyRent"
+              name="monthlyRent"
+              value={formData.monthlyRent}
               onChange={handleChange}
               required
               min="0"
@@ -395,21 +377,6 @@ export const UnitEditPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Available From */}
-        <div>
-          <label htmlFor="availableFrom" className="block text-sm font-medium text-gray-700">
-            Available From
-          </label>
-          <input
-            type="date"
-            id="availableFrom"
-            name="availableFrom"
-            value={formData.availableFrom}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-
         {/* Amenities */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
@@ -430,7 +397,7 @@ export const UnitEditPage: React.FC = () => {
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {formData.amenities?.map((amenity, index) => (
+            {formData.unitAmenities?.map((amenity: string, index: number) => (
               <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
                 {amenity}
                 <button
@@ -465,7 +432,7 @@ export const UnitEditPage: React.FC = () => {
             </button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {formData.photos?.map((photo, index) => (
+            {formData.unitPhotos?.map((photo: string, index: number) => (
               <div key={index} className="relative group">
                 <img src={photo} alt={`Unit ${index + 1}`} className="w-full h-24 object-cover rounded" />
                 <button
