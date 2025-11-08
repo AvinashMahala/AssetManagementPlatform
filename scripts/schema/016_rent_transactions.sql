@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS rent_transactions (
     -- Payment details
     payments JSONB NOT NULL DEFAULT '[]'::jsonb,
     paid_date DATE,
-    status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'pending', 'partial', 'paid', 'cancelled', 'overdue')),
+    status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'finalized', 'paid', 'cancelled')),
     payment_method VARCHAR(50),
     transaction_id VARCHAR(255),
     payment_reference VARCHAR(255),

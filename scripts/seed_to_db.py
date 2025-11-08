@@ -725,6 +725,12 @@ def seed_rent_transactions(conn, df):
                 print_error(f"Could not find owner for property")
                 continue
             
+            # Map status values to match backend enum
+            # pending/overdue -> finalized (invoice generated but not paid)
+            status = row.get('status', 'draft')
+            if status in ['pending', 'overdue', 'partial']:
+                status = 'finalized'
+            
             cursor.execute("""
                 INSERT INTO rent_transactions (
                     id, lease_id, property_id, unit_id, tenant_id,
@@ -747,7 +753,7 @@ def seed_rent_transactions(conn, df):
                 row.get('previous_balance', 0), row.get('total_meter_charges', 0),
                 row.get('total_expenses', 0), row.get('total_amount'),
                 row.get('amount_paid', 0), row.get('new_balance', 0),
-                row.get('status', 'pending'), row.get('invoice_number'),
+                status, row.get('invoice_number'),
                 row.get('invoice_date'), row.get('receipt_number'),
                 row.get('receipt_generated', False), row.get('notes'),
                 created_by
