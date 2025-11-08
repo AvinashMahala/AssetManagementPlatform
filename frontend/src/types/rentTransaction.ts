@@ -3,7 +3,7 @@
  * Comprehensive types for rent collection, billing, and payment tracking
  */
 
-export type BillingMethod = 'monthly' | 'daily' | 'custom';
+export type BillingMethod = 'relative' | 'fixed' | 'monthly' | 'daily' | 'custom';
 export type TransactionStatus = 'draft' | 'pending' | 'partial' | 'paid' | 'overdue';
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'upi' | 'cheque' | 'card' | 'other';
 

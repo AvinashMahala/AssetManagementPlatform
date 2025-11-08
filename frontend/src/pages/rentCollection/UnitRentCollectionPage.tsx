@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { AppLayout } from '../../components/layout';
 import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases } from '../../hooks';
 import { useAuthContext } from '../../contexts';
@@ -33,6 +34,21 @@ export const UnitRentCollectionPage: React.FC = () => {
   const [newExpense, setNewExpense] = useState({ category: '', description: '', amount: 0 });
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [validationSummary, setValidationSummary] = useState<{
+    lease: { valid: boolean; message: string };
+    meterReadings: { valid: boolean; message: string };
+    expenses: { valid: boolean; message: string };
+    overall: { valid: boolean; message: string };
+  }>({
+    lease: { valid: false, message: 'Checking lease...' },
+    meterReadings: { valid: false, message: 'Checking meter readings...' },
+    expenses: { valid: true, message: 'No additional expenses' },
+    overall: { valid: false, message: 'Validating data...' }
+  });
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [generatingPreview, setGeneratingPreview] = useState(false);
   const [invoiceGenerationStatus, setInvoiceGenerationStatus] = useState<{
     step: 'idle' | 'creating' | 'generating' | 'downloading' | 'complete' | 'error';
     message: string;
@@ -45,6 +61,166 @@ export const UnitRentCollectionPage: React.FC = () => {
     lease.status === 'active' && 
     lease.unitId === unitId
   );
+
+  // Validation summary
+  useEffect(() => {
+    const leaseValid = !!activeLease;
+    const leaseMessage = leaseValid ? 'Active lease found' : 'No active lease found';
+
+    const meterReadingsValid = meterReadings.length === 0 || meterReadings.every(r => {
+      const validation = validateMeterReading(r.previousReading, r.currentReading);
+      return validation.valid;
+    });
+    const meterReadingsMessage = meterReadings.length === 0 
+      ? 'No meter readings required' 
+      : meterReadingsValid 
+        ? `All ${meterReadings.length} meter reading(s) valid` 
+        : 'Some meter readings have errors';
+
+    const expensesValid = expenses.length === 0 || expenses.every(e => e.category && e.description && e.amount > 0);
+    const expensesMessage = expenses.length === 0 
+      ? 'No additional expenses' 
+      : expensesValid 
+        ? `${expenses.length} expense(s) added` 
+        : 'Some expenses are incomplete';
+
+    const overallValid = leaseValid && meterReadingsValid && expensesValid;
+    const overallMessage = overallValid ? 'All data complete' : 'Some issues need to be resolved';
+
+    setValidationSummary({
+      lease: { valid: leaseValid, message: leaseMessage },
+      meterReadings: { valid: meterReadingsValid, message: meterReadingsMessage },
+      expenses: { valid: expensesValid, message: expensesMessage },
+      overall: { valid: overallValid, message: overallMessage }
+    });
+  }, [activeLease, meterReadings, expenses, leases]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSaveKey = `rent-collection-draft-${unitId}`;
+    
+    // Load saved data on mount
+    const savedData = localStorage.getItem(autoSaveKey);
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed.meterReadings && meterReadings.length === 0) {
+          setMeterReadings(parsed.meterReadings);
+        }
+        if (parsed.expenses) {
+          setExpenses(parsed.expenses);
+        }
+        if (parsed.notes) {
+          setNotes(parsed.notes);
+        }
+        if (parsed.lastSavedAt) {
+          setLastSavedAt(new Date(parsed.lastSavedAt));
+        }
+      } catch (error) {
+        console.error('Failed to load saved draft:', error);
+      }
+    }
+
+    // Auto-save every 30 seconds
+    const autoSaveInterval = setInterval(async () => {
+      if (unit && activeLease && user && (meterReadings.length > 0 || expenses.length > 0 || notes)) {
+        try {
+          await performAutoSave();
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+        }
+      }
+    }, 30000); // 30 seconds
+
+    // Save before browser close
+    const handleBeforeUnload = () => {
+      const draftData = {
+        meterReadings,
+        expenses,
+        notes,
+        lastSavedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(autoSaveKey, JSON.stringify(draftData));
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      clearInterval(autoSaveInterval);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [unitId, unit, activeLease, user, meterReadings, expenses, notes]);
+
+  // Perform auto-save
+  const performAutoSave = async () => {
+    if (!unit || !activeLease || !user) return;
+
+    try {
+      const billingDays = Math.ceil(
+        (new Date(billingPeriod.end).getTime() - new Date(billingPeriod.start).getTime()) 
+        / (1000 * 60 * 60 * 24)
+      );
+
+      const transactionData = {
+        leaseId: activeLease.id,
+        unitId: unit.id,
+        propertyId: unit.propertyId,
+        tenantId: activeLease.tenantId,
+        billingPeriodStart: billingPeriod.start,
+        billingPeriodEnd: billingPeriod.end,
+        billingMethod: 'relative' as const,
+        daysCount: billingDays,
+        baseRent: totals.baseRent,
+        maintenanceCharges: totals.maintenanceCharges,
+        previousBalance: totals.previousBalance,
+        meterReadings: meterReadings.map(m => ({
+          meterId: m.meterId,
+          meterName: m.meterName,
+          meterType: m.meterType,
+          meterNumber: m.meterNumber || '',
+          previousReading: m.previousReading,
+          currentReading: m.currentReading,
+          unitsConsumed: m.unitsConsumed,
+          costPerUnit: m.costPerUnit,
+          fixedCharge: m.fixedCharge,
+          totalCost: m.totalCost,
+          readingDate: new Date().toISOString()
+        })),
+        expenses: expenses.map(e => ({
+          id: e.id,
+          category: e.category,
+          description: e.description,
+          amount: e.amount,
+          isRemoved: false
+        })),
+        totalMeterCharges: totals.totalMeterCharges,
+        totalExpenses: totals.totalExpenses,
+        totalAmount: totals.totalAmount,
+        amountPaid: 0,
+        newBalance: totals.totalAmount,
+        payments: [],
+        status: 'draft' as const,
+        receiptGenerated: false,
+        notes,
+      };
+
+      await createTransaction(transactionData);
+      setLastSavedAt(new Date());
+      
+      // Save to localStorage
+      const autoSaveKey = `rent-collection-draft-${unitId}`;
+      const draftData = {
+        meterReadings,
+        expenses,
+        notes,
+        lastSavedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(autoSaveKey, JSON.stringify(draftData));
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+      // Don't show alert for auto-save failures to avoid interrupting user
+    }
+  };
 
   // Initialize meter readings
   useEffect(() => {
@@ -179,6 +355,18 @@ export const UnitRentCollectionPage: React.FC = () => {
 
       await createTransaction(transactionData);
       alert('Draft saved successfully!');
+      setLastSavedAt(new Date());
+      
+      // Save to localStorage
+      const autoSaveKey = `rent-collection-draft-${unitId}`;
+      const draftData = {
+        meterReadings,
+        expenses,
+        notes,
+        lastSavedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(autoSaveKey, JSON.stringify(draftData));
+      
       navigate(`/properties/${propertyId}/rent-collection`);
     } catch (error) {
       console.error('Failed to save draft:', error);
@@ -188,11 +376,244 @@ export const UnitRentCollectionPage: React.FC = () => {
     }
   };
 
+  const handlePreviewInvoice = async () => {
+    if (!unit || !activeLease || !property || !validationSummary.overall.valid) {
+      return;
+    }
+
+    setGeneratingPreview(true);
+    try {
+      // Build preview data
+      const previewData = {
+        propertyName: property.name,
+        propertyAddress: property.address ? `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}` : '',
+        propertyPhone: '',
+        propertyEmail: '',
+        invoiceNumber: `PREVIEW-${Date.now()}`,
+        invoiceDate: new Date().toLocaleDateString('en-IN', {
+          year: 'numeric', month: 'long', day: 'numeric'
+        }),
+        billingPeriod: `${new Date(billingPeriod.start).toLocaleDateString('en-IN', {
+          day: '2-digit', month: 'short', year: 'numeric'
+        })} - ${new Date(billingPeriod.end).toLocaleDateString('en-IN', {
+          day: '2-digit', month: 'short', year: 'numeric'
+        })}`,
+        tenantName: 'Tenant',
+        tenantEmail: '',
+        tenantPhone: '',
+        landlordName: 'Property Owner',
+        landlordEmail: '',
+        totalAmount: formatCurrency(totals.totalAmount),
+        amountPaid: formatCurrency(0),
+        paymentMethod: 'PENDING',
+        paymentDate: 'Not Paid',
+        termsAndConditions: 'This is a preview. Actual invoice will be generated after confirmation.',
+        // Additional data for the detailed template
+        propertyUnit: unit.unitNumber,
+        baseRent: formatCurrency(totals.baseRent),
+        maintenanceCharges: formatCurrency(totals.maintenanceCharges),
+        meterCharges: formatCurrency(totals.totalMeterCharges),
+        expenses: formatCurrency(totals.totalExpenses),
+        previousBalance: formatCurrency(totals.previousBalance),
+        balanceDue: formatCurrency(totals.totalAmount),
+        chargesRows: buildChargesTable(),
+        balanceRow: totals.totalAmount > 0 ? `
+          <!-- Balance Due -->
+          <div class="balance-due-box">
+            <div class="balance-due-label">Balance Due</div>
+            <div class="balance-due-amount">${formatCurrency(totals.totalAmount)}</div>
+          </div>` : ''
+      };
+
+      // Generate HTML using the template structure
+      const html = generatePreviewHtml(previewData);
+      setPreviewHtml(html);
+      setShowPreviewModal(true);
+    } catch (error) {
+      console.error('Failed to generate preview:', error);
+    } finally {
+      setGeneratingPreview(false);
+    }
+  };
+
+  const buildChargesTable = () => {
+    const rows = [];
+    
+    // Base rent row
+    rows.push(`<tr>
+      <td>Rent (${billingPeriod.start} to ${billingPeriod.end})</td>
+      <td>${formatCurrency(totals.baseRent)}</td>
+    </tr>`);
+    
+    // Maintenance charges
+    if (totals.maintenanceCharges > 0) {
+      rows.push(`<tr>
+        <td>Maintenance Charges</td>
+        <td>${formatCurrency(totals.maintenanceCharges)}</td>
+      </tr>`);
+    }
+    
+    // Meter charges
+    if (totals.totalMeterCharges > 0) {
+      rows.push(`<tr>
+        <td>Electricity Charges</td>
+        <td>${formatCurrency(totals.totalMeterCharges)}</td>
+      </tr>`);
+    }
+    
+    // Previous balance
+    if (totals.previousBalance !== 0) {
+      rows.push(`<tr>
+        <td>Previous Balance</td>
+        <td>${formatCurrency(totals.previousBalance)}</td>
+      </tr>`);
+    }
+    
+    // Expenses
+    if (expenses.length > 0) {
+      expenses.forEach(expense => {
+        rows.push(`<tr>
+          <td>${expense.description} (${expense.category})</td>
+          <td>${formatCurrency(expense.amount)}</td>
+        </tr>`);
+      });
+    }
+    
+    return rows.join('');
+  };
+
+  const generatePreviewHtml = (data: any) => {
+    // Use a simplified version of the invoice template for preview
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Preview - ${data.invoiceNumber}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1a202c; background: white; font-size: 11px; line-height: 1.3; }
+    .invoice-container { width: 210mm; min-height: 297mm; margin: 0 auto; background: white; padding: 12mm 10mm; }
+    .top-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; color: white; margin-bottom: 3px; }
+    .property-info { flex: 1; padding-left: 15px; }
+    .property-name { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .property-details { font-size: 10px; opacity: 0.95; line-height: 1.5; }
+    .receipt-banner { background: linear-gradient(to right, #f7fafc, #edf2f7); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #667eea; margin-bottom: 15px; }
+    .receipt-title { font-size: 16px; font-weight: 700; color: #2d3748; text-transform: uppercase; letter-spacing: 1px; }
+    .receipt-date { font-size: 11px; color: #4a5568; font-weight: 600; }
+    .bill-info { display: flex; gap: 20px; padding: 10px 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; font-size: 10px; }
+    .bill-info-item { flex: 1; }
+    .bill-info-label { color: #718096; font-weight: 600; margin-bottom: 2px; }
+    .bill-info-value { color: #2d3748; font-weight: 700; font-size: 11px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+    .info-card { background: white; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+    .info-card-header { font-size: 9px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .info-card-name { font-size: 13px; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
+    .info-card-details { font-size: 10px; color: #4a5568; line-height: 1.6; }
+    .payment-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px; }
+    .payment-table th { background: #2d3748; color: white; padding: 8px; text-align: center; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .payment-table td { padding: 8px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+    .payment-table .amount-col { font-weight: 700; color: #2d3748; }
+    .payment-table .total-row { background: #1a202c; color: white; font-weight: 700; font-size: 11px; }
+    .balance-due-box { background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%); border: 3px solid #e74c3c; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 15px; }
+    .balance-due-label { font-size: 11px; color: #7f1d1d; font-weight: 700; margin-bottom: 4px; }
+    .balance-due-amount { font-size: 24px; font-weight: 700; color: #991b1b; }
+    .footer-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 10px; font-size: 9px; font-weight: 600; border-radius: 0 0 12px 12px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <!-- Top Header -->
+    <div class="top-header">
+      <div style="width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid rgba(255, 255, 255, 0.3);">🏠</div>
+      <div class="property-info">
+        <div class="property-name">${data.propertyName}</div>
+        <div class="property-details">
+          📍 ${data.propertyAddress}<br>
+          📞 ${data.propertyPhone} | 📧 ${data.propertyEmail}
+        </div>
+      </div>
+      <div style="width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏢</div>
+    </div>
+
+    <!-- Receipt Banner -->
+    <div class="receipt-banner">
+      <div class="receipt-title">INVOICE PREVIEW</div>
+      <div class="receipt-date">${data.invoiceDate}</div>
+    </div>
+
+    <!-- Bill Info Bar -->
+    <div class="bill-info">
+      <div class="bill-info-item">
+        <div class="bill-info-label">Bill No</div>
+        <div class="bill-info-value">${data.invoiceNumber}</div>
+      </div>
+      <div class="bill-info-item">
+        <div class="bill-info-label">Period</div>
+        <div class="bill-info-value">${data.billingPeriod}</div>
+      </div>
+    </div>
+
+    <!-- Tenant & Room Info Grid -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-header">Room</div>
+        <div class="info-card-name">Property Unit</div>
+        <div class="info-card-details">
+          ${data.propertyName} - Unit ${data.propertyUnit}
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-header">Tenant</div>
+        <div class="info-card-name">${data.tenantName}</div>
+        <div class="info-card-details">
+          📱 ${data.tenantPhone}<br>
+          📧 ${data.tenantEmail}
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Details Table -->
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.chargesRows}
+        <tr class="total-row">
+          <td colspan="1">TOTAL AMOUNT</td>
+          <td>${data.totalAmount}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    ${data.balanceRow}
+
+    <!-- Footer -->
+    <div class="footer-bar">
+      🙏 Invoice Preview | For actual invoice, click "Generate Invoice"
+    </div>
+  </div>
+</body>
+</html>`;
+  };
   const handleGenerateInvoice = async () => {
-    if (!unit || !activeLease || !user || !property) {
+    if (!unit || !activeLease || !property || !user) {
       alert('Missing required data: unit, lease, property, or user');
       return;
     }
+
+    // Clear validation state before generation
+    setValidationSummary({
+      lease: { valid: false, message: 'Validating...' },
+      meterReadings: { valid: false, message: 'Validating...' },
+      expenses: { valid: false, message: 'Validating...' },
+      overall: { valid: false, message: 'Generating invoice...' }
+    });
 
     // Validate meter readings
     const hasInvalidReadings = meterReadings.some(r => {
@@ -423,7 +844,12 @@ export const UnitRentCollectionPage: React.FC = () => {
             <p className="mt-2 text-gray-600">
               {property?.name} - Unit {unit.unitNumber}
             </p>
-                        <p className="text-sm text-gray-500">
+            {lastSavedAt && (
+              <p className="text-xs text-green-600 mt-1">
+                💾 Last saved at {lastSavedAt.toLocaleTimeString()}
+              </p>
+            )}
+            <p className="text-sm text-gray-500">
               Billing Period: {billingPeriod.start} to {billingPeriod.end}
             </p>
           </div>
@@ -496,6 +922,70 @@ export const UnitRentCollectionPage: React.FC = () => {
           </Card>
         )}
 
+        {/* Validation Summary */}
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>Validation Summary</span>
+              {validationSummary.overall.valid ? (
+                <span className="text-green-600 text-lg">✅</span>
+              ) : (
+                <span className="text-yellow-600 text-lg">⚠️</span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                {validationSummary.lease.valid ? (
+                  <span className="text-green-600 text-lg">✅</span>
+                ) : (
+                  <span className="text-red-600 text-lg">❌</span>
+                )}
+                <div>
+                  <p className="font-medium text-sm">Lease</p>
+                  <p className="text-xs text-gray-600">{validationSummary.lease.message}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                {validationSummary.meterReadings.valid ? (
+                  <span className="text-green-600 text-lg">✅</span>
+                ) : (
+                  <span className="text-yellow-600 text-lg">⚠️</span>
+                )}
+                <div>
+                  <p className="font-medium text-sm">Meter Readings</p>
+                  <p className="text-xs text-gray-600">{validationSummary.meterReadings.message}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg border">
+                {validationSummary.expenses.valid ? (
+                  <span className="text-green-600 text-lg">✅</span>
+                ) : (
+                  <span className="text-orange-600 text-lg">ℹ️</span>
+                )}
+                <div>
+                  <p className="font-medium text-sm">Expenses</p>
+                  <p className="text-xs text-gray-600">{validationSummary.expenses.message}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 p-3 rounded-lg bg-gray-50 border">
+              <p className="text-sm font-medium flex items-center gap-2">
+                {validationSummary.overall.valid ? (
+                  <span className="text-green-600">✅</span>
+                ) : (
+                  <span className="text-yellow-600">⚠️</span>
+                )}
+                {validationSummary.overall.message}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Action Buttons */}
         <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
           <CardContent className="pt-6">
@@ -505,6 +995,15 @@ export const UnitRentCollectionPage: React.FC = () => {
                 <p className="text-3xl font-bold text-green-700">{formatCurrency(totals.totalAmount)}</p>
               </div>
               <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handlePreviewInvoice}
+                  disabled={generatingPreview || !validationSummary.overall.valid}
+                  title="Preview invoice before generating (Ctrl+P)"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview
+                </Button>
                 <Button
                   variant="outline"
                   onClick={handleSaveDraft}
@@ -741,6 +1240,53 @@ export const UnitRentCollectionPage: React.FC = () => {
             />
           </CardContent>
         </Card>
+
+        {/* Invoice Preview Modal */}
+        <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Invoice Preview</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              {generatingPreview ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="text-gray-600">Generating preview...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-600">
+                      This is how your invoice will look. Review and make any final edits before generating.
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setShowPreviewModal(false);
+                        handleGenerateInvoice();
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Generate Invoice
+                    </Button>
+                  </div>
+                  <div 
+                    className="border rounded-lg p-4 bg-white"
+                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                    style={{ 
+                      transform: 'scale(0.8)', 
+                      transformOrigin: 'top center',
+                      width: '125%',
+                      margin: '0 auto'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
