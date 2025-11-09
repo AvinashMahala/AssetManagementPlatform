@@ -716,7 +716,7 @@ CMD ["npm", "start"]
 |----------|-------------|---------|
 | `NODE_ENV` | Environment mode | `development` |
 | `PORT` | Server port | `5000` |
-| `DATABASE_URL` | PostgreSQL connection | Required |
+| `MAIN_DATABASE_URL` | PostgreSQL connection | Required |
 | `JWT_SECRET` | JWT signing secret | Required |
 | `JWT_EXPIRE` | JWT expiration time | `1h` |
 | `REFRESH_TOKEN_EXPIRE` | Refresh token expiration | `7d` |

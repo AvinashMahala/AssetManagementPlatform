@@ -271,7 +271,7 @@ npm install
 cp .env.example .env
 
 # Edit .env with your configuration
-# Required: DATABASE_URL, JWT_SECRET, GOOGLE_CLIENT_ID, etc.
+# Required: MAIN_DATABASE_URL, JWT_SECRET, GOOGLE_CLIENT_ID, etc.
 ```
 
 ### 3. Database Setup
@@ -506,7 +506,7 @@ docker run -p 5000:5000 property-management
 |----------|-------------|---------|
 | `NODE_ENV` | Environment mode | `development` |
 | `PORT` | Server port | `5000` |
-| `DATABASE_URL` | PostgreSQL connection string | Required |
+| `MAIN_DATABASE_URL` | PostgreSQL connection string | Required |
 | `JWT_SECRET` | JWT signing secret | Required |
 | `JWT_EXPIRE` | JWT expiration time | `1h` |
 | `REFRESH_TOKEN_EXPIRE` | Refresh token expiration | `7d` |

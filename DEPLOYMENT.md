@@ -50,7 +50,7 @@ Choose one of these **free backend hosting services**:
 5. Add environment variables:
    ```
    NODE_ENV=production
-   DATABASE_URL=<provided-by-render>
+   MAIN_DATABASE_URL=<provided-by-render>
    JWT_SECRET=<your-secret>
    JWT_REFRESH_SECRET=<your-secret>
    JWT_ACCESS_TOKEN_EXPIRY=15m
@@ -84,7 +84,7 @@ Choose one of these **free backend hosting services**:
 
 ```bash
 # Database (provided by hosting service)
-DATABASE_URL=postgresql://...
+MAIN_DATABASE_URL=postgresql://...
 
 # Authentication
 JWT_SECRET=your_jwt_secret_here

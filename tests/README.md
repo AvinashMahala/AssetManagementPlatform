@@ -695,7 +695,7 @@ jobs:
       - name: Run backend tests
         run: npm run test:backend:ci
         env:
-          DATABASE_URL: postgresql://postgres:test@localhost:5432/test
+          MAIN_DATABASE_URL: postgresql://postgres:test@localhost:5432/test
 
       - name: Run frontend tests
         run: npm run test:frontend:ci

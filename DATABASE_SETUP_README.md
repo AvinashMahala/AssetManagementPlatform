@@ -55,9 +55,9 @@ python3 scripts/verify_database.py
 ## Database Configuration
 
 The scripts automatically detect database configuration from:
-1. `DATABASE_URL` environment variable (Docker/production)
+1. `MAIN_DATABASE_URL` environment variable (Docker/production)
 2. Individual env vars: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-3. Defaults to Docker setup: `localhost:5432/assetdb` with `user/pass`
+3. Defaults to Docker setup: `localhost:5432/asset_platform_main` with `user/pass`
 
 ## Data Integrity
 

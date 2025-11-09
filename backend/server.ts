@@ -55,7 +55,7 @@ logger.info('🚀 Starting Asset Management Platform Backend...', {
 });
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.MAIN_DATABASE_URL,
 });
 
 // Initialize dependency injection container

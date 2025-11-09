@@ -7,7 +7,7 @@ dotenv.config({ path: '../../.env' });
 
 async function createDemoUser() {
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/assetdb',
+    connectionString: process.env.MAIN_DATABASE_URL || 'postgresql://user:pass@localhost:5432/asset_platform_main',
   });
 
   try {

@@ -176,7 +176,7 @@ def clear_all_data(conn):
     print_success("All data cleared")
 
 def parse_database_url(database_url):
-    """Parse DATABASE_URL into connection parameters"""
+    """Parse MAIN_DATABASE_URL into connection parameters"""
     if not database_url:
         return None
     
@@ -190,13 +190,13 @@ def parse_database_url(database_url):
             'password': result.password or 'postgres'
         }
     except Exception as e:
-        print_error(f"Error parsing DATABASE_URL: {e}")
+        print_error(f"Error parsing MAIN_DATABASE_URL: {e}")
         return None
 
 def get_db_config():
     """Get database configuration from .env file or environment variables"""
-    # Try to parse DATABASE_URL first
-    database_url = os.getenv('DATABASE_URL')
+    # Try to parse MAIN_DATABASE_URL first
+    database_url = os.getenv('MAIN_DATABASE_URL')
     if database_url:
         config = parse_database_url(database_url)
         if config:

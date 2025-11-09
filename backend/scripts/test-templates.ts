@@ -13,7 +13,7 @@ import { ReceiptTemplateType } from '../src/models/ReceiptTemplate.js';
 const pool = new Pool({
   host: 'localhost',
   port: 5432,
-  database: 'assetdb',
+  database: 'asset_platform_main',
   user: 'user',
   password: 'pass',
 });

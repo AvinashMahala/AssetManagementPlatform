@@ -292,8 +292,8 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 ### Login Returns "Invalid email or password"
 **Check**:
-1. Verify email exists: `docker exec assetmanagementplatform-db-1 psql -U user -d assetdb -c "SELECT email FROM users;"`
-2. Verify password is hashed: `docker exec assetmanagementplatform-db-1 psql -U user -d assetdb -c "SELECT LENGTH(password) FROM users WHERE email='your@email.com';"`
+1. Verify email exists: `docker exec assetmanagementplatform-db-1 psql -U user -d asset_platform_main -c "SELECT email FROM users;"`
+2. Verify password is hashed: `docker exec assetmanagementplatform-db-1 psql -U user -d asset_platform_main -c "SELECT LENGTH(password) FROM users WHERE email='your@email.com';"`
    - Should return 60 (bcrypt hash length)
 3. Try known working credentials: admin@assetplatform.com / admin123
 

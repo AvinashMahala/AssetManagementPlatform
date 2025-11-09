@@ -54,7 +54,7 @@ class DatabaseVerifier:
 
     def get_db_config(self):
         """Get database configuration"""
-        database_url = os.getenv('DATABASE_URL')
+        database_url = os.getenv('MAIN_DATABASE_URL')
         if database_url:
             result = urlparse(database_url)
             return {
@@ -68,7 +68,7 @@ class DatabaseVerifier:
         return {
             'host': os.getenv('DB_HOST', 'localhost'),
             'port': int(os.getenv('DB_PORT', 5432)),
-            'database': os.getenv('DB_NAME', 'assetdb'),
+            'database': os.getenv('DB_NAME', 'asset_platform_main'),
             'user': os.getenv('DB_USER', 'user'),
             'password': os.getenv('DB_PASSWORD', 'pass')
         }

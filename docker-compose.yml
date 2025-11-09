@@ -1,47 +1,82 @@
 version: '3.8'
 
 services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - VITE_API_URL=http://localhost:5000/api
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   environment:
+  #     - VITE_API_URL=http://localhost:5000/api
 
-  backend:
-    build: ./backend
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://user:pass@db:5432/assetdb
-      - PORT=5000
-      - JWT_SECRET=your-secret-key
-      - JWT_REFRESH_SECRET=your-refresh-secret-key
-      - JWT_ACCESS_TOKEN_EXPIRY=15m
-      - JWT_REFRESH_TOKEN_EXPIRY=7d
-      - JWT_ACCESS_TOKEN_EXPIRY_REMEMBER=1h
-      - JWT_REFRESH_TOKEN_EXPIRY_REMEMBER=30d
-    depends_on:
-      - db
+  # backend:
+  #   build: ./backend
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/node_modules
+  #   environment:
+  #     - NODE_ENV=development
+  #     - MAIN_DATABASE_URL=postgresql://user:pass@main-db:5432/asset_platform_main
+  #     - FILES_DATABASE_URL=postgresql://user:pass@files-db:5432/asset_platform_files
+  #     - PORT=5000
+  #     - JWT_SECRET=your-secret-key
+  #     - JWT_REFRESH_SECRET=your-refresh-secret-key
+  #     - JWT_ACCESS_TOKEN_EXPIRY=15m
+  #     - JWT_REFRESH_TOKEN_EXPIRY=7d
+  #     - JWT_ACCESS_TOKEN_EXPIRY_REMEMBER=1h
+  #     - JWT_REFRESH_TOKEN_EXPIRY_REMEMBER=30d
+  #   depends_on:
+  #     - main-db
+  #     - files-db
 
-  db:
+  main-db:
     image: postgres:15
     environment:
-      POSTGRES_DB: assetdb
+      POSTGRES_DB: asset_platform_main
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - main_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d asset_platform_main"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  files-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: asset_platform_files
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"  # Different port to avoid conflict
+    volumes:
+      - files_db_data:/var/lib/postgresql/data
+      - files_storage:/var/lib/postgresql/files
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d asset_platform_files"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_data:
+  main_db_data:
+    driver: local
+  files_db_data:
+    driver: local
+  files_storage:
+    driver: local
+    # Remove tmpfs for persistent storage
+    # driver_opts:
+    #   type: tmpfs
+    #   device: tmpfs
+    #   o: size=5g
