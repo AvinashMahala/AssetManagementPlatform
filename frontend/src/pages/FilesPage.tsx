@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Upload, Search, Filter, FileText, Image, Download, Trash2, Plus } from 'lucide-react';
+import { Upload, Search, Filter, FileText, Image, Download, Trash2, Plus, CheckSquare, Square, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -144,6 +144,8 @@ const FilesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
   const [totalFiles, setTotalFiles] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const loadFiles = useCallback(async () => {
     try {
@@ -177,16 +179,81 @@ const FilesPage: React.FC = () => {
       ...prev,
       [key]: value || undefined
     }));
+    clearSelection(); // Clear selection when filters change
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    clearSelection(); // Clear selection when page changes
   };
 
   const clearFilters = () => {
     setFilters({});
     setCurrentPage(1); // Reset to first page when clearing filters
   };
+
+  const handleFileSelection = (fileId: string, checked: boolean) => {
+    setSelectedFiles(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(fileId);
+      } else {
+        newSet.delete(fileId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedFiles(new Set(files.map(file => file.id)));
+    } else {
+      setSelectedFiles(new Set());
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedFiles(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedFiles.size === 0) return;
+
+    try {
+      setBulkDeleting(true);
+      const deletePromises = Array.from(selectedFiles).map(fileId =>
+        fileService.deleteFile(fileId)
+      );
+
+      await Promise.all(deletePromises);
+      clearSelection();
+      loadFiles(); // Refresh the file list
+      setDeletingFileId(null); // Close the dialog after successful bulk deletion
+    } catch (error) {
+      console.error('Bulk delete failed:', error);
+      // Keep dialog open on error so user can retry or cancel
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        if (event.key === 'a') {
+          event.preventDefault();
+          handleSelectAll(true);
+        }
+      }
+      if (event.key === 'Escape') {
+        clearSelection();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [files]);
 
   const handleFileUploaded = (_file: FileMetadata) => {
     // Refresh the current page to show updated results and total count
@@ -204,10 +271,10 @@ const FilesPage: React.FC = () => {
     try {
       await fileService.deleteFile(fileId);
       handleFileDeleted(fileId);
+      setDeletingFileId(null); // Close the dialog after successful deletion
     } catch (err) {
       console.error('Delete failed:', err);
-    } finally {
-      setDeletingFileId(null);
+      // Keep dialog open on error so user can retry or cancel
     }
   };
 
@@ -339,7 +406,42 @@ const FilesPage: React.FC = () => {
         {/* File Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Files ({totalFiles})</CardTitle>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Files ({totalFiles})</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">
+                  Use Ctrl+A to select all files, Esc to clear selection
+                </p>
+              </div>
+              {selectedFiles.size > 0 && (
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-600">
+                    {selectedFiles.size} file{selectedFiles.size !== 1 ? 's' : ''} selected
+                  </span>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearSelection}
+                      className="flex items-center space-x-1"
+                    >
+                      <X className="h-3 w-3" />
+                      <span>Clear</span>
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setDeletingFileId('bulk')}
+                      disabled={bulkDeleting}
+                      className="flex items-center space-x-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      <span>{bulkDeleting ? 'Deleting...' : 'Delete Selected'}</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -370,6 +472,19 @@ const FilesPage: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <button
+                          onClick={() => handleSelectAll(selectedFiles.size !== files.length)}
+                          className="flex items-center justify-center w-5 h-5 hover:bg-gray-100 rounded"
+                          title={selectedFiles.size === files.length ? "Deselect all" : "Select all"}
+                        >
+                          {selectedFiles.size === files.length && files.length > 0 ? (
+                            <CheckSquare className="h-4 w-4 text-primary" />
+                          ) : (
+                            <Square className="h-4 w-4 text-gray-400" />
+                          )}
+                        </button>
+                      </TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Size</TableHead>
@@ -381,7 +496,19 @@ const FilesPage: React.FC = () => {
                   </TableHeader>
                   <TableBody>
                     {files.map((file) => (
-                      <TableRow key={file.id}>
+                      <TableRow key={file.id} className={selectedFiles.has(file.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}>
+                        <TableCell>
+                          <button
+                            onClick={() => handleFileSelection(file.id, !selectedFiles.has(file.id))}
+                            className="flex items-center justify-center w-5 h-5 hover:bg-gray-100 rounded"
+                          >
+                            {selectedFiles.has(file.id) ? (
+                              <CheckSquare className="h-4 w-4 text-primary" />
+                            ) : (
+                              <Square className="h-4 w-4 text-gray-400" />
+                            )}
+                          </button>
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             {getFileIcon(file)}
@@ -546,11 +673,21 @@ const FilesPage: React.FC = () => {
           <ConfirmDialog
             open={!!deletingFileId}
             onOpenChange={(open) => !open && setDeletingFileId(null)}
-            onConfirm={() => handleDeleteFile(deletingFileId)}
-            title="Delete File"
-            description="Are you sure you want to delete this file? This action cannot be undone."
+            onConfirm={() => {
+              if (deletingFileId === 'bulk') {
+                handleBulkDelete();
+              } else {
+                handleDeleteFile(deletingFileId);
+              }
+            }}
+            title={deletingFileId === 'bulk' ? "Delete Selected Files" : "Delete File"}
+            description={
+              deletingFileId === 'bulk'
+                ? `Are you sure you want to delete ${selectedFiles.size} selected file${selectedFiles.size !== 1 ? 's' : ''}? This action cannot be undone.`
+                : "Are you sure you want to delete this file? This action cannot be undone."
+            }
             variant="destructive"
-            confirmLabel="Delete"
+            confirmLabel={deletingFileId === 'bulk' ? "Delete Files" : "Delete"}
           />
         )}
       </div>

@@ -105,11 +105,3 @@ File metadata: ✅ Complete metadata retrieved
 Storage stats: ✅ 1 file, 41 bytes total, categorized correctly
 API Endpoints Ready for Frontend Integration:
 The file storage system is now production-ready with proper error handling, data integrity, and full CRUD operations! 🎉
-
-What we waant to store:-
-1) Tenant Documents
-2) Property Photos, Unit Photos
-3) Lease Documents
-4) Rent receipts
-5) Maintenance receipts
-6) Any other useful documents
