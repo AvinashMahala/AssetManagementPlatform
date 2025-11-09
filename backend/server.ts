@@ -43,6 +43,7 @@ import { createUnitRoutes } from './src/routes/unitRoutes.js';
 import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
 import { UnitUtilityController } from './src/controllers/UnitUtilityController.js';
 import { createUnitUtilityRoutes } from './src/routes/unitUtilityRoutes.js';
+import { createFileRoutes } from './src/routes/fileRoutes.js';
 import { DependencyContainer } from './src/utils/DependencyContainer.js';
 
 // Setup global process error handlers
@@ -54,12 +55,16 @@ logger.info('🚀 Starting Asset Management Platform Backend...', {
   hasResendApiKey: !!process.env.RESEND_API_KEY,
 });
 
-const pool = new Pool({
+const mainPool = new Pool({
   connectionString: process.env.MAIN_DATABASE_URL,
 });
 
+const filesPool = new Pool({
+  connectionString: process.env.FILES_DATABASE_URL,
+});
+
 // Initialize dependency injection container
-const container = DependencyContainer.initialize(pool);
+const container = DependencyContainer.initialize(mainPool);
 
 // Get services from container
 const propertyService = container.propertyService;
@@ -120,7 +125,7 @@ app.use(requestLoggingMiddleware);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
 
 // Initialize database tables
-initializeDatabase(pool);
+initializeDatabase(mainPool, filesPool);
 
 /**
  * @swagger
@@ -164,13 +169,17 @@ app.get('/', (req, res) => {
  */
 app.get('/api/health', async (req, res) => {
   try {
-    // Test database connection
-    await pool.query('SELECT 1');
+    // Test database connections
+    await mainPool.query('SELECT 1');
+    await filesPool.query('SELECT 1');
     res.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      database: 'connected'
+      databases: {
+        main: 'connected',
+        files: 'connected'
+      }
     });
   } catch (error) {
     logger.error('Health check failed:', error);
@@ -196,8 +205,9 @@ app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionCon
 app.use('/api/meters', createMeterRoutes(meterController, userService));
 app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
 app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
-app.use('/api', createTemplateRoutes(pool, userService));
+app.use('/api', createTemplateRoutes(mainPool, userService));
 app.use('/api', createUnitUtilityRoutes(unitUtilityController, userService));
+app.use('/api/files', createFileRoutes(mainPool, filesPool));
 
 // Error handling middleware (must be last)
 app.use(notFoundHandler);
