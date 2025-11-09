@@ -123,19 +123,28 @@ const FileUpload: React.FC<FileUploadProps> = ({
           entityType,
           entityId,
           category,
-          description: `${upload.file.name} uploaded to ${entityType}`
         };
 
         const result = await fileService.uploadFile(uploadRequest);
 
-        // Update progress to success
-        setUploads(prev => prev.map(u =>
-          u.file === upload.file
-            ? { ...u, progress: 100, status: 'success' }
-            : u
-        ));
+        if (result.success && result.data) {
+          // Fetch the file metadata
+          const metadataResult = await fileService.getFileMetadata(result.data.fileId);
+          if (metadataResult.success && metadataResult.data) {
+            // Update progress to success
+            setUploads(prev => prev.map(u =>
+              u.file === upload.file
+                ? { ...u, progress: 100, status: 'success' }
+                : u
+            ));
 
-        onUploadSuccess?.(result.file);
+            onUploadSuccess?.(metadataResult.data);
+          } else {
+            throw new Error(metadataResult.error?.message || 'Failed to get file metadata');
+          }
+        } else {
+          throw new Error(result.error?.message || 'Upload failed');
+        }
 
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Upload failed';

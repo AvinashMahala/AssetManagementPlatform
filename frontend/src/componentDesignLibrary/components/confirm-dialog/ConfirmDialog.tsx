@@ -71,7 +71,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-white dark:bg-gray-900 border shadow-xl">
         <DialogHeader>
           <div className="flex items-center gap-3">
             {config.icon}

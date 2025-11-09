@@ -3,7 +3,7 @@ import { Download, Trash2, Eye, File, Image, FileText, Video, Archive, Calendar,
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { ConfirmDialog } from '../../componentDesignLibrary';
 import { fileService } from '../../services';
 import type { FileMetadata } from '../../types/file';
@@ -22,7 +22,7 @@ interface FileViewerProps {
   onClose: () => void;
 }
 
-const FileViewer: React.FC<FileViewerProps> = ({ file, onClose }) => {
+const FileViewer: React.FC<FileViewerProps> = ({ file }) => {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,8 @@ const FileViewer: React.FC<FileViewerProps> = ({ file, onClose }) => {
     const loadFile = async () => {
       try {
         setLoading(true);
-        const url = await fileService.downloadFile(file.id);
+        const blob = await fileService.downloadFile(file.id);
+        const url = URL.createObjectURL(blob);
         setBlobUrl(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load file');
@@ -104,7 +105,7 @@ const FileViewer: React.FC<FileViewerProps> = ({ file, onClose }) => {
           <File className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <p className="text-lg font-medium mb-2">{file.originalName}</p>
           <p className="text-sm text-gray-500 mb-4">
-            {file.mimeType} • {(file.size / 1024 / 1024).toFixed(2)} MB
+            {file.mimeType} • {(file.fileSize / 1024 / 1024).toFixed(2)} MB
           </p>
           <Button asChild>
             <a href={blobUrl} download={file.originalName}>
@@ -150,8 +151,12 @@ const FileGallery: React.FC<FileGalleryProps> = ({
     try {
       setLoading(true);
       setError(null);
-      const fileList = await fileService.getFiles(entityType, entityId, category);
-      setFiles(fileList.files);
+      const response = await fileService.listEntityFiles(entityType, entityId);
+      if (response.success && response.data) {
+        setFiles(response.data.files);
+      } else {
+        setError(response.error?.message || 'Failed to load files');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load files');
     } finally {
@@ -161,14 +166,15 @@ const FileGallery: React.FC<FileGalleryProps> = ({
 
   const handleDownload = async (file: FileMetadata) => {
     try {
-      const blobUrl = await fileService.downloadFile(file.id);
+      const blob = await fileService.downloadFile(file.id);
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = blobUrl;
+      link.href = url;
       link.download = file.originalName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Download failed:', err);
     }
@@ -319,13 +325,13 @@ const FileGallery: React.FC<FileGalleryProps> = ({
       {/* Delete Confirmation Dialog */}
       {deletingFileId && (
         <ConfirmDialog
-          isOpen={!!deletingFileId}
-          onClose={() => setDeletingFileId(null)}
+          open={!!deletingFileId}
+          onOpenChange={(open) => !open && setDeletingFileId(null)}
           onConfirm={() => handleDelete(deletingFileId)}
           title="Delete File"
           description={`Are you sure you want to delete this file? This action cannot be undone.`}
           variant="destructive"
-          confirmText="Delete"
+          confirmLabel="Delete"
         />
       )}
     </>

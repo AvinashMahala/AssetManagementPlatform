@@ -19,6 +19,7 @@ import TemplateGallery from './pages/TemplateGallery';
 import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
 import { PropertyRentCollectionPage, UnitRentCollectionPage } from './pages/rentCollection';
 import { MeterListPage, MeterCreatePage, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
+import FilesPage from './pages/FilesPage';
 import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
@@ -147,6 +148,8 @@ function App() {
               <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
+
+              <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
 
               <Route path="/meters" element={<ProtectedRoute><MeterListPage /></ProtectedRoute>} />
               <Route path="/meters/create" element={<ProtectedRoute><MeterCreatePage /></ProtectedRoute>} />

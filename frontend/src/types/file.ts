@@ -32,7 +32,14 @@ export interface FileUploadResponse {
 
 export interface FileListResponse {
   files: FileMetadata[];
-  count: number;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 export interface FileStorageStats {

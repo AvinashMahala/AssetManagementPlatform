@@ -120,6 +120,30 @@ class FileService {
   }
 
   /**
+   * List all files with optional filters
+   */
+  async listAllFiles(filters?: {
+    entityType?: string;
+    category?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiResponse<FileListResponse>> {
+    const params = new URLSearchParams();
+
+    if (filters?.entityType) params.append('entityType', filters.entityType);
+    if (filters?.category) params.append('category', filters.category);
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+
+    const queryString = params.toString();
+    const url = queryString ? `/api/files?${queryString}` : '/api/files';
+
+    return apiClient.get<FileListResponse>(url);
+  }
+
+  /**
    * Check if file is an image
    */
   isImageFile(mimeType: string): boolean {

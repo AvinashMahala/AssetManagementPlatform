@@ -152,4 +152,49 @@ export class FileController {
       });
     }
   }
+
+  async listAllFiles(req: Request, res: Response) {
+    try {
+      const {
+        entityType,
+        category,
+        search,
+        limit = '50',
+        offset = '0'
+      } = req.query;
+
+      const filters = {
+        entityType: entityType as string | undefined,
+        category: category as string | undefined,
+        search: search as string | undefined,
+        limit: parseInt(limit as string, 10),
+        offset: parseInt(offset as string, 10)
+      };
+
+      const result = await this.fileStorageService.listAllFiles(filters);
+
+      const totalPages = Math.ceil(result.total / filters.limit);
+      const currentPage = Math.floor(filters.offset / filters.limit) + 1;
+
+      res.json({
+        files: result.files,
+        pagination: {
+          total: result.total,
+          page: currentPage,
+          limit: filters.limit,
+          totalPages,
+          hasNext: currentPage < totalPages,
+          hasPrev: currentPage > 1
+        },
+        filters
+      });
+
+    } catch (error) {
+      console.error('List all files error:', error);
+      res.status(500).json({
+        error: 'Failed to list files',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
 }

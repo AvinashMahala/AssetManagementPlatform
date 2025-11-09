@@ -301,4 +301,109 @@ export class FileStorageService {
     }
     return chunks;
   }
+
+  /**
+   * List all files with optional filters
+   */
+  async listAllFiles(filters: {
+    entityType?: string;
+    category?: string;
+    search?: string;
+    limit: number;
+    offset: number;
+  }): Promise<{ files: FileRecord[]; total: number }> {
+    const client = await this.filesPool.connect();
+
+    try {
+      // First, get the total count
+      let countQuery = `
+        SELECT COUNT(*) as total
+        FROM file_metadata
+        WHERE is_deleted = FALSE
+      `;
+
+      const countParams: any[] = [];
+      const countConditions: string[] = [];
+
+      if (filters.entityType) {
+        countConditions.push(`entity_type = $${countParams.length + 1}`);
+        countParams.push(filters.entityType);
+      }
+
+      if (filters.category) {
+        countConditions.push(`category = $${countParams.length + 1}`);
+        countParams.push(filters.category);
+      }
+
+      if (filters.search) {
+        countConditions.push(`original_name ILIKE $${countParams.length + 1}`);
+        countParams.push(`%${filters.search}%`);
+      }
+
+      if (countConditions.length > 0) {
+        countQuery += ` AND ${countConditions.join(' AND ')}`;
+      }
+
+      const countResult = await client.query(countQuery, countParams);
+      const total = parseInt(countResult.rows[0].total);
+
+      // Then get the paginated results
+      let query = `
+        SELECT id, entity_type, entity_id, filename, original_name, file_size,
+               mime_type, file_hash, category, tags, uploaded_by, uploaded_at,
+               last_accessed, version
+        FROM file_metadata
+        WHERE is_deleted = FALSE
+      `;
+
+      const params: any[] = [];
+      const conditions: string[] = [];
+
+      if (filters.entityType) {
+        conditions.push(`entity_type = $${params.length + 1}`);
+        params.push(filters.entityType);
+      }
+
+      if (filters.category) {
+        conditions.push(`category = $${params.length + 1}`);
+        params.push(filters.category);
+      }
+
+      if (filters.search) {
+        conditions.push(`original_name ILIKE $${params.length + 1}`);
+        params.push(`%${filters.search}%`);
+      }
+
+      if (conditions.length > 0) {
+        query += ` AND ${conditions.join(' AND ')}`;
+      }
+
+      query += ` ORDER BY uploaded_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+      params.push(filters.limit, filters.offset);
+
+      const result = await client.query(query, params);
+
+      const files = result.rows.map(row => ({
+        id: row.id,
+        entityType: row.entity_type,
+        entityId: row.entity_id,
+        filename: row.filename,
+        originalName: row.original_name,
+        fileSize: parseInt(row.file_size),
+        mimeType: row.mime_type,
+        fileHash: row.file_hash,
+        category: row.category,
+        tags: row.tags,
+        uploadedBy: row.uploaded_by,
+        uploadedAt: row.uploaded_at,
+        lastAccessed: row.last_accessed,
+        version: parseInt(row.version)
+      }));
+
+      return { files, total };
+
+    } finally {
+      client.release();
+    }
+  }
 }

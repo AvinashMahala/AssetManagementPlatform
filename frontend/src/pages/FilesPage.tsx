@@ -1,0 +1,505 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Upload, Search, Filter, FileText, Image, Download, Trash2, Plus } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Badge } from '../components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Pagination } from '../components/ui/pagination';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { FileUpload } from '../components/files';
+import { ConfirmDialog } from '../componentDesignLibrary';
+import { fileService } from '../services';
+import { propertyService } from '../services/propertyService';
+import { tenantService } from '../services/tenantService';
+import { unitService } from '../services/unitService';
+import type { FileMetadata } from '../types/file';
+import { format } from 'date-fns';
+
+interface FileFilters {
+  entityType?: string;
+  category?: string;
+  search?: string;
+}
+
+interface EntityOption {
+  id: string;
+  name: string;
+  type: 'property' | 'unit' | 'tenant';
+}
+
+const EntitySelector: React.FC<{
+  entityType: 'property' | 'unit' | 'tenant';
+  onEntitySelect: (entity: EntityOption | null) => void;
+  selectedEntity: EntityOption | null;
+}> = ({ entityType, onEntitySelect, selectedEntity }) => {
+  const [entities, setEntities] = useState<EntityOption[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    loadEntities();
+  }, [entityType]);
+
+  const loadEntities = async () => {
+    setLoading(true);
+    try {
+      let result;
+      switch (entityType) {
+        case 'property':
+          result = await propertyService.getAll({ limit: 50 });
+          if (result.success && result.data) {
+            setEntities(result.data.map(p => ({
+              id: p.id,
+              name: `${p.name} - ${p.address.city}`,
+              type: 'property'
+            })));
+          }
+          break;
+        case 'unit':
+          result = await unitService.getAll();
+          if (result.success && result.data) {
+            setEntities(result.data.map(u => ({
+              id: u.id,
+              name: `${u.unitNumber}${u.unitName ? ` (${u.unitName})` : ''}`,
+              type: 'unit'
+            })));
+          }
+          break;
+        case 'tenant':
+          result = await tenantService.getAll();
+          if (result.success && result.data) {
+            setEntities(result.data.map(t => ({
+              id: t.id,
+              name: `${t.firstName} ${t.lastName} - ${t.email}`,
+              type: 'tenant'
+            })));
+          }
+          break;
+      }
+    } catch (error) {
+      console.error('Failed to load entities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredEntities = entities.filter(entity =>
+    entity.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        {entityType.charAt(0).toUpperCase() + entityType.slice(1)}
+      </label>
+      <Select
+        value={selectedEntity?.id || ''}
+        onValueChange={(value) => {
+          const entity = entities.find(e => e.id === value);
+          onEntitySelect(entity || null);
+        }}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder={`Select ${entityType}`} />
+        </SelectTrigger>
+        <SelectContent className="bg-white dark:bg-gray-900 border shadow-lg max-h-60">
+          <div className="p-2">
+            <Input
+              placeholder={`Search ${entityType}s...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="mb-2"
+            />
+          </div>
+          {loading ? (
+            <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
+          ) : filteredEntities.length === 0 ? (
+            <div className="p-4 text-center text-sm text-gray-500">No {entityType}s found</div>
+          ) : (
+            filteredEntities.map((entity) => (
+              <SelectItem key={entity.id} value={entity.id}>
+                {entity.name}
+              </SelectItem>
+            ))
+          )}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
+const FilesPage: React.FC = () => {
+  const [files, setFiles] = useState<FileMetadata[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FileFilters>({});
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [selectedEntityType, setSelectedEntityType] = useState<'property' | 'unit' | 'tenant' | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<EntityOption | null>(null);
+  const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+
+  const loadFiles = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fileService.listAllFiles({
+        ...filters,
+        limit: 100 // Load more files for the centralized view
+      });
+
+      if (response.success && response.data) {
+        setFiles(response.data.files);
+      } else {
+        setError(response.error?.message || 'Failed to load files');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load files');
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    loadFiles();
+  }, [loadFiles]);
+
+  const handleFilterChange = (key: keyof FileFilters, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value || undefined
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+  };
+
+  const handleFileUploaded = (file: FileMetadata) => {
+    setFiles(prev => [file, ...prev]);
+    setShowUploadDialog(false);
+    setSelectedEntity(null);
+  };
+
+  const handleFileDeleted = (fileId: string) => {
+    setFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      await fileService.deleteFile(fileId);
+      handleFileDeleted(fileId);
+    } catch (err) {
+      console.error('Delete failed:', err);
+    } finally {
+      setDeletingFileId(null);
+    }
+  };
+
+  const getFileIcon = (file: FileMetadata) => {
+    if (file.mimeType.startsWith('image/')) return <Image className="h-6 w-6 text-blue-500" />;
+    if (file.mimeType === 'application/pdf') return <FileText className="h-6 w-6 text-red-500" />;
+    return <FileText className="h-6 w-6 text-gray-500" />;
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getEntityTypeLabel = (entityType: string) => {
+    switch (entityType) {
+      case 'property': return 'Property';
+      case 'unit': return 'Unit';
+      case 'tenant': return 'Tenant';
+      default: return entityType;
+    }
+  };
+
+  const getCategoryLabel = (category?: string) => {
+    if (!category) return 'General';
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  };
+
+  return (
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Files</h1>
+            <p className="text-gray-600 mt-1">
+              Centralized file management for all documents and media
+            </p>
+          </div>
+          <Button onClick={() => setShowUploadDialog(true)} className="flex items-center space-x-2">
+            <Plus className="h-4 w-4" />
+            <span>Upload Files</span>
+          </Button>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Filter className="h-5 w-5" />
+              <span>Filters</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Search
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search files..."
+                    value={filters.search || ''}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Entity Type
+                </label>
+                <Select
+                  value={filters.entityType || ''}
+                  onValueChange={(value) => handleFilterChange('entityType', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All types" />
+                  </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-gray-900 border shadow-lg">
+                  <SelectItem value="property">Property</SelectItem>
+                  <SelectItem value="unit">Unit</SelectItem>
+                  <SelectItem value="tenant">Tenant</SelectItem>
+                </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <Select
+                  value={filters.category || ''}
+                  onValueChange={(value) => handleFilterChange('category', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="photo">Photo</SelectItem>
+                    <SelectItem value="document">Document</SelectItem>
+                    <SelectItem value="contract">Contract</SelectItem>
+                    <SelectItem value="receipt">Receipt</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* File Gallery */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Files ({files.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-red-500 mb-4">{error}</p>
+                <Button onClick={loadFiles}>Retry</Button>
+              </div>
+            ) : files.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No files found</h3>
+                <p className="text-gray-500 mb-4">
+                  {Object.keys(filters).some(key => filters[key as keyof FileFilters]) ?
+                    'Try adjusting your filters or upload some files.' :
+                    'Upload your first file to get started.'}
+                </p>
+                <Button onClick={() => setShowUploadDialog(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Files
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {files.map((file) => (
+                  <Card key={file.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          {getFileIcon(file)}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium truncate text-sm" title={file.originalName}>
+                              {file.originalName}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(file.fileSize)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <Badge variant="outline" className="text-xs">
+                            {getEntityTypeLabel(file.entityType)}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {getCategoryLabel(file.category)}
+                          </Badge>
+                        </div>
+
+                        <p className="text-xs text-gray-500">
+                          {format(new Date(file.uploadedAt), 'MMM dd, yyyy')}
+                        </p>
+
+                        <div className="flex space-x-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
+                            className="flex-1 text-xs"
+                          >
+                            <Download className="h-3 w-3 mr-1" />
+                            Download
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeletingFileId(file.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Upload Dialog */}
+        <Dialog open={showUploadDialog} onOpenChange={(open) => {
+          setShowUploadDialog(open);
+          if (!open) {
+            setSelectedEntityType(null);
+            setSelectedEntity(null);
+          }
+        }}>
+          <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 border shadow-xl">
+            <DialogHeader>
+              <DialogTitle>Upload Files</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Select the entity type and ID to upload files to, or choose to upload general files.
+              </p>
+
+              <Tabs defaultValue="entity" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="entity">Upload to Entity</TabsTrigger>
+                  <TabsTrigger value="general">General Upload</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="entity" className="space-y-4 bg-white dark:bg-gray-900">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Entity Type
+                      </label>
+                      <Select onValueChange={(value) => {
+                        setSelectedEntityType(value as 'property' | 'unit' | 'tenant');
+                        setSelectedEntity(null); // Clear selection when type changes
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-gray-900 border shadow-lg">
+                          <SelectItem value="property">Property</SelectItem>
+                          <SelectItem value="unit">Unit</SelectItem>
+                          <SelectItem value="tenant">Tenant</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {selectedEntityType && (
+                      <EntitySelector
+                        entityType={selectedEntityType}
+                        onEntitySelect={setSelectedEntity}
+                        selectedEntity={selectedEntity}
+                      />
+                    )}
+                  </div>
+
+                  {selectedEntity && (
+                    <FileUpload
+                      entityType={selectedEntity.type}
+                      entityId={selectedEntity.id}
+                      onUploadSuccess={handleFileUploaded}
+                      onUploadError={(error) => console.error('Upload error:', error)}
+                    />
+                  )}
+                </TabsContent>
+
+                <TabsContent value="general" className="space-y-4 bg-white dark:bg-gray-900">
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>General file upload coming soon...</p>
+                    <p className="text-sm">For now, please upload files to specific entities.</p>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation */}
+        {deletingFileId && (
+          <ConfirmDialog
+            open={!!deletingFileId}
+            onOpenChange={(open) => !open && setDeletingFileId(null)}
+            onConfirm={() => handleDeleteFile(deletingFileId)}
+            title="Delete File"
+            description="Are you sure you want to delete this file? This action cannot be undone."
+            variant="destructive"
+            confirmLabel="Delete"
+          />
+        )}
+      </div>
+    </AppLayout>
+  );
+};
+
+export default FilesPage;
