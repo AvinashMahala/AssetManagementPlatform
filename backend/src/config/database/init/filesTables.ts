@@ -5,16 +5,16 @@ export const initializeFilesTables = async (pool: Pool) => {
     // File metadata table
     await pool.query(`CREATE TABLE IF NOT EXISTS file_metadata (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      entity_type VARCHAR(50) NOT NULL, -- 'property', 'unit', 'tenant', 'document'
-      entity_id UUID NOT NULL, -- Foreign key to main database
+      entity_type VARCHAR(50), -- 'property', 'unit', 'tenant', 'general' (nullable for general files)
+      entity_id UUID, -- Foreign key to main database (nullable for general files)
       filename VARCHAR(255) NOT NULL,
       original_name VARCHAR(255) NOT NULL,
       file_size BIGINT NOT NULL,
       mime_type VARCHAR(100) NOT NULL,
       file_hash VARCHAR(128), -- SHA-256 for integrity
-      category VARCHAR(50), -- 'photo', 'document', 'contract', 'receipt'
+      category VARCHAR(50), -- 'photo', 'document', 'contract', 'receipt', 'general'
       tags TEXT[], -- Array of tags for searching
-      uploaded_by UUID NOT NULL,
+      uploaded_by UUID,
       uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
       last_accessed TIMESTAMP WITH TIME ZONE,
       is_deleted BOOLEAN DEFAULT FALSE,

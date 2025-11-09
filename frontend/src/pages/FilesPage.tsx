@@ -8,8 +8,10 @@ import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Pagination } from '../components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { FileUpload } from '../components/files';
 import { ConfirmDialog } from '../componentDesignLibrary';
+import { AppLayout } from '../components/layout/AppLayout';
 import { fileService } from '../services';
 import { propertyService } from '../services/propertyService';
 import { tenantService } from '../services/tenantService';
@@ -38,11 +40,7 @@ const EntitySelector: React.FC<{
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    loadEntities();
-  }, [entityType]);
-
-  const loadEntities = async () => {
+  const loadEntities = useCallback(async () => {
     setLoading(true);
     try {
       let result;
@@ -83,7 +81,11 @@ const EntitySelector: React.FC<{
     } finally {
       setLoading(false);
     }
-  };
+  }, [entityType]);
+
+  useEffect(() => {
+    loadEntities();
+  }, [loadEntities]);
 
   const filteredEntities = entities.filter(entity =>
     entity.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -139,6 +141,9 @@ const FilesPage: React.FC = () => {
   const [selectedEntityType, setSelectedEntityType] = useState<'property' | 'unit' | 'tenant' | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<EntityOption | null>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [totalFiles, setTotalFiles] = useState(0);
 
   const loadFiles = useCallback(async () => {
     try {
@@ -146,11 +151,13 @@ const FilesPage: React.FC = () => {
       setError(null);
       const response = await fileService.listAllFiles({
         ...filters,
-        limit: 100 // Load more files for the centralized view
+        offset: (currentPage - 1) * pageSize,
+        limit: pageSize
       });
 
       if (response.success && response.data) {
         setFiles(response.data.files);
+        setTotalFiles(response.data.pagination.total);
       } else {
         setError(response.error?.message || 'Failed to load files');
       }
@@ -159,7 +166,7 @@ const FilesPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, currentPage, pageSize]);
 
   useEffect(() => {
     loadFiles();
@@ -172,18 +179,25 @@ const FilesPage: React.FC = () => {
     }));
   };
 
-  const clearFilters = () => {
-    setFilters({});
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const handleFileUploaded = (file: FileMetadata) => {
-    setFiles(prev => [file, ...prev]);
+  const clearFilters = () => {
+    setFilters({});
+    setCurrentPage(1); // Reset to first page when clearing filters
+  };
+
+  const handleFileUploaded = (_file: FileMetadata) => {
+    // Refresh the current page to show updated results and total count
+    loadFiles();
     setShowUploadDialog(false);
     setSelectedEntity(null);
   };
 
-  const handleFileDeleted = (fileId: string) => {
-    setFiles(prev => prev.filter(f => f.id !== fileId));
+  const handleFileDeleted = (_fileId: string) => {
+    // Refresh the current page to show updated results and total count
+    loadFiles();
   };
 
   const handleDeleteFile = async (fileId: string) => {
@@ -211,7 +225,8 @@ const FilesPage: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getEntityTypeLabel = (entityType: string) => {
+  const getEntityTypeLabel = (entityType?: string) => {
+    if (!entityType) return 'General';
     switch (entityType) {
       case 'property': return 'Property';
       case 'unit': return 'Unit';
@@ -271,17 +286,18 @@ const FilesPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Entity Type
                 </label>
-                <Select
-                  value={filters.entityType || ''}
-                  onValueChange={(value) => handleFilterChange('entityType', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All types" />
-                  </SelectTrigger>
+                  <Select
+                    value={filters.entityType || ''}
+                    onValueChange={(value) => handleFilterChange('entityType', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All types" />
+                    </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-gray-900 border shadow-lg">
                   <SelectItem value="property">Property</SelectItem>
                   <SelectItem value="unit">Unit</SelectItem>
                   <SelectItem value="tenant">Tenant</SelectItem>
+                  <SelectItem value="general">General</SelectItem>
                 </SelectContent>
                 </Select>
               </div>
@@ -320,10 +336,10 @@ const FilesPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* File Gallery */}
+        {/* File Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Files ({files.length})</CardTitle>
+            <CardTitle>Files ({totalFiles})</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -350,62 +366,94 @@ const FilesPage: React.FC = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {files.map((file) => (
-                  <Card key={file.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          {getFileIcon(file)}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium truncate text-sm" title={file.originalName}>
-                              {file.originalName}
-                            </h4>
-                            <p className="text-xs text-gray-500">
-                              {formatFileSize(file.fileSize)}
-                            </p>
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Size</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Entity</TableHead>
+                      <TableHead>Uploaded</TableHead>
+                      <TableHead className="w-24">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {files.map((file) => (
+                      <TableRow key={file.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            {getFileIcon(file)}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate text-sm" title={file.originalName}>
+                                {file.originalName}
+                              </p>
+                              <p className="text-xs text-gray-500 truncate" title={file.filename}>
+                                {file.filename}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs">
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="outline" className="text-xs">
-                            {getEntityTypeLabel(file.entityType)}
+                            {file.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {formatFileSize(file.fileSize)}
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="secondary" className="text-xs">
                             {getCategoryLabel(file.category)}
                           </Badge>
-                        </div>
-
-                        <p className="text-xs text-gray-500">
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {getEntityTypeLabel(file.entityType)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
                           {format(new Date(file.uploadedAt), 'MMM dd, yyyy')}
-                        </p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
+                              className="h-8 w-8 p-0"
+                              title="Download"
+                            >
+                              <Download className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setDeletingFileId(file.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
 
-                        <div className="flex space-x-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
-                            className="flex-1 text-xs"
-                          >
-                            <Download className="h-3 w-3 mr-1" />
-                            Download
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setDeletingFileId(file.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                {/* Pagination */}
+                {totalFiles > pageSize && (
+                  <div className="flex justify-center mt-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={Math.ceil(totalFiles / pageSize)}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -474,10 +522,18 @@ const FilesPage: React.FC = () => {
                 </TabsContent>
 
                 <TabsContent value="general" className="space-y-4 bg-white dark:bg-gray-900">
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>General file upload coming soon...</p>
-                    <p className="text-sm">For now, please upload files to specific entities.</p>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Upload general files that are not associated with specific properties, units, or tenants.
+                      </p>
+                    </div>
+
+                    <FileUpload
+                      category="general"
+                      onUploadSuccess={handleFileUploaded}
+                      onUploadError={(error) => console.error('Upload error:', error)}
+                    />
                   </div>
                 </TabsContent>
               </Tabs>

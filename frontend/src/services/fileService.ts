@@ -18,8 +18,14 @@ class FileService {
   ): Promise<ApiResponse<FileUploadResponse>> {
     const formData = new FormData();
     formData.append('file', request.file);
-    formData.append('entityType', request.entityType);
-    formData.append('entityId', request.entityId);
+
+    if (request.entityType) {
+      formData.append('entityType', request.entityType);
+    }
+
+    if (request.entityId) {
+      formData.append('entityId', request.entityId);
+    }
 
     if (request.category) {
       formData.append('category', request.category);
@@ -27,6 +33,10 @@ class FileService {
 
     if (request.tags && request.tags.length > 0) {
       formData.append('tags', request.tags.join(','));
+    }
+
+    if (request.customName) {
+      formData.append('customName', request.customName);
     }
 
     // For file uploads, we need to use fetch directly to handle FormData

@@ -10,19 +10,14 @@ export class FileController {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const { entityType, entityId, category, tags } = req.body;
+      const { entityType, entityId, category, tags, customName } = req.body;
 
-      if (!entityType || !entityId) {
-        return res.status(400).json({
-          error: 'entityType and entityId are required'
-        });
-      }
-
+      // entityType and entityId are optional for general uploads
       const metadata: FileMetadata = {
-        entityType,
-        entityId,
+        entityType: entityType || undefined,
+        entityId: entityId || undefined,
         filename: `${Date.now()}-${req.file.originalname}`,
-        originalName: req.file.originalname,
+        originalName: customName || req.file.originalname,
         mimeType: req.file.mimetype,
         category: category || 'document',
         tags: tags ? tags.split(',') : [],

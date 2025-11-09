@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 
 export interface FileMetadata {
-  entityType: string;
-  entityId: string;
+  entityType?: string; // Optional for general files
+  entityId?: string; // Optional for general files
   filename: string;
   originalName: string;
   mimeType: string;
@@ -15,8 +15,8 @@ export interface FileMetadata {
 
 export interface FileRecord {
   id: string;
-  entityType: string;
-  entityId: string;
+  entityType?: string; // Optional for general files
+  entityId?: string; // Optional for general files
   filename: string;
   originalName: string;
   fileSize: number;
@@ -58,8 +58,8 @@ export class FileStorageService {
         RETURNING id
       `, [
         fileId,
-        metadata.entityType,
-        metadata.entityId,
+        metadata.entityType || null,
+        metadata.entityId || null,
         metadata.filename,
         metadata.originalName,
         fileBuffer.length,

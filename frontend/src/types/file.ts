@@ -1,8 +1,8 @@
 // File-related type definitions
 export interface FileMetadata {
   id: string;
-  entityType: string;
-  entityId: string;
+  entityType?: string; // Optional for general files
+  entityId?: string; // Optional for general files
   filename: string;
   originalName: string;
   fileSize: number;
@@ -18,10 +18,11 @@ export interface FileMetadata {
 
 export interface FileUploadRequest {
   file: File;
-  entityType: string;
-  entityId: string;
+  entityType?: string; // Optional for general uploads
+  entityId?: string; // Optional for general uploads
   category?: string;
   tags?: string[];
+  customName?: string; // Custom display name for the file
 }
 
 export interface FileUploadResponse {

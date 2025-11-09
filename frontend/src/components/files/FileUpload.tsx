@@ -1,15 +1,16 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Upload, X, File, Image, FileText, Video, Archive, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, X, File, Image, FileText, Video, Archive, AlertCircle, CheckCircle, Edit3, Check, RotateCcw } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
+import { Input } from '../ui/input';
 import { fileService } from '../../services';
 import type { FileUploadRequest, FileMetadata } from '../../types/file';
 
 interface FileUploadProps {
-  entityType: 'property' | 'unit' | 'tenant';
-  entityId: string;
+  entityType?: 'property' | 'unit' | 'tenant'; // Optional for general uploads
+  entityId?: string; // Optional for general uploads
   category?: string;
   onUploadSuccess?: (file: FileMetadata) => void;
   onUploadError?: (error: string) => void;
@@ -22,8 +23,10 @@ interface FileUploadProps {
 interface UploadProgress {
   file: File;
   progress: number;
-  status: 'uploading' | 'success' | 'error';
+  status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
+  customName?: string;
+  isEditingName?: boolean;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -78,7 +81,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     return null;
   };
 
-  const handleFiles = useCallback(async (files: FileList | null) => {
+  const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
@@ -105,24 +108,105 @@ const FileUpload: React.FC<FileUploadProps> = ({
       return;
     }
 
-    // Initialize upload progress
-    const initialUploads: UploadProgress[] = validFiles.map(file => ({
+    // Add files to queue with pending status
+    const pendingUploads: UploadProgress[] = validFiles.map(file => ({
       file,
       progress: 0,
-      status: 'uploading'
+      status: 'pending',
+      customName: file.name // Default to original filename
     }));
 
-    setUploads(prev => [...prev, ...initialUploads]);
+    setUploads(prev => [...prev, ...pendingUploads]);
+  }, [maxFileSize, acceptedTypes, multiple, onUploadError]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    handleFiles(e.dataTransfer.files);
+  }, [handleFiles]);
+
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFiles(e.target.files);
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [handleFiles]);
+
+  const removeUpload = (file: File) => {
+    setUploads(prev => prev.filter(u => u.file !== file));
+  };
+
+  const startEditingName = (file: File) => {
+    setUploads(prev => prev.map(u =>
+      u.file === file
+        ? { ...u, isEditingName: true }
+        : u
+    ));
+  };
+
+  const saveCustomName = (file: File, newName: string) => {
+    setUploads(prev => prev.map(u =>
+      u.file === file
+        ? { ...u, customName: newName, isEditingName: false }
+        : u
+    ));
+  };
+
+  const cancelEditingName = (file: File) => {
+    setUploads(prev => prev.map(u =>
+      u.file === file
+        ? { ...u, isEditingName: false }
+        : u
+    ));
+  };
+
+  const resetToOriginalName = (file: File) => {
+    setUploads(prev => prev.map(u =>
+      u.file === file
+        ? { ...u, customName: file.name }
+        : u
+    ));
+  };
+
+  const retryUpload = (file: File) => {
+    setUploads(prev => prev.map(u =>
+      u.file === file
+        ? { ...u, status: 'pending', error: undefined, progress: 0 }
+        : u
+    ));
+  };
+
+  const startUpload = useCallback(async () => {
+    const pendingUploads = uploads.filter(u => u.status === 'pending');
+    if (pendingUploads.length === 0) return;
+
     setIsUploading(true);
 
+    // Update status to uploading
+    setUploads(prev => prev.map(u =>
+      u.status === 'pending' ? { ...u, status: 'uploading' } : u
+    ));
+
     // Upload files
-    for (const upload of initialUploads) {
+    for (const upload of pendingUploads) {
       try {
         const uploadRequest: FileUploadRequest = {
           file: upload.file,
-          entityType,
-          entityId,
+          entityType: entityType || undefined,
+          entityId: entityId || undefined,
           category,
+          customName: upload.customName
         };
 
         const result = await fileService.uploadFile(uploadRequest);
@@ -158,38 +242,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
 
     setIsUploading(false);
-  }, [entityType, entityId, category, maxFileSize, acceptedTypes, multiple, onUploadSuccess, onUploadError]);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
-
-  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFiles(e.target.files);
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  }, [handleFiles]);
-
-  const removeUpload = (file: File) => {
-    setUploads(prev => prev.filter(u => u.file !== file));
-  };
+  }, [uploads, entityType, entityId, category, onUploadSuccess, onUploadError]);
 
   const clearCompleted = () => {
-    setUploads(prev => prev.filter(u => u.status === 'uploading'));
+    setUploads(prev => prev.filter(u => u.status !== 'success' && u.status !== 'error'));
   };
 
   return (
@@ -236,15 +292,28 @@ const FileUpload: React.FC<FileUploadProps> = ({
       {uploads.length > 0 && (
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium">Upload Progress</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearCompleted}
-              disabled={isUploading}
-            >
-              Clear Completed
-            </Button>
+            <h3 className="font-medium">
+              Files Ready to Upload ({uploads.filter(u => u.status === 'pending').length} pending)
+            </h3>
+            <div className="flex space-x-2">
+              {uploads.some(u => u.status === 'pending') && (
+                <Button
+                  onClick={startUpload}
+                  disabled={isUploading}
+                  size="sm"
+                >
+                  {isUploading ? 'Uploading...' : 'Start Upload'}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearCompleted}
+                disabled={isUploading}
+              >
+                Clear Completed
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -256,19 +325,89 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium truncate">
-                      {upload.file.name}
-                    </p>
+                    {upload.isEditingName ? (
+                      <div className="flex items-center space-x-2 flex-1">
+                        <Input
+                          value={upload.customName || ''}
+                          onChange={(e) => {
+                            setUploads(prev => prev.map(u =>
+                              u.file === upload.file
+                                ? { ...u, customName: e.target.value }
+                                : u
+                            ));
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              saveCustomName(upload.file, upload.customName || upload.file.name);
+                            } else if (e.key === 'Escape') {
+                              cancelEditingName(upload.file);
+                            }
+                          }}
+                          className="flex-1 text-sm"
+                          placeholder="Enter filename..."
+                          autoFocus
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => saveCustomName(upload.file, upload.customName || upload.file.name)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Check className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => cancelEditingName(upload.file)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium truncate">
+                          {upload.customName || upload.file.name}
+                        </p>
+                        <div className="flex items-center space-x-1 ml-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditingName(upload.file)}
+                            className="h-6 w-6 p-0"
+                            title="Rename file"
+                            disabled={upload.status === 'uploading'}
+                          >
+                            <Edit3 className="h-3 w-3" />
+                          </Button>
+                          {upload.customName !== upload.file.name && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => resetToOriginalName(upload.file)}
+                              className="h-6 w-6 p-0"
+                              title="Reset to original name"
+                              disabled={upload.status === 'uploading'}
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </>
+                    )}
                     <Badge
                       variant={
                         upload.status === 'success' ? 'default' :
-                        upload.status === 'error' ? 'destructive' : 'secondary'
+                        upload.status === 'error' ? 'destructive' :
+                        upload.status === 'pending' ? 'outline' : 'secondary'
                       }
                       className="ml-2"
                     >
                       {upload.status === 'success' && <CheckCircle className="h-3 w-3 mr-1" />}
                       {upload.status === 'error' && <AlertCircle className="h-3 w-3 mr-1" />}
-                      {upload.status}
+                      {upload.status === 'pending' ? 'Ready' :
+                       upload.status === 'uploading' ? 'Uploading' :
+                       upload.status}
                     </Badge>
                   </div>
 
@@ -291,12 +430,24 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   )}
 
                   {upload.status === 'error' && upload.error && (
-                    <Alert className="mt-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="text-xs">
-                        {upload.error}
-                      </AlertDescription>
-                    </Alert>
+                    <div className="mt-2 space-y-2">
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                          {upload.error}
+                        </AlertDescription>
+                      </Alert>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => retryUpload(upload.file)}
+                        className="w-full"
+                        disabled={isUploading}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Retry Upload
+                      </Button>
+                    </div>
                   )}
                 </div>
 
