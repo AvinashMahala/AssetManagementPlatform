@@ -6,16 +6,22 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { useTenants } from '../../hooks/useTenants';
+import { useProperties } from '../../hooks';
 
 const TenantListPage: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [propertyFilter, setPropertyFilter] = useState('');
   const { tenants, loading } = useTenants();
+  const { properties: availableProperties, loading: propertiesLoading } = useProperties();
 
-  const filteredTenants = tenants.filter(t =>
-    `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTenants = tenants.filter(t => {
+    const matchesSearch = `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(search.toLowerCase());
+    const matchesProperty = !propertyFilter || t.currentPropertyId === propertyFilter;
+    return matchesSearch && matchesProperty;
+  });
 
   const activeCount = tenants.filter(t => t.status === 'active').length;
   const inactiveCount = tenants.filter(t => t.status !== 'active').length;
@@ -56,6 +62,21 @@ const TenantListPage: React.FC = () => {
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Search tenants..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
+            <div className="w-64">
+              <Select value={propertyFilter} onValueChange={setPropertyFilter}>
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Filter by property"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Properties</SelectItem>
+                  {availableProperties?.map((property) => (
+                    <SelectItem key={property.id} value={property.id}>
+                      {property.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -65,7 +86,7 @@ const TenantListPage: React.FC = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Occupation</TableHead>
+                <TableHead>Property</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -78,24 +99,27 @@ const TenantListPage: React.FC = () => {
               ) : filteredTenants.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    {search ? 'No tenants found matching your search.' : 'No tenants found. Click "Add Tenant" to create one.'}
+                    {search || propertyFilter ? 'No tenants found matching your filters.' : 'No tenants found. Click "Add Tenant" to create one.'}
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredTenants.map((tenant) => (
-                  <TableRow key={tenant.id}>
-                    <TableCell className="font-medium">{tenant.firstName} {tenant.lastName}</TableCell>
-                    <TableCell>{tenant.email}</TableCell>
-                    <TableCell>{tenant.phone}</TableCell>
-                    <TableCell>{tenant.occupation}</TableCell>
-                    <TableCell>
-                      <Badge variant={tenant.status === 'active' ? 'success' : 'default'}>{tenant.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/tenants/${tenant.id}`)}>View</Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredTenants.map((tenant) => {
+                  const propertyName = availableProperties?.find(p => p.id === tenant.currentPropertyId)?.name || 'N/A';
+                  return (
+                    <TableRow key={tenant.id}>
+                      <TableCell className="font-medium">{tenant.firstName} {tenant.lastName}</TableCell>
+                      <TableCell>{tenant.email}</TableCell>
+                      <TableCell>{tenant.phone}</TableCell>
+                      <TableCell>{propertyName}</TableCell>
+                      <TableCell>
+                        <Badge variant={tenant.status === 'active' ? 'success' : 'default'}>{tenant.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/tenants/${tenant.id}`)}>View</Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

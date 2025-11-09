@@ -6,6 +6,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Badge } from '../../components/ui/badge';
 import { BaseForm, FormColumn, FormField } from '../../componentDesignLibrary';
+import { useProperties } from '../../hooks';
 import type { UnitInput } from '../../types/unit';
 import { UnitStatus, UnitType } from '../../types/unit';
 
@@ -13,7 +14,6 @@ interface UnitFormModernProps {
   initialData?: Partial<UnitInput>;
   onSubmit: (data: UnitInput) => Promise<void>;
   loading?: boolean;
-  properties?: Array<{ id: string; name: string }>;
 }
 
 const COMMON_AMENITIES = [
@@ -24,10 +24,10 @@ const COMMON_AMENITIES = [
 const UnitFormModern: React.FC<UnitFormModernProps> = ({
   initialData,
   onSubmit,
-  loading,
-  properties = []
+  loading
 }) => {
   const navigate = useNavigate();
+  const { properties: availableProperties, loading: propertiesLoading } = useProperties();
   const [formData, setFormData] = useState<UnitInput>({
     propertyId: initialData?.propertyId || '',
     unitNumber: initialData?.unitNumber || '',
@@ -107,21 +107,19 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
           <Select
             value={formData.propertyId}
             onValueChange={(value) => handleChange('propertyId', value)}
+            disabled={propertiesLoading}
           >
             <SelectTrigger error={errors.propertyId} className="h-10">
-              <SelectValue placeholder="Select a property" />
+              <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
             </SelectTrigger>
             <SelectContent>
-              {properties.map(property => (
+              {availableProperties?.map((property) => (
                 <SelectItem key={property.id} value={property.id}>
                   {property.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {errors.propertyId && (
-            <p className="text-sm text-red-600 mt-1">{errors.propertyId}</p>
-          )}
         </FormField>
 
         <FormField label="Unit Number" required>
