@@ -481,6 +481,59 @@ export const initializeTables = async (pool: Pool) => {
   pool.query(`CREATE INDEX IF NOT EXISTS idx_receipts_receipt_number ON receipts(receipt_number)`, (err) => {
     if (err) console.error('Error creating receipts number index', err);
   });
+
+  // Expenses table
+  pool.query(`CREATE TABLE IF NOT EXISTS expenses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    property_id UUID NOT NULL REFERENCES properties(id),
+    unit_id UUID REFERENCES units(id),
+    type VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    frequency VARCHAR(50) DEFAULT 'one_time',
+    start_date DATE NOT NULL,
+    end_date DATE,
+    distribution VARCHAR(50) DEFAULT 'owner_only',
+    affected_unit_ids JSONB,
+    bill_photo_url TEXT,
+    status VARCHAR(50) DEFAULT 'active',
+    is_active BOOLEAN DEFAULT true,
+    created_by UUID NOT NULL REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating expenses table', err);
+    } else {
+      console.log('Expenses table ready');
+    }
+  });
+
+  // Create indexes for expenses table
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_expenses_property_id ON expenses(property_id)`, (err) => {
+    if (err) console.error('Error creating expenses property index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_expenses_unit_id ON expenses(unit_id)`, (err) => {
+    if (err) console.error('Error creating expenses unit index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_expenses_type ON expenses(type)`, (err) => {
+    if (err) console.error('Error creating expenses type index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_expenses_status ON expenses(status)`, (err) => {
+    if (err) console.error('Error creating expenses status index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_expenses_start_date ON expenses(start_date)`, (err) => {
+    if (err) console.error('Error creating expenses date index', err);
+  });
+
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_expenses_is_active ON expenses(is_active)`, (err) => {
+    if (err) console.error('Error creating expenses active index', err);
+  });
   } catch (error) {
     console.error('Error initializing main tables:', error);
     throw error;

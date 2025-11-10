@@ -44,6 +44,8 @@ import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
 import { UnitUtilityController } from './src/controllers/UnitUtilityController.js';
 import { createUnitUtilityRoutes } from './src/routes/unitUtilityRoutes.js';
 import { createFileRoutes } from './src/routes/fileRoutes.js';
+import { ExpenseController } from './src/controllers/ExpenseController.js';
+import { createExpenseRoutes } from './src/routes/expenseRoutes.js';
 import { DependencyContainer } from './src/utils/DependencyContainer.js';
 
 // Setup global process error handlers
@@ -81,6 +83,7 @@ const meterReadingService = container.meterReadingService;
 const receiptService = container.receiptService;
 const receiptTemplateService = container.receiptTemplateService;
 const unitUtilityService = container.unitUtilityService;
+const expenseService = container.expenseService;
 
 // Create controllers with injected services
 const propertyController = new PropertyController(propertyService);
@@ -95,6 +98,7 @@ const meterController = new MeterController(meterService, meterReadingService);
 const receiptController = new ReceiptController(receiptService);
 const receiptTemplateController = new ReceiptTemplateController(receiptTemplateService);
 const unitUtilityController = new UnitUtilityController(unitUtilityService);
+const expenseController = new ExpenseController(expenseService);
 
 import { specs } from './src/config/swagger/index.js';
 import { swaggerUiOptions } from './src/config/swagger/index.js';
@@ -207,6 +211,7 @@ app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
 app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
 app.use('/api', createTemplateRoutes(mainPool, userService));
 app.use('/api', createUnitUtilityRoutes(unitUtilityController, userService));
+app.use('/api/expenses', createExpenseRoutes(expenseController, userService));
 app.use('/api/files', createFileRoutes(mainPool, filesPool));
 
 // Error handling middleware (must be last)

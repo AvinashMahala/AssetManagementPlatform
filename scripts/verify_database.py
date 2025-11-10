@@ -291,6 +291,30 @@ class DatabaseVerifier:
                 },
                 'constraints': ['meter_readings_pkey', 'meter_readings_meter_id_fkey', 'meter_readings_recorded_by_fkey'],
                 'expected_count': 0  # Currently not seeded
+            },
+            'expenses': {
+                'columns': {
+                    'id': 'uuid',
+                    'property_id': 'uuid',
+                    'unit_id': 'uuid',
+                    'type': 'character varying',
+                    'description': 'text',
+                    'amount': 'numeric',
+                    'frequency': 'character varying',
+                    'start_date': 'date',
+                    'end_date': 'date',
+                    'distribution': 'character varying',
+                    'affected_unit_ids': 'jsonb',
+                    'bill_photo_url': 'text',
+                    'status': 'character varying',
+                    'is_active': 'boolean',
+                    'created_by': 'uuid',
+                    'updated_by': 'uuid',
+                    'created_at': 'timestamp without time zone',
+                    'updated_at': 'timestamp without time zone'
+                },
+                'constraints': ['expenses_pkey', 'expenses_property_id_fkey', 'expenses_unit_id_fkey', 'expenses_created_by_fkey', 'expenses_updated_by_fkey'],
+                'expected_count': 10  # Sample expenses seeded
             }
         }
 
