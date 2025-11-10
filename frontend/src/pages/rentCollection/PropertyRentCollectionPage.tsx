@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, FileText, DollarSign, Receipt, AlertCircle, CheckCircle, Clock, Home, Calendar } from 'lucide-react';
+import { ArrowLeft, Plus, FileText, DollarSign, Receipt, AlertCircle, CheckCircle, Clock, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { AppLayout } from '../../components/layout';
 import { useProperty, useUnits, useRentTransactions } from '../../hooks';
 import { formatCurrency, formatMonthYear } from '../../utils/billingCalculations';
+import { RentCollectionCalendar } from '../../components/rentCollection/RentCollectionCalendar';
 
 export const PropertyRentCollectionPage: React.FC = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
@@ -21,6 +22,11 @@ export const PropertyRentCollectionPage: React.FC = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
+
+  const [billingMethod, setBillingMethod] = useState<'relative' | 'fixed'>('relative');
+
+  // Convert selectedMonth to Date for calendar
+  const selectedDate = new Date(selectedMonth + '-01');
 
   // Filter units for this property
   const propertyUnits = units.filter(u => u.propertyId === propertyId);
@@ -110,6 +116,21 @@ export const PropertyRentCollectionPage: React.FC = () => {
       .reduce((sum, t) => sum + (t.newBalance || 0), 0),
   };
 
+  // Prepare calendar transaction data
+  const calendarTransactions = transactions
+    .filter(t => t.propertyId === propertyId)
+    .map(t => ({
+      id: t.id,
+      unitId: t.unitId,
+      unitNumber: propertyUnits.find(u => u.id === t.unitId)?.unitNumber || 'Unknown',
+      amount: t.totalAmount,
+      amountPaid: t.amountPaid || 0,
+      status: t.status,
+      billingPeriodStart: t.billingPeriodStart,
+      billingPeriodEnd: t.billingPeriodEnd,
+      dueDate: t.billingPeriodEnd
+    }));
+
   const handleCollectRent = (unitId: string) => {
     navigate(`/properties/${propertyId}/units/${unitId}/collect-rent`);
   };
@@ -124,6 +145,16 @@ export const PropertyRentCollectionPage: React.FC = () => {
 
   const handleViewReceipt = (transactionId: string) => {
     navigate(`/rent-transactions/${transactionId}/receipt`);
+  };
+
+  const handleCalendarDateSelect = (date: Date) => {
+    const monthString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    setSelectedMonth(monthString);
+  };
+
+  const handleCalendarTransactionClick = (transaction: any) => {
+    // Navigate to the specific unit's rent collection page
+    navigate(`/properties/${propertyId}/units/${transaction.unitId}/collect-rent`);
   };
 
   if (propertyLoading || unitsLoading || transactionsLoading) {
@@ -165,17 +196,6 @@ export const PropertyRentCollectionPage: React.FC = () => {
             </Button>
             <h1 className="text-3xl font-bold text-gray-900">Rent Collection</h1>
             <p className="mt-2 text-gray-600">{property.name}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-600" />
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-              />
-            </div>
           </div>
         </div>
 
@@ -225,6 +245,16 @@ export const PropertyRentCollectionPage: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Rent Collection Calendar */}
+        <RentCollectionCalendar
+          transactions={calendarTransactions}
+          selectedDate={selectedDate}
+          onDateSelect={handleCalendarDateSelect}
+          onTransactionClick={handleCalendarTransactionClick}
+          billingMethod={billingMethod}
+          onBillingMethodChange={setBillingMethod}
+        />
 
         {/* Units List */}
         <Card>

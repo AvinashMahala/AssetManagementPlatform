@@ -218,8 +218,54 @@ Based on comparative analysis and our existing strengths, here's the optimized r
 
 ## 🔴 SPRINT 1 (2-3 weeks): Core Rental Operations
 
+### ✅ **COMPLETED: API Endpoint Validation** ⭐⭐⭐
+**Status:** COMPLETED - All Critical Endpoints Implemented
+**Completion Date:** November 9, 2025
+
+#### What Was Implemented:
+- [x] **Preview Invoice Endpoint** (`/api/rent-transactions/{id}/preview-invoice`)
+  - Returns complete invoice data structure with property, tenant, billing period, line items, and totals
+  - Includes utility charges and additional expenses
+  - Proper error handling for missing entities
+- [x] **Preview Receipt Endpoint** (`/api/rent-transactions/{id}/preview-receipt`)
+  - Returns receipt data for paid transactions only
+  - Includes payment details and transaction history
+  - Validates transaction status before preview
+- [x] **Service Layer Updates**
+  - Added `previewInvoice()` and `previewReceipt()` methods to `IRentTransactionService`
+  - Implemented methods in `RentTransactionService` with full data aggregation
+  - Proper repository access and error handling
+- [x] **Controller Updates**
+  - Updated `RentTransactionController` to use service methods
+  - Added proper error responses and validation
+  - Swagger documentation for new endpoints
+- [x] **Route Configuration**
+  - Added routes to `rentTransactionRoutes.ts`
+  - Proper authentication middleware
+  - RESTful endpoint structure
+- [x] **Frontend Compatibility**
+  - Verified existing `rentTransactionService.ts` methods match API
+  - Confirmed `InvoiceReceiptData` type compatibility
+  - No frontend changes needed - APIs ready for consumption
+
+#### Technical Details:
+- **Backend Files Modified:** 4 files
+- **New Endpoints:** 2 GET endpoints
+- **Service Methods:** 2 new methods added
+- **Error Handling:** Comprehensive validation and error responses
+- **Data Structure:** Full invoice/receipt data with all required fields
+- **Testing:** Build verification completed, no compilation errors
+
+#### Impact:
+- ✅ **CRITICAL** workflow item completed
+- ✅ Rent collection preview functionality now available
+- ✅ Frontend can display invoice/receipt data before PDF generation
+- ✅ Foundation laid for full rent collection system
+
+---
+
 ### 1. **Rent Collection System** ⭐⭐⭐
-**Status:** NEW FEATURE
+**Status:** NEXT PRIORITY - Ready for Implementation
 **Why Priority:** Missing core landlord workflow
 
 #### Backend Tasks:
