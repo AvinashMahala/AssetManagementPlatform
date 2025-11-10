@@ -61,7 +61,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (storedToken) {
       apiClient.setAuthToken(storedToken);
     }
-    checkAuth();
+    
+    // Check if we should bypass auth in development
+    const disableAuth = import.meta.env.VITE_DISABLE_AUTH === 'true';
+    if (disableAuth) {
+      // Automatically authenticate with dev user
+      const devUser: User = {
+        id: 1,
+        username: 'dev_user',
+        email: 'dev@example.com',
+        name: 'Development User',
+        role: 'admin',
+        isEmailVerified: true,
+        isPhoneVerified: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setUser(devUser);
+      setIsAuthenticated(true);
+      apiClient.setAuthToken('dev-mode-token');
+      setLoading(false);
+    } else {
+      checkAuth();
+    }
   }, []);
 
   const checkAuth = async () => {

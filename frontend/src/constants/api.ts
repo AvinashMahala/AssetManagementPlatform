@@ -11,11 +11,19 @@ export const API_ENDPOINTS = {
   RECEIPTS: '/api/receipts',
   USERS: '/api/users',
   AUTH: {
-    LOGIN: '/api/users/login',
-    REGISTER: '/api/users/register',
-    PROFILE: '/api/users/profile',
+    LOGIN: '/api/auth/login',
+    REGISTER: '/api/auth/register',
+    PROFILE: '/api/auth/profile',
+    LOGOUT: '/api/auth/logout',
+    REFRESH_TOKEN: '/api/auth/refresh-token',
+    VERIFY_EMAIL: '/api/auth/verify-email',
+    RESEND_VERIFICATION: '/api/auth/resend-verification',
+    GOOGLE_AUTH: '/api/auth/google-auth',
+    PASSWORD_RESET_OPTIONS: '/api/auth/password-reset-options',
+    SECURITY_QUESTIONS: '/api/auth/security-questions',
+    RECOVERY_CODES: '/api/auth/recovery-codes',
   },
-  HEALTH: '/health',
+  HEALTH: '/api/health',
 } as const;
 
 export const API_TIMEOUT = 30000; // 30 seconds
