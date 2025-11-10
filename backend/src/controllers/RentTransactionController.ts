@@ -1961,4 +1961,131 @@ export class RentTransactionController {
       ErrorUtils.handleGenericError(res, err, 'Failed to get utility revenue summary');
     }
   }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/{id}/preview-invoice:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Preview invoice data for a transaction
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Transaction ID
+   *     responses:
+   *       200:
+   *         description: Invoice preview data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/InvoiceReceiptData'
+   *       404:
+   *         description: Transaction not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async previewInvoice(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const invoiceData = await this.service.previewInvoice(id);
+      ResponseUtils.success(res, invoiceData);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('Transaction not found') ||
+          errorMessage.includes('Lease not found') ||
+          errorMessage.includes('Property not found') ||
+          errorMessage.includes('Tenant not found')) {
+        return ResponseUtils.notFound(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to preview invoice');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/{id}/preview-receipt:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Preview receipt data for a paid transaction
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Transaction ID
+   *     responses:
+   *       200:
+   *         description: Receipt preview data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/InvoiceReceiptData'
+   *       400:
+   *         description: Transaction not paid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Transaction not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async previewReceipt(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const receiptData = await this.service.previewReceipt(id);
+      ResponseUtils.success(res, receiptData);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('Transaction not found') ||
+          errorMessage.includes('Lease not found') ||
+          errorMessage.includes('Property not found') ||
+          errorMessage.includes('Tenant not found')) {
+        return ResponseUtils.notFound(res, errorMessage);
+      }
+      if (errorMessage.includes('Cannot preview receipt for unpaid transaction')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to preview receipt');
+    }
+  }
 }

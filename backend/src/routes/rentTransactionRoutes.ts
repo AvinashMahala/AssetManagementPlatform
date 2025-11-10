@@ -56,6 +56,8 @@ export const createRentTransactionRoutes = (controller: RentTransactionControlle
   router.post('/:id/record-payment', auth, controller.recordPayment.bind(controller));
   router.post('/generate-invoice', auth, controller.generateInvoice.bind(controller));
   router.post('/generate-receipt', auth, controller.generateReceipt.bind(controller));
+  router.get('/:id/preview-invoice', auth, controller.previewInvoice.bind(controller));
+  router.get('/:id/preview-receipt', auth, controller.previewReceipt.bind(controller));
   router.get('/property/:propertyId/monthly-summary', auth, controller.getMonthlySummary.bind(controller));
 
   return router;

@@ -43,4 +43,8 @@ export interface IRentTransactionService {
   getUtilityRevenueByProperty(propertyId: string, startDate?: Date, endDate?: Date): Promise<any>;
   getUtilityRevenueByUnit(unitId: string, startDate?: Date, endDate?: Date): Promise<any>;
   getUtilityRevenueSummary(propertyId?: string, startDate?: Date, endDate?: Date): Promise<any>;
+
+  // Preview functionality
+  previewInvoice(transactionId: string): Promise<any>;
+  previewReceipt(transactionId: string): Promise<any>;
 }

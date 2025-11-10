@@ -682,14 +682,7 @@ export class RentTransactionService implements IRentTransactionService {
           meterName: meter.meterName,
           meterNumber: meter.meterNumber,
           previousReading: latestReading?.currentReading || 0,
-          currentReading: 0, // To be filled by user
-          costPerUnit: meter.costPerUnit,
-          fixedCharge: meter.fixedCharge || 0,
-          unitsConsumed: 0,
-          totalCost: 0,
-          remarks: meter.remarks,
-          lastReadingDate: latestReading?.readingDate || null,
-          lastReadingId: latestReading?.id || null
+          currentReading: 0 // To be filled by user
         };
       });
 
@@ -1095,6 +1088,218 @@ export class RentTransactionService implements IRentTransactionService {
       },
       transactions
     };
+  }
+
+  // Preview functionality
+  async previewInvoice(transactionId: string): Promise<any> {
+    if (!transactionId) {
+      throw new Error('Transaction ID is required');
+    }
+
+    const transaction = await this.repository.findById(transactionId);
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    // Get related data for invoice generation
+    const lease = await this.leaseRepository.findById(transaction.leaseId);
+    if (!lease) {
+      throw new Error('Lease not found for transaction');
+    }
+
+    const property = await this.propertyRepository.findById(transaction.propertyId);
+    if (!property) {
+      throw new Error('Property not found for transaction');
+    }
+
+    const tenant = await this.tenantRepository.findById(transaction.tenantId);
+    if (!tenant) {
+      throw new Error('Tenant not found for transaction');
+    }
+
+    // Get property owner (landlord) details
+    const landlord = await this.userRepository.findById(property.ownerId);
+
+    // Get configured utilities for this unit and calculate their charges
+    const configuredUtilities = await this.calculateUnitUtilityCharges(
+      transaction.unitId,
+      transaction.billingPeriodStart,
+      transaction.billingPeriodEnd
+    );
+    
+    // Build invoice data structure
+    const invoiceData = {
+      documentType: 'invoice' as const,
+      documentNumber: `INV-${transaction.id.slice(0, 8).toUpperCase()}`,
+      documentDate: new Date().toISOString(),
+
+      // Property details
+      property: {
+        name: property.name,
+        address: `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`,
+        phone: landlord?.phone || '',
+        email: landlord?.email || '',
+        website: '',
+        logo: ''
+      },
+
+      // Tenant details
+      tenant: {
+        name: `${tenant.firstName} ${tenant.lastName}`,
+        unitNumber: lease.unitId, // This should be the unit number
+        address: tenant.currentAddress
+          ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}`
+          : undefined,
+        phone: tenant.phone || '',
+        email: tenant.email
+      },
+
+      // Billing period
+      billingPeriod: {
+        start: transaction.billingPeriodStart.toISOString(),
+        end: transaction.billingPeriodEnd.toISOString(),
+        month: transaction.billingPeriodStart.toLocaleString('default', { month: 'long' }),
+        year: transaction.billingPeriodStart.getFullYear().toString()
+      },
+
+      // Line items
+      lineItems: [
+        {
+          description: 'Base Rent',
+          quantity: 1,
+          rate: transaction.baseRent,
+          amount: transaction.baseRent
+        },
+        // Add utility charges as line items
+        ...configuredUtilities.map((u: any) => ({
+          description: `${u.utilityName} (${u.billingMethod === 'fixed' ? 'Fixed' : 'Meter-based'})`,
+          quantity: 1,
+          rate: u.amount,
+          amount: u.amount
+        })),
+        // Add additional expenses
+        ...(transaction.expenses || []).map((e: any) => ({
+          description: e.description || e.type,
+          quantity: 1,
+          rate: e.amount,
+          amount: e.amount
+        }))
+      ],
+
+      // Totals
+      subtotal: transaction.baseRent,
+      previousBalance: transaction.previousBalance,
+      totalAmount: transaction.totalAmount,
+      amountPaid: transaction.amountPaid,
+      balanceDue: transaction.newBalance,
+
+      // Additional info
+      dueDate: transaction.billingPeriodEnd.toISOString(),
+      lateFee: 0,
+      notes: transaction.notes || 'Thank you for your payment',
+      terms: 'Payment is due within 30 days of invoice date.'
+    };
+
+    return invoiceData;
+  }
+
+  async previewReceipt(transactionId: string): Promise<any> {
+    if (!transactionId) {
+      throw new Error('Transaction ID is required');
+    }
+
+    const transaction = await this.repository.findById(transactionId);
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    if (transaction.status !== RentTransactionStatus.PAID) {
+      throw new Error('Cannot preview receipt for unpaid transaction');
+    }
+
+    // Get related data for receipt generation
+    const lease = await this.leaseRepository.findById(transaction.leaseId);
+    if (!lease) {
+      throw new Error('Lease not found for transaction');
+    }
+
+    const property = await this.propertyRepository.findById(transaction.propertyId);
+    if (!property) {
+      throw new Error('Property not found for transaction');
+    }
+
+    const tenant = await this.tenantRepository.findById(transaction.tenantId);
+    if (!tenant) {
+      throw new Error('Tenant not found for transaction');
+    }
+
+    // Get property owner (landlord) details
+    const landlord = await this.userRepository.findById(property.ownerId);
+
+    // Build receipt data structure
+    const receiptData = {
+      documentType: 'receipt' as const,
+      documentNumber: transaction.receiptNumber || `REC-${transaction.id.slice(0, 8).toUpperCase()}`,
+      documentDate: (transaction.paidDate || new Date()).toISOString(),
+
+      // Property details
+      property: {
+        name: property.name,
+        address: `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`,
+        phone: landlord?.phone || '',
+        email: landlord?.email || '',
+        website: '',
+        logo: ''
+      },
+
+      // Tenant details
+      tenant: {
+        name: `${tenant.firstName} ${tenant.lastName}`,
+        unitNumber: lease.unitId, // This should be the unit number
+        address: tenant.currentAddress
+          ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}`
+          : undefined,
+        phone: tenant.phone || '',
+        email: tenant.email
+      },
+
+      // Billing period
+      billingPeriod: {
+        start: transaction.billingPeriodStart.toISOString(),
+        end: transaction.billingPeriodEnd.toISOString(),
+        month: transaction.billingPeriodStart.toLocaleString('default', { month: 'long' }),
+        year: transaction.billingPeriodStart.getFullYear().toString()
+      },
+
+      // Line items (what was paid)
+      lineItems: [
+        {
+          description: 'Rent Payment',
+          amount: transaction.amountPaid
+        }
+      ],
+
+      // Totals
+      subtotal: transaction.amountPaid,
+      previousBalance: 0, // For receipts, we show what was paid
+      totalAmount: transaction.amountPaid,
+      amountPaid: transaction.amountPaid,
+      balanceDue: 0, // Fully paid
+
+      // Payment details
+      payments: [{
+        date: (transaction.paidDate || new Date()).toISOString(),
+        method: transaction.paymentMethod || 'Unknown',
+        amount: transaction.amountPaid,
+        reference: transaction.transactionId || undefined
+      }],
+
+      // Additional info
+      notes: transaction.notes || 'Payment received with thanks',
+      terms: ''
+    };
+
+    return receiptData;
   }
 
   /**
