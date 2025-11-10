@@ -9,7 +9,7 @@
 
 -- Sample recurring expenses for a property
 -- WiFi/Internet expense (monthly, split among tenants)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, affected_unit_ids, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1), -- Replace with actual property ID
     'wifi_internet',
@@ -18,15 +18,13 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     'monthly',
     '2024-01-01',
     'split_among_tenants',
-    '[]'::jsonb, -- Will be populated when tenants are assigned
     'active',
-    true,
     (SELECT id FROM users LIMIT 1) -- Replace with actual user ID
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Water bill (monthly, owner only)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     'water_bill',
@@ -36,13 +34,12 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     '2024-01-01',
     'owner_only',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Cleaning service (monthly, split among tenants)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     'cleaning',
@@ -52,13 +49,12 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     '2024-01-01',
     'split_among_tenants',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Electricity bill (monthly, split among tenants)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     'electrical_work',
@@ -68,13 +64,12 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     '2024-01-01',
     'split_among_tenants',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Plumbing repair (one-time, specific unit)
-INSERT INTO expenses (property_id, unit_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, unit_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     (SELECT id FROM units LIMIT 1), -- Replace with actual unit ID
@@ -85,13 +80,12 @@ INSERT INTO expenses (property_id, unit_id, type, description, amount, frequency
     '2024-11-15',
     'specific_units',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- AC repair (one-time, owner only)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     'ac_repair',
@@ -101,13 +95,12 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     '2024-11-10',
     'owner_only',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Housekeeping supplies (quarterly, split among tenants)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     'housekeeping',
@@ -117,13 +110,12 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     '2024-01-01',
     'split_among_tenants',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Security system maintenance (yearly, owner only)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     'surveillance_cameras',
@@ -133,13 +125,12 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     '2024-01-01',
     'owner_only',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Cable/Dish service (monthly, split among tenants)
-INSERT INTO expenses (property_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     'cable_dish',
@@ -149,13 +140,12 @@ INSERT INTO expenses (property_id, type, description, amount, frequency, start_d
     '2024-01-01',
     'split_among_tenants',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- Furniture repair (one-time, specific unit)
-INSERT INTO expenses (property_id, unit_id, type, description, amount, frequency, start_date, distribution, status, is_active, created_by) VALUES
+INSERT INTO expenses (property_id, unit_id, expense_type, description, amount, frequency, expense_date, distribution_method, status, created_by) VALUES
 (
     (SELECT id FROM properties LIMIT 1),
     (SELECT id FROM units LIMIT 1 OFFSET 1), -- Replace with actual unit ID
@@ -166,7 +156,6 @@ INSERT INTO expenses (property_id, unit_id, type, description, amount, frequency
     '2024-11-08',
     'specific_units',
     'active',
-    true,
     (SELECT id FROM users LIMIT 1)
 )
 ON CONFLICT (id) DO NOTHING;
@@ -176,13 +165,13 @@ SELECT
     e.id,
     p.name as property_name,
     u.unit_number,
-    e.type,
+    e.expense_type,
     e.description,
     e.amount,
     e.frequency,
-    e.distribution,
+    e.distribution_method,
     e.status,
-    e.start_date
+    e.expense_date
 FROM expenses e
 LEFT JOIN properties p ON e.property_id = p.id
 LEFT JOIN units u ON e.unit_id = u.id

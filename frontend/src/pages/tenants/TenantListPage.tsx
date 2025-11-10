@@ -14,13 +14,13 @@ import { useProperties } from '../../hooks';
 const TenantListPage: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [propertyFilter, setPropertyFilter] = useState('');
+  const [propertyFilter, setPropertyFilter] = useState('all');
   const { tenants, loading } = useTenants();
   const { properties: availableProperties, loading: propertiesLoading } = useProperties();
 
   const filteredTenants = tenants.filter(t => {
     const matchesSearch = `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(search.toLowerCase());
-    const matchesProperty = !propertyFilter || t.currentPropertyId === propertyFilter;
+    const matchesProperty = propertyFilter === 'all' || t.currentPropertyId === propertyFilter;
     return matchesSearch && matchesProperty;
   });
 
@@ -88,7 +88,7 @@ const TenantListPage: React.FC = () => {
                   <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Filter by property"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Properties</SelectItem>
+                  <SelectItem value="all">All Properties</SelectItem>
                   {availableProperties?.map((property) => (
                     <SelectItem key={property.id} value={property.id}>
                       {property.name}

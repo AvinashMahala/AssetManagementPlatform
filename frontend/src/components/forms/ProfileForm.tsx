@@ -78,35 +78,26 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full">
       <Form onSubmit={handleSubmit} loading={loading}>
-        <div>
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
-            Update Profile
-          </h2>
-          <p className="text-center text-gray-600">
-            Update your account information below.
-          </p>
-        </div>
-
         {submitError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm mb-4">
             {submitError}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+          <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm mb-4">
             {success}
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Current Email
             </label>
-            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+            <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-md text-sm">
               {user.email}
             </p>
           </div>
@@ -142,28 +133,31 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           </FormField>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Account Status
             </label>
-            <div className="space-y-1">
-              <p className="text-sm text-gray-600">
-                Email Verified: {user.isEmailVerified ? '✅' : '❌'}
-              </p>
-              <p className="text-sm text-gray-600">
-                Phone Verified: {user.isPhoneVerified ? '✅' : '❌'}
-              </p>
-              <p className="text-sm text-gray-600">
-                Role: {user.role}
-              </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <div className="flex items-center space-x-1">
+                <span>Email Verified:</span>
+                <span>{user.isEmailVerified ? '✅' : '❌'}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <span>Phone Verified:</span>
+                <span>{user.isPhoneVerified ? '✅' : '❌'}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <span>Role:</span>
+                <span className="font-medium">{user.role}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 mt-4">
           <Button
             type="submit"
             variant="primary"
-            size="large"
+            size="medium"
             className="flex-1"
           >
             {loading ? 'Updating...' : 'Update Profile'}
@@ -172,7 +166,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           <Button
             type="button"
             variant="secondary"
-            size="large"
+            size="medium"
             className="flex-1"
             onClick={onCancel}
           >

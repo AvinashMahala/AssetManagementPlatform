@@ -5,3 +5,4 @@ export { default as userService } from './userService';
 export { default as receiptService } from './receiptService';
 export { default as unitUtilityService } from './unitUtilityService';
 export { default as fileService } from './fileService';
+export { default as expenseService } from './expenseService';

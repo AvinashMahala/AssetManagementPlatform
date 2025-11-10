@@ -495,7 +495,7 @@ def seed_leases(conn, df):
     cursor.close()
     print_success(f"Seeded {seeded} leases")
 
-def seed_unit_tenants(conn, df):
+def seed_unit_tenants(conn, df=None):
     """Seed unit_tenants junction table from leases"""
     print_step("Seeding unit tenants...")
     
@@ -1043,8 +1043,8 @@ def main():
             if 'leases' in seed_data:
                 seed_leases(conn, seed_data['leases'])
             
-            if 'unit_tenants' in seed_data:
-                seed_unit_tenants(conn, seed_data['unit_tenants'])
+            # Always seed unit_tenants from leases (required for proper relationships)
+            seed_unit_tenants(conn, None)
             
             if 'rent_payments' in seed_data:
                 seed_rent_payments(conn, seed_data['rent_payments'])

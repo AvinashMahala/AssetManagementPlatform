@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   LEASES: '/api/leases',
   RENT_PAYMENTS: '/api/rent-payments',
   RECEIPTS: '/api/receipts',
+  EXPENSES: '/api/expenses',
   USERS: '/api/users',
   AUTH: {
     LOGIN: '/api/auth/login',

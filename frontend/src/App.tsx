@@ -13,6 +13,10 @@ import { LeaseCreatePageEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from 
 import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
 import { PaymentCreatePageEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
+import ExpenseListPage from './pages/expenses/ExpenseListPage';
+import ExpenseFormPage from './pages/expenses/ExpenseFormPage';
+import ExpenseDetailPage from './pages/expenses/ExpenseDetailPage';
+import NavigationConfigPage from './pages/NavigationConfigPage';
 import DashboardEnhanced from './pages/DashboardEnhanced';
 import TemplateEditor from './pages/TemplateEditor';
 import TemplateGallery from './pages/TemplateGallery';
@@ -78,6 +82,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/navigation-config"
+                element={
+                  <ProtectedRoute>
+                    <NavigationConfigPage />
                   </ProtectedRoute>
                 }
               />
@@ -149,6 +162,11 @@ function App() {
               <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
+
+              <Route path="/expenses" element={<ProtectedRoute><ExpenseListPage /></ProtectedRoute>} />
+              <Route path="/expenses/create" element={<ProtectedRoute><ExpenseFormPage /></ProtectedRoute>} />
+              <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetailPage /></ProtectedRoute>} />
+              <Route path="/expenses/:id/edit" element={<ProtectedRoute><ExpenseFormPage /></ProtectedRoute>} />
 
               <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
 
