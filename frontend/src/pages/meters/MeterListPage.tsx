@@ -6,6 +6,7 @@ import { MeterType } from '../../types/meter';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { AppLayout } from '../../components/layout/AppLayout';
 
 export const MeterListPage: React.FC = () => {
@@ -129,111 +130,114 @@ export const MeterListPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Scrollable Content Section */}
+        {/* Scrollable Table Section */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-auto space-y-4 pr-1">
-            {metersArray.length > 0 ? (
-              metersArray.map((meter) => (
-                <Card key={meter.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">{meter.meterName}</h3>
-                          <Badge className={getMeterTypeColor(meter.meterType)}>
-                            {getMeterTypeLabel(meter.meterType)}
-                          </Badge>
-                          <Badge variant={meter.isActive ? 'default' : 'secondary'}>
-                            {meter.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
+          <Card className="h-full border-0 shadow-none">
+            <CardContent className="p-0 h-full">
+              <div className="h-full overflow-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-white dark:bg-gray-950 z-10">
+                    <TableRow>
+                      <TableHead>Meter Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Meter Number</TableHead>
+                      <TableHead>Cost per Unit</TableHead>
+                      <TableHead>Fixed Charge</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Remarks</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {metersArray.length > 0 ? (
+                      metersArray.map((meter) => (
+                        <TableRow key={meter.id}>
+                          <TableCell className="font-medium">{meter.meterName}</TableCell>
+                          <TableCell>
+                            <Badge className={getMeterTypeColor(meter.meterType)}>
+                              {getMeterTypeLabel(meter.meterType)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{meter.meterNumber || 'N/A'}</TableCell>
+                          <TableCell>₹{meter.costPerUnit}</TableCell>
+                          <TableCell>{meter.fixedCharge ? `₹${meter.fixedCharge}` : 'None'}</TableCell>
+                          <TableCell>
+                            <Badge variant={meter.isActive ? 'default' : 'secondary'}>
+                              {meter.isActive ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate" title={meter.remarks}>
+                            {meter.remarks || '-'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/meters/${meter.id}`)}
+                                title="View details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                          <div>
-                            <span className="font-medium">Meter Number:</span> {meter.meterNumber || 'N/A'}
-                          </div>
-                          <div>
-                            <span className="font-medium">Cost per Unit:</span> ₹{meter.costPerUnit}
-                          </div>
-                          <div>
-                            <span className="font-medium">Fixed Charge:</span> {meter.fixedCharge ? `₹${meter.fixedCharge}` : 'None'}
-                          </div>
-                        </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleToggleStatus(meter.id, meter.isActive)}
+                                disabled={updatingStatus}
+                                title={meter.isActive ? 'Deactivate meter' : 'Activate meter'}
+                              >
+                                {meter.isActive ? (
+                                  <PowerOff className="h-4 w-4 text-red-600" />
+                                ) : (
+                                  <Power className="h-4 w-4 text-green-600" />
+                                )}
+                              </Button>
 
-                        {meter.remarks && (
-                          <div className="mt-2 text-sm text-gray-600">
-                            <span className="font-medium">Remarks:</span> {meter.remarks}
-                          </div>
-                        )}
-                      </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/meters/${meter.id}/edit`)}
+                                title="Edit meter"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
 
-                      <div className="flex items-center gap-2 ml-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/meters/${meter.id}`)}
-                          title="View details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleStatus(meter.id, meter.isActive)}
-                          disabled={updatingStatus}
-                          title={meter.isActive ? 'Deactivate meter' : 'Activate meter'}
-                        >
-                          {meter.isActive ? (
-                            <PowerOff className="h-4 w-4 text-red-600" />
-                          ) : (
-                            <Power className="h-4 w-4 text-green-600" />
-                          )}
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/meters/${meter.id}/edit`)}
-                          title="Edit meter"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(meter.id)}
-                          disabled={deleting}
-                          title="Delete meter"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-12">
-                    <div className="text-6xl mb-4">⚡</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No meters found</h3>
-                    <p className="text-gray-600 mb-6">Get started by adding your first utility meter</p>
-                    <Button
-                      onClick={() => navigate('/meters/create')}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Your First Meter
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(meter.id)}
+                                disabled={deleting}
+                                title="Delete meter"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-12">
+                          <div className="text-6xl mb-4">⚡</div>
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">No meters found</h3>
+                          <p className="text-gray-600 mb-6">Get started by adding your first utility meter</p>
+                          <Button
+                            onClick={() => navigate('/meters/create')}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Your First Meter
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AppLayout>

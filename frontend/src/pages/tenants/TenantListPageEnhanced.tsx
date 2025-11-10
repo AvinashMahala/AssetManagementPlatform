@@ -14,7 +14,7 @@ const TenantListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [selectedTenants, setSelectedTenants] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
