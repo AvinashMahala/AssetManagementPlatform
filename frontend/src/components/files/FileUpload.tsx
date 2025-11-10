@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { Upload, X, File, Image, FileText, Video, Archive, AlertCircle, CheckCircle, Edit3, Check, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { Upload, X, File, Image, FileText, Video, Archive, AlertCircle, CheckCircle, Edit3, Check, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -14,9 +14,15 @@ interface FileUploadProps {
   category?: string;
   onUploadSuccess?: (file: FileMetadata) => void;
   onUploadError?: (error: string) => void;
+  onUploadStart?: (file: File) => void;
+  onUploadProgress?: (file: File, progress: number) => void;
+  onUploadComplete?: (file: File, success: boolean) => void;
+  onQueueChange?: (queue: UploadProgress[]) => void;
   maxFileSize?: number; // in MB
   acceptedTypes?: string[]; // MIME types
   multiple?: boolean;
+  autoStart?: boolean; // Auto-start uploads when files are added
+  showQueueControls?: boolean; // Show controls for managing the queue
   className?: string;
 }
 
@@ -35,9 +41,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
   category = 'general',
   onUploadSuccess,
   onUploadError,
+  onUploadStart,
+  onUploadProgress,
+  onUploadComplete,
+  onQueueChange,
   maxFileSize = 10, // 10MB default
   acceptedTypes = ['image/*', 'application/pdf', 'text/*', 'application/msword', 'application/vnd.openxmlformats-officedocument.*'],
   multiple = true,
+  autoStart = false, // Don't auto-start by default
+  showQueueControls = true,
   className = ''
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -63,6 +75,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   const validateFile = (file: File): string | null => {
+    // File size warning (show warning for files > 5MB)
+    const warningSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > warningSize && file.size <= maxFileSize * 1024 * 1024) {
+      // Show warning but allow upload
+      console.warn(`Large file detected: ${file.name} (${formatFileSize(file.size)})`);
+    }
+
     if (file.size > maxFileSize * 1024 * 1024) {
       return `File size exceeds ${maxFileSize}MB limit`;
     }
@@ -116,7 +135,16 @@ const FileUpload: React.FC<FileUploadProps> = ({
       customName: file.name // Default to original filename
     }));
 
-    setUploads(prev => [...prev, ...pendingUploads]);
+    setUploads(prev => {
+      const newUploads = [...prev, ...pendingUploads];
+      onQueueChange?.(newUploads);
+      return newUploads;
+    });
+
+    // Auto-start upload if enabled
+    if (autoStart && pendingUploads.length > 0) {
+      setTimeout(() => startUpload(), 100); // Small delay to allow state to update
+    }
   }, [maxFileSize, acceptedTypes, multiple, onUploadError]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -200,6 +228,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
     // Upload files
     for (const upload of pendingUploads) {
+      onUploadStart?.(upload.file);
+
       try {
         const uploadRequest: FileUploadRequest = {
           file: upload.file,
@@ -209,7 +239,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
           customName: upload.customName
         };
 
-        const result = await fileService.uploadFile(uploadRequest);
+        const result = await fileService.uploadFile(uploadRequest, (progress) => {
+          // Update progress in real-time
+          setUploads(prev => prev.map(u =>
+            u.file === upload.file
+              ? { ...u, progress: Math.round(progress) }
+              : u
+          ));
+          onUploadProgress?.(upload.file, Math.round(progress));
+        });
 
         if (result.success && result.data) {
           // Fetch the file metadata
@@ -223,6 +261,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             ));
 
             onUploadSuccess?.(metadataResult.data);
+            onUploadComplete?.(upload.file, true);
           } else {
             throw new Error(metadataResult.error?.message || 'Failed to get file metadata');
           }
@@ -238,15 +277,83 @@ const FileUpload: React.FC<FileUploadProps> = ({
             : u
         ));
         onUploadError?.(errorMessage);
+        onUploadComplete?.(upload.file, false);
       }
     }
 
     setIsUploading(false);
   }, [uploads, entityType, entityId, category, onUploadSuccess, onUploadError]);
 
-  const clearCompleted = () => {
-    setUploads(prev => prev.filter(u => u.status !== 'success' && u.status !== 'error'));
+  const cancelUpload = (file: File) => {
+    // For now, just remove from queue. In a real implementation,
+    // you'd need to cancel the actual HTTP request
+    setUploads(prev => {
+      const newUploads = prev.filter(u => u.file !== file);
+      onQueueChange?.(newUploads);
+      return newUploads;
+    });
   };
+
+  const cancelAllUploads = () => {
+    setUploads(prev => {
+      const newUploads = prev.filter(u => u.status !== 'uploading');
+      onQueueChange?.(newUploads);
+      return newUploads;
+    });
+    setIsUploading(false);
+  };
+
+  const retryAllFailed = () => {
+    setUploads(prev => prev.map(u =>
+      u.status === 'error'
+        ? { ...u, status: 'pending', error: undefined, progress: 0 }
+        : u
+    ));
+  };
+
+  const clearCompletedUploads = () => {
+    setUploads(prev => {
+      const newUploads = prev.filter(u => u.status !== 'success' && u.status !== 'error');
+      onQueueChange?.(newUploads);
+      return newUploads;
+    });
+  };
+
+  const moveUpload = (file: File, direction: 'up' | 'down') => {
+    setUploads(prev => {
+      const currentIndex = prev.findIndex(u => u.file === file);
+      if (currentIndex === -1) return prev;
+
+      const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      if (newIndex < 0 || newIndex >= prev.length) return prev;
+
+      const newUploads = [...prev];
+      [newUploads[currentIndex], newUploads[newIndex]] = [newUploads[newIndex], newUploads[currentIndex]];
+      return newUploads;
+    });
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+Enter to start upload
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        if (uploads.some(u => u.status === 'pending') && !isUploading) {
+          startUpload();
+        }
+      }
+      // Escape to clear completed
+      if (event.key === 'Escape') {
+        if (uploads.some(u => u.status === 'success' || u.status === 'error')) {
+          clearCompletedUploads();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [uploads, isUploading, startUpload, clearCompletedUploads]);
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -293,35 +400,82 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-medium">
-              Files Ready to Upload ({uploads.filter(u => u.status === 'pending').length} pending)
+              Files Ready to Upload ({uploads.filter(u => u.status === 'pending').length} pending, {uploads.filter(u => u.status === 'uploading').length} uploading)
             </h3>
-            <div className="flex space-x-2">
-              {uploads.some(u => u.status === 'pending') && (
+            {showQueueControls && (
+              <div className="flex space-x-2">
+                {uploads.some(u => u.status === 'pending') && (
+                  <Button
+                    onClick={startUpload}
+                    disabled={isUploading}
+                    size="sm"
+                    variant="default"
+                  >
+                    {isUploading ? 'Uploading...' : 'Start Upload'}
+                  </Button>
+                )}
+                {uploads.some(u => u.status === 'uploading') && (
+                  <Button
+                    onClick={cancelAllUploads}
+                    variant="outline"
+                    size="sm"
+                    className="text-orange-600 hover:text-orange-700"
+                  >
+                    Cancel All
+                  </Button>
+                )}
+                {uploads.some(u => u.status === 'error') && (
+                  <Button
+                    onClick={retryAllFailed}
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    Retry Failed
+                  </Button>
+                )}
                 <Button
-                  onClick={startUpload}
-                  disabled={isUploading}
+                  variant="outline"
                   size="sm"
+                  onClick={clearCompletedUploads}
+                  disabled={isUploading}
                 >
-                  {isUploading ? 'Uploading...' : 'Start Upload'}
+                  Clear Completed
                 </Button>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearCompleted}
-                disabled={isUploading}
-              >
-                Clear Completed
-              </Button>
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
             {uploads.map((upload, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <div className="flex-shrink-0">
-                  {getFileIcon(upload.file)}
-                </div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {/* Reorder buttons */}
+                  <div className="flex flex-col space-y-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveUpload(upload.file, 'up')}
+                      className="h-6 w-6 p-0"
+                      title="Move up"
+                      disabled={index === 0 || upload.status === 'uploading'}
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveUpload(upload.file, 'down')}
+                      className="h-6 w-6 p-0"
+                      title="Move down"
+                      disabled={index === uploads.length - 1 || upload.status === 'uploading'}
+                    >
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </div>
+
+                  <div className="flex-shrink-0">
+                    {getFileIcon(upload.file)}
+                  </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -423,9 +577,19 @@ const FileUpload: React.FC<FileUploadProps> = ({
                           style={{ width: `${upload.progress}%` }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {upload.progress}% uploaded
-                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-xs text-gray-500">
+                          {upload.progress}% uploaded
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => cancelUpload(upload.file)}
+                          className="h-6 px-2 text-xs text-orange-600 hover:text-orange-700"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
                   )}
 

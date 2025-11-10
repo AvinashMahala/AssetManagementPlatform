@@ -11,10 +11,11 @@ import type { ApiResponse } from '../types/api';
 
 class FileService {
   /**
-   * Upload a file
+   * Upload a file with progress tracking
    */
   async uploadFile(
-    request: FileUploadRequest
+    request: FileUploadRequest,
+    onProgress?: (progress: number) => void
   ): Promise<ApiResponse<FileUploadResponse>> {
     const formData = new FormData();
     formData.append('file', request.file);
@@ -47,29 +48,56 @@ class FileService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
-        method: 'POST',
-        headers,
-        body: formData,
+      // Use XMLHttpRequest for progress tracking
+      const result = await new Promise<{ response: any; status: number }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = (event.loaded / event.total) * 100;
+            onProgress(progress);
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              resolve({ response: data, status: xhr.status });
+            } catch (e) {
+              resolve({ response: xhr.responseText, status: xhr.status });
+            }
+          } else {
+            reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error'));
+        });
+
+        xhr.open('POST', `${API_BASE_URL}/api/files/upload`);
+        Object.entries(headers).forEach(([key, value]) => {
+          xhr.setRequestHeader(key, value);
+        });
+        xhr.send(formData);
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (!result.response.success) {
         return {
           success: false,
           error: {
-            code: `HTTP_${response.status}`,
-            message: data.error?.message || `HTTP ${response.status}: ${response.statusText}`,
-            details: data.error?.details,
+            code: `HTTP_${result.status}`,
+            message: result.response.error?.message || `HTTP ${result.status}: Upload failed`,
+            details: result.response.error?.details,
           },
         };
       }
 
       return {
         success: true,
-        data,
-        message: data.message,
+        data: result.response,
+        message: result.response.message,
       };
     } catch (error) {
       return {

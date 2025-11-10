@@ -10,6 +10,7 @@ import { Pagination } from '../components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { FileUpload } from '../components/files';
+import RecentFilesWidget from '../components/files/RecentFilesWidget';
 import { ConfirmDialog } from '../componentDesignLibrary';
 import { AppLayout } from '../components/layout/AppLayout';
 import { fileService } from '../services';
@@ -146,6 +147,13 @@ const FilesPage: React.FC = () => {
   const [totalFiles, setTotalFiles] = useState(0);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [uploadStats, setUploadStats] = useState({
+    total: 0,
+    successful: 0,
+    failed: 0,
+    pending: 0
+  });
+  const [keepDialogOpen, setKeepDialogOpen] = useState(true);
 
   const loadFiles = useCallback(async () => {
     try {
@@ -258,8 +266,12 @@ const FilesPage: React.FC = () => {
   const handleFileUploaded = (_file: FileMetadata) => {
     // Refresh the current page to show updated results and total count
     loadFiles();
-    setShowUploadDialog(false);
-    setSelectedEntity(null);
+    // Update upload stats
+    setUploadStats(prev => ({
+      ...prev,
+      successful: prev.successful + 1
+    }));
+    // Don't close dialog automatically - let user decide
   };
 
   const handleFileDeleted = (_fileId: string) => {
@@ -309,20 +321,22 @@ const FilesPage: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Files</h1>
-            <p className="text-gray-600 mt-1">
-              Centralized file management for all documents and media
-            </p>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Files</h1>
+              <p className="text-gray-600 mt-1">
+                Centralized file management for all documents and media
+              </p>
+            </div>
+            <Button onClick={() => setShowUploadDialog(true)} className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Upload Files</span>
+            </Button>
           </div>
-          <Button onClick={() => setShowUploadDialog(true)} className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Upload Files</span>
-          </Button>
-        </div>
 
         {/* Filters */}
         <Card>
@@ -593,11 +607,11 @@ const FilesPage: React.FC = () => {
             setSelectedEntity(null);
           }
         }}>
-          <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 border shadow-xl">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border shadow-xl">
+            <DialogHeader className="sticky top-0 bg-white dark:bg-gray-900 pb-4 border-b">
               <DialogTitle>Upload Files</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <p className="text-sm text-gray-600">
                 Select the entity type and ID to upload files to, or choose to upload general files.
               </p>
@@ -643,7 +657,37 @@ const FilesPage: React.FC = () => {
                       entityType={selectedEntity.type}
                       entityId={selectedEntity.id}
                       onUploadSuccess={handleFileUploaded}
-                      onUploadError={(error) => console.error('Upload error:', error)}
+                      onUploadError={(error) => {
+                        console.error('Upload error:', error);
+                        setUploadStats(prev => ({
+                          ...prev,
+                          failed: prev.failed + 1
+                        }));
+                      }}
+                      onUploadStart={(_file) => {
+                        setUploadStats(prev => ({
+                          ...prev,
+                          total: prev.total + 1,
+                          pending: prev.pending + 1
+                        }));
+                      }}
+                      onUploadComplete={(_file, success) => {
+                        setUploadStats(prev => ({
+                          ...prev,
+                          pending: Math.max(0, prev.pending - 1),
+                          successful: success ? prev.successful + 1 : prev.successful,
+                          failed: !success ? prev.failed + 1 : prev.failed
+                        }));
+                      }}
+                      onQueueChange={(queue) => {
+                        const pending = queue.filter(u => u.status === 'pending').length;
+                        setUploadStats(prev => ({
+                          ...prev,
+                          pending
+                        }));
+                      }}
+                      autoStart={false}
+                      showQueueControls={true}
                     />
                   )}
                 </TabsContent>
@@ -659,11 +703,97 @@ const FilesPage: React.FC = () => {
                     <FileUpload
                       category="general"
                       onUploadSuccess={handleFileUploaded}
-                      onUploadError={(error) => console.error('Upload error:', error)}
+                      onUploadError={(error) => {
+                        console.error('Upload error:', error);
+                        setUploadStats(prev => ({
+                          ...prev,
+                          failed: prev.failed + 1
+                        }));
+                      }}
+                      onUploadStart={(_file) => {
+                        setUploadStats(prev => ({
+                          ...prev,
+                          total: prev.total + 1,
+                          pending: prev.pending + 1
+                        }));
+                      }}
+                      onUploadComplete={(_file, success) => {
+                        setUploadStats(prev => ({
+                          ...prev,
+                          pending: Math.max(0, prev.pending - 1),
+                          successful: success ? prev.successful + 1 : prev.successful,
+                          failed: !success ? prev.failed + 1 : prev.failed
+                        }));
+                      }}
+                      onQueueChange={(queue) => {
+                        const pending = queue.filter(u => u.status === 'pending').length;
+                        setUploadStats(prev => ({
+                          ...prev,
+                          pending
+                        }));
+                      }}
+                      autoStart={false}
+                      showQueueControls={true}
                     />
                   </div>
                 </TabsContent>
               </Tabs>
+
+              {/* Upload Statistics & Controls */}
+              {(uploadStats.successful > 0 || uploadStats.failed > 0) && (
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium">Upload Summary</h3>
+                    <div className="flex items-center space-x-4 text-xs">
+                      {uploadStats.successful > 0 && (
+                        <span className="text-green-600">
+                          ✓ {uploadStats.successful} successful
+                        </span>
+                      )}
+                      {uploadStats.failed > 0 && (
+                        <span className="text-red-600">
+                          ✗ {uploadStats.failed} failed
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <label className="flex items-center space-x-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={keepDialogOpen}
+                          onChange={(e) => setKeepDialogOpen(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                        <span>Keep dialog open after upload</span>
+                      </label>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setUploadStats({ total: 0, successful: 0, failed: 0, pending: 0 });
+                          setSelectedEntityType(null);
+                          setSelectedEntity(null);
+                        }}
+                      >
+                        Reset
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setShowUploadDialog(false)}
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
@@ -691,6 +821,18 @@ const FilesPage: React.FC = () => {
           />
         )}
       </div>
+
+      {/* Sidebar */}
+      <div className="lg:col-span-1">
+        <RecentFilesWidget
+          limit={5}
+          onFileClick={(file) => {
+            // Open file in new tab for viewing
+            window.open(fileService.getDownloadUrl(file.id), '_blank');
+          }}
+        />
+      </div>
+    </div>
     </AppLayout>
   );
 };
