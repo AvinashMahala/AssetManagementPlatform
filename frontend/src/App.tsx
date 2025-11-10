@@ -25,6 +25,7 @@ import { PropertyRentCollectionPage, UnitRentCollectionPage, MonthlySummaryDashb
 import { MeterListPage, MeterCreatePage, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
 import FilesPage from './pages/FilesPage';
 import { RentTransactionInvoicePage, RentTransactionRecordPaymentPage, RentTransactionReceiptPage } from './pages/rentTransactions';
+import { BulkOperationsDashboard } from './pages/bulkOperations/BulkOperationsDashboard';
 import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
@@ -190,6 +191,9 @@ function App() {
               <Route path="/rent-transactions/:transactionId/invoice" element={<ProtectedRoute><RentTransactionInvoicePage /></ProtectedRoute>} />
               <Route path="/rent-transactions/:transactionId/record-payment" element={<ProtectedRoute><RentTransactionRecordPaymentPage /></ProtectedRoute>} />
               <Route path="/rent-transactions/:transactionId/receipt" element={<ProtectedRoute><RentTransactionReceiptPage /></ProtectedRoute>} />
+
+              {/* Bulk Operations */}
+              <Route path="/bulk-operations" element={<ProtectedRoute><BulkOperationsDashboard /></ProtectedRoute>} />
 
               <Route
                 path="/admin/*"

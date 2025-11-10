@@ -55,6 +55,7 @@ import { ReceiptService } from '../services/ReceiptService';
 import { ReceiptTemplateService } from '../services/ReceiptTemplateService';
 import { UnitUtilityService } from '../services/UnitUtilityService';
 import { ExpenseService } from '../services/ExpenseService';
+import { BulkOperationsService } from '../services/BulkOperationsService';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -96,6 +97,7 @@ export class DependencyContainer {
   private _receiptTemplateService: ReceiptTemplateService | null = null;
   private _unitUtilityService: IUnitUtilityService | null = null;
   private _expenseService: IExpenseService | null = null;
+  private _bulkOperationsService: BulkOperationsService | null = null;
 
   private constructor(pool: Pool) {
     this.pool = pool;
@@ -381,6 +383,22 @@ export class DependencyContainer {
     return this._expenseService;
   }
 
+  public get bulkOperationsService(): BulkOperationsService {
+    if (!this._bulkOperationsService) {
+      this._bulkOperationsService = new BulkOperationsService(
+        this.rentTransactionService,
+        this.receiptService,
+        this.propertyRepository,
+        this.tenantRepository,
+        this.unitRepository,
+        this.userRepository,
+        this.leaseRepository,
+        this.rentTransactionRepository
+      );
+    }
+    return this._bulkOperationsService;
+  }
+
   // Method to register custom implementations (for testing)
   public registerPropertyRepository(repository: IPropertyRepository): void {
     this._propertyRepository = repository;
@@ -486,6 +504,10 @@ export class DependencyContainer {
     this._expenseService = service;
   }
 
+  public registerBulkOperationsService(service: BulkOperationsService): void {
+    this._bulkOperationsService = service;
+  }
+
     // Reset method for testing
   public reset(): void {
     this._propertyRepository = null;
@@ -521,5 +543,6 @@ export class DependencyContainer {
     this._receiptTemplateService = null;
     this._unitUtilityService = null;
     this._expenseService = null;
+    this._bulkOperationsService = null;
   }
 }

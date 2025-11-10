@@ -46,6 +46,8 @@ import { createUnitUtilityRoutes } from './src/routes/unitUtilityRoutes.js';
 import { createFileRoutes } from './src/routes/fileRoutes.js';
 import { ExpenseController } from './src/controllers/ExpenseController.js';
 import { createExpenseRoutes } from './src/routes/expenseRoutes.js';
+import { BulkOperationsController } from './src/controllers/BulkOperationsController.js';
+import { createBulkOperationsRoutes } from './src/routes/bulkOperations.js';
 import { DependencyContainer } from './src/utils/DependencyContainer.js';
 
 // Setup global process error handlers
@@ -84,6 +86,7 @@ const receiptService = container.receiptService;
 const receiptTemplateService = container.receiptTemplateService;
 const unitUtilityService = container.unitUtilityService;
 const expenseService = container.expenseService;
+const bulkOperationsService = container.bulkOperationsService;
 
 // Create controllers with injected services
 const propertyController = new PropertyController(propertyService);
@@ -99,6 +102,7 @@ const receiptController = new ReceiptController(receiptService);
 const receiptTemplateController = new ReceiptTemplateController(receiptTemplateService);
 const unitUtilityController = new UnitUtilityController(unitUtilityService);
 const expenseController = new ExpenseController(expenseService);
+const bulkOperationsController = new BulkOperationsController(bulkOperationsService);
 
 import { specs } from './src/config/swagger/index.js';
 import { swaggerUiOptions } from './src/config/swagger/index.js';
@@ -213,6 +217,7 @@ app.use('/api', createTemplateRoutes(mainPool, userService));
 app.use('/api', createUnitUtilityRoutes(unitUtilityController, userService));
 app.use('/api/expenses', createExpenseRoutes(expenseController, userService));
 app.use('/api/files', createFileRoutes(mainPool, filesPool));
+app.use('/api/bulk', createBulkOperationsRoutes(bulkOperationsController, userService));
 
 // Error handling middleware (must be last)
 app.use(notFoundHandler);

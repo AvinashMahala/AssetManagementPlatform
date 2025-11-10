@@ -9,6 +9,7 @@ import {
   Receipt,
   Zap,
   FileImage,
+  Wrench,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -34,13 +35,14 @@ const defaultNavItems: NavItem[] = [
   { id: 'leases', name: 'Leases', icon: FileText, path: '/leases', enabled: true },
   { id: 'payments', name: 'Payments', icon: CreditCard, path: '/payments', enabled: true },
   { id: 'expenses', name: 'Expenses', icon: Receipt, path: '/expenses', enabled: true },
+  { id: 'bulk-operations', name: 'Bulk Operations', icon: Wrench, path: '/bulk-operations', enabled: true },
   { id: 'files', name: 'Files', icon: FileText, path: '/files', enabled: true },
   { id: 'meters', name: 'Meters', icon: Zap, path: '/meters', enabled: true },
   { id: 'templates', name: 'Templates', icon: FileImage, path: '/templates', enabled: true },
 ];
 
 const STORAGE_KEY = 'asset-management-nav-config';
-const CONFIG_VERSION = 1;
+const CONFIG_VERSION = 2;
 
 export function useNavigationConfig() {
   const [config, setConfig] = useState<NavigationConfig>({

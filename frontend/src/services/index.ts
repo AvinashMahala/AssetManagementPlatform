@@ -6,3 +6,7 @@ export { default as receiptService } from './receiptService';
 export { default as unitUtilityService } from './unitUtilityService';
 export { default as fileService } from './fileService';
 export { default as expenseService } from './expenseService';
+export { default as rentTransactionService } from './rentTransactionService';
+export { default as unitService } from './unitService';
+export { default as tenantService } from './tenantService';
+export { bulkOperationsService } from './bulkOperationsService';
