@@ -197,6 +197,15 @@ export const PropertyRentCollectionPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Rent Collection</h1>
             <p className="mt-2 text-gray-600">{property.name}</p>
           </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/properties/${propertyId}/rent-collection/monthly-summary`)}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Monthly Summary
+            </Button>
+          </div>
         </div>
 
         {/* Statistics Cards */}

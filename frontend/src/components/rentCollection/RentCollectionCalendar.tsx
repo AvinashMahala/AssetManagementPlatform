@@ -49,8 +49,11 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
     const grouped: Record<string, CalendarTransaction[]> = {};
 
     transactions.forEach(transaction => {
-      // Use billing period start date as the key
-      const dateKey = format(new Date(transaction.billingPeriodStart), 'yyyy-MM-dd');
+      // Use due date for rent collection calendar - this is when rent is due for collection
+      const dueDate = transaction.dueDate || transaction.billingPeriodEnd;
+      if (!dueDate) return; // Skip if no due date available
+      
+      const dateKey = format(new Date(dueDate), 'yyyy-MM-dd');
       if (!grouped[dateKey]) {
         grouped[dateKey] = [];
       }
@@ -123,7 +126,7 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
-            Rent Collection Calendar
+            Rent Due Dates Calendar
           </CardTitle>
           <div className="flex items-center gap-4">
             {/* Billing Method Selector */}
@@ -160,6 +163,14 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentMonth(new Date())}
+                className="ml-2"
+              >
+                Today
+              </Button>
             </div>
           </div>
         </div>
@@ -180,6 +191,8 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
             const totals = getDateTotals(date);
             const statusInfo = getStatusInfo(totals.status);
             const StatusIcon = statusInfo.icon;
+
+            const hasOverdue = dayTransactions.some(t => t.status === 'overdue');
             const isSelected = isSameDay(date, selectedDate);
             const isCurrentDay = isToday(date);
 
@@ -191,6 +204,7 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
                   ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'bg-white'}
                   ${!isSameMonth(date, currentMonth) ? 'text-gray-400 bg-gray-50' : ''}
                   ${isCurrentDay ? 'border-blue-300' : 'border-gray-200'}
+                  ${hasOverdue ? 'border-red-300 bg-red-50' : ''}
                 `}
                 onClick={() => handleDateClick(date)}
               >
@@ -252,16 +266,16 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
         {/* Legend */}
         <div className="flex flex-wrap gap-4 text-xs">
           <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-red-100 border-2 border-red-300 rounded"></div>
+            <span className="font-medium">Overdue (highlighted)</span>
+          </div>
+          <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-green-100 border border-green-200 rounded"></div>
             <span>Paid</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-yellow-100 border border-yellow-200 rounded"></div>
             <span>Partial</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-red-100 border border-red-200 rounded"></div>
-            <span>Overdue</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-blue-100 border border-blue-200 rounded"></div>
