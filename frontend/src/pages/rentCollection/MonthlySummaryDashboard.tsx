@@ -24,7 +24,7 @@ import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { AppLayout } from '../../components/layout';
 import { useProperty, useUnits, useRentTransactions, useTenants } from '../../hooks';
-import { formatCurrency } from '../../utils/billingCalculations';
+import { formatCurrency } from '../../utils/formatters';
 
 export const MonthlySummaryDashboard: React.FC = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
@@ -34,6 +34,11 @@ export const MonthlySummaryDashboard: React.FC = () => {
   const { units, loading: unitsLoading } = useUnits();
   const { transactions, loading: transactionsLoading } = useRentTransactions(propertyId);
   const { tenants, loading: tenantsLoading } = useTenants();
+
+  // Helper function to format currency using property's currency
+  const formatPropertyCurrency = (amount: number) => {
+    return formatCurrency(amount, property?.currency || 'INR');
+  };
 
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -158,21 +163,21 @@ export const MonthlySummaryDashboard: React.FC = () => {
     content += `Total Units: ${monthlyStats.totalUnits}\n`;
     content += `Occupied Units: ${monthlyStats.occupiedUnits}\n`;
     content += `Active Tenants: ${monthlyStats.activeTenants}\n`;
-    content += `Expected Rent: ${formatCurrency(monthlyStats.totalExpected)}\n`;
-    content += `Collected: ${formatCurrency(monthlyStats.totalCollected)}\n`;
-    content += `Balance Remaining: ${formatCurrency(monthlyStats.totalBalance)}\n`;
+    content += `Expected Rent: ${formatPropertyCurrency(monthlyStats.totalExpected)}\n`;
+    content += `Collected: ${formatPropertyCurrency(monthlyStats.totalCollected)}\n`;
+    content += `Balance Remaining: ${formatPropertyCurrency(monthlyStats.totalBalance)}\n`;
     content += `Collection Rate: ${monthlyStats.collectionRate.toFixed(1)}%\n`;
-    content += `Total Expenses: ${formatCurrency(monthlyStats.totalExpenses)}\n`;
-    content += `Meter Charges: ${formatCurrency(monthlyStats.totalMeterCharges)}\n\n`;
+    content += `Total Expenses: ${formatPropertyCurrency(monthlyStats.totalExpenses)}\n`;
+    content += `Meter Charges: ${formatPropertyCurrency(monthlyStats.totalMeterCharges)}\n\n`;
 
     content += 'UNIT DETAILS:\n';
     monthTransactions.forEach((transaction) => {
       const unit = units.find(u => u.id === transaction.unitId);
-      const tenant = tenants.find(t => t.unitId === transaction.unitId);
-      content += `Unit ${unit?.unitNumber || 'Unknown'} - ${tenant?.name || 'Vacant'}:\n`;
-      content += `  Expected: ${formatCurrency(transaction.totalAmount)}\n`;
-      content += `  Paid: ${formatCurrency(transaction.amountPaid || 0)}\n`;
-      content += `  Balance: ${formatCurrency(transaction.newBalance || 0)}\n`;
+      const tenantName = transaction.tenant ? `${transaction.tenant.firstName} ${transaction.tenant.lastName}` : 'Vacant';
+      content += `Unit ${unit?.unitNumber || 'Unknown'} - ${tenantName}:\n`;
+      content += `  Expected: ${formatPropertyCurrency(transaction.totalAmount)}\n`;
+      content += `  Paid: ${formatPropertyCurrency(transaction.amountPaid || 0)}\n`;
+      content += `  Balance: ${formatPropertyCurrency(transaction.newBalance || 0)}\n`;
       content += `  Status: ${transaction.status}\n\n`;
     });
 
@@ -224,7 +229,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
       if (foundTransaction) {
         const unit = units.find(u => u.id === foundTransaction.unitId);
         const tenantName = foundTransaction.tenant ? `${foundTransaction.tenant.firstName} ${foundTransaction.tenant.lastName}` : 'Vacant';
-        alert(`✅ Receipt Found!\n\nBill Number: ${billNumber}\nUnit: ${unit?.unitNumber || 'Unknown'}\nTenant: ${tenantName}\nAmount: ${formatCurrency(foundTransaction.amountPaid || 0)}\nStatus: ${foundTransaction.status}`);
+        alert(`✅ Receipt Found!\n\nBill Number: ${billNumber}\nUnit: ${unit?.unitNumber || 'Unknown'}\nTenant: ${tenantName}\nAmount: ${formatPropertyCurrency(foundTransaction.amountPaid || 0)}\nStatus: ${foundTransaction.status}`);
       } else {
         alert(`❌ Receipt Not Found\n\nBill number "${billNumber}" was not found in the system.`);
       }
@@ -263,7 +268,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
     // Export all tenant and room details
     // Since tenants aren't directly associated with units in the data structure,
     // we'll use the most recent transaction for each unit to get tenant info
-    let csv = 'Property,Unit Number,Unit Status,Monthly Rent,Tenant Name,Tenant Email,Tenant Phone,Tenant Status\n';
+    let csv = 'Property,Unit Number,Unit Status,Monthly Rent,Tenant Name,Tenant Email,Tenant Phone,Tenant Status,Prefix,Profession,Occupation,Number of People,Move-in Date,Rent Start Date,Lease Type,Lease Start Date,Lease Period,Lease Expiry,Extra Services\n';
 
     units.forEach((unit) => {
       // Find the most recent transaction for this unit to get tenant info
@@ -275,8 +280,15 @@ export const MonthlySummaryDashboard: React.FC = () => {
       const tenantEmail = recentTransaction?.tenant?.email || '';
       const tenantPhone = recentTransaction?.tenant?.phone || '';
 
+      // Get tenant details from the tenant data (if available)
+      const tenantDetails = tenants.find(t => recentTransaction?.tenantId === t.id);
+
       csv += `"${property?.name}","${unit.unitNumber}","${unit.status}",${unit.monthlyRent || 0},`;
-      csv += `"${tenantName}","${tenantEmail}","${tenantPhone}","${recentTransaction?.tenant ? 'Active' : 'Vacant'}"\n`;
+      csv += `"${tenantName}","${tenantEmail}","${tenantPhone}","${recentTransaction?.tenant ? 'Active' : 'Vacant'}",`;
+      csv += `"${tenantDetails?.prefix || ''}","${tenantDetails?.profession || ''}","${tenantDetails?.occupation || ''}",`;
+      csv += `${tenantDetails?.numberOfPeople || ''},"${tenantDetails?.moveInDate || ''}","${tenantDetails?.rentStartDate || ''}",`;
+      csv += `"${tenantDetails?.leaseType || ''}","${tenantDetails?.leaseStartDate || ''}",${tenantDetails?.leasePeriodMonths || ''},"${tenantDetails?.leaseExpiryDate || ''}",`;
+      csv += `"${tenantDetails?.extraServices?.join(', ') || ''}"\n`;
     });
 
     // Create and download the CSV file
@@ -368,7 +380,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
               <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(monthlyStats.totalCollected)}</div>
+              <div className="text-2xl font-bold text-green-600">{formatPropertyCurrency(monthlyStats.totalCollected)}</div>
               <p className="text-xs text-gray-600 mt-1">
                 {monthlyStats.collectionRate.toFixed(1)}% of expected
               </p>
@@ -381,7 +393,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
               <TrendingDown className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{formatCurrency(monthlyStats.totalBalance)}</div>
+              <div className="text-2xl font-bold text-orange-600">{formatPropertyCurrency(monthlyStats.totalBalance)}</div>
               <p className="text-xs text-gray-600 mt-1">Pending payments</p>
             </CardContent>
           </Card>
@@ -405,7 +417,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
               <DollarSign className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(monthlyStats.totalExpected)}</div>
+              <div className="text-2xl font-bold">{formatPropertyCurrency(monthlyStats.totalExpected)}</div>
               <p className="text-xs text-gray-600 mt-1">For this month</p>
             </CardContent>
           </Card>
@@ -431,7 +443,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
                         height: `${Math.max((data.collected / Math.max(...timeSeriesData.map(d => d.collected))) * 200, 20)}px`,
                         minHeight: '20px'
                       }}
-                      title={`${data.month}: ${formatCurrency(data.collected)}`}
+                      title={`${data.month}: ${formatPropertyCurrency(data.collected)}`}
                     />
                     <span className="text-xs mt-2 text-gray-600">{data.month}</span>
                   </div>
@@ -458,7 +470,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
                         height: `${Math.max((data.balance / Math.max(...timeSeriesData.map(d => d.balance || 1))) * 200, 20)}px`,
                         minHeight: '20px'
                       }}
-                      title={`${data.month}: ${formatCurrency(data.balance)}`}
+                      title={`${data.month}: ${formatPropertyCurrency(data.balance)}`}
                     />
                     <span className="text-xs mt-2 text-gray-600">{data.month}</span>
                   </div>
@@ -493,7 +505,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{formatCurrency(incomeExpenseData[0].value + incomeExpenseData[1].value)}</div>
+                      <div className="text-2xl font-bold">{formatPropertyCurrency(incomeExpenseData[0].value + incomeExpenseData[1].value)}</div>
                       <div className="text-sm text-gray-600">Total</div>
                     </div>
                   </div>
@@ -502,11 +514,11 @@ export const MonthlySummaryDashboard: React.FC = () => {
               <div className="flex justify-center space-x-6 mt-4">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 bg-green-500 rounded"></div>
-                  <span className="text-sm">Income: {formatCurrency(incomeExpenseData[0].value)}</span>
+                  <span className="text-sm">Income: {formatPropertyCurrency(incomeExpenseData[0].value)}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 bg-red-500 rounded"></div>
-                  <span className="text-sm">Expenses: {formatCurrency(incomeExpenseData[1].value)}</span>
+                  <span className="text-sm">Expenses: {formatPropertyCurrency(incomeExpenseData[1].value)}</span>
                 </div>
               </div>
             </CardContent>
@@ -618,12 +630,12 @@ export const MonthlySummaryDashboard: React.FC = () => {
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
                     <DollarSign className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-purple-600">{formatCurrency(monthlyStats.totalMeterCharges)}</div>
+                    <div className="text-2xl font-bold text-purple-600">{formatPropertyCurrency(monthlyStats.totalMeterCharges)}</div>
                     <div className="text-sm text-gray-600">Meter Charges</div>
                   </div>
                   <div className="text-center p-4 bg-orange-50 rounded-lg">
                     <Receipt className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-orange-600">{formatCurrency(monthlyStats.totalExpenses)}</div>
+                    <div className="text-2xl font-bold text-orange-600">{formatPropertyCurrency(monthlyStats.totalExpenses)}</div>
                     <div className="text-sm text-gray-600">Additional Expenses</div>
                   </div>
                 </div>
@@ -655,7 +667,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
                             {expenses.filter(e => !e.isRemoved).map((expense, idx) => (
                               <div key={idx} className="flex justify-between text-sm">
                                 <span>{expense.description} ({expense.category})</span>
-                                <span className="font-medium">{formatCurrency(expense.amount)}</span>
+                                <span className="font-medium">{formatPropertyCurrency(expense.amount)}</span>
                               </div>
                             ))}
                           </div>

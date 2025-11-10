@@ -4,6 +4,7 @@ import { Building2, MapPin, Home } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField, Badge } from '../../componentDesignLibrary';
 import type { PropertyInput } from '../../types';
 import { PropertyType, PropertyStatus } from '../../types/property';
+import { getCurrencyOptions, DEFAULT_CURRENCY } from '../../types/currency';
 
 interface PropertyFormModernProps {
   initialData?: Partial<PropertyInput>;
@@ -20,6 +21,7 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
     description: initialData?.description || '',
     propertyType: initialData?.propertyType || PropertyType.APARTMENT,
     status: initialData?.status || PropertyStatus.AVAILABLE,
+    currency: initialData?.currency || DEFAULT_CURRENCY,
     address: {
       street: initialData?.address?.street || '',
       city: initialData?.address?.city || '',
@@ -135,6 +137,21 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
               {Object.values(PropertyStatus).map(status => (
                 <SelectItem key={status} value={status}>
                   {status.replace('_', ' ').toUpperCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+
+        <FormField label="Currency" required>
+          <Select value={formData.currency} onValueChange={(value) => handleChange('currency', value)}>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Select currency" />
+            </SelectTrigger>
+            <SelectContent>
+              {getCurrencyOptions().map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -11,6 +11,7 @@ export class PDFGenerator {
         propertyAddress: receiptData.property.address || '',
         propertyPhone: receiptData.property.phone || '',
         propertyEmail: receiptData.property.email || '',
+        propertyCurrency: receiptData.property.currency || 'INR',
         invoiceNumber: receiptData.receiptNumber,
         invoiceDate: new Date(receiptData.receiptDate).toLocaleDateString('en-IN', {
           year: 'numeric', month: 'long', day: 'numeric'

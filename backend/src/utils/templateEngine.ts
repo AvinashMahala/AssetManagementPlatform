@@ -7,6 +7,7 @@ export interface InvoiceTemplateData {
   propertyAddress: string;
   propertyPhone: string;
   propertyEmail: string;
+  propertyCurrency: string; // Currency code (e.g., 'INR', 'USD', 'EUR')
 
   // Invoice
   invoiceNumber: string;
@@ -105,12 +106,14 @@ export class TemplateEngine {
       }
     });
 
+    const currencySymbol = this.getCurrencySymbol(data.propertyCurrency);
+
     const chargesRows = `
-      <td class="amount-col">₹${this.formatCurrency(rentAmount)}</td>
-      <td class="amount-col">₹${this.formatCurrency(electricityAmount)}</td>
-      <td class="amount-col">₹${this.formatCurrency(oldBalance)}</td>
-      <td class="amount-col">₹${this.formatCurrency(expenseAmount)}</td>
-      <td class="amount-col">₹${this.formatCurrency(parseFloat(data.totalAmount))}</td>
+      <td class="amount-col">${currencySymbol}${this.formatCurrency(rentAmount, data.propertyCurrency)}</td>
+      <td class="amount-col">${currencySymbol}${this.formatCurrency(electricityAmount, data.propertyCurrency)}</td>
+      <td class="amount-col">${currencySymbol}${this.formatCurrency(oldBalance, data.propertyCurrency)}</td>
+      <td class="amount-col">${currencySymbol}${this.formatCurrency(expenseAmount, data.propertyCurrency)}</td>
+      <td class="amount-col">${currencySymbol}${this.formatCurrency(parseFloat(data.totalAmount), data.propertyCurrency)}</td>
     `;
     html = html.replace(/{{chargesRows}}/g, chargesRows);
 
@@ -120,7 +123,7 @@ export class TemplateEngine {
       balanceRow = `
         <div class="balance-due-box">
           <div class="balance-due-label">BALANCE DUE</div>
-          <div class="balance-due-amount">₹${this.formatCurrency(Math.abs(data.balance))}</div>
+          <div class="balance-due-amount">${currencySymbol}${this.formatCurrency(Math.abs(data.balance), data.propertyCurrency)}</div>
         </div>
       `;
     }
@@ -146,10 +149,41 @@ export class TemplateEngine {
   /**
    * Format currency with proper decimals and thousand separators
    */
-  private static formatCurrency(amount: number): string {
-    return amount.toLocaleString('en-IN', {
+  private static formatCurrency(amount: number, currency: string = 'INR'): string {
+    const currencyLocales: Record<string, string> = {
+      'INR': 'en-IN',
+      'USD': 'en-US',
+      'EUR': 'en-EU',
+      'GBP': 'en-GB',
+      'AUD': 'en-AU',
+      'CAD': 'en-CA',
+      'JPY': 'ja-JP',
+      'CNY': 'zh-CN'
+    };
+
+    const locale = currencyLocales[currency] || 'en-US';
+
+    return amount.toLocaleString(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  }
+
+  /**
+   * Get currency symbol for a given currency code
+   */
+  private static getCurrencySymbol(currency: string): string {
+    const symbols: Record<string, string> = {
+      'INR': '₹',
+      'USD': '$',
+      'EUR': '€',
+      'GBP': '£',
+      'AUD': 'A$',
+      'CAD': 'C$',
+      'JPY': '¥',
+      'CNY': '¥'
+    };
+
+    return symbols[currency] || currency;
   }
 }

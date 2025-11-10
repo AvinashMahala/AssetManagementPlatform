@@ -26,6 +26,7 @@ export interface Property {
   description?: string;
   propertyType: PropertyType;
   status: PropertyStatus;
+  currency: string; // Currency code (e.g., 'INR', 'USD', 'EUR')
 
   // Address details (Indian format)
   address: {
@@ -100,6 +101,7 @@ export interface PropertyInput {
   description?: string;
   propertyType: PropertyType;
   status?: PropertyStatus;
+  currency?: string; // Currency code (e.g., 'INR', 'USD', 'EUR')
 
   // Address details
   address: {

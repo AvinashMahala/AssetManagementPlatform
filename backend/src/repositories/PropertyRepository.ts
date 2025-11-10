@@ -254,6 +254,7 @@ export class PropertyRepository implements IPropertyRepository {
       description: row.description,
       propertyType: row.property_type,
       status: row.status,
+      currency: row.currency || 'INR',
       address: {
         street: row.address_street,
         city: row.address_city,

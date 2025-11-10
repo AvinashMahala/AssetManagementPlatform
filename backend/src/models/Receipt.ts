@@ -46,6 +46,7 @@ export interface ReceiptData {
     address: string;
     phone?: string;
     email?: string;
+    currency?: string; // Currency code (e.g., 'INR', 'USD')
   };
 
   // Landlord information

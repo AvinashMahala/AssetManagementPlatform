@@ -1,4 +1,6 @@
 // Property-related type definitions for frontend
+import type { CurrencyCode } from './currency';
+
 export const PropertyType = {
   APARTMENT: 'apartment',
   HOUSE: 'house',
@@ -37,6 +39,7 @@ export interface Property {
   description?: string;
   propertyType: PropertyTypeValue;
   status: PropertyStatusValue;
+  currency: CurrencyCode; // Currency for this property
 
   // Address details (Indian format)
   address: PropertyAddress;
@@ -65,6 +68,7 @@ export interface PropertyInput {
   description?: string;
   propertyType: PropertyTypeValue;
   status?: PropertyStatusValue;
+  currency?: CurrencyCode; // Currency for this property
 
   // Address details
   address: PropertyAddress;

@@ -101,6 +101,7 @@ export class PropertyService implements IPropertyService {
       description: propertyData.description,
       propertyType: propertyData.propertyType,
       status: propertyData.status || PropertyStatus.AVAILABLE,
+      currency: propertyData.currency || 'INR',
       address: propertyData.address,
       totalArea: propertyData.totalArea,
       totalFloors: propertyData.totalFloors,

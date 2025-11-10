@@ -4,6 +4,10 @@
  */
 
 import type { MeterReadingInput, ExpenseItem, LateFeeConfig } from '../types/rentTransaction';
+import { formatCurrency } from './formatters';
+
+// Re-export formatCurrency for backward compatibility
+export { formatCurrency };
 
 /**
  * Calculate meter charge
@@ -154,13 +158,6 @@ export function splitChargesByAmount(
 /**
  * Format currency for display
  */
-export function formatCurrency(amount: number, currency: string = 'INR'): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: currency,
-    maximumFractionDigits: 0
-  }).format(amount);
-}
 
 /**
  * Format date for display

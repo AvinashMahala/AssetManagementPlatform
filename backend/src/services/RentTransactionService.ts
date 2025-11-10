@@ -853,7 +853,8 @@ export class RentTransactionService implements IRentTransactionService {
           name: property.name,
           address: `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`,
           phone: '',  // Property doesn't have phone/email, use landlord's
-          email: ''
+          email: '',
+          currency: property.currency || 'INR'
         },
         landlord: {
           name: landlord ? (landlord.name || landlord.username) : 'Property Owner',
@@ -979,7 +980,8 @@ export class RentTransactionService implements IRentTransactionService {
           name: property.name,
           address: `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`,
           phone: '',
-          email: ''
+          email: '',
+          currency: property.currency || 'INR'
         },
         landlord: {
           name: landlord ? (landlord.name || landlord.username) : 'Property Owner',
