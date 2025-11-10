@@ -101,7 +101,7 @@ const PropertyListPage: React.FC = () => {
   }
 
   return (
-    <AppLayout>
+    <AppLayout title="Properties">
       <div className="h-screen flex flex-col">
         {/* Header - Fixed height */}
         <div className="flex-shrink-0 px-6 py-4 border-b bg-white">

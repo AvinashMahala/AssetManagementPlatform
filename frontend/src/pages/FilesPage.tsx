@@ -320,7 +320,7 @@ const FilesPage: React.FC = () => {
   };
 
   return (
-    <AppLayout>
+    <AppLayout title="Files">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-6">
