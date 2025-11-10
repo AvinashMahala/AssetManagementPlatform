@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../../components/ui/input';
 import { FormField } from '../../components/ui/form-field';
 import { Form } from '../../components/ui/form';
+import { LoadingSpinner, ValidationFeedback, EmailVerificationStatus, useRealTimeValidation, ExpandableSection, Tooltip } from '../../components/ui';
 import { useAuthContext } from '../../contexts/AuthContext';
 import type { UpdateProfileRequest } from '../../services/authService';
 
@@ -16,57 +17,74 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
   onCancel
 }) => {
   const { user, updateProfile, loading } = useAuthContext();
-  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitError, setSubmitError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  const [retryCount, setRetryCount] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      // No need to set form data since Form component handles it
+  // Real-time validation for form fields
+  const usernameValidation = useRealTimeValidation(
+    user?.username || '',
+    (value) => {
+      if (value && value.length < 3) return 'Username must be at least 3 characters';
+      if (value && !/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores';
+      return null;
     }
-  }, [user]);
+  );
 
-  const handleSubmit = async (data: Record<string, any>) => {
+  const emailValidation = useRealTimeValidation(
+    user?.email || '',
+    (value) => {
+      if (value && !/\S+@\S+\.\S+/.test(value)) return 'Please enter a valid email address';
+      return null;
+    }
+  );
+
+  const phoneValidation = useRealTimeValidation(
+    user?.phone || '',
+    (value) => {
+      if (value && !/^\+?[\d\s\-()]+$/.test(value)) return 'Please enter a valid phone number';
+      return null;
+    }
+  );
+
+  const handleSubmit = async () => {
     setSubmitError('');
     setSuccess('');
-    setErrors({});
 
-    // Validate form data from the Form component
-    const newErrors: Partial<Record<string, string>> = {};
+    // Validate all fields
+    const validations = [usernameValidation, emailValidation, phoneValidation];
+    const allValid = validations.every(v => v.validate());
 
-    if (data.username && data.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
-    }
-
-    if (data.email && !/\S+@\S+\.\S+/.test(data.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (data.phone && !/^\+?[\d\s\-()]+$/.test(data.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (!allValid) {
+      setSubmitError('Please fix the validation errors before submitting.');
       return;
     }
 
     try {
       const updateData: UpdateProfileRequest = {
-        username: data.username || undefined,
-        email: data.email || undefined,
-        phone: data.phone || undefined
+        username: usernameValidation.value || undefined,
+        email: emailValidation.value || undefined,
+        phone: phoneValidation.value || undefined
       };
+
       const success = await updateProfile(updateData);
       if (success) {
         setSuccess('Profile updated successfully!');
+        setRetryCount(0);
         onSuccess?.();
       } else {
-        setSubmitError('Failed to update profile');
+        throw new Error('Failed to update profile');
       }
-    } catch (_error) {
-      setSubmitError('An error occurred while updating your profile. Please try again.');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while updating your profile. Please try again.';
+      setSubmitError(errorMessage);
+      setRetryCount(prev => prev + 1);
     }
+  };
+
+  const handleRetry = () => {
+    setSubmitError('');
+    // Retry logic would go here - could resubmit the form or refresh data
   };
 
   if (!user) {
@@ -81,15 +99,23 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     <div className="w-full">
       <Form onSubmit={handleSubmit} loading={loading}>
         {submitError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm mb-4">
-            {submitError}
-          </div>
+          <ValidationFeedback
+            type="error"
+            message={submitError}
+            onDismiss={() => setSubmitError('')}
+            className="mb-4"
+          />
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm mb-4">
-            {success}
-          </div>
+          <ValidationFeedback
+            type="success"
+            message={success}
+            onDismiss={() => setSuccess('')}
+            autoHide={true}
+            autoHideDelay={3000}
+            className="mb-4"
+          />
         )}
 
         <div className="space-y-3">
@@ -103,54 +129,121 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           </div>
 
           <FormField label="Username">
-            <Input
-              name="username"
-              type="text"
-              defaultValue={user.username || ''}
-              error={errors.username}
-              placeholder="Enter your username"
-            />
+            <Tooltip content="Your unique username (3-20 characters, letters, numbers, and underscores only)">
+              <div>
+                <Input
+                  name="username"
+                  type="text"
+                  value={usernameValidation.value}
+                  onChange={(e) => usernameValidation.handleChange(e.target.value)}
+                  onBlur={usernameValidation.handleBlur}
+                  error={usernameValidation.error || undefined}
+                  placeholder="Enter your username"
+                />
+              </div>
+            </Tooltip>
           </FormField>
 
           <FormField label="Email (changing email requires verification)">
-            <Input
-              name="email"
-              type="email"
-              defaultValue={user.email || ''}
-              error={errors.email}
-              placeholder="Enter your email"
-            />
+            <Tooltip content="Your email address for account access and notifications. Changes require email verification.">
+              <div>
+                <Input
+                  name="email"
+                  type="email"
+                  value={emailValidation.value}
+                  onChange={(e) => emailValidation.handleChange(e.target.value)}
+                  onBlur={emailValidation.handleBlur}
+                  error={emailValidation.error || undefined}
+                  placeholder="Enter your email"
+                />
+              </div>
+            </Tooltip>
           </FormField>
 
           <FormField label="Phone">
-            <Input
-              name="phone"
-              type="tel"
-              defaultValue={user.phone || ''}
-              error={errors.phone}
-              placeholder="Enter your phone number"
-            />
+            <Tooltip content="Your phone number for account recovery and SMS notifications (optional)">
+              <div>
+                <Input
+                  name="phone"
+                  type="tel"
+                  value={phoneValidation.value}
+                  onChange={(e) => phoneValidation.handleChange(e.target.value)}
+                  onBlur={phoneValidation.handleBlur}
+                  error={phoneValidation.error || undefined}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+            </Tooltip>
           </FormField>
 
+          {/* Email Verification Status */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Account Status
+              Email Verification
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-              <div className="flex items-center space-x-1">
-                <span>Email Verified:</span>
-                <span>{user.isEmailVerified ? '✅' : '❌'}</span>
+            <EmailVerificationStatus
+              isVerified={user.isEmailVerified || false}
+              email={user.email}
+              onResendVerification={() => {
+                // TODO: Implement email verification resend
+                console.log('Resend verification email');
+              }}
+            />
+          </div>
+
+          {/* Account Details - Expandable Section */}
+          <ExpandableSection
+            title="Account Details & Status"
+            defaultExpanded={false}
+            className="mt-6"
+            headerClassName="bg-gray-50/50 dark:bg-gray-800/50"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                <Tooltip content="Email verification status - verified accounts have full access to all features">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border">
+                    <span className="text-gray-600 dark:text-gray-400">Email Verified:</span>
+                    <span className={`font-medium ${user.isEmailVerified ? 'text-green-600' : 'text-red-600'}`}>
+                      {user.isEmailVerified ? '✅ Verified' : '❌ Unverified'}
+                    </span>
+                  </div>
+                </Tooltip>
+                <Tooltip content="Phone verification status - enhances account security">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border">
+                    <span className="text-gray-600 dark:text-gray-400">Phone Verified:</span>
+                    <span className={`font-medium ${user.isPhoneVerified ? 'text-green-600' : 'text-red-600'}`}>
+                      {user.isPhoneVerified ? '✅ Verified' : '❌ Unverified'}
+                    </span>
+                  </div>
+                </Tooltip>
+                <Tooltip content="Your account role and permission level">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border">
+                    <span className="text-gray-600 dark:text-gray-400">Account Role:</span>
+                    <span className="font-medium text-blue-600 dark:text-blue-400">{user.role}</span>
+                  </div>
+                </Tooltip>
               </div>
-              <div className="flex items-center space-x-1">
-                <span>Phone Verified:</span>
-                <span>{user.isPhoneVerified ? '✅' : '❌'}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <span>Role:</span>
-                <span className="font-medium">{user.role}</span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <Tooltip content="Date when you first created your account">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border">
+                    <span className="text-gray-600 dark:text-gray-400">Account Created:</span>
+                    <span className="font-medium">
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                </Tooltip>
+                <Tooltip content="Last time you logged into the system">
+                  <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border">
+                    <span className="text-gray-600 dark:text-gray-400">Last Login:</span>
+                    <span className="font-medium">
+                      {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                </Tooltip>
               </div>
             </div>
-          </div>
+          </ExpandableSection>
         </div>
 
         <div className="flex space-x-3 mt-4">
@@ -159,8 +252,16 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
             variant="primary"
             size="medium"
             className="flex-1"
+            disabled={loading || !usernameValidation.isValid || !emailValidation.isValid || !phoneValidation.isValid}
           >
-            {loading ? 'Updating...' : 'Update Profile'}
+            {loading ? (
+              <div className="flex items-center space-x-2">
+                <LoadingSpinner size="sm" />
+                <span>Updating...</span>
+              </div>
+            ) : (
+              'Update Profile'
+            )}
           </Button>
 
           <Button
@@ -169,10 +270,25 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
             size="medium"
             className="flex-1"
             onClick={onCancel}
+            disabled={loading}
           >
             Cancel
           </Button>
         </div>
+
+        {retryCount > 0 && submitError && (
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              size="small"
+              onClick={handleRetry}
+              className="w-full flex items-center justify-center space-x-2"
+            >
+              <span>Retry ({retryCount}/3)</span>
+            </Button>
+          </div>
+        )}
       </Form>
     </div>
   );
