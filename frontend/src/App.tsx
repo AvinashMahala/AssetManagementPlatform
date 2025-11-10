@@ -20,6 +20,7 @@ import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization
 import { PropertyRentCollectionPage, UnitRentCollectionPage } from './pages/rentCollection';
 import { MeterListPage, MeterCreatePage, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
 import FilesPage from './pages/FilesPage';
+import { RentTransactionInvoicePage, RentTransactionRecordPaymentPage, RentTransactionReceiptPage } from './pages/rentTransactions';
 import { AppLayout } from './components/layout/AppLayout';
 
 function App() {
@@ -165,6 +166,11 @@ function App() {
               {/* Rent Collection routes */}
               <Route path="/properties/:propertyId/rent-collection" element={<ProtectedRoute><PropertyRentCollectionPage /></ProtectedRoute>} />
               <Route path="/properties/:propertyId/units/:unitId/collect-rent" element={<ProtectedRoute><UnitRentCollectionPage /></ProtectedRoute>} />
+
+              {/* Rent Transaction routes */}
+              <Route path="/rent-transactions/:transactionId/invoice" element={<ProtectedRoute><RentTransactionInvoicePage /></ProtectedRoute>} />
+              <Route path="/rent-transactions/:transactionId/record-payment" element={<ProtectedRoute><RentTransactionRecordPaymentPage /></ProtectedRoute>} />
+              <Route path="/rent-transactions/:transactionId/receipt" element={<ProtectedRoute><RentTransactionReceiptPage /></ProtectedRoute>} />
 
               <Route
                 path="/admin/*"
