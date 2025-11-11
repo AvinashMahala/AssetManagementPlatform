@@ -6,6 +6,18 @@ export enum RentTransactionStatus {
   CANCELLED = 'cancelled'
 }
 
+// Workflow status for streamlined rent collection process
+export enum RentCollectionWorkflowStatus {
+  INVOICE_PENDING = 'invoice_pending',     // Invoice not yet generated
+  INVOICE_GENERATED = 'invoice_generated', // Invoice generated, ready for notification
+  NOTIFICATION_SENT = 'notification_sent', // Notification sent to tenant
+  PAYMENT_PENDING = 'payment_pending',     // Waiting for payment
+  PAYMENT_PARTIAL = 'payment_partial',     // Partial payment received
+  PAYMENT_COMPLETED = 'payment_completed', // Full payment received
+  RECEIPT_GENERATED = 'receipt_generated', // Receipt generated
+  WORKFLOW_COMPLETED = 'workflow_completed' // Entire workflow finished
+}
+
 // Billing method
 export enum BillingMethod {
   RELATIVE = 'relative', // Date-to-date billing
@@ -93,6 +105,18 @@ export interface RentTransaction {
   receiptNumber?: string;
   receiptGenerated: boolean;
 
+  // Workflow tracking for streamlined process
+  workflowStatus: RentCollectionWorkflowStatus;
+  invoiceGenerated: boolean;
+  invoiceSentDate?: Date;
+  notificationSent: boolean;
+  notificationSentDate?: Date;
+  notificationMethod?: 'email' | 'sms' | 'manual';
+  lastPaymentDate?: Date;
+  receiptSent: boolean;
+  receiptSentDate?: Date;
+  workflowCompletedDate?: Date;
+
   // Notes
   notes?: string;
 
@@ -128,6 +152,19 @@ export interface RentTransactionInput {
   paymentReference?: string;
   receiptNumber?: string;
   receiptGenerated: boolean;
+
+  // Workflow tracking fields
+  workflowStatus: RentCollectionWorkflowStatus;
+  invoiceGenerated: boolean;
+  invoiceSentDate?: Date;
+  notificationSent: boolean;
+  notificationSentDate?: Date;
+  notificationMethod?: 'email' | 'sms' | 'manual';
+  lastPaymentDate?: Date;
+  receiptSent: boolean;
+  receiptSentDate?: Date;
+  workflowCompletedDate?: Date;
+
   notes?: string;
   createdBy: string;
   updatedBy?: string;

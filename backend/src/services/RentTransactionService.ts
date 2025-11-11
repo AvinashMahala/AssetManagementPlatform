@@ -1,6 +1,6 @@
 import { IRentTransactionRepository } from '../interfaces/repositories/IRentTransactionRepository';
 import { IRentTransactionService } from '../interfaces/services/IRentTransactionService';
-import { RentTransaction, RentTransactionInput, RentTransactionStatus, BillingMethod, ExpenseAction } from '../models/RentTransaction';
+import { RentTransaction, RentTransactionInput, RentTransactionStatus, BillingMethod, ExpenseAction, RentCollectionWorkflowStatus } from '../models/RentTransaction';
 import { ValidationUtils } from '../utils/validation';
 import { ERROR_MESSAGES } from '../constants/validation';
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
@@ -13,6 +13,7 @@ import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService';
 import { PDFGenerator } from '../utils/pdfGenerator';
 import { ReceiptData } from '../models/Receipt';
+import { notificationService } from './NotificationService';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -168,8 +169,12 @@ export class RentTransactionService implements IRentTransactionService {
       ...transactionData,
       totalAmount: totalAmount,
       newBalance: newBalance,
-      status: transactionData.status || RentTransactionStatus.DRAFT
-    } as RentTransactionInput;
+      status: transactionData.status || RentTransactionStatus.DRAFT,
+      workflowStatus: RentCollectionWorkflowStatus.INVOICE_PENDING,
+      invoiceGenerated: false,
+      notificationSent: false,
+      receiptSent: false
+    } as Omit<RentTransaction, 'id' | 'createdAt' | 'updatedAt'>;
 
     // Create the transaction
     const transaction = await this.repository.create(transactionInput);
@@ -398,6 +403,10 @@ export class RentTransactionService implements IRentTransactionService {
         newBalance: baseRent + previousBalance + expenses.reduce((sum, expense) => sum + expense.amount, 0),
         status: RentTransactionStatus.DRAFT,
         receiptGenerated: false,
+        workflowStatus: RentCollectionWorkflowStatus.INVOICE_PENDING,
+        invoiceGenerated: false,
+        notificationSent: false,
+        receiptSent: false,
         createdBy: 'system' // This should be the current user ID
       };
 
@@ -720,13 +729,17 @@ export class RentTransactionService implements IRentTransactionService {
 
     // Determine new status
     let newStatus = transaction.status;
+    let newWorkflowStatus = transaction.workflowStatus;
+
     if (newBalance <= 0) {
       newStatus = RentTransactionStatus.PAID;
+      newWorkflowStatus = RentCollectionWorkflowStatus.PAYMENT_COMPLETED;
     } else if (totalPaid > 0 && newBalance > 0) {
       newStatus = RentTransactionStatus.FINALIZED; // Partial payment
+      newWorkflowStatus = RentCollectionWorkflowStatus.PAYMENT_PARTIAL;
     }
 
-    // Update transaction
+    // Update transaction with workflow tracking
     return await this.repository.update(transactionId, {
       amountPaid: totalPaid,
       newBalance: newBalance,
@@ -734,6 +747,8 @@ export class RentTransactionService implements IRentTransactionService {
       status: newStatus,
       paymentMethod: paymentMethod as any,
       paymentReference: paymentReference,
+      workflowStatus: newWorkflowStatus,
+      lastPaymentDate: paymentDate,
       updatedBy: transaction.createdBy // TODO: Get from current user context
     });
   }
@@ -924,7 +939,10 @@ export class RentTransactionService implements IRentTransactionService {
       await this.repository.update(transactionId, {
         receiptNumber: invoiceNumber,
         receiptGenerated: true,
-        status: RentTransactionStatus.FINALIZED
+        status: RentTransactionStatus.FINALIZED,
+        workflowStatus: RentCollectionWorkflowStatus.INVOICE_GENERATED,
+        invoiceGenerated: true,
+        invoiceSentDate: new Date()
       });
 
       return { pdfUrl, invoiceNumber };
@@ -1041,7 +1059,11 @@ export class RentTransactionService implements IRentTransactionService {
       // Update transaction with receipt details
       await this.repository.update(transactionId, {
         receiptNumber: receiptNumber,
-        receiptGenerated: true
+        receiptGenerated: true,
+        workflowStatus: RentCollectionWorkflowStatus.RECEIPT_GENERATED,
+        receiptSent: true,
+        receiptSentDate: new Date(),
+        workflowCompletedDate: new Date()
       });
 
       return { pdfUrl, receiptNumber };

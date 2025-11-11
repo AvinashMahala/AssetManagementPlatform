@@ -159,14 +159,3 @@ export function usePreviewReceipt(transactionId: string) {
   );
   return useApi<any>(query, [transactionId]);
 }
-
-/**
- * Get monthly summary for property
- */
-export function useMonthlySummary(propertyId: string, month: string, year: string) {
-  const query = useCallback(
-    () => rentTransactionService.getMonthlySummary(propertyId, month, year),
-    [propertyId, month, year]
-  );
-  return useApi<any>(query, [propertyId, month, year]);
-}

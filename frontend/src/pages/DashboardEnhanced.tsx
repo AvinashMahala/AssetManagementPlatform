@@ -11,6 +11,7 @@ import {
   Plus,
   ArrowRight,
   AlertCircle,
+  Receipt,
 } from 'lucide-react';
 import { useProperties, useTenants, useUnits, useLeases, usePayments } from '../hooks';
 import {
@@ -284,7 +285,7 @@ const DashboardEnhanced: React.FC = () => {
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard
             title="Total Properties"
             value={stats.totalProperties}
@@ -317,6 +318,14 @@ const DashboardEnhanced: React.FC = () => {
             change={12.5}
             action={() => navigate('/payments')}
             actionLabel="View Payments"
+          />
+          <StatCard
+            title="Rent Collection"
+            value="Workflow"
+            icon={Receipt}
+            description="Monitor collection process"
+            action={() => navigate('/rent-collection/workflow-dashboard')}
+            actionLabel="View Dashboard"
           />
         </div>
 

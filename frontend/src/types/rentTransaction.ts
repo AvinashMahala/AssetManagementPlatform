@@ -8,6 +8,22 @@ export type TransactionStatus = 'draft' | 'pending' | 'partial' | 'paid' | 'over
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'upi' | 'cheque' | 'card' | 'other';
 
 /**
+ * Workflow status for streamlined rent collection process
+ */
+export const RentCollectionWorkflowStatus = {
+  INVOICE_PENDING: 'invoice_pending',     // Invoice not yet generated
+  INVOICE_GENERATED: 'invoice_generated', // Invoice generated, ready for notification
+  NOTIFICATION_SENT: 'notification_sent', // Notification sent to tenant
+  PAYMENT_PENDING: 'payment_pending',     // Waiting for payment
+  PAYMENT_PARTIAL: 'payment_partial',     // Partial payment received
+  PAYMENT_COMPLETED: 'payment_completed', // Full payment received
+  RECEIPT_GENERATED: 'receipt_generated', // Receipt generated
+  WORKFLOW_COMPLETED: 'workflow_completed' // Entire workflow finished
+} as const;
+
+export type RentCollectionWorkflowStatusType = typeof RentCollectionWorkflowStatus[keyof typeof RentCollectionWorkflowStatus];
+
+/**
  * Expense line item
  */
 export interface ExpenseItem {
@@ -109,6 +125,18 @@ export interface RentTransactionInput {
   receiptNumber?: string;
   receiptGenerated?: boolean;
   
+  // Workflow tracking fields
+  workflowStatus?: RentCollectionWorkflowStatusType;
+  invoiceGenerated?: boolean;
+  invoiceSentDate?: string;
+  notificationSent?: boolean;
+  notificationSentDate?: string;
+  notificationMethod?: 'email' | 'sms' | 'manual';
+  lastPaymentDate?: string;
+  receiptSent?: boolean;
+  receiptSentDate?: string;
+  workflowCompletedDate?: string;
+  
   // Multi-tenant support
   tenantShares?: TenantShare[];
   splitEqually?: boolean;
@@ -125,6 +153,12 @@ export interface RentTransaction extends RentTransactionInput {
   updatedBy?: string;
   createdAt: string;
   updatedAt: string;
+  
+  // Workflow tracking fields (required in full entity)
+  workflowStatus: RentCollectionWorkflowStatusType;
+  invoiceGenerated: boolean;
+  notificationSent: boolean;
+  receiptSent: boolean;
   
   // Populated relationships
   unit?: {

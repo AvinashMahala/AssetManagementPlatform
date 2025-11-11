@@ -21,7 +21,7 @@ import DashboardEnhanced from './pages/DashboardEnhanced';
 import TemplateEditor from './pages/TemplateEditor';
 import TemplateGallery from './pages/TemplateGallery';
 import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
-import { PropertyRentCollectionPage, UnitRentCollectionPage, MonthlySummaryDashboard } from './pages/rentCollection';
+import { PropertyRentCollectionPage, UnitRentCollectionPage, MonthlySummaryDashboard, RentCollectionWorkflowDashboard } from './pages/rentCollection';
 import { MeterListPage, MeterCreatePage, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
 import FilesPage from './pages/FilesPage';
 import { RentTransactionInvoicePage, RentTransactionRecordPaymentPage, RentTransactionReceiptPage } from './pages/rentTransactions';
@@ -185,6 +185,7 @@ function App() {
               {/* Rent Collection routes */}
               <Route path="/properties/:propertyId/rent-collection" element={<ProtectedRoute><PropertyRentCollectionPage /></ProtectedRoute>} />
               <Route path="/properties/:propertyId/rent-collection/monthly-summary" element={<ProtectedRoute><MonthlySummaryDashboard /></ProtectedRoute>} />
+              <Route path="/rent-collection/workflow-dashboard" element={<ProtectedRoute><RentCollectionWorkflowDashboard /></ProtectedRoute>} />
               <Route path="/properties/:propertyId/units/:unitId/collect-rent" element={<ProtectedRoute><UnitRentCollectionPage /></ProtectedRoute>} />
 
               {/* Rent Transaction routes */}

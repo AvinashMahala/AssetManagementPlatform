@@ -126,17 +126,24 @@ class RentTransactionService {
   }
 
   /**
-   * Get monthly summary for property
+   * Send invoice notification to tenant
    */
-  async getMonthlySummary(propertyId: string, month: string, year: string): Promise<ApiResponse<{
-    totalTransactions: number;
-    totalRent: number;
-    totalCollected: number;
-    totalPending: number;
-    totalOverdue: number;
-    transactions: RentTransaction[];
-  }>> {
-    return apiClient.get<any>(`/api/rent-transactions/property/${propertyId}/monthly-summary?month=${month}&year=${year}`);
+  async sendInvoiceNotification(transactionId: string, method: 'email' | 'sms' = 'email'): Promise<ApiResponse<{ success: boolean; message: string }>> {
+    return apiClient.post<{ success: boolean; message: string }>(`/api/rent-transactions/${transactionId}/send-invoice-notification`, { method });
+  }
+
+  /**
+   * Send receipt notification to tenant
+   */
+  async sendReceiptNotification(transactionId: string, method: 'email' | 'sms' = 'email'): Promise<ApiResponse<{ success: boolean; message: string }>> {
+    return apiClient.post<{ success: boolean; message: string }>(`/api/rent-transactions/${transactionId}/send-receipt-notification`, { method });
+  }
+
+  /**
+   * Send payment reminder to tenant
+   */
+  async sendPaymentReminder(transactionId: string, method: 'email' | 'sms' = 'email'): Promise<ApiResponse<{ success: boolean; message: string }>> {
+    return apiClient.post<{ success: boolean; message: string }>(`/api/rent-transactions/${transactionId}/send-payment-reminder`, { method });
   }
 }
 
