@@ -4,11 +4,11 @@ import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Database configuration for files database
+// Database configuration for main database
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME_FILES || 'asset_platform_files',
+  database: process.env.DB_NAME || 'asset_platform_main',
   user: process.env.DB_USER || 'user',
   password: process.env.DB_PASSWORD || 'pass',
 });
@@ -19,15 +19,9 @@ async function runMigration(migrationPath: string) {
 
     const sql = readFileSync(migrationPath, 'utf8');
 
-    // Split by semicolon and execute each statement
-    const statements = sql.split(';').filter(stmt => stmt.trim().length > 0);
-
-    for (const statement of statements) {
-      if (statement.trim()) {
-        console.log(`Executing: ${statement.trim().substring(0, 50)}...`);
-        await pool.query(statement);
-      }
-    }
+    // Execute the entire migration as one query to handle complex statements
+    console.log(`Executing migration...`);
+    await pool.query(sql);
 
     console.log('Migration completed successfully!');
   } catch (error) {
@@ -39,5 +33,5 @@ async function runMigration(migrationPath: string) {
 }
 
 // Run the migration
-const migrationPath = join(process.cwd(), 'backend/migrations/008_allow_null_entity_fields.sql');
+const migrationPath = join(process.cwd(), 'migrations/010_enhanced_property_details.sql');
 runMigration(migrationPath);

@@ -32,6 +32,8 @@ import { ReceiptTemplateController } from './src/controllers/ReceiptTemplateCont
 import { createReceiptTemplateRoutes } from './src/routes/receiptTemplateRoutes.js';
 import createTemplateRoutes from './src/routes/templateRoutes.js';
 import { PropertyController } from './src/controllers/propertyController.js';
+import { PropertyFileController } from './src/controllers/PropertyFileController.js';
+import { PropertyReceiptTemplateController } from './src/controllers/PropertyReceiptTemplateController.js';
 import { UserController } from './src/controllers/userController.js';
 import { TenantController } from './src/controllers/TenantController.js';
 import { UnitController } from './src/controllers/UnitController.js';
@@ -90,6 +92,8 @@ const bulkOperationsService = container.bulkOperationsService;
 
 // Create controllers with injected services
 const propertyController = new PropertyController(propertyService);
+const propertyFileController = new PropertyFileController(propertyService);
+const propertyReceiptTemplateController = new PropertyReceiptTemplateController(propertyService);
 const userController = new UserController(userService, passwordResetService);
 const tenantController = new TenantController(tenantService);
 const unitController = new UnitController(unitService);
@@ -202,7 +206,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Mount routes
-app.use('/api/properties', createPropertyRoutes(propertyController, userService));
+app.use('/api/properties', createPropertyRoutes(propertyController, propertyFileController, propertyReceiptTemplateController, userService));
 app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
 app.use('/api', createTenantRoutes(tenantController, userService));
 app.use('/api', createUnitRoutes(unitController, userService));

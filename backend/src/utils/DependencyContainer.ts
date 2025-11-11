@@ -22,6 +22,10 @@ import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { IUnitUtilityRepository } from '../interfaces/repositories/IUnitUtilityRepository';
 import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService';
 import { IExpenseRepository, IExpenseService } from '../interfaces/repositories/IExpenseRepository';
+import { IPropertyFileRepository } from '../interfaces/repositories/IPropertyFileRepository';
+import { IPropertyReceiptTemplateRepository } from '../interfaces/repositories/IPropertyReceiptTemplateRepository';
+import { IPropertyFileService } from '../interfaces/services/IPropertyFileService';
+import { IPropertyReceiptTemplateService } from '../interfaces/services/IPropertyReceiptTemplateService';
 import { PropertyRepository } from '../repositories/PropertyRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { TenantRepository } from '../repositories/TenantRepository';
@@ -55,6 +59,10 @@ import { ReceiptService } from '../services/ReceiptService';
 import { ReceiptTemplateService } from '../services/ReceiptTemplateService';
 import { UnitUtilityService } from '../services/UnitUtilityService';
 import { ExpenseService } from '../services/ExpenseService';
+import { PropertyFileRepository } from '../repositories/PropertyFileRepository';
+import { PropertyReceiptTemplateRepository } from '../repositories/PropertyReceiptTemplateRepository';
+import { PropertyFileService } from '../services/PropertyFileService';
+import { PropertyReceiptTemplateService } from '../services/PropertyReceiptTemplateService';
 import { BulkOperationsService } from '../services/BulkOperationsService';
 
 export class DependencyContainer {
@@ -80,6 +88,8 @@ export class DependencyContainer {
   private _receiptTemplateRepository: ReceiptTemplateRepository | null = null;
   private _unitUtilityRepository: IUnitUtilityRepository | null = null;
   private _expenseRepository: IExpenseRepository | null = null;
+  private _propertyFileRepository: IPropertyFileRepository | null = null;
+  private _propertyReceiptTemplateRepository: IPropertyReceiptTemplateRepository | null = null;
 
   // Services
   private _propertyService: IPropertyService | null = null;
@@ -98,6 +108,8 @@ export class DependencyContainer {
   private _unitUtilityService: IUnitUtilityService | null = null;
   private _expenseService: IExpenseService | null = null;
   private _bulkOperationsService: BulkOperationsService | null = null;
+  private _propertyFileService: IPropertyFileService | null = null;
+  private _propertyReceiptTemplateService: IPropertyReceiptTemplateService | null = null;
 
   private constructor(pool: Pool) {
     this.pool = pool;
@@ -237,6 +249,20 @@ export class DependencyContainer {
     return this._expenseRepository;
   }
 
+  public get propertyFileRepository(): IPropertyFileRepository {
+    if (!this._propertyFileRepository) {
+      this._propertyFileRepository = new PropertyFileRepository(this.pool);
+    }
+    return this._propertyFileRepository;
+  }
+
+  public get propertyReceiptTemplateRepository(): IPropertyReceiptTemplateRepository {
+    if (!this._propertyReceiptTemplateRepository) {
+      this._propertyReceiptTemplateRepository = new PropertyReceiptTemplateRepository(this.pool);
+    }
+    return this._propertyReceiptTemplateRepository;
+  }
+
   public get transactionMeterReadingRepository(): IRentTransactionMeterReadingRepository {
     if (!this._transactionMeterReadingRepository) {
       this._transactionMeterReadingRepository = new RentTransactionMeterReadingRepository(this.pool);
@@ -247,7 +273,12 @@ export class DependencyContainer {
   // Service getters with lazy initialization
   public get propertyService(): IPropertyService {
     if (!this._propertyService) {
-      this._propertyService = new PropertyService(this.propertyRepository, this.receiptTemplateService);
+      this._propertyService = new PropertyService(
+        this.propertyRepository,
+        this.receiptTemplateService,
+        this.propertyFileService,
+        this.propertyReceiptTemplateService
+      );
     }
     return this._propertyService;
   }
@@ -397,6 +428,20 @@ export class DependencyContainer {
       );
     }
     return this._bulkOperationsService;
+  }
+
+  public get propertyFileService(): IPropertyFileService {
+    if (!this._propertyFileService) {
+      this._propertyFileService = new PropertyFileService(this.propertyFileRepository);
+    }
+    return this._propertyFileService;
+  }
+
+  public get propertyReceiptTemplateService(): IPropertyReceiptTemplateService {
+    if (!this._propertyReceiptTemplateService) {
+      this._propertyReceiptTemplateService = new PropertyReceiptTemplateService(this.propertyReceiptTemplateRepository);
+    }
+    return this._propertyReceiptTemplateService;
   }
 
   // Method to register custom implementations (for testing)

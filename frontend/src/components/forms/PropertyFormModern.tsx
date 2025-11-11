@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, MapPin, Home } from 'lucide-react';
+import { Building2, MapPin, Home, User, Star, Upload, FileText } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField, Badge } from '../../componentDesignLibrary';
-import type { PropertyInput } from '../../types';
+import type { PropertyInput, PropertyReceiptTemplate } from '../../types';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { getCurrencyOptions, DEFAULT_CURRENCY } from '../../types/currency';
+import OwnerContactForm from './OwnerContactForm';
+import EnhancedAmenitiesForm from './EnhancedAmenitiesForm';
+import PropertyFileUpload from './PropertyFileUpload';
+import ReceiptTemplateForm from './ReceiptTemplateForm';
 
 interface PropertyFormModernProps {
   initialData?: Partial<PropertyInput>;
@@ -35,6 +39,32 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
     parkingSpaces: initialData?.parkingSpaces || undefined,
     buildingAmenities: initialData?.buildingAmenities || [],
     buildingPhotos: initialData?.buildingPhotos || [],
+    ownerDetails: initialData?.ownerDetails || {
+      name: '',
+      mobileNumbers: [''],
+      emailIds: [''],
+      website: ''
+    },
+    amenities: initialData?.amenities || {
+      basic: [],
+      luxury: [],
+      additionalInfo: {
+        petFriendly: false,
+        smokingAllowed: false,
+        eventsAllowed: false
+      }
+    },
+    files: initialData?.files || [],
+    receiptTemplate: initialData?.receiptTemplate || {
+      bankDetails: {
+        bankName: '',
+        accountNumber: '',
+        ifscCode: '',
+        accountHolderName: ''
+      },
+      wallets: [],
+      additionalInfo: {}
+    },
     ownerId: initialData?.ownerId || '',
     coOwners: initialData?.coOwners || [],
   });
@@ -71,6 +101,9 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
     if (!formData.address.pincode) newErrors.pincode = 'Pincode is required';
     if (!formData.totalArea || formData.totalArea <= 0) newErrors.totalArea = 'Valid area is required';
     if (!formData.ownerId) newErrors.ownerId = 'Owner ID is required';
+    if (!formData.ownerDetails.name) newErrors.ownerName = 'Owner name is required';
+    if (!formData.ownerDetails.mobileNumbers[0]) newErrors.ownerMobile = 'At least one mobile number is required';
+    if (!formData.ownerDetails.emailIds[0]) newErrors.ownerEmail = 'At least one email ID is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -307,6 +340,61 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
             ))}
           </div>
         </FormField>
+      </FormColumn>
+
+      <FormColumn
+        title="Owner Contact Details"
+        description="Property owner information and contact details"
+        icon={<User className="h-5 w-5" />}
+      >
+        <OwnerContactForm
+          value={formData.ownerDetails}
+          onChange={(value) => handleChange('ownerDetails', value)}
+        />
+      </FormColumn>
+
+      <FormColumn
+        title="Enhanced Amenities"
+        description="Basic and luxury amenities with additional property rules"
+        icon={<Star className="h-5 w-5" />}
+      >
+        <EnhancedAmenitiesForm
+          value={formData.amenities || {
+            basic: [],
+            luxury: [],
+            additionalInfo: {
+              petFriendly: false,
+              smokingAllowed: false,
+              eventsAllowed: false
+            }
+          }}
+          onChange={(value) => handleChange('amenities', value)}
+        />
+      </FormColumn>
+
+      <FormColumn
+        title="Property Files"
+        description="Upload photos and documents for the property"
+        icon={<Upload className="h-5 w-5" />}
+      >
+        <PropertyFileUpload
+          files={formData.files || []}
+          onFilesChange={(files) => handleChange('files', files)}
+        />
+      </FormColumn>
+
+      <FormColumn
+        title="Receipt Template"
+        description="Configure payment details and receipt settings"
+        icon={<FileText className="h-5 w-5" />}
+      >
+        <ReceiptTemplateForm
+          value={{
+            ...formData.receiptTemplate!,
+            propertyId: '' // This will be set when saving
+          } as PropertyReceiptTemplate}
+          onChange={(value) => handleChange('receiptTemplate', value)}
+        />
       </FormColumn>
     </BaseForm>
   );

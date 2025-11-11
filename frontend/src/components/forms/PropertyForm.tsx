@@ -41,6 +41,32 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     parkingSpaces: initialData?.parkingSpaces || 0,
     buildingAmenities: initialData?.buildingAmenities || [],
     buildingPhotos: initialData?.buildingPhotos || [],
+    ownerDetails: initialData?.ownerDetails || {
+      name: '',
+      mobileNumbers: [''],
+      emailIds: [''],
+      website: ''
+    },
+    amenities: initialData?.amenities || {
+      basic: [],
+      luxury: [],
+      additionalInfo: {
+        petFriendly: false,
+        smokingAllowed: false,
+        eventsAllowed: false
+      }
+    },
+    files: initialData?.files || [],
+    receiptTemplate: initialData?.receiptTemplate || {
+      bankDetails: {
+        bankName: '',
+        accountNumber: '',
+        ifscCode: '',
+        accountHolderName: ''
+      },
+      wallets: [],
+      additionalInfo: {}
+    },
     ownerId: initialData?.ownerId || 'current-user-id', // This should come from auth context
     coOwners: initialData?.coOwners || []
   });

@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { Property } from '../models/Property.js';
+import { Property, PropertyInput, PropertyStatus } from '../models/Property';
 import { TABLES, COLUMNS } from '../constants/database.js';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository.js';
 
@@ -106,7 +106,7 @@ export class PropertyRepository implements IPropertyRepository {
     }
   }
 
-  async update(id: string, data: Partial<Omit<Property, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Property | null> {
+  async update(id: string, data: Partial<PropertyInput>): Promise<Property | null> {
     try {
       const fields = [];
       const values = [];
@@ -273,6 +273,23 @@ export class PropertyRepository implements IPropertyRepository {
       receiptSettings: row.receipt_settings ? (typeof row.receipt_settings === 'string' ? JSON.parse(row.receipt_settings) : row.receipt_settings) : undefined,
       templateId: row.template_id,
       templateOverrides: row.template_overrides ? (typeof row.template_overrides === 'string' ? JSON.parse(row.template_overrides) : row.template_overrides) : undefined,
+      // New enhanced fields
+      ownerDetails: {
+        name: row.owner_name,
+        mobileNumbers: Array.isArray(row.owner_mobile_numbers) ? row.owner_mobile_numbers : (typeof row.owner_mobile_numbers === 'string' ? JSON.parse(row.owner_mobile_numbers || '[]') : (row.owner_mobile_numbers || [])),
+        emailIds: Array.isArray(row.owner_email_ids) ? row.owner_email_ids : (typeof row.owner_email_ids === 'string' ? JSON.parse(row.owner_email_ids || '[]') : (row.owner_email_ids || [])),
+        website: row.owner_website,
+      },
+      amenities: row.amenities ? (typeof row.amenities === 'string' ? JSON.parse(row.amenities) : row.amenities) : {
+        basic: [],
+        luxury: [],
+        additionalInfo: {
+          petFriendly: false,
+          smokingAllowed: false,
+          eventsAllowed: false,
+        },
+      },
+      receiptTemplate: undefined, // This will be populated separately from property_receipt_templates table
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     };
