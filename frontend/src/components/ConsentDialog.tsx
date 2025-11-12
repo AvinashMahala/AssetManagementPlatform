@@ -229,7 +229,10 @@ export function DevTools({}: DevToolsProps): ReactNode {
 
       // Check main key
       const mainKey = requiredKeys.find((key: string) => !['ctrl', 'shift', 'alt', 'meta'].includes(key));
-      const mainKeyPressed = mainKey && (e.key.toLowerCase() === mainKey || e.code.toLowerCase().replace('key', '') === mainKey);
+      const mainKeyPressed = mainKey && (
+        (e.key && e.key.toLowerCase() === mainKey) ||
+        (e.code && e.code.toLowerCase().replace('key', '') === mainKey)
+      );
 
       if (hasAllModifiers && mainKeyPressed) {
         e.preventDefault();
