@@ -3,6 +3,9 @@ import { ITenantService } from '../interfaces/services/ITenantService.js';
 import { TenantInput, TenantDocument, DocumentType } from '../models/Tenant.js';
 import { ValidationUtils } from '../utils/validation.js';
 import { ResponseUtils } from '../utils/response.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('TenantController');
 
 export class TenantController {
   private tenantService: ITenantService;
@@ -41,9 +44,12 @@ export class TenantController {
   // GET /tenants
   async getAllTenants(req: Request, res: Response): Promise<void> {
     try {
+      logger.debug('Fetching all tenants');
       const tenants = await this.tenantService.getAllTenants();
+      logger.info('Successfully retrieved tenants', { count: tenants.length });
       ResponseUtils.success(res, tenants, 'Tenants retrieved successfully');
     } catch (error) {
+      logger.error('Failed to retrieve tenants', error);
       ResponseUtils.error(res, 'Failed to retrieve tenants');
     }
   }

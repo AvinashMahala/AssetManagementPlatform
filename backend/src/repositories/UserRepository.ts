@@ -3,6 +3,9 @@ import { User, UserInput } from '../models/User';
 import { TABLES, COLUMNS, DEFAULTS } from '../constants/database';
 import { PasswordUtils } from '../utils/password';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UserRepository');
 
 export class UserRepository implements IUserRepository {
   private pool: Pool;
@@ -14,6 +17,7 @@ export class UserRepository implements IUserRepository {
   // Basic CRUD operations
   async findAll(): Promise<User[]> {
     try {
+      logger.debug('Executing findAll query for users');
       const result = await this.pool.query(
         `SELECT ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
                 ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
@@ -24,14 +28,17 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS}`
       );
+      logger.info('Successfully fetched all users', { count: result.rows.length });
       return result.rows;
     } catch (error) {
+      logger.error('Failed to fetch users', error);
       throw new Error('Failed to fetch users');
     }
   }
 
   async findById(id: string): Promise<User | null> {
     try {
+      logger.debug('Executing findById query for user', { userId: id });
       const result = await this.pool.query(
         `SELECT ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
                 ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
@@ -43,8 +50,11 @@ export class UserRepository implements IUserRepository {
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.ID} = $1`,
         [id]
       );
-      return result.rows[0] || null;
+      const user = result.rows[0] || null;
+      logger.info('User lookup result', { userId: id, found: !!user });
+      return user;
     } catch (error) {
+      logger.error('Failed to fetch user by ID', error, { userId: id });
       throw new Error('Failed to fetch user');
     }
   }

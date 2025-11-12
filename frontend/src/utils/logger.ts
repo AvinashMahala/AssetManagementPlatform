@@ -16,6 +16,7 @@
 
 import { featureFlags } from './featureFlags';
 import { consentManager } from './consentManager';
+import { getLoggingConfig } from './loggingConfig';
 
 export const LogLevel = {
   DEBUG: 0,
@@ -53,7 +54,13 @@ class FrontendLogger {
   private backendUrl?: string;
 
   private constructor() {
-    this.logLevel = this.getLogLevelFromEnv();
+    const config = getLoggingConfig();
+    this.logLevel = config.level;
+    this.maxStoredLogs = 100; // Could be configurable
+    this.storageKey = 'app_error_logs';
+    this.enableBackendReporting = config.enableBackend;
+    this.backendUrl = config.backendUrl;
+
     this.setupGlobalErrorHandlers();
   }
 
@@ -176,8 +183,10 @@ class FrontendLogger {
    * 🎨 Output formatted log to console
    */
   private outputToConsole(entry: LogEntry): void {
+    const config = getLoggingConfig();
+
     // Check if console logging is enabled
-    if (!featureFlags.isConsoleLoggingEnabled()) {
+    if (!config.enableConsole) {
       return;
     }
 
@@ -368,20 +377,33 @@ class FrontendLogger {
     }
   }
 
-  /**
-   * 🔧 Get log level from environment
-   */
-  private getLogLevelFromEnv(): LogLevel {
-    const env = import.meta.env.MODE || 'development';
-    return env === 'development' ? LogLevel.DEBUG : LogLevel.INFO;
-  }
 }
 
 // Export singleton instance
 export const logger = FrontendLogger.getInstance();
 
 /**
- * 🏷️ Create a component-specific logger
+ * 🏷️ Create a page-specific logger
+ */
+export const createPageLogger = (pageName: string) => {
+  return {
+    debug: (message: string, context?: Record<string, any>) =>
+      logger.debug(message, { page: pageName, ...context }),
+    info: (message: string, context?: Record<string, any>) =>
+      logger.info(message, { page: pageName, ...context }),
+    warn: (message: string, context?: Record<string, any>) =>
+      logger.warn(message, { page: pageName, ...context }),
+    error: (message: string, error?: Error | any, context?: Record<string, any>) =>
+      logger.error(message, error, { page: pageName, ...context }),
+    logPageView: (pageNameOverride?: string, context?: Record<string, any>) =>
+      logger.info(`Page view: ${pageNameOverride || pageName}`, { page: pageNameOverride || pageName, ...context }),
+    logUserInteraction: (action: string, details?: any, context?: Record<string, any>) =>
+      logger.info(`User interaction: ${action}`, { page: pageName, action, ...details, ...context }),
+  };
+};
+
+/**
+ * 🧩 Create a component-specific logger
  */
 export const createComponentLogger = (componentName: string) => {
   return {
@@ -393,6 +415,12 @@ export const createComponentLogger = (componentName: string) => {
       logger.warn(message, { component: componentName, ...context }),
     error: (message: string, error?: Error | any, context?: Record<string, any>) =>
       logger.error(message, error, { component: componentName, ...context }),
+    logComponentMount: (context?: Record<string, any>) =>
+      logger.info(`Component mounted: ${componentName}`, { component: componentName, ...context }),
+    logComponentUnmount: (context?: Record<string, any>) =>
+      logger.info(`Component unmounted: ${componentName}`, { component: componentName, ...context }),
+    logUserInteraction: (action: string, details?: any, context?: Record<string, any>) =>
+      logger.info(`Component interaction: ${action}`, { component: componentName, action, ...details, ...context }),
   };
 };
 

@@ -4,15 +4,28 @@ import { useAuthContext } from '../contexts';
 import { useProperties } from '../hooks';
 import { Card } from '../components/common';
 import { Button } from '../components/common/Button';
+import { createPageLogger } from '../utils/logger';
+
+const logger = createPageLogger('Dashboard');
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuthContext();
   const { properties, loading: propertiesLoading, error: propertiesError } = useProperties();
 
+  React.useEffect(() => {
+    logger.logPageView('Dashboard', { userId: user?.id });
+  }, [user?.id]);
+
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      logger.logUserInteraction('logout_initiated', { userId: user?.id });
+      await logout();
+      logger.logUserInteraction('logout_successful', { userId: user?.id });
+      navigate('/login');
+    } catch (error) {
+      logger.error('Logout failed', error, { userId: user?.id });
+    }
   };
 
   if (!isAuthenticated) {
@@ -37,7 +50,10 @@ const Dashboard: React.FC = () => {
           <Button
             variant="secondary"
             size="small"
-            onClick={() => navigate('/profile')}
+            onClick={() => {
+              logger.logUserInteraction('navigate_to_profile', { userId: user?.id });
+              navigate('/profile');
+            }}
           >
             Profile
           </Button>
@@ -99,7 +115,10 @@ const Dashboard: React.FC = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Recent Properties</h3>
-          <Button variant="secondary" size="small" onClick={() => navigate('/properties')}>
+          <Button variant="secondary" size="small" onClick={() => {
+            logger.logUserInteraction('navigate_to_properties', { userId: user?.id });
+            navigate('/properties');
+          }}>
             View All
           </Button>
         </div>
@@ -138,7 +157,10 @@ const Dashboard: React.FC = () => {
         ) : (
           <div className="text-center py-4">
             <p className="text-gray-600 mb-4">No properties found. Create your first property to get started.</p>
-            <Button onClick={() => navigate('/properties')}>
+            <Button onClick={() => {
+              logger.logUserInteraction('navigate_to_properties_from_empty_state', { userId: user?.id });
+              navigate('/properties');
+            }}>
               Manage Properties
             </Button>
           </div>

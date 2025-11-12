@@ -7,6 +7,9 @@ import { IRentPaymentService } from '../interfaces/services/IRentPaymentService.
 import { IMeterService } from '../interfaces/services/IMeterService.js';
 import { IMeterReadingService } from '../interfaces/services/IMeterService.js';
 import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UnitService');
 
 export class UnitService implements IUnitService {
   private repository: IUnitRepository;
@@ -24,20 +27,39 @@ export class UnitService implements IUnitService {
   }
 
   async getAllUnits(): Promise<Unit[]> {
-    const units = await this.repository.findAll();
-    return await this.loadUtilitiesForUnits(units);
+    try {
+      logger.debug('Fetching all units');
+      const units = await this.repository.findAll();
+      const unitsWithUtilities = await this.loadUtilitiesForUnits(units);
+      logger.info('Successfully fetched all units', { count: unitsWithUtilities.length });
+      return unitsWithUtilities;
+    } catch (error) {
+      logger.error('Failed to fetch all units', error);
+      throw error;
+    }
   }
 
   async getUnitById(id: string): Promise<Unit | null> {
-    if (!id || id.trim().length === 0) {
-      throw new Error(ERROR_MESSAGES.UNIT.INVALID_ID);
+    try {
+      if (!id || id.trim().length === 0) {
+        logger.warn('Invalid unit ID provided', { unitId: id });
+        throw new Error(ERROR_MESSAGES.UNIT.INVALID_ID);
+      }
+
+      logger.debug('Fetching unit by ID', { unitId: id });
+      const unit = await this.repository.findById(id);
+      if (unit) {
+        const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(unit.id);
+        unit.utilities = utilities;
+        logger.info('Successfully fetched unit', { unitId: id });
+      } else {
+        logger.warn('Unit not found', { unitId: id });
+      }
+      return unit;
+    } catch (error) {
+      logger.error('Failed to fetch unit by ID', error, { unitId: id });
+      throw error;
     }
-    const unit = await this.repository.findById(id);
-    if (unit) {
-      const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(unit.id);
-      unit.utilities = utilities;
-    }
-    return unit;
   }
 
   async getUnitsByProperty(propertyId: string): Promise<Unit[]> {

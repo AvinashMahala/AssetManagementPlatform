@@ -3,6 +3,9 @@ import { IRentPaymentService } from '../interfaces/services/IRentPaymentService'
 import { RentPaymentInput, PaymentStatus } from '../models/RentPayment';
 import { ResponseUtils } from '../utils/response';
 import { ErrorUtils } from '../utils/error';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('RentPaymentController');
 
 export class RentPaymentController {
   private service: IRentPaymentService;
@@ -47,7 +50,9 @@ export class RentPaymentController {
    */
   async getAllPayments(req: Request, res: Response) {
     try {
+      logger.debug('Fetching all rent payments');
       const payments = await this.service.getAllPayments();
+      logger.info('Successfully retrieved rent payments', { count: payments.length });
       ResponseUtils.success(res, payments, 'Payments retrieved successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch payments');

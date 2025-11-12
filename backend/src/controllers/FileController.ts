@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { FileStorageService, FileMetadata } from '../services/FileStorageService.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('FileController');
 
 export class FileController {
   constructor(private fileStorageService: FileStorageService) {}
@@ -7,10 +10,19 @@ export class FileController {
   async uploadFile(req: Request, res: Response) {
     try {
       if (!req.file) {
+        logger.warn('File upload attempt without file');
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
       const { entityType, entityId, category, tags, customName } = req.body;
+      logger.debug('File upload attempt', {
+        entityType,
+        entityId,
+        category,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimeType: req.file.mimetype
+      });
 
       // entityType and entityId are optional for general uploads
       const metadata: FileMetadata = {
@@ -29,6 +41,7 @@ export class FileController {
         metadata
       );
 
+      logger.info('File uploaded successfully', { fileId, entityType, entityId });
       res.json({
         success: true,
         fileId,
@@ -36,7 +49,11 @@ export class FileController {
       });
 
     } catch (error) {
-      console.error('File upload error:', error);
+      logger.error('File upload failed', error, {
+        entityType: req.body.entityType,
+        entityId: req.body.entityId,
+        originalName: req.file?.originalname
+      });
       res.status(500).json({
         error: 'Failed to upload file',
         details: error instanceof Error ? error.message : 'Unknown error'

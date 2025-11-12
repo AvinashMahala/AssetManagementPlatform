@@ -2,6 +2,9 @@ import type { Property, PropertyInput, PropertyFilters, PropertyFile, PropertyRe
 import type { ApiResponse } from '../types/api';
 import { apiClient } from './apiClient';
 import { API_ENDPOINTS } from '../constants/api';
+import { createComponentLogger } from '../utils/logger';
+
+const logger = createComponentLogger('PropertyService');
 
 class PropertyService {
   async getAll(filters?: PropertyFilters): Promise<ApiResponse<Property[]>> {
@@ -23,10 +26,18 @@ class PropertyService {
   }
 
   async update(id: string, propertyData: Partial<PropertyInput>): Promise<ApiResponse<Property>> {
-    console.log('🏗️ PropertyService.update called with:', { id, propertyData });
-    const result = await apiClient.put<Property>(`${API_ENDPOINTS.PROPERTIES}/${id}`, propertyData);
-    console.log('🏗️ PropertyService.update response:', result);
-    return result;
+    logger.debug('Updating property', { propertyId: id, fields: Object.keys(propertyData) });
+    const startTime = Date.now();
+    try {
+      const result = await apiClient.put<Property>(`${API_ENDPOINTS.PROPERTIES}/${id}`, propertyData);
+      const duration = Date.now() - startTime;
+      logger.info('Property updated successfully', { propertyId: id, duration: `${duration}ms` });
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      logger.error('Failed to update property', error, { propertyId: id, duration: `${duration}ms` });
+      throw error;
+    }
   }
 
   async delete(id: string): Promise<ApiResponse<void>> {

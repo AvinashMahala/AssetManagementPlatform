@@ -3,6 +3,9 @@ import { ILeaseService } from '../interfaces/services/ILeaseService';
 import { LeaseInput } from '../models/Lease';
 import { ResponseUtils } from '../utils/response';
 import { ErrorUtils } from '../utils/error';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('LeaseController');
 
 export class LeaseController {
   private service: ILeaseService;
@@ -47,7 +50,9 @@ export class LeaseController {
    */
   async getAllLeases(req: Request, res: Response) {
     try {
+      logger.debug('Fetching all leases');
       const leases = await this.service.getAllLeases();
+      logger.info('Successfully retrieved leases', { count: leases.length });
       ResponseUtils.success(res, leases);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch leases');

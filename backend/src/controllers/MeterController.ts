@@ -3,6 +3,9 @@ import { IMeterService, IMeterReadingService } from '../interfaces/services/IMet
 import { MeterInput, MeterReadingInput } from '../models/Meter.js';
 import { ResponseUtils } from '../utils/response.js';
 import { ErrorUtils } from '../utils/error.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('MeterController');
 
 export class MeterController {
   private meterService: IMeterService;
@@ -48,6 +51,7 @@ export class MeterController {
   async getAllMeters(req: Request, res: Response) {
     try {
       const { unitId, propertyId } = req.query;
+      logger.debug('Fetching meters', { unitId, propertyId });
 
       let meters;
       if (unitId) {
@@ -58,8 +62,10 @@ export class MeterController {
         meters = await this.meterService.getAllMeters();
       }
 
+      logger.info('Successfully fetched meters', { count: meters.length, unitId, propertyId });
       ResponseUtils.success(res, { meters });
     } catch (err) {
+      logger.error('Failed to fetch meters', err, { unitId: req.query.unitId, propertyId: req.query.propertyId });
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch meters');
     }
   }

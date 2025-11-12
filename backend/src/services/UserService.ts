@@ -18,6 +18,9 @@ import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IUserService } from '../interfaces/services/IUserService.js';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import * as crypto from 'crypto';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UserService');
 
 export class UserService implements IUserService {
   private repository: IUserRepository;
@@ -42,15 +45,37 @@ export class UserService implements IUserService {
 
   // Basic CRUD operations
   async getAllUsers(): Promise<User[]> {
-    return await this.repository.findAll();
+    try {
+      logger.debug('Fetching all users');
+      const users = await this.repository.findAll();
+      logger.info('Successfully fetched all users', { count: users.length });
+      return users;
+    } catch (error) {
+      logger.error('Failed to fetch all users', error);
+      throw error;
+    }
   }
 
   async getUserById(id: string): Promise<User | null> {
-    const idValidation = ValidationUtils.validateUUID(id);
-    if (!idValidation.isValid) {
-      throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
+    try {
+      const idValidation = ValidationUtils.validateUUID(id);
+      if (!idValidation.isValid) {
+        logger.warn('Invalid user ID provided', { userId: id, validationError: idValidation.message });
+        throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
+      }
+
+      logger.debug('Fetching user by ID', { userId: id });
+      const user = await this.repository.findById(id);
+      if (user) {
+        logger.info('Successfully fetched user', { userId: id, email: user.email });
+      } else {
+        logger.warn('User not found', { userId: id });
+      }
+      return user;
+    } catch (error) {
+      logger.error('Failed to fetch user by ID', error, { userId: id });
+      throw error;
     }
-    return await this.repository.findById(id);
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
@@ -62,51 +87,66 @@ export class UserService implements IUserService {
   }
 
   async createUser(userData: UserInput): Promise<User> {
-    // Validate input
-    const usernameValidation = ValidationUtils.validateUsername(userData.username);
-    if (!usernameValidation.isValid) {
-      throw new Error(usernameValidation.message);
-    }
+    try {
+      logger.debug('Creating new user', { email: userData.email, username: userData.username });
 
-    const emailValidation = ValidationUtils.validateEmail(userData.email);
-    if (!emailValidation.isValid) {
-      throw new Error(emailValidation.message);
-    }
-
-    const passwordValidation = PasswordUtils.validatePasswordStrength(userData.password);
-    if (!passwordValidation.isValid) {
-      throw new Error(passwordValidation.message);
-    }
-
-    if (userData.role) {
-      const roleValidation = ValidationUtils.validateUserRole(userData.role);
-      if (!roleValidation.isValid) {
-        throw new Error(roleValidation.message);
+      // Validate input
+      const usernameValidation = ValidationUtils.validateUsername(userData.username);
+      if (!usernameValidation.isValid) {
+        logger.warn('Invalid username during user creation', { username: userData.username, error: usernameValidation.message });
+        throw new Error(usernameValidation.message);
       }
+
+      const emailValidation = ValidationUtils.validateEmail(userData.email);
+      if (!emailValidation.isValid) {
+        logger.warn('Invalid email during user creation', { email: userData.email, error: emailValidation.message });
+        throw new Error(emailValidation.message);
+      }
+
+      const passwordValidation = PasswordUtils.validatePasswordStrength(userData.password);
+      if (!passwordValidation.isValid) {
+        logger.warn('Weak password during user creation', { error: passwordValidation.message });
+        throw new Error(passwordValidation.message);
+      }
+
+      if (userData.role) {
+        const roleValidation = ValidationUtils.validateUserRole(userData.role);
+        if (!roleValidation.isValid) {
+          logger.warn('Invalid role during user creation', { role: userData.role, error: roleValidation.message });
+          throw new Error(roleValidation.message);
+        }
+      }
+
+      // Check uniqueness
+      const existingUser = await this.repository.findByUsername(userData.username);
+      if (existingUser) {
+        logger.warn('Username already exists during user creation', { username: userData.username });
+        throw new Error(ERROR_MESSAGES.USER.USERNAME_EXISTS);
+      }
+
+      const existingEmail = await this.repository.findByEmail(userData.email);
+      if (existingEmail) {
+        logger.warn('Email already exists during user creation', { email: userData.email });
+        throw new Error(ERROR_MESSAGES.USER.EMAIL_EXISTS);
+      }
+
+      // Hash password
+      const hashedPassword = await PasswordUtils.hashPassword(userData.password);
+
+      const userWithHashedPassword = {
+        ...userData,
+        password: hashedPassword,
+        isEmailVerified: false,
+        isPhoneVerified: false,
+      };
+
+      const user = await this.repository.create(userWithHashedPassword);
+      logger.info('Successfully created user', { userId: user.id, email: user.email, username: user.username });
+      return user;
+    } catch (error) {
+      logger.error('Failed to create user', error, { email: userData.email, username: userData.username });
+      throw error;
     }
-
-    // Check uniqueness
-    const existingUser = await this.repository.findByUsername(userData.username);
-    if (existingUser) {
-      throw new Error(ERROR_MESSAGES.USER.USERNAME_EXISTS);
-    }
-
-    const existingEmail = await this.repository.findByEmail(userData.email);
-    if (existingEmail) {
-      throw new Error(ERROR_MESSAGES.USER.EMAIL_EXISTS);
-    }
-
-    // Hash password
-    const hashedPassword = await PasswordUtils.hashPassword(userData.password);
-
-    const userWithHashedPassword = {
-      ...userData,
-      password: hashedPassword,
-      isEmailVerified: false,
-      isPhoneVerified: false,
-    };
-
-    return await this.repository.create(userWithHashedPassword);
   }
 
   async updateUser(id: string, userData: Partial<UserInput>): Promise<User | null> {
@@ -255,30 +295,33 @@ export class UserService implements IUserService {
   }
 
   async loginUser(credentials: UserCredentials): Promise<AuthResponse | null> {
-    console.log('🔑 loginUser started for:', credentials.email, 'rememberMe:', credentials.rememberMe);
-    
-    const user = await this.authenticateUser(credentials);
-    if (!user) {
-      console.log('❌ authenticateUser returned null');
-      return null;
-    }
-
-    console.log('✅ User authenticated, generating tokens for:', user.id);
-
-    // Update last login
     try {
-      await this.updateLastLogin(user.id);
-      console.log('✅ Last login updated');
-    } catch (error) {
-      console.error('⚠️ Failed to update last login (non-critical):', error);
-      // Don't fail the login if this fails
-    }
+      logger.debug('Login attempt', { email: credentials.email, rememberMe: credentials.rememberMe });
 
-    // Generate tokens
-    console.log('🎟️ Generating auth tokens...');
-    const authResponse = await this.generateAuthTokens(user, credentials.rememberMe);
-    console.log('✅ Tokens generated successfully');
-    return authResponse;
+      const user = await this.authenticateUser(credentials);
+      if (!user) {
+        logger.warn('Login failed - invalid credentials', { email: credentials.email });
+        return null;
+      }
+
+      logger.debug('User authenticated, updating last login', { userId: user.id });
+
+      // Update last login
+      try {
+        await this.updateLastLogin(user.id);
+      } catch (error) {
+        logger.warn('Failed to update last login (non-critical)', { userId: user.id, error: (error as Error).message });
+        // Don't fail the login if this fails
+      }
+
+      // Generate tokens
+      const authResponse = await this.generateAuthTokens(user, credentials.rememberMe);
+      logger.info('Login successful', { userId: user.id, email: credentials.email });
+      return authResponse;
+    } catch (error) {
+      logger.error('Login failed with error', error, { email: credentials.email });
+      throw error;
+    }
   }
 
   async logoutUser(userId: string): Promise<boolean> {

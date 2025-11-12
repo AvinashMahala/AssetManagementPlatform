@@ -3,6 +3,9 @@ import { IUnitService } from '../interfaces/services/IUnitService.js';
 import { UnitInput } from '../models/Unit.js';
 import { ResponseUtils } from '../utils/response.js';
 import { ErrorUtils } from '../utils/error.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UnitController');
 
 export class UnitController {
   private service: IUnitService;
@@ -44,6 +47,7 @@ export class UnitController {
   async getAll(req: Request, res: Response) {
     try {
       const { propertyId, status } = req.query;
+      logger.debug('Fetching units', { propertyId, status });
 
       let units;
       if (propertyId) {
@@ -54,8 +58,10 @@ export class UnitController {
         units = await this.service.getAllUnits();
       }
 
+      logger.info('Successfully fetched units', { count: units.length, propertyId, status });
       ResponseUtils.success(res, units);
     } catch (err) {
+      logger.error('Failed to fetch units', err, { propertyId: req.query.propertyId, status: req.query.status });
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch units');
     }
   }

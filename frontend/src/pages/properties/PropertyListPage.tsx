@@ -10,6 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { AppLayout } from '../../components/layout/AppLayout';
 import type { PropertyFilters } from '../../types/property';
 import { PropertyType, PropertyStatus } from '../../types/property';
+import { createPageLogger } from '../../utils/logger';
+
+const logger = createPageLogger('PropertyListPage');
 
 const PropertyListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,31 +21,44 @@ const PropertyListPage: React.FC = () => {
   const { properties, loading, error, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
 
+  React.useEffect(() => {
+    logger.logPageView('PropertyListPage');
+  }, []);
+
   // Debug logging
-  console.log('[PropertyListPage] Render - Properties:', properties);
-  console.log('[PropertyListPage] Render - Loading:', loading);
-  console.log('[PropertyListPage] Render - Error:', error);
-  console.log('[PropertyListPage] Render - Properties length:', properties?.length);
+  React.useEffect(() => {
+    logger.debug('Property list state updated', {
+      propertiesCount: properties?.length,
+      loading,
+      hasError: !!error
+    });
+  }, [properties, loading, error]);
 
   const handleSearch = (query: string) => {
+    logger.logUserInteraction('property_search', { query });
     setSearchQuery(query);
     updateFilters({ search: query, page: 1 });
   };
 
   const handleFilterChange = (key: keyof PropertyFilters, value: any) => {
+    logger.logUserInteraction('property_filter_applied', { filterKey: key, filterValue: value });
     updateFilters({ [key]: value, page: 1 });
   };
 
   const handleDeleteProperty = async (id: string, name: string) => {
+    logger.logUserInteraction('property_delete_initiated', { propertyId: id, propertyName: name });
     if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
       try {
         await deleteProperty(id);
+        logger.logUserInteraction('property_deleted_successfully', { propertyId: id, propertyName: name });
         // Refetch properties after deletion
         updateFilters({});
       } catch (error) {
-        console.error('Failed to delete property:', error);
+        logger.error('Failed to delete property', error, { propertyId: id, propertyName: name });
         alert('Failed to delete property. Please try again.');
       }
+    } else {
+      logger.logUserInteraction('property_delete_cancelled', { propertyId: id, propertyName: name });
     }
   };
 

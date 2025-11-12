@@ -2,6 +2,9 @@ import { Pool } from 'pg';
 import { Unit, UnitInput, UnitTenant, UnitTenantInput, UnitStatus } from '../models/Unit.js';
 import { TABLES, COLUMNS } from '../constants/database.js';
 import { IUnitRepository } from '../interfaces/repositories/IUnitRepository.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UnitRepository');
 
 export class UnitRepository implements IUnitRepository {
   private pool: Pool;
@@ -12,21 +15,29 @@ export class UnitRepository implements IUnitRepository {
 
   async findAll(): Promise<Unit[]> {
     try {
+      logger.debug('Executing findAll query for units');
       const result = await this.pool.query(`SELECT * FROM ${TABLES.UNITS}`);
-      return result.rows.map(row => this.mapRowToUnit(row));
+      const units = result.rows.map(row => this.mapRowToUnit(row));
+      logger.info('Successfully fetched all units', { count: units.length });
+      return units;
     } catch (error) {
+      logger.error('Failed to fetch units', error);
       throw new Error('Failed to fetch units');
     }
   }
 
   async findById(id: string): Promise<Unit | null> {
     try {
+      logger.debug('Executing findById query for unit', { unitId: id });
       const result = await this.pool.query(
         `SELECT * FROM ${TABLES.UNITS} WHERE ${COLUMNS.UNITS.ID} = $1`,
         [id]
       );
-      return result.rows[0] ? this.mapRowToUnit(result.rows[0]) : null;
+      const unit = result.rows[0] ? this.mapRowToUnit(result.rows[0]) : null;
+      logger.info('Unit lookup result', { unitId: id, found: !!unit });
+      return unit;
     } catch (error) {
+      logger.error('Failed to fetch unit by ID', error, { unitId: id });
       throw new Error('Failed to fetch unit');
     }
   }

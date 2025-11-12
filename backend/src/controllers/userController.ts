@@ -19,6 +19,9 @@ import {
 } from '../models/User.js';
 import { ResponseUtils } from '../utils/response.js';
 import { ErrorUtils } from '../utils/error.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UserController');
 
 export class UserController {
   private service: IUserService;
@@ -32,9 +35,12 @@ export class UserController {
   // Basic CRUD operations
   async getAllUsers(req: Request, res: Response) {
     try {
+      logger.debug('Fetching all users');
       const users = await this.service.getAllUsers();
+      logger.info('Successfully fetched all users', { count: users.length });
       ResponseUtils.success(res, { users });
     } catch (err) {
+      logger.error('Failed to fetch users', err);
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch users');
     }
   }
@@ -42,12 +48,18 @@ export class UserController {
   async getUserById(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      logger.debug('Fetching user by ID', { userId: id });
+
       const user = await this.service.getUserById(id);
       if (!user) {
+        logger.warn('User not found', { userId: id });
         return ResponseUtils.notFound(res, 'User not found');
       }
+
+      logger.info('Successfully fetched user', { userId: id });
       ResponseUtils.success(res, user);
     } catch (err) {
+      logger.error('Failed to fetch user', err, { userId: req.params.id });
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('Invalid')) {
         ResponseUtils.badRequest(res, errorMessage);
@@ -60,9 +72,13 @@ export class UserController {
   async createUser(req: Request, res: Response) {
     try {
       const userData: UserInput = req.body;
+      logger.debug('Creating new user', { email: userData.email, username: userData.username });
+
       const user = await this.service.createUser(userData);
+      logger.info('Successfully created user', { userId: user.id, email: user.email });
       ResponseUtils.created(res, user, 'User created successfully');
     } catch (err) {
+      logger.error('Failed to create user', err, { email: req.body.email, username: req.body.username });
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('required') || errorMessage.includes('Invalid') ||
           errorMessage.includes('already exists') || errorMessage.includes('must be')) {
@@ -77,12 +93,18 @@ export class UserController {
     try {
       const { id } = req.params;
       const updateData: Partial<UserInput> = req.body;
+      logger.debug('Updating user', { userId: id, fields: Object.keys(updateData) });
+
       const user = await this.service.updateUser(id, updateData);
       if (!user) {
+        logger.warn('User not found for update', { userId: id });
         return ResponseUtils.notFound(res, 'User not found');
       }
+
+      logger.info('Successfully updated user', { userId: id });
       ResponseUtils.success(res, user, 'User updated successfully');
     } catch (err) {
+      logger.error('Failed to update user', err, { userId: req.params.id });
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('Invalid') || errorMessage.includes('already exists') ||
           errorMessage.includes('must be') || errorMessage.includes('cannot be')) {
@@ -96,12 +118,18 @@ export class UserController {
   async deleteUser(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      logger.debug('Deleting user', { userId: id });
+
       const deleted = await this.service.deleteUser(id);
       if (!deleted) {
+        logger.warn('User not found for deletion', { userId: id });
         return ResponseUtils.notFound(res, 'User not found');
       }
+
+      logger.info('Successfully deleted user', { userId: id });
       ResponseUtils.success(res, { message: 'User deleted successfully' });
     } catch (err) {
+      logger.error('Failed to delete user', err, { userId: req.params.id });
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('Invalid')) {
         ResponseUtils.badRequest(res, errorMessage);
@@ -115,7 +143,15 @@ export class UserController {
   async register(req: Request, res: Response) {
     try {
       const userData: UserRegistrationInput = req.body;
+      logger.debug('User registration attempt', { email: userData.email, username: userData.username });
+
       const user = await this.service.registerUser(userData);
+      logger.info('User registered successfully', {
+        userId: user.id,
+        email: user.email,
+        isEmailVerified: user.isEmailVerified
+      });
+
       ResponseUtils.created(res, {
         user: {
           id: user.id,
@@ -130,6 +166,7 @@ export class UserController {
         message: 'User registered successfully. Please check your email for verification.'
       });
     } catch (err) {
+      logger.error('User registration failed', err, { email: req.body.email, username: req.body.username });
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('required') || errorMessage.includes('Invalid') ||
           errorMessage.includes('already exists') || errorMessage.includes('must be')) {
@@ -142,19 +179,19 @@ export class UserController {
 
   async login(req: Request, res: Response) {
     try {
-      console.log('🚀 Login request received:', { email: req.body.email, hasPassword: !!req.body.password });
       const credentials: UserCredentials = req.body;
-      
+      logger.debug('Login attempt', { email: credentials.email, hasPassword: !!credentials.password });
+
       const authResponse = await this.service.loginUser(credentials);
       if (!authResponse) {
-        console.log('❌ Login failed - invalid credentials for:', credentials.email);
+        logger.warn('Login failed - invalid credentials', { email: credentials.email });
         return ResponseUtils.unauthorized(res, 'Invalid email or password');
       }
-      
-      console.log('✅ Login successful for user:', credentials.email);
+
+      logger.info('Login successful', { email: credentials.email, userId: authResponse.user.id });
       ResponseUtils.success(res, authResponse, 'Login successful');
     } catch (err) {
-      console.error('💥 Login error:', err);
+      logger.error('Login error', err, { email: req.body.email });
       const errorMessage = (err as Error).message || 'Login failed';
       ErrorUtils.handleGenericError(res, err, errorMessage);
     }
@@ -162,10 +199,11 @@ export class UserController {
 
   async logout(req: Request, res: Response) {
     try {
-      // For logout, we don't need to do anything server-side
-      // The client will discard the tokens
+      const userId = (req as any).user?.id;
+      logger.debug('User logout', { userId });
       ResponseUtils.success(res, { message: 'Logout successful' });
     } catch (err) {
+      logger.error('Logout error', err, { userId: (req as any).user?.id });
       ErrorUtils.handleGenericError(res, err, 'Logout failed');
     }
   }
@@ -173,12 +211,18 @@ export class UserController {
   async verifyEmail(req: Request, res: Response) {
     try {
       const { token }: EmailVerificationConfirm = req.body;
+      logger.debug('Email verification attempt');
+
       const verified = await this.service.verifyEmail(token);
       if (!verified) {
+        logger.warn('Email verification failed - invalid or expired token');
         return ResponseUtils.badRequest(res, 'Invalid or expired verification token');
       }
+
+      logger.info('Email verified successfully');
       ResponseUtils.success(res, { message: 'Email verified successfully' });
     } catch (err) {
+      logger.error('Email verification error', err);
       ErrorUtils.handleGenericError(res, err, 'Email verification failed');
     }
   }
@@ -262,14 +306,21 @@ export class UserController {
     try {
       const userId = (req as any).user?.id;
       if (!userId) {
+        logger.warn('Profile access denied - user not authenticated');
         return ResponseUtils.unauthorized(res, 'User not authenticated');
       }
+
+      logger.debug('Fetching user profile', { userId });
       const user = await this.service.getUserProfile(userId);
       if (!user) {
+        logger.warn('User profile not found', { userId });
         return ResponseUtils.notFound(res, 'User not found');
       }
+
+      logger.info('Successfully fetched user profile', { userId });
       ResponseUtils.success(res, user);
     } catch (err) {
+      logger.error('Failed to fetch user profile', err, { userId: (req as any).user?.id });
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch profile');
     }
   }
@@ -278,15 +329,23 @@ export class UserController {
     try {
       const userId = (req as any).user?.id;
       if (!userId) {
+        logger.warn('Profile update denied - user not authenticated');
         return ResponseUtils.unauthorized(res, 'User not authenticated');
       }
+
       const updateData = req.body;
+      logger.debug('Updating user profile', { userId, fields: Object.keys(updateData) });
+
       const user = await this.service.updateUserProfile(userId, updateData);
       if (!user) {
+        logger.warn('User not found for profile update', { userId });
         return ResponseUtils.notFound(res, 'User not found');
       }
+
+      logger.info('Successfully updated user profile', { userId });
       ResponseUtils.success(res, user, 'Profile updated successfully');
     } catch (err) {
+      logger.error('Failed to update user profile', err, { userId: (req as any).user?.id });
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('Invalid') || errorMessage.includes('already exists')) {
         ResponseUtils.badRequest(res, errorMessage);
