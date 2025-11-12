@@ -16,16 +16,7 @@
 
 import { featureFlags } from './featureFlags';
 import { consentManager } from './consentManager';
-import { getLoggingConfig } from './loggingConfig';
-
-export const LogLevel = {
-  DEBUG: 0,
-  INFO: 1,
-  WARN: 2,
-  ERROR: 3,
-} as const;
-
-export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
+import { getLoggingConfig, LogLevel } from './loggingConfig';
 
 export interface LogEntry {
   timestamp: string;

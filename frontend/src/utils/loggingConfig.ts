@@ -5,7 +5,16 @@
  * and utilities for managing logging behavior across the application.
  */
 
-import { LogLevel } from './logger';
+// import { LogLevel } from './logger';
+
+export const LogLevel = {
+  DEBUG: 0,
+  INFO: 1,
+  WARN: 2,
+  ERROR: 3,
+} as const;
+
+export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
 
 export interface LoggingConfig {
   // Core logging settings
