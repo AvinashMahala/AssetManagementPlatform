@@ -54,6 +54,7 @@ const PropertyEditPage: React.FC = () => {
       initialData={property}
       onSubmit={handleSubmit}
       loading={updateLoading}
+      isEdit={true}
     />
   );
 };

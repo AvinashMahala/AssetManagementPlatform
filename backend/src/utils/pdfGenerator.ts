@@ -38,6 +38,13 @@ export class PDFGenerator {
               year: 'numeric', month: 'long', day: 'numeric'
             })
           : 'N/A',
+        // Include receipt template settings
+        bankDetails: receiptData.settings?.bankDetails,
+        upiWallets: receiptData.settings?.wallets,
+        upiId: receiptData.settings?.upiId,
+        qrCodeUrl: receiptData.settings?.qrCodeUrl,
+        signatureUrl: receiptData.settings?.signatureUrl,
+        watermarkUrl: receiptData.settings?.watermarkUrl,
         termsAndConditions: receiptData.termsAndConditions || 
           'This invoice is generated based on the rental agreement. Payment is due as per the terms mentioned in the lease agreement.'
       };

@@ -5,6 +5,8 @@ import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectIte
 import type { PropertyInput, PropertyReceiptTemplate } from '../../types';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { getCurrencyOptions, DEFAULT_CURRENCY } from '../../types/currency';
+import { useUser } from '../../hooks';
+import { useAuth } from '../../hooks';
 import OwnerContactForm from './OwnerContactForm';
 import EnhancedAmenitiesForm from './EnhancedAmenitiesForm';
 import PropertyFileUpload from './PropertyFileUpload';
@@ -14,17 +16,36 @@ interface PropertyFormModernProps {
   initialData?: Partial<PropertyInput>;
   onSubmit: (data: PropertyInput) => Promise<void>;
   loading?: boolean;
+  isEdit?: boolean;
+  propertyName?: string;
 }
 
 const AMENITIES = ['Parking', 'Lift', 'Security', 'Gym', 'Power Backup', 'Water Supply', 'Garden', 'Swimming Pool'];
 
-const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, onSubmit, loading }) => {
+const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, onSubmit, loading, isEdit = false, propertyName }) => {
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const { data: owner, loading: ownerLoading } = useUser(initialData?.ownerId && initialData.ownerId.trim() ? initialData.ownerId : (!isEdit ? currentUser?.id || '' : null));
+
+  // Update owner details when owner data is loaded
+  React.useEffect(() => {
+    if (owner && !ownerLoading) {
+      setFormData(prev => ({
+        ...prev,
+        ownerDetails: {
+          ...prev.ownerDetails,
+          name: owner.name || owner.username || prev.ownerDetails.name || ''
+        }
+      }));
+    }
+  }, [owner, ownerLoading]);
   const [formData, setFormData] = useState<PropertyInput>({
     name: initialData?.name || '',
     description: initialData?.description || '',
     propertyType: initialData?.propertyType || PropertyType.APARTMENT,
-    status: initialData?.status || PropertyStatus.AVAILABLE,
+    status: (initialData?.status && Object.values(PropertyStatus).includes(initialData.status as any)) 
+      ? initialData.status 
+      : PropertyStatus.AVAILABLE,
     currency: initialData?.currency || DEFAULT_CURRENCY,
     address: {
       street: initialData?.address?.street || '',
@@ -39,7 +60,12 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
     parkingSpaces: initialData?.parkingSpaces || undefined,
     buildingAmenities: initialData?.buildingAmenities || [],
     buildingPhotos: initialData?.buildingPhotos || [],
-    ownerDetails: initialData?.ownerDetails || {
+    ownerDetails: initialData?.ownerDetails ? {
+      name: initialData.ownerDetails.name || '',
+      mobileNumbers: initialData.ownerDetails.mobileNumbers || [''],
+      emailIds: initialData.ownerDetails.emailIds || [''],
+      website: initialData.ownerDetails.website || ''
+    } : {
       name: '',
       mobileNumbers: [''],
       emailIds: [''],
@@ -65,7 +91,7 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
       wallets: [],
       additionalInfo: {}
     },
-    ownerId: initialData?.ownerId || '',
+    ownerId: initialData?.ownerId || (!isEdit ? currentUser?.id || '' : ''),
     coOwners: initialData?.coOwners || [],
   });
 
@@ -94,16 +120,17 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
+
     if (!formData.name) newErrors.name = 'Property name is required';
     if (!formData.address.street) newErrors.street = 'Street address is required';
     if (!formData.address.city) newErrors.city = 'City is required';
     if (!formData.address.state) newErrors.state = 'State is required';
     if (!formData.address.pincode) newErrors.pincode = 'Pincode is required';
     if (!formData.totalArea || formData.totalArea <= 0) newErrors.totalArea = 'Valid area is required';
-    if (!formData.ownerId) newErrors.ownerId = 'Owner ID is required';
-    if (!formData.ownerDetails.name) newErrors.ownerName = 'Owner name is required';
-    if (!formData.ownerDetails.mobileNumbers[0]) newErrors.ownerMobile = 'At least one mobile number is required';
-    if (!formData.ownerDetails.emailIds[0]) newErrors.ownerEmail = 'At least one email ID is required';
+    if (!isEdit && !formData.ownerId) newErrors.ownerId = 'Owner ID is required';
+    if (!isEdit && !formData.ownerDetails.name) newErrors.ownerName = 'Owner name is required';
+    if (!isEdit && !formData.ownerDetails.mobileNumbers[0]) newErrors.ownerMobile = 'At least one mobile number is required';
+    if (!isEdit && !formData.ownerDetails.emailIds[0]) newErrors.ownerEmail = 'At least one email ID is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -111,7 +138,11 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+
+    if (!validate()) {
+      return;
+    }
+
     await onSubmit(formData);
   };
 
@@ -121,14 +152,14 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
 
   return (
     <BaseForm
-      title="Create Property"
-      backLabel="Back to Properties"
+      title={isEdit ? `Edit ${propertyName || 'Property'}` : "Create Property"}
+      backLabel={isEdit ? "Edit Property" : "Back to Properties"}
       onBack={() => navigate('/properties')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}
       cancelLabel="Cancel"
-      submitLabel="Create Property"
+      submitLabel={isEdit ? "Update Property" : "Create Property"}
     >
       <FormColumn
         title="Basic Information"
@@ -191,14 +222,15 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
           </Select>
         </FormField>
 
-        <FormField label="Owner ID" required>
+        <FormField label="Owner Name" required>
           <Input
-            id="ownerId"
-            value={formData.ownerId}
-            onChange={(e) => handleChange('ownerId', e.target.value)}
-            error={errors.ownerId}
-            placeholder="Enter owner ID"
+            id="ownerName"
+            value={owner?.name || owner?.username || formData.ownerDetails.name || ''}
+            onChange={(e) => handleChange('ownerDetails', { ...formData.ownerDetails, name: e.target.value })}
+            error={errors.ownerName}
+            placeholder={ownerLoading ? "Loading owner..." : "Enter owner name"}
             className="h-10"
+            disabled={ownerLoading}
           />
         </FormField>
 
@@ -350,6 +382,12 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
         <OwnerContactForm
           value={formData.ownerDetails}
           onChange={(value) => handleChange('ownerDetails', value)}
+          isEdit={isEdit}
+          errors={{
+            name: errors.ownerName,
+            mobile: errors.ownerMobile,
+            email: errors.ownerEmail
+          }}
         />
       </FormColumn>
 

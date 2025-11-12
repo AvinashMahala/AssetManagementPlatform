@@ -23,7 +23,10 @@ class PropertyService {
   }
 
   async update(id: string, propertyData: Partial<PropertyInput>): Promise<ApiResponse<Property>> {
-    return apiClient.put<Property>(`${API_ENDPOINTS.PROPERTIES}/${id}`, propertyData);
+    console.log('🏗️ PropertyService.update called with:', { id, propertyData });
+    const result = await apiClient.put<Property>(`${API_ENDPOINTS.PROPERTIES}/${id}`, propertyData);
+    console.log('🏗️ PropertyService.update response:', result);
+    return result;
   }
 
   async delete(id: string): Promise<ApiResponse<void>> {

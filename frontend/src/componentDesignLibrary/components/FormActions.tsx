@@ -3,7 +3,6 @@ import { Button } from '../../components/ui/button';
 
 interface FormActionsProps {
   onCancel: () => void;
-  onSubmit: () => void;
   loading?: boolean;
   cancelLabel?: string;
   submitLabel?: string;
@@ -13,7 +12,6 @@ interface FormActionsProps {
 
 export const FormActions: React.FC<FormActionsProps> = ({
   onCancel,
-  onSubmit,
   loading = false,
   cancelLabel = 'Cancel',
   submitLabel = 'Save',
@@ -32,10 +30,29 @@ export const FormActions: React.FC<FormActionsProps> = ({
         {cancelLabel}
       </Button>
       <Button
-        type="submit"
+        type="button"
         disabled={loading || submitDisabled}
         className="px-6 bg-blue-600 hover:bg-blue-700 text-white"
-        onClick={onSubmit}
+        onClick={() => {
+          // Find the form with the specific class used by BaseForm
+          const form = document.querySelector('form.space-y-4') as HTMLFormElement;
+
+          if (form) {
+            try {
+              form.requestSubmit();
+            } catch (error) {
+              // Fallback: dispatch submit event
+              const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+              form.dispatchEvent(submitEvent);
+            }
+          } else {
+            // Fallback: try any form
+            const anyForm = document.querySelector('form') as HTMLFormElement;
+            if (anyForm) {
+              anyForm.requestSubmit();
+            }
+          }
+        }}
       >
         {loading ? 'Saving...' : submitLabel}
       </Button>

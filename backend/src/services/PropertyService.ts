@@ -7,6 +7,9 @@ import { ReceiptTemplateService } from './ReceiptTemplateService.js';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate.js';
 import { IPropertyFileService } from '../interfaces/services/IPropertyFileService.js';
 import { IPropertyReceiptTemplateService } from '../interfaces/services/IPropertyReceiptTemplateService.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('PropertyService');
 
 export class PropertyService implements IPropertyService {
   private repository: IPropertyRepository;

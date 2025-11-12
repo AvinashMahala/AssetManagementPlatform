@@ -2,6 +2,9 @@ import { Pool } from 'pg';
 import { Property, PropertyInput, PropertyStatus } from '../models/Property';
 import { TABLES, COLUMNS } from '../constants/database.js';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('PropertyRepository');
 
 export class PropertyRepository implements IPropertyRepository {
   private pool: Pool;
@@ -71,9 +74,13 @@ export class PropertyRepository implements IPropertyRepository {
           ${COLUMNS.PROPERTIES.RECEIPT_SETTINGS},
           ${COLUMNS.PROPERTIES.TEMPLATE_ID},
           ${COLUMNS.PROPERTIES.TEMPLATE_OVERRIDES},
+          owner_name,
+          owner_mobile_numbers,
+          owner_email_ids,
+          owner_website,
           ${COLUMNS.PROPERTIES.CREATED_AT},
           ${COLUMNS.PROPERTIES.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *`,
         [
           crypto.randomUUID(),
           data.name,
@@ -96,6 +103,10 @@ export class PropertyRepository implements IPropertyRepository {
           JSON.stringify(data.receiptSettings || null),
           data.templateId || null,
           JSON.stringify(data.templateOverrides || null),
+          data.ownerDetails?.name || null,
+          JSON.stringify(data.ownerDetails?.mobileNumbers || []),
+          JSON.stringify(data.ownerDetails?.emailIds || []),
+          data.ownerDetails?.website || null,
           now,
           now
         ]
@@ -164,13 +175,9 @@ export class PropertyRepository implements IPropertyRepository {
         fields.push(`${COLUMNS.PROPERTIES.PARKING_SPACES} = $${paramIndex++}`);
         values.push(data.parkingSpaces);
       }
-      if (data.buildingAmenities !== undefined) {
+      if (data.buildingAmenities !== undefined && data.amenities === undefined) {
         fields.push(`${COLUMNS.PROPERTIES.AMENITIES} = $${paramIndex++}`);
         values.push(JSON.stringify(data.buildingAmenities));
-      }
-      if (data.buildingPhotos !== undefined) {
-        fields.push(`${COLUMNS.PROPERTIES.PHOTOS} = $${paramIndex++}`);
-        values.push(JSON.stringify(data.buildingPhotos));
       }
       if (data.ownerId !== undefined) {
         fields.push(`${COLUMNS.PROPERTIES.OWNER_ID} = $${paramIndex++}`);
@@ -192,6 +199,28 @@ export class PropertyRepository implements IPropertyRepository {
         fields.push(`${COLUMNS.PROPERTIES.TEMPLATE_OVERRIDES} = $${paramIndex++}`);
         values.push(JSON.stringify(data.templateOverrides));
       }
+      if (data.ownerDetails?.name !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.OWNER_NAME} = $${paramIndex++}`);
+        values.push(data.ownerDetails.name);
+      }
+      if (data.ownerDetails?.mobileNumbers !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.OWNER_MOBILE_NUMBERS} = $${paramIndex++}`);
+        values.push(JSON.stringify(data.ownerDetails.mobileNumbers));
+      }
+      if (data.ownerDetails?.emailIds !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.OWNER_EMAIL_IDS} = $${paramIndex++}`);
+        values.push(JSON.stringify(data.ownerDetails.emailIds));
+      }
+      if (data.ownerDetails?.website !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.OWNER_WEBSITE} = $${paramIndex++}`);
+        values.push(data.ownerDetails.website);
+      }
+      // Note: amenities field is handled separately and stored in the same AMENITIES column
+      // This is a temporary solution until database schema is updated
+      if (data.amenities !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.AMENITIES} = $${paramIndex++}`);
+        values.push(JSON.stringify(data.amenities));
+      }
 
       if (fields.length === 0) {
         return await this.findById(id);
@@ -207,6 +236,7 @@ export class PropertyRepository implements IPropertyRepository {
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToProperty(result.rows[0]) : null;
     } catch (error) {
+      logger.error('PropertyRepository.update error', error, { id });
       throw error;
     }
   }
@@ -266,8 +296,8 @@ export class PropertyRepository implements IPropertyRepository {
       totalFloors: row.total_floors,
       yearBuilt: row.year_built,
       parkingSpaces: row.parking_spaces,
-      buildingAmenities: Array.isArray(row.amenities) ? row.amenities : (typeof row.amenities === 'string' ? JSON.parse(row.amenities || '[]') : (row.amenities || [])),
-      buildingPhotos: Array.isArray(row.photos) ? row.photos : (typeof row.photos === 'string' ? JSON.parse(row.photos || '[]') : (row.photos || [])),
+      buildingAmenities: Array.isArray(row.amenities) ? row.amenities : (typeof row.amenities === 'string' ? (JSON.parse(row.amenities).basic || []) : []),
+      buildingPhotos: [], // Photos are stored in separate property_files table
       ownerId: row.owner_id,
       coOwners: Array.isArray(row.co_owners) ? row.co_owners : (typeof row.co_owners === 'string' ? JSON.parse(row.co_owners || '[]') : (row.co_owners || [])),
       receiptSettings: row.receipt_settings ? (typeof row.receipt_settings === 'string' ? JSON.parse(row.receipt_settings) : row.receipt_settings) : undefined,

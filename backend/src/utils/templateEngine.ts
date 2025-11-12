@@ -40,6 +40,23 @@ export interface InvoiceTemplateData {
   paymentMethod: string;
   paymentDate: string;
 
+  // Receipt Template Settings
+  bankDetails?: {
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    accountHolderName?: string;
+  };
+  upiWallets?: Array<{
+    type: string;
+    number: string;
+    name: string;
+  }>;
+  upiId?: string;
+  qrCodeUrl?: string;
+  signatureUrl?: string;
+  watermarkUrl?: string;
+
   // Footer
   termsAndConditions: string;
 }
@@ -83,6 +100,17 @@ export class TemplateEngine {
 
     html = html.replace(/{{paymentMethod}}/g, this.escapeHtml(data.paymentMethod));
     html = html.replace(/{{paymentDate}}/g, this.escapeHtml(data.paymentDate));
+
+    // Receipt template settings
+    const bankName = data.bankDetails?.bankName || data.landlordName;
+    const accountNumber = data.bankDetails?.accountNumber ? this.maskAccountNumber(data.bankDetails.accountNumber) : 'XXXX1234';
+    const ifscCode = data.bankDetails?.ifscCode || 'ABCD1234';
+    const upiId = data.upiId || data.landlordEmail;
+
+    html = html.replace(/{{bankName}}/g, this.escapeHtml(bankName));
+    html = html.replace(/{{accountNumber}}/g, this.escapeHtml(accountNumber));
+    html = html.replace(/{{ifscCode}}/g, this.escapeHtml(ifscCode));
+    html = html.replace(/{{upiId}}/g, this.escapeHtml(upiId));
 
     html = html.replace(/{{termsAndConditions}}/g, this.escapeHtml(data.termsAndConditions));
 
@@ -167,6 +195,16 @@ export class TemplateEngine {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  }
+
+  /**
+   * Mask account number for security (show only last 4 digits)
+   */
+  private static maskAccountNumber(accountNumber: string): string {
+    if (accountNumber.length <= 4) {
+      return accountNumber;
+    }
+    return `XXXX${accountNumber.slice(-4)}`;
   }
 
   /**

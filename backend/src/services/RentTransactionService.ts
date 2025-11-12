@@ -916,7 +916,18 @@ export class RentTransactionService implements IRentTransactionService {
           transactionId: transaction.transactionId || undefined,
           paidDate: transaction.paidDate?.toISOString()
         },
-        settings: {},
+        settings: {
+          bankDetails: property.receiptTemplate?.bankDetails || undefined,
+          wallets: property.receiptTemplate?.wallets?.map(wallet => ({
+            type: wallet.type,
+            number: wallet.upiPhoneNumber,
+            name: wallet.upiName
+          })) || undefined,
+          upiId: property.receiptTemplate?.wallets?.find(wallet => wallet.upiId)?.upiId || undefined,
+          qrCodeUrl: property.receiptTemplate?.paymentQRCodeUrl || undefined,
+          signatureUrl: property.receiptTemplate?.signatureUrl || undefined,
+          watermarkUrl: property.receiptTemplate?.watermarkUrl || undefined
+        },
         notes: transaction.notes || 'Thank you for your payment'
       };
 
@@ -1037,7 +1048,18 @@ export class RentTransactionService implements IRentTransactionService {
           transactionId: transaction.transactionId || undefined,
           paidDate: transaction.paidDate?.toISOString()
         },
-        settings: {},
+        settings: {
+          bankDetails: property.receiptTemplate?.bankDetails || undefined,
+          wallets: property.receiptTemplate?.wallets?.map(wallet => ({
+            type: wallet.type,
+            number: wallet.upiPhoneNumber,
+            name: wallet.upiName
+          })) || undefined,
+          upiId: property.receiptTemplate?.wallets?.find(wallet => wallet.upiId)?.upiId || undefined,
+          qrCodeUrl: property.receiptTemplate?.paymentQRCodeUrl || undefined,
+          signatureUrl: property.receiptTemplate?.signatureUrl || undefined,
+          watermarkUrl: property.receiptTemplate?.watermarkUrl || undefined
+        },
         notes: transaction.notes || 'Payment received with thanks'
       };
 

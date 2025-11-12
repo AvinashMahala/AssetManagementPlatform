@@ -40,6 +40,7 @@ import { UnitController } from './src/controllers/UnitController.js';
 import { UnitTenantController } from './src/controllers/UnitTenantController.js';
 import { createPropertyRoutes } from './src/routes/propertyRoutes.js';
 import { createAuthRoutes } from './src/routes/authRoutes.js';
+import { createUserRoutes } from './src/routes/userRoutes.js';
 import { createTenantRoutes } from './src/routes/tenantRoutes.js';
 import { createUnitRoutes } from './src/routes/unitRoutes.js';
 import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
@@ -208,6 +209,7 @@ app.get('/api/health', async (req, res) => {
 // Mount routes
 app.use('/api/properties', createPropertyRoutes(propertyController, propertyFileController, propertyReceiptTemplateController, userService));
 app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
+app.use('/api/users', createUserRoutes(userController, userService));
 app.use('/api', createTenantRoutes(tenantController, userService));
 app.use('/api', createUnitRoutes(unitController, userService));
 app.use('/api', createUnitTenantRoutes(unitTenantController, userService));

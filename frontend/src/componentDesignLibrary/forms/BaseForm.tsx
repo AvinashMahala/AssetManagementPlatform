@@ -52,8 +52,6 @@ export const BaseForm: React.FC<BaseFormProps> = ({
       subtitle={subtitle}
       backLabel={backLabel}
       onBack={onBack}
-      // Ensure the primary action in the sticky footer actually submits the form
-      onSubmit={() => formRef.current?.requestSubmit()}
       onCancel={onCancel}
       loading={loading}
       cancelLabel={cancelLabel}

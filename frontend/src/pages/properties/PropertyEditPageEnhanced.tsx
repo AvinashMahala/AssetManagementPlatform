@@ -13,13 +13,24 @@ const PropertyEditPageEnhanced: React.FC = () => {
   const { mutate: updateProperty, loading: updateLoading } = useUpdateProperty();
 
   const handleSubmit = async (data: PropertyInput) => {
-    if (!id) return;
+    if (!id) {
+      return;
+    }
+
     try {
-      await updateProperty({ id, data });
-      // Navigate to property dashboard on success
+      const response = await updateProperty({ id, data });
+
+      if (!response.success) {
+        const errorMessage = response.error?.message || 'Failed to update property';
+        alert(`Error: ${errorMessage}`);
+        return;
+      }
+
+      alert('Property updated successfully!');
       navigate(`/properties/${id}/dashboard`);
     } catch (error) {
-      console.error('Failed to update property:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -72,6 +83,8 @@ const PropertyEditPageEnhanced: React.FC = () => {
         initialData={property}
         onSubmit={handleSubmit}
         loading={updateLoading}
+        isEdit={true}
+        propertyName={property.name}
       />
     </AppLayout>
   );

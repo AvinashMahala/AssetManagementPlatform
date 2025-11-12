@@ -14,7 +14,6 @@ interface FormLayoutProps {
 
   // Actions props
   onCancel: () => void;
-  onSubmit?: () => void; // Made optional since form will handle submit
   loading?: boolean;
   cancelLabel?: string;
   submitLabel?: string;
@@ -32,7 +31,6 @@ export const FormLayout: React.FC<FormLayoutProps> = ({
   onBack,
   children,
   onCancel,
-  onSubmit,
   loading = false,
   cancelLabel = 'Cancel',
   submitLabel = 'Save',
@@ -56,7 +54,6 @@ export const FormLayout: React.FC<FormLayoutProps> = ({
 
       <FormActions
         onCancel={onCancel}
-        onSubmit={onSubmit || (() => {})}
         loading={loading}
         cancelLabel={cancelLabel}
         submitLabel={submitLabel}

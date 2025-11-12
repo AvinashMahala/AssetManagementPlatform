@@ -79,11 +79,27 @@ class ApiClient {
     }
 
     // Handle error responses
-    const errorData = responseData as { error?: { code?: string; message?: string; details?: unknown }; message?: string };
+    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string };
+    let errorMessage: string;
+    
+    if (typeof errorData?.error === 'string') {
+      // Backend sends { success: false, error: "error message" }
+      errorMessage = errorData.error;
+    } else if (errorData?.error?.message) {
+      // Backend sends { success: false, error: { message: "error message" } }
+      errorMessage = errorData.error.message;
+    } else if (errorData?.message) {
+      // Fallback to message field
+      errorMessage = errorData.message;
+    } else {
+      // Final fallback to HTTP status
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    }
+    
     const error: ApiError = {
-      code: errorData?.error?.code || `HTTP_${response.status}`,
-      message: errorData?.error?.message || errorData?.message || `HTTP ${response.status}: ${response.statusText}`,
-      details: errorData?.error?.details as Record<string, unknown> | undefined,
+      code: (typeof errorData?.error === 'object' ? errorData.error.code : undefined) || `HTTP_${response.status}`,
+      message: errorMessage,
+      details: (typeof errorData?.error === 'object' ? errorData.error.details : undefined) as Record<string, unknown> | undefined,
     };
 
     return {

@@ -7,9 +7,10 @@ interface OwnerContactFormProps {
   value: OwnerContact;
   onChange: (value: OwnerContact) => void;
   errors?: Record<string, string>;
+  isEdit?: boolean;
 }
 
-const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, errors }) => {
+const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, errors, isEdit = false }) => {
   const handleChange = (field: keyof OwnerContact, fieldValue: any) => {
     onChange({ ...value, [field]: fieldValue });
   };
@@ -48,7 +49,7 @@ const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, er
 
   return (
     <div className="space-y-6">
-      <FormField label="Owner Name" required>
+      <FormField label="Owner Name" required={!isEdit}>
         <div className="relative">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -92,6 +93,7 @@ const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, er
                   placeholder={`Mobile number ${index + 1}`}
                   className="pl-10 h-10"
                   type="tel"
+                  error={index === 0 ? errors?.mobile : undefined}
                 />
               </div>
               {value.mobileNumbers.length > 1 && (
@@ -141,6 +143,7 @@ const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, er
                   placeholder={`Email address ${index + 1}`}
                   className="pl-10 h-10"
                   type="email"
+                  error={index === 0 ? errors?.email : undefined}
                 />
               </div>
               {value.emailIds.length > 1 && (

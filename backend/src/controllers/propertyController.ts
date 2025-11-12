@@ -3,6 +3,9 @@ import { IPropertyService } from '../interfaces/services/IPropertyService.js';
 import { PropertyInput } from '../models/Property.js';
 import { ResponseUtils } from '../utils/response.js';
 import { ErrorUtils } from '../utils/error.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('PropertyController');
 
 export class PropertyController {
   private service: IPropertyService;
@@ -169,6 +172,9 @@ export class PropertyController {
       ResponseUtils.success(res, property, 'Property updated successfully');
     } catch (err) {
       const errorMessage = (err as Error).message;
+      const { id } = req.params;
+      const propertyId = id;
+      logger.error('Property update error', err, { errorMessage, propertyId });
       if (errorMessage.includes('required') || errorMessage.includes('Invalid') ||
           errorMessage.includes('cannot be') || errorMessage.includes('must be')) {
         ResponseUtils.badRequest(res, errorMessage);
