@@ -183,11 +183,11 @@ export class ValidationUtils {
   /**
    * Validate property owner
    */
-  static validatePropertyOwner(ownerId: number): { isValid: boolean; message?: string } {
+  static validatePropertyOwner(ownerId: string): { isValid: boolean; message?: string } {
     if (!ownerId) {
       return { isValid: false, message: ERROR_MESSAGES.PROPERTY.OWNER_REQUIRED };
     }
-    return this.validateId(ownerId);
+    return this.validateUUID(ownerId);
   }
 
   /**
@@ -310,8 +310,20 @@ export class ValidationUtils {
    * Validate ID (must be positive integer)
    */
   static validateId(id: any): { isValid: boolean; message?: string } {
-    const numId = typeof id === 'string' ? parseInt(id, 10) : id;
-    if (!Number.isInteger(numId) || numId <= 0) {
+    // Only accept numbers or strings that are purely numeric
+    if (typeof id === 'string') {
+      // Check if string contains only digits
+      if (!/^\d+$/.test(id)) {
+        return { isValid: false, message: 'Invalid ID. Must be a positive integer.' };
+      }
+      const numId = parseInt(id, 10);
+      if (!Number.isInteger(numId) || numId <= 0) {
+        return { isValid: false, message: 'Invalid ID. Must be a positive integer.' };
+      }
+      return { isValid: true };
+    }
+
+    if (typeof id !== 'number' || !Number.isInteger(id) || id <= 0) {
       return { isValid: false, message: 'Invalid ID. Must be a positive integer.' };
     }
     return { isValid: true };

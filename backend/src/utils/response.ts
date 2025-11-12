@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { HTTP_STATUS } from '../constants/http';
-import { logger } from './logger.js';
+import { logger } from './logger';
 
 export interface ApiResponse<T = any> {
   success: boolean;
