@@ -33,5 +33,5 @@ async function runMigration(migrationPath: string) {
 }
 
 // Run the migration
-const migrationPath = join(process.cwd(), 'migrations/010_enhanced_property_details.sql');
+const migrationPath = join(process.cwd(), 'backend/migrations/013_add_tenant_cascade_delete.sql');
 runMigration(migrationPath);

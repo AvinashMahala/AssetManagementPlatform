@@ -12,7 +12,7 @@ export class ReceiptTemplateRepository {
       );
       return result.rows.map(row => this.mapRowToReceiptTemplate(row));
     } catch (error) {
-      throw new Error('Failed to fetch receipt templates');
+      throw new Error(`Failed to fetch receipt templates: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -27,7 +27,7 @@ export class ReceiptTemplateRepository {
       return result.rows[0] ? this.mapRowToReceiptTemplate(result.rows[0]) : null;
     } catch (error) {
       console.error('❌ Error in findById:', error);
-      throw error;
+      throw new Error(`Failed to fetch receipt template: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -39,7 +39,7 @@ export class ReceiptTemplateRepository {
       );
       return result.rows[0] ? this.mapRowToReceiptTemplate(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch receipt template by type');
+      throw new Error(`Failed to fetch receipt template by type: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -74,7 +74,7 @@ export class ReceiptTemplateRepository {
       );
       return this.mapRowToReceiptTemplate(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create receipt template: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -123,7 +123,7 @@ export class ReceiptTemplateRepository {
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToReceiptTemplate(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update receipt template: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -135,7 +135,7 @@ export class ReceiptTemplateRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to delete receipt template');
+      throw new Error(`Failed to delete receipt template: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -146,7 +146,7 @@ export class ReceiptTemplateRepository {
       );
       return result.rows[0] ? this.mapRowToReceiptTemplate(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch default receipt template');
+      throw new Error(`Failed to fetch default receipt template: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 

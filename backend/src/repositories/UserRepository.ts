@@ -32,7 +32,7 @@ export class UserRepository implements IUserRepository {
       return result.rows;
     } catch (error) {
       logger.error('Failed to fetch users', error);
-      throw new Error('Failed to fetch users');
+      throw new Error(`Failed to fetch users: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -55,7 +55,7 @@ export class UserRepository implements IUserRepository {
       return user;
     } catch (error) {
       logger.error('Failed to fetch user by ID', error, { userId: id });
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -74,7 +74,7 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by username: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -94,7 +94,7 @@ export class UserRepository implements IUserRepository {
       return result.rows[0] || null;
     } catch (error) {
       console.error('❌ Error in findByEmail:', error);
-      throw error;
+      throw new Error(`Failed to fetch user by email: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -113,7 +113,7 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by phone: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -132,7 +132,7 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by Google ID: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -151,7 +151,7 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by email verification token: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -170,7 +170,7 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by password reset token: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -208,7 +208,7 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0];
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create user: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -251,7 +251,7 @@ export class UserRepository implements IUserRepository {
       const result = await this.pool.query(query, values);
       return result.rows[0] || null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update user: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -263,7 +263,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to delete user');
+      throw new Error(`Failed to delete user: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -278,7 +278,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update email verification token');
+      throw new Error(`Failed to update email verification token: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -292,7 +292,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update password reset token');
+      throw new Error(`Failed to update password reset token: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -305,7 +305,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update password');
+      throw new Error(`Failed to update password: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -318,7 +318,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update last login');
+      throw new Error(`Failed to update last login: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -332,7 +332,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to clear password reset token');
+      throw new Error(`Failed to clear password reset token: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -347,7 +347,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to verify email');
+      throw new Error(`Failed to verify email: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -360,7 +360,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to verify phone');
+      throw new Error(`Failed to verify phone: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -375,7 +375,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to link Google account');
+      throw new Error(`Failed to link Google account: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -393,7 +393,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to store phone verification code');
+      throw new Error(`Failed to store phone verification code: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -418,7 +418,7 @@ export class UserRepository implements IUserRepository {
 
       return false;
     } catch (error) {
-      throw new Error('Failed to verify phone code');
+      throw new Error(`Failed to verify phone code: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 }

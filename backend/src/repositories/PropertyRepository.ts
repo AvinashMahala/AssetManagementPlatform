@@ -17,8 +17,8 @@ export class PropertyRepository implements IPropertyRepository {
     try {
       const result = await this.pool.query(`SELECT * FROM ${TABLES.PROPERTIES}`);
       return result.rows.map(row => this.mapRowToProperty(row));
-    } catch (error) {
-      throw new Error('Failed to fetch properties');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch properties: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -29,10 +29,8 @@ export class PropertyRepository implements IPropertyRepository {
         [id]
       );
       return result.rows[0] ? this.mapRowToProperty(result.rows[0]) : null;
-    } catch (error) {
-      console.error('PropertyRepository.findById error:', error);
-      console.error('Property ID:', id);
-      throw new Error(`Failed to fetch property: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: any) {
+      throw new Error(`Failed to fetch property: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -43,8 +41,8 @@ export class PropertyRepository implements IPropertyRepository {
         [ownerId]
       );
       return result.rows.map(row => this.mapRowToProperty(row));
-    } catch (error) {
-      throw new Error('Failed to fetch properties by owner');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch properties by owner: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -248,8 +246,8 @@ export class PropertyRepository implements IPropertyRepository {
         [id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to delete property');
+    } catch (error: any) {
+      throw new Error(`Failed to delete property: ${error.message || 'Database delete failed'}`);
     }
   }
 
@@ -260,8 +258,8 @@ export class PropertyRepository implements IPropertyRepository {
         [status, new Date(), id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to update property status');
+    } catch (error: any) {
+      throw new Error(`Failed to update property status: ${error.message || 'Database update failed'}`);
     }
   }
 
@@ -272,8 +270,8 @@ export class PropertyRepository implements IPropertyRepository {
         [JSON.stringify(settings), new Date(), id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to update property receipt settings');
+    } catch (error: any) {
+      throw new Error(`Failed to update property receipt settings: ${error.message || 'Database update failed'}`);
     }
   }
 

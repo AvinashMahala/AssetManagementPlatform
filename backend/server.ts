@@ -229,7 +229,7 @@ app.use('/api/bulk', createBulkOperationsRoutes(bulkOperationsController, userSe
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
   logger.info(`✅ Server is running on port ${PORT}`, {
     port: PORT,

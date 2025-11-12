@@ -14,8 +14,8 @@ export class TenantRepository implements ITenantRepository {
     try {
       const result = await this.pool.query(`SELECT * FROM ${TABLES.TENANTS}`);
       return result.rows.map(row => this.mapRowToTenant(row));
-    } catch (error) {
-      throw new Error('Failed to fetch tenants');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenants: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -26,8 +26,8 @@ export class TenantRepository implements ITenantRepository {
         [id]
       );
       return result.rows[0] ? this.mapRowToTenant(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to fetch tenant');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -38,8 +38,8 @@ export class TenantRepository implements ITenantRepository {
         [email]
       );
       return result.rows[0] ? this.mapRowToTenant(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to fetch tenant by email');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant by email: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -50,8 +50,8 @@ export class TenantRepository implements ITenantRepository {
         [phone]
       );
       return result.rows[0] ? this.mapRowToTenant(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to fetch tenant by phone');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant by phone: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -250,8 +250,10 @@ export class TenantRepository implements ITenantRepository {
         [id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to delete tenant');
+    } catch (error: any) {
+      // Log the actual database error for debugging
+      console.error('Database error during tenant deletion:', error);
+      throw new Error(`Failed to delete tenant: ${error.message || 'Database constraint violation'}`);
     }
   }
 
@@ -262,8 +264,8 @@ export class TenantRepository implements ITenantRepository {
         [status, new Date(), id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to update tenant status');
+    } catch (error: any) {
+      throw new Error(`Failed to update tenant status: ${error.message || 'Database update failed'}`);
     }
   }
 
@@ -294,8 +296,8 @@ export class TenantRepository implements ITenantRepository {
         ]
       );
       return this.mapRowToTenantDocument(result.rows[0]);
-    } catch (error) {
-      throw new Error('Failed to add tenant document');
+    } catch (error: any) {
+      throw new Error(`Failed to add tenant document: ${error.message || 'Database insert failed'}`);
     }
   }
 
@@ -306,8 +308,8 @@ export class TenantRepository implements ITenantRepository {
         [tenantId]
       );
       return result.rows.map(row => this.mapRowToTenantDocument(row));
-    } catch (error) {
-      throw new Error('Failed to fetch tenant documents');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant documents: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -356,8 +358,8 @@ export class TenantRepository implements ITenantRepository {
 
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToTenantDocument(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to update tenant document');
+    } catch (error: any) {
+      throw new Error(`Failed to update tenant document: ${error.message || 'Database update failed'}`);
     }
   }
 
@@ -368,8 +370,8 @@ export class TenantRepository implements ITenantRepository {
         [documentId]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to delete tenant document');
+    } catch (error: any) {
+      throw new Error(`Failed to delete tenant document: ${error.message || 'Database delete failed'}`);
     }
   }
 

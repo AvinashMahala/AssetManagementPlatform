@@ -21,8 +21,8 @@ export class LeaseRepository implements ILeaseRepository {
         LEFT JOIN ${TABLES.UNITS} u ON l.unit_id = u.id
       `);
       return result.rows.map(row => this.mapRowToLease(row));
-    } catch (error) {
-      throw new Error('Failed to fetch leases');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch leases: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -34,9 +34,8 @@ export class LeaseRepository implements ILeaseRepository {
       );
       console.log('[LeaseRepository.findById] Row data:', result.rows[0]);
       return result.rows[0] ? this.mapRowToLease(result.rows[0]) : null;
-    } catch (error) {
-      console.error('[LeaseRepository.findById] Error:', error);
-      throw new Error('Failed to fetch lease');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch lease: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -47,8 +46,8 @@ export class LeaseRepository implements ILeaseRepository {
         [propertyId]
       );
       return result.rows.map(row => this.mapRowToLease(row));
-    } catch (error) {
-      throw new Error('Failed to fetch leases by property');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch leases by property: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -59,8 +58,8 @@ export class LeaseRepository implements ILeaseRepository {
         [tenantId]
       );
       return result.rows.map(row => this.mapRowToLease(row));
-    } catch (error) {
-      throw new Error('Failed to fetch leases by tenant');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch leases by tenant: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -71,8 +70,8 @@ export class LeaseRepository implements ILeaseRepository {
         [LeaseStatus.ACTIVE]
       );
       return result.rows.map(row => this.mapRowToLease(row));
-    } catch (error) {
-      throw new Error('Failed to fetch active leases');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch active leases: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -85,8 +84,8 @@ export class LeaseRepository implements ILeaseRepository {
         [new Date(Date.now() + days * 24 * 60 * 60 * 1000), LeaseStatus.ACTIVE]
       );
       return result.rows.map(row => this.mapRowToLease(row));
-    } catch (error) {
-      throw new Error('Failed to fetch expiring leases');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch expiring leases: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -271,8 +270,8 @@ export class LeaseRepository implements ILeaseRepository {
         [id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to delete lease');
+    } catch (error: any) {
+      throw new Error(`Failed to delete lease: ${error.message || 'Database delete failed'}`);
     }
   }
 
@@ -288,8 +287,8 @@ export class LeaseRepository implements ILeaseRepository {
         [LeaseStatus.TERMINATED, terminationReason, new Date(), new Date(), id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to terminate lease');
+    } catch (error: any) {
+      throw new Error(`Failed to terminate lease: ${error.message || 'Database update failed'}`);
     }
   }
 
@@ -305,8 +304,8 @@ export class LeaseRepository implements ILeaseRepository {
         [newEndDate, new Date(), id, LeaseStatus.ACTIVE]
       );
       return result.rows[0] ? this.mapRowToLease(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to renew lease');
+    } catch (error: any) {
+      throw new Error(`Failed to renew lease: ${error.message || 'Database update failed'}`);
     }
   }
 

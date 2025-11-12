@@ -15,7 +15,7 @@ export class MeterRepository implements IMeterRepository {
       const result = await this.pool.query(`SELECT * FROM ${TABLES.METERS} ORDER BY ${COLUMNS.METERS.CREATED_AT} DESC`);
       return result.rows.map(row => this.mapRowToMeter(row));
     } catch (error) {
-      throw new Error('Failed to fetch meters');
+      throw new Error(`Failed to fetch meters: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -27,7 +27,7 @@ export class MeterRepository implements IMeterRepository {
       );
       return result.rows[0] ? this.mapRowToMeter(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch meter');
+      throw new Error(`Failed to fetch meter: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -39,7 +39,7 @@ export class MeterRepository implements IMeterRepository {
       );
       return result.rows.map(row => this.mapRowToMeter(row));
     } catch (error) {
-      throw new Error('Failed to fetch meters by unit');
+      throw new Error(`Failed to fetch meters by unit: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -51,7 +51,7 @@ export class MeterRepository implements IMeterRepository {
       );
       return result.rows.map(row => this.mapRowToMeter(row));
     } catch (error) {
-      throw new Error('Failed to fetch meters by property');
+      throw new Error(`Failed to fetch meters by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -63,7 +63,7 @@ export class MeterRepository implements IMeterRepository {
       );
       return result.rows.map(row => this.mapRowToMeter(row));
     } catch (error) {
-      throw new Error('Failed to fetch active meters by unit');
+      throw new Error(`Failed to fetch active meters by unit: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -102,7 +102,7 @@ export class MeterRepository implements IMeterRepository {
       );
       return this.mapRowToMeter(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create meter: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -163,7 +163,7 @@ export class MeterRepository implements IMeterRepository {
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToMeter(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update meter: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -175,7 +175,7 @@ export class MeterRepository implements IMeterRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to delete meter');
+      throw new Error(`Failed to delete meter: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -187,7 +187,7 @@ export class MeterRepository implements IMeterRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update meter status');
+      throw new Error(`Failed to update meter status: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
