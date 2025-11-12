@@ -699,7 +699,7 @@ export class RentTransactionService implements IRentTransactionService {
       return readings.filter(r => r !== null);
     } catch (error) {
       console.error('Error fetching last meter readings:', error);
-      throw new Error('Failed to fetch last meter readings');
+      throw new Error(`Failed to fetch last meter readings: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -959,7 +959,7 @@ export class RentTransactionService implements IRentTransactionService {
       return { pdfUrl, invoiceNumber };
     } catch (error) {
       console.error('Error generating invoice:', error);
-      throw new Error('Failed to generate invoice PDF');
+      throw new Error(`Failed to generate invoice PDF: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -1091,7 +1091,7 @@ export class RentTransactionService implements IRentTransactionService {
       return { pdfUrl, receiptNumber };
     } catch (error) {
       console.error('Error generating receipt:', error);
-      throw new Error('Failed to generate receipt PDF');
+      throw new Error(`Failed to generate receipt PDF: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -1400,6 +1400,7 @@ export class RentTransactionService implements IRentTransactionService {
       return utilityCharges;
     } catch (error) {
       console.error('Error calculating unit utility charges:', error);
+      // Log the error but return empty array to allow transaction creation to continue
       return []; // Return empty array if calculation fails
     }
   }

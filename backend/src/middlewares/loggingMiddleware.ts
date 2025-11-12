@@ -86,6 +86,40 @@ export const requestLoggingMiddleware = (
 };
 
 /**
+ * 🚨 Error logging middleware
+ * Must be placed after all other middleware but before error handlers
+ */
+export const errorLoggingMiddleware = (
+  error: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  // Log the error with full details
+  if (req.requestLogger) {
+    req.requestLogger.error('Unhandled error occurred', error, {
+      url: req.originalUrl || req.url,
+      method: req.method,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      body: sanitizeBody(req.body),
+      query: req.query,
+      params: req.params,
+    });
+  }
+
+  // Log performance failure if tracking was started
+  if (req.performanceLogger) {
+    req.performanceLogger.endWithError(error, {
+      errorType: 'unhandled',
+      statusCode: res.statusCode || 500,
+    });
+  }
+
+  next(error);
+};
+
+/**
  * 🔒 Sanitize request body to remove sensitive information
  */
 function sanitizeBody(body: any): any {
@@ -108,7 +142,7 @@ function sanitizeBody(body: any): any {
 /**
  * 📤 Log response
  */
-function logResponse(req: Request, res: Response, body: any): void {
+function logResponse(req: Request, res: Response, body: any, error?: Error): void {
   if (!req.requestLogger || !req.performanceLogger) {
     return;
   }
@@ -116,10 +150,13 @@ function logResponse(req: Request, res: Response, body: any): void {
   const statusCode = res.statusCode;
   const isError = statusCode >= 400;
 
+  // Use the stored error from ResponseUtils.error if available, otherwise use provided error or create generic one
+  const errorToLog = (req as any).lastError || error || (isError ? new Error(`HTTP ${statusCode}`) : undefined);
+
   // End performance tracking
   if (isError) {
     req.performanceLogger.endWithError(
-      new Error(`HTTP ${statusCode}`),
+      errorToLog,
       {
         statusCode,
         responseBody: typeof body === 'object' ? body : undefined,
