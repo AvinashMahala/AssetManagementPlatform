@@ -45,7 +45,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return this.mapRowToUnitUtility(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create unit utility: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -57,7 +57,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return result.rows[0] ? this.mapRowToUnitUtility(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch unit utility');
+      throw new Error(`Failed to find unit utility by ID: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -69,7 +69,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return result.rows.map(row => this.mapRowToUnitUtility(row));
     } catch (error) {
-      throw new Error('Failed to fetch all unit utilities');
+      throw new Error(`Failed to find all unit utilities: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -81,7 +81,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return result.rows.map(row => this.mapRowToUnitUtility(row));
     } catch (error) {
-      throw new Error('Failed to fetch unit utilities');
+      throw new Error(`Failed to find unit utilities by unit: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -93,7 +93,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return result.rows[0] ? this.mapRowToUnitUtility(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch unit utility by type');
+      throw new Error(`Failed to find unit utility by unit and type: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -105,7 +105,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return result.rows.map(row => this.mapRowToUnitUtility(row));
     } catch (error) {
-      throw new Error('Failed to fetch unit utilities by property');
+      throw new Error(`Failed to find unit utilities by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -117,7 +117,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return result.rows.map(row => this.mapRowToUnitUtility(row));
     } catch (error) {
-      throw new Error('Failed to fetch unit utilities by meter');
+      throw new Error(`Failed to find unit utilities by meter: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -166,7 +166,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToUnitUtility(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update unit utility: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -178,7 +178,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update unit utility status');
+      throw new Error(`Failed to update unit utility status: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -190,7 +190,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to delete unit utility');
+      throw new Error(`Failed to delete unit utility: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -202,7 +202,7 @@ export class UnitUtilityRepository implements IUnitUtilityRepository {
       );
       return result.rows.map(row => this.mapRowToUnitUtility(row));
     } catch (error) {
-      throw new Error('Failed to fetch enabled unit utilities');
+      throw new Error(`Failed to find enabled unit utilities: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 

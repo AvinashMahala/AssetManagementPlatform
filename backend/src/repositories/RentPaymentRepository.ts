@@ -22,7 +22,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       `);
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find all rent payments: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -34,7 +34,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.length > 0 ? this.mapRowToRentPayment(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent payment by ID: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -46,7 +46,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent payments by lease: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -64,7 +64,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent payments by tenant: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -76,7 +76,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find pending rent payments: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -88,7 +88,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find overdue rent payments: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -100,7 +100,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find partial rent payments: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -112,7 +112,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent payments by date range: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -124,7 +124,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.map(row => this.mapRowToRentPayment(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent payments by status: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -163,7 +163,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return this.mapRowToRentPayment(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create rent payment: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -222,7 +222,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
 
       return result.rows.length > 0 ? this.mapRowToRentPayment(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update rent payment: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -234,7 +234,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to delete rent payment: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -252,7 +252,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to mark rent payment as paid: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -267,7 +267,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to mark rent payment as overdue: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -285,7 +285,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return result.rows.length > 0 ? parseFloat(result.rows[0].late_fee) || 0 : 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to calculate late fees: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -307,7 +307,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       const result = await this.pool.query(query, values);
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get total revenue by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -329,7 +329,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       const result = await this.pool.query(query, values);
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get total revenue by lease: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -341,7 +341,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get outstanding payments by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -353,7 +353,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       );
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get outstanding payments by tenant: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -390,7 +390,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       const result = await this.pool.query(query, values);
       return result.rows;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get monthly revenue report: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -421,7 +421,7 @@ export class RentPaymentRepository implements IRentPaymentRepository {
       const result = await this.pool.query(query, values);
       return result.rows;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get payment statistics: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 

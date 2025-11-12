@@ -46,7 +46,7 @@ export class RentTransactionMeterReadingRepository implements IRentTransactionMe
       );
       return result.rows.map(row => this.mapRowToMeterReading(row));
     } catch (error) {
-      throw new Error('Failed to fetch meter readings for transaction');
+      throw new Error(`Failed to find meter readings by transaction: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -58,7 +58,7 @@ export class RentTransactionMeterReadingRepository implements IRentTransactionMe
       );
       return result.rows.map(row => this.mapRowToMeterReading(row));
     } catch (error) {
-      throw new Error('Failed to fetch transactions for meter');
+      throw new Error(`Failed to find meter readings by meter: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -91,7 +91,7 @@ export class RentTransactionMeterReadingRepository implements IRentTransactionMe
       );
       return this.mapRowToMeterReading(result.rows[0]);
     } catch (error) {
-      throw new Error('Failed to create transaction meter reading');
+      throw new Error(`Failed to create transaction meter reading: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -138,7 +138,7 @@ export class RentTransactionMeterReadingRepository implements IRentTransactionMe
       return results;
     } catch (error) {
       await client.query('ROLLBACK');
-      throw new Error('Failed to create batch transaction meter readings');
+      throw new Error(`Failed to create batch transaction meter readings: ${(error as Error).message || 'Database batch insert failed'}`);
     } finally {
       client.release();
     }
@@ -152,7 +152,7 @@ export class RentTransactionMeterReadingRepository implements IRentTransactionMe
       );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
-      throw new Error('Failed to delete transaction meter readings');
+      throw new Error(`Failed to delete transaction meter readings: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 

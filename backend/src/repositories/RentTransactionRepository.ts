@@ -12,7 +12,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       const result = await this.pool.query(`SELECT * FROM ${TABLES.RENT_TRANSACTIONS} ORDER BY ${COLUMNS.RENT_TRANSACTIONS.CREATED_AT} DESC`);
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find all rent transactions: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -24,7 +24,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.length > 0 ? this.mapRowToRentTransaction(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transaction by ID: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -36,7 +36,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by lease: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -48,7 +48,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -60,7 +60,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by tenant: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -72,7 +72,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by unit: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -84,7 +84,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by billing period: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -96,7 +96,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by property and period: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -108,7 +108,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find pending rent transactions: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -120,7 +120,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find overdue rent transactions: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -132,7 +132,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by date range: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -144,7 +144,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.map(row => this.mapRowToRentTransaction(row));
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to find rent transactions by status: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -217,7 +217,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return this.mapRowToRentTransaction(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create rent transaction: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -308,7 +308,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
 
       return result.rows.length > 0 ? this.mapRowToRentTransaction(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update rent transaction: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -320,7 +320,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to delete rent transaction: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -339,7 +339,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to mark rent transaction as paid: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -349,12 +349,9 @@ export class RentTransactionRepository implements IRentTransactionRepository {
         `UPDATE ${TABLES.RENT_TRANSACTIONS} SET
           ${COLUMNS.RENT_TRANSACTIONS.STATUS} = $1,
           ${COLUMNS.RENT_TRANSACTIONS.UPDATED_AT} = $2
-         WHERE ${COLUMNS.RENT_TRANSACTIONS.ID} = $3 AND ${COLUMNS.RENT_TRANSACTIONS.BILLING_PERIOD_END} < CURRENT_DATE`,
-        [RentTransactionStatus.CANCELLED, new Date(), id]
-      );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to mark rent transaction as overdue: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -372,7 +369,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return result.rows.length > 0 ? parseFloat(result.rows[0].late_fee) || 0 : 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to calculate late fees: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -394,7 +391,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       const result = await this.pool.query(query, values);
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get total revenue by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
