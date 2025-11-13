@@ -939,7 +939,7 @@ export class RentTransactionService implements IRentTransactionService {
       };
 
       // Generate PDF using PDFGenerator
-      const pdfBuffer = await PDFGenerator.generateReceiptPDF(receiptData);
+      const pdfBuffer = await PDFGenerator.generateReceiptPDF(receiptData, null, true);
       
       // Ensure invoices directory exists
       const invoicesDir = path.join(__dirname, '../../public/invoices');
