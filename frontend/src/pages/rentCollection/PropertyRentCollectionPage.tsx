@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Plus, FileText, DollarSign, Receipt, AlertCircle, CheckCircle, Clock, Home } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -7,16 +7,17 @@ import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { AppLayout } from '../../components/layout';
 import { useProperty, useUnits, useRentTransactions } from '../../hooks';
-import { formatCurrency, formatMonthYear } from '../../utils/billingCalculations';
+import { formatCurrency, formatMonthYear, deriveTransactionDisplayStatus } from '../../utils/billingCalculations';
 import { RentCollectionCalendar } from '../../components/rentCollection/RentCollectionCalendar';
 
 export const PropertyRentCollectionPage: React.FC = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const { data: property, loading: propertyLoading } = useProperty(propertyId!);
   const { units, loading: unitsLoading } = useUnits();
-  const { transactions, loading: transactionsLoading } = useRentTransactions(propertyId);
+  const { transactions, loading: transactionsLoading, refetch } = useRentTransactions(propertyId);
 
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -24,6 +25,17 @@ export const PropertyRentCollectionPage: React.FC = () => {
   });
 
   const [billingMethod, setBillingMethod] = useState<'relative' | 'fixed'>('relative');
+
+  // Refetch data when component mounts or when navigating back from payment recording
+  useEffect(() => {
+    // Check if we navigated back from payment recording
+    const state = location.state as any;
+    if (state?.refetchTransactions) {
+      refetch();
+      // Clear the state to prevent repeated refetches
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, refetch, navigate, location.pathname]);
 
   // Convert selectedMonth to Date for calendar
   const selectedDate = new Date(selectedMonth + '-01');
@@ -48,53 +60,77 @@ export const PropertyRentCollectionPage: React.FC = () => {
       };
     }
 
-    if (transaction.status === 'paid') {
-      return {
-        status: 'paid',
-        label: 'Paid',
-        color: 'bg-green-100 text-green-800',
-        icon: CheckCircle,
-        transaction
-      };
-    }
+    const displayStatus = deriveTransactionDisplayStatus({
+      status: transaction.status,
+      totalAmount: transaction.totalAmount,
+      amountPaid: transaction.amountPaid || 0,
+      billingPeriodEnd: transaction.billingPeriodEnd
+    });
 
-    if (transaction.status === 'pending') {
-      return {
-        status: 'pending',
-        label: 'Invoice Sent',
-        color: 'bg-blue-100 text-blue-800',
-        icon: FileText,
-        transaction
-      };
-    }
+    switch (displayStatus) {
+      case 'paid':
+        return {
+          status: 'paid',
+          label: 'Paid',
+          color: 'bg-green-100 text-green-800',
+          icon: CheckCircle,
+          transaction
+        };
 
-    if (transaction.status === 'partial') {
-      return {
-        status: 'partial',
-        label: 'Partial Paid',
-        color: 'bg-yellow-100 text-yellow-800',
-        icon: DollarSign,
-        transaction
-      };
-    }
+      case 'pending':
+        return {
+          status: 'pending',
+          label: 'Invoice Sent',
+          color: 'bg-blue-100 text-blue-800',
+          icon: FileText,
+          transaction
+        };
 
-    if (transaction.status === 'overdue') {
-      return {
-        status: 'overdue',
-        label: 'Overdue',
-        color: 'bg-red-100 text-red-800',
-        icon: AlertCircle,
-        transaction
-      };
-    }
+      case 'partial':
+        return {
+          status: 'partial',
+          label: 'Partial Paid',
+          color: 'bg-yellow-100 text-yellow-800',
+          icon: DollarSign,
+          transaction
+        };
 
-    return {
-      status: 'draft',
-      label: 'Draft',
-      color: 'bg-purple-100 text-purple-800',
-      icon: FileText,
-      transaction
-    };
+      case 'overdue':
+        return {
+          status: 'overdue',
+          label: 'Overdue',
+          color: 'bg-red-100 text-red-800',
+          icon: AlertCircle,
+          transaction
+        };
+
+      case 'draft':
+        return {
+          status: 'draft',
+          label: 'Draft',
+          color: 'bg-purple-100 text-purple-800',
+          icon: Clock,
+          transaction
+        };
+
+      case 'cancelled':
+        return {
+          status: 'cancelled',
+          label: 'Cancelled',
+          color: 'bg-gray-100 text-gray-800',
+          icon: AlertCircle,
+          transaction
+        };
+
+      default:
+        return {
+          status: 'not_started',
+          label: 'Not Started',
+          color: 'bg-gray-100 text-gray-800',
+          icon: Clock,
+          transaction: null
+        };
+    }
   };
 
   // Calculate statistics
@@ -125,7 +161,12 @@ export const PropertyRentCollectionPage: React.FC = () => {
       unitNumber: propertyUnits.find(u => u.id === t.unitId)?.unitNumber || 'Unknown',
       amount: t.totalAmount,
       amountPaid: t.amountPaid || 0,
-      status: t.status,
+      status: deriveTransactionDisplayStatus({
+        status: t.status,
+        totalAmount: t.totalAmount,
+        amountPaid: t.amountPaid || 0,
+        billingPeriodEnd: t.billingPeriodEnd
+      }),
       billingPeriodStart: t.billingPeriodStart,
       billingPeriodEnd: t.billingPeriodEnd,
       dueDate: t.billingPeriodEnd
@@ -396,14 +437,15 @@ export const PropertyRentCollectionPage: React.FC = () => {
                                     variant="outline"
                                     onClick={() => handleViewInvoice(statusInfo.transaction!.id)}
                                   >
-                                    <FileText className="h-4 w-4" />
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    View Invoice
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="outline"
                                     onClick={() => handleViewReceipt(statusInfo.transaction!.id)}
                                   >
-                                    <Receipt className="h-4 w-4" />
+                                    <Receipt className="h-4 w-4 mr-1" />
+                                    Generate Receipt
                                   </Button>
                                 </>
                               )}

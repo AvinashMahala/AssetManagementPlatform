@@ -270,3 +270,53 @@ export function generateDocumentNumber(
 
   return `${prefix}${propertyCode}${year}${month}${sequence}`;
 }
+
+/**
+ * Derive display status for rent transactions
+ * Maps backend transaction status to display-friendly status values
+ */
+export function deriveTransactionDisplayStatus(
+  transaction: {
+    status: 'draft' | 'finalized' | 'paid' | 'cancelled';
+    totalAmount: number;
+    amountPaid: number;
+    billingPeriodEnd: string;
+  }
+): 'draft' | 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled' {
+  const { status, totalAmount, amountPaid, billingPeriodEnd } = transaction;
+  const dueDate = new Date(billingPeriodEnd);
+  const today = new Date();
+
+  switch (status) {
+    case 'paid':
+      return 'paid';
+
+    case 'cancelled':
+      return 'cancelled';
+
+    case 'draft':
+      return 'draft';
+
+    case 'finalized':
+      // If fully paid, show as paid
+      if (amountPaid >= totalAmount) {
+        return 'paid';
+      }
+
+      // If partially paid, show as partial
+      if (amountPaid > 0) {
+        return 'partial';
+      }
+
+      // If past due date, show as overdue
+      if (dueDate < today) {
+        return 'overdue';
+      }
+
+      // Otherwise, pending
+      return 'pending';
+
+    default:
+      return 'draft';
+  }
+}

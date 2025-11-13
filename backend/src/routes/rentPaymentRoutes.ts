@@ -12,6 +12,7 @@ export const createRentPaymentRoutes = (controller: RentPaymentController, userS
   router.get('/:id', auth, controller.getPaymentById.bind(controller));
   router.post('/', auth, controller.createPayment.bind(controller));
   router.put('/:id', auth, controller.updatePayment.bind(controller));
+  router.delete('/bulk-delete', auth, controller.deletePayments.bind(controller));
   router.delete('/:id', auth, controller.deletePayment.bind(controller));
 
   // Relationship-based routes

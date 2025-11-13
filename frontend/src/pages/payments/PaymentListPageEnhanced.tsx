@@ -1,14 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, CheckCircle, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Pagination } from '../../components/ui/pagination';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { AppLayout } from '../../components/layout';
-import { usePayments, useTenants, useLeases, useUnits } from '../../hooks';
+import { usePayments, useTenants, useLeases, useUnits, useDeletePayment, useBulkDeletePayments } from '../../hooks';
+import { useNotifications } from '../../contexts';
 import { format, isWithinInterval } from 'date-fns';
 import type { Tenant } from '../../types/tenant';
 import type { Lease } from '../../types/lease';
@@ -34,11 +36,17 @@ const PaymentListPageEnhanced: React.FC = () => {
   const [amountRange, setAmountRange] = useState<{min?: number, max?: number}>({});
   const [selectedUnit, setSelectedUnit] = useState<string>('all');
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [paymentToDelete, setPaymentToDelete] = useState<RentPayment | null>(null);
   
-  const { payments, loading } = usePayments();
+  const { payments, loading, refetch } = usePayments();
   const { tenants } = useTenants();
   const { leases } = useLeases();
   const { units } = useUnits();
+  const deletePayment = useDeletePayment();
+  const bulkDeletePayments = useBulkDeletePayments();
+  const { showSuccess, showError } = useNotifications();
 
   // Helper functions
   const getTenantName = (tenantId: string) => {
@@ -278,6 +286,77 @@ const PaymentListPageEnhanced: React.FC = () => {
     // Clear selection after export
     setSelectedPayments(new Set());
     setShowBulkActions(false);
+  };
+
+  const handleSingleDelete = (payment: RentPayment) => {
+    setPaymentToDelete(payment);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmSingleDelete = async () => {
+    if (!paymentToDelete) return;
+
+    console.log('[confirmSingleDelete] Starting delete for payment:', paymentToDelete.id);
+    setDeleteLoading(true);
+    try {
+      console.log('[confirmSingleDelete] Calling deletePayment.mutate');
+      const result = await deletePayment.mutate(paymentToDelete.id);
+      console.log('[confirmSingleDelete] Delete result:', result);
+      
+      if (result.success) {
+        showSuccess(`Payment for ${getTenantName(paymentToDelete.tenantId)} has been successfully deleted.`);
+        await refetch();
+        console.log('[confirmSingleDelete] Refetch completed');
+        setDeleteDialogOpen(false);
+        setPaymentToDelete(null);
+      } else {
+        showError(result.error?.message || 'Failed to delete payment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to delete payment:', error);
+      showError('An unexpected error occurred while deleting the payment.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPayments.size === 0) return;
+
+    console.log('[handleBulkDelete] Starting bulk delete for payments:', Array.from(selectedPayments));
+    setBulkActionLoading(true);
+    try {
+      const idsToDelete = Array.from(selectedPayments);
+      console.log('[handleBulkDelete] Calling bulkDeletePayments.mutate with ids:', idsToDelete);
+      const result = await bulkDeletePayments.mutate(idsToDelete);
+      console.log('[handleBulkDelete] Bulk delete result:', result);
+      
+      if (result.success) {
+        const { deleted, failed } = result.data || { deleted: 0, failed: [] };
+        
+        if (deleted > 0) {
+          showSuccess(`${deleted} payment${deleted !== 1 ? 's' : ''} successfully deleted.`);
+        }
+        
+        if (failed.length > 0) {
+          showError(`${failed.length} payment${failed.length !== 1 ? 's' : ''} could not be deleted. They may no longer exist or be ineligible for deletion.`);
+        }
+        
+        await refetch();
+        console.log('[handleBulkDelete] Refetch completed');
+        
+        // Clear selection after successful operation
+        setSelectedPayments(new Set());
+        setShowBulkActions(false);
+      } else {
+        showError(result.error?.message || 'Failed to delete payments. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to delete payments:', error);
+      showError('An unexpected error occurred while deleting payments.');
+    } finally {
+      setBulkActionLoading(false);
+    }
   };
 
   const clearSelection = () => {
@@ -680,6 +759,19 @@ const PaymentListPageEnhanced: React.FC = () => {
                     Mark as Paid
                   </Button>
                   <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Delete Selected
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={handleBulkExport}
@@ -811,6 +903,19 @@ const PaymentListPageEnhanced: React.FC = () => {
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
+                                {payment.status === 'pending' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSingleDelete(payment);
+                                    }}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -873,6 +978,68 @@ const PaymentListPageEnhanced: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Payment</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this payment? This action cannot be undone.
+              Only pending payments can be deleted.
+            </DialogDescription>
+          </DialogHeader>
+          {paymentToDelete && (
+            <div className="py-4">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Tenant:</span>
+                  <span className="text-sm">{getTenantName(paymentToDelete.tenantId)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Unit:</span>
+                  <span className="text-sm">{getLeaseInfo(paymentToDelete).unitNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Amount:</span>
+                  <span className="text-sm font-semibold">₹{paymentToDelete.amount?.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Due Date:</span>
+                  <span className="text-sm">{format(new Date(paymentToDelete.dueDate), 'MMM dd, yyyy')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Status:</span>
+                  <Badge variant={getStatusVariant(paymentToDelete)} className={getStatusColor(paymentToDelete)}>
+                    {getStatusLabel(paymentToDelete)}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmSingleDelete}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Delete Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

@@ -245,6 +245,10 @@ class ApiClient {
   async delete<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
+    console.log('[apiClient.delete] URL:', url);
+    console.log('[apiClient.delete] Headers:', this.getHeaders(config?.headers));
+    console.log('[apiClient.delete] Config data:', config?.data);
+
     // Create AbortController for manual timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
@@ -253,16 +257,25 @@ class ApiClient {
       const response = await fetch(url, {
         method: 'DELETE',
         headers: this.getHeaders(config?.headers),
+        body: config?.data ? JSON.stringify(config.data) : undefined,
         signal: controller.signal,
         ...config,
       });
 
       clearTimeout(timeoutId);
-      return this.handleResponse<T>(response);
+      
+      console.log('[apiClient.delete] Response status:', response.status);
+      console.log('[apiClient.delete] Response ok:', response.ok);
+      
+      const result = await this.handleResponse<T>(response);
+      console.log('[apiClient.delete] Handled response:', result);
+      
+      return result;
     } catch (_error) {
       clearTimeout(timeoutId);
       
       if (_error instanceof Error && _error.name === 'AbortError') {
+        console.error('[apiClient.delete] Request timed out after', API_TIMEOUT, 'ms');
         return {
           success: false,
           error: {
@@ -272,6 +285,7 @@ class ApiClient {
         };
       }
       
+      console.error('[apiClient.delete] Error:', _error);
       return {
         success: false,
         error: {

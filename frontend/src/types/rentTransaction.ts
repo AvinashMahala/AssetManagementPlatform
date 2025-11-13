@@ -4,7 +4,7 @@
  */
 
 export type BillingMethod = 'relative' | 'fixed' | 'monthly' | 'daily' | 'custom';
-export type TransactionStatus = 'draft' | 'pending' | 'partial' | 'paid' | 'overdue';
+export type TransactionStatus = 'draft' | 'finalized' | 'paid' | 'cancelled';
 export type PaymentMethod = 'cash' | 'bank_transfer' | 'upi' | 'cheque' | 'card' | 'other';
 
 /**

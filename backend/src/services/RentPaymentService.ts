@@ -170,6 +170,29 @@ export class RentPaymentService implements IRentPaymentService {
     return await this.repository.delete(id);
   }
 
+  async deletePayments(ids: string[]): Promise<{ deleted: number; failed: string[] }> {
+    if (!ids || ids.length === 0) {
+      throw new Error('Payment IDs are required');
+    }
+
+    const results = { deleted: 0, failed: [] as string[] };
+
+    for (const id of ids) {
+      try {
+        const success = await this.deletePayment(id);
+        if (success) {
+          results.deleted++;
+        } else {
+          results.failed.push(id);
+        }
+      } catch (error) {
+        results.failed.push(id);
+      }
+    }
+
+    return results;
+  }
+
   async markPaymentAsPaid(id: string, paidDate: Date, paymentMethod?: string, transactionId?: string): Promise<boolean> {
     if (!id) {
       throw new Error('Payment ID is required');

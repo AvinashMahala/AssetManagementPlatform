@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye, Trash2, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -22,6 +22,7 @@ import {
 export const UnitRentCollectionPage: React.FC = () => {
   const { propertyId, unitId } = useParams<{ propertyId: string; unitId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthContext();
 
   const { data: unit, loading: unitLoading } = useUnit(unitId!);
@@ -32,6 +33,17 @@ export const UnitRentCollectionPage: React.FC = () => {
   const { history: recentInvoices, loading: historyLoading, refetch: refetchHistory } = useUnitTransactionHistory(unitId!, 5);
   const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
   const { mutate: deleteTransaction, loading: deleting } = useDeleteRentTransaction();
+
+  // Refetch data when component mounts or when navigating back from payment recording
+  useEffect(() => {
+    // Check if we navigated back from payment recording
+    const state = location.state as any;
+    if (state?.refetchTransactions) {
+      refetchHistory();
+      // Clear the state to prevent repeated refetches
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, refetchHistory, navigate, location.pathname]);
 
   const [meterReadings, setMeterReadings] = useState<MeterReadingInput[]>([]);
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
@@ -1329,8 +1341,9 @@ export const UnitRentCollectionPage: React.FC = () => {
                           </p>
                           <p className="text-xs text-gray-500">
                             {invoice.status === 'paid' ? 'Paid' : 
-                             invoice.status === 'partial' ? 'Partially Paid' : 
-                             invoice.status === 'draft' ? 'Draft' : 'Pending'}
+                             invoice.status === 'finalized' ? 'Partially Paid' : 
+                             invoice.status === 'draft' ? 'Draft' : 
+                             invoice.status === 'cancelled' ? 'Cancelled' : 'Pending'}
                           </p>
                         </div>
                       </div>
@@ -1339,7 +1352,7 @@ export const UnitRentCollectionPage: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(`/rent-transactions/${invoice.id}/record-payment`)}
+                        onClick={() => navigate(`/rent-transactions/${invoice.id}/record-payment`, { state: { fromUnitPage: true } })}
                         className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                         title="Record a payment for this invoice"
                       >

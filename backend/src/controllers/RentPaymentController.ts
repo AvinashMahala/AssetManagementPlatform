@@ -670,6 +670,79 @@ export class RentPaymentController {
 
   /**
    * @swagger
+   * /api/rent-payments/bulk-delete:
+   *   delete:
+   *     tags: [Rent Payments]
+   *     summary: Delete multiple rent payments
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - ids
+   *             properties:
+   *               ids:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                   format: uuid
+   *                 description: Array of payment IDs to delete
+   *     responses:
+   *       200:
+   *         description: Bulk delete operation completed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     deleted:
+   *                       type: integer
+   *                       description: Number of payments successfully deleted
+   *                     failed:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                       description: Array of payment IDs that failed to delete
+   *       400:
+   *         description: Payment IDs are required or invalid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async deletePayments(req: Request, res: Response) {
+    try {
+      const { ids } = req.body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return ResponseUtils.badRequest(res, 'Payment IDs array is required');
+      }
+
+      const result = await this.service.deletePayments(ids);
+      ResponseUtils.success(res, result);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to delete payments');
+    }
+  }
+
+  /**
+   * @swagger
    * /api/rent-payments/{id}/mark-paid:
    *   post:
    *     tags: [Rent Payments]

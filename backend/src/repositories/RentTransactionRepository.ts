@@ -559,13 +559,13 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       billingPeriodStart: row.billing_period_start,
       billingPeriodEnd: row.billing_period_end,
       billingMethod: row.billing_method,
-      daysCount: parseInt(row.days_count) || 0,
-      baseRent: parseFloat(row.base_rent) || 0,
-      previousBalance: parseFloat(row.previous_balance) || 0,
+      daysCount: this.parseNumber(row.days_count, 0),
+      baseRent: this.parseNumber(row.base_rent, 0),
+      previousBalance: this.parseNumber(row.previous_balance, 0),
       expenses: row.expenses || [],
-      totalAmount: parseFloat(row.total_amount) || 0,
-      amountPaid: parseFloat(row.amount_paid) || 0,
-      newBalance: parseFloat(row.new_balance) || 0,
+      totalAmount: this.parseNumber(row.total_amount, 0),
+      amountPaid: this.parseNumber(row.amount_paid, 0),
+      newBalance: this.parseNumber(row.new_balance, 0),
       paidDate: row.paid_date,
       status: row.status,
       receiptNumber: row.receipt_number,
@@ -587,5 +587,13 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
+  }
+
+  private parseNumber(value: any, defaultValue: number = 0): number {
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? defaultValue : parsed;
   }
 }

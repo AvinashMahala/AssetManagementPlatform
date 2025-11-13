@@ -27,6 +27,7 @@ import FilesPage from './pages/FilesPage';
 import { RentTransactionInvoicePage, RentTransactionRecordPaymentPage, RentTransactionReceiptPage } from './pages/rentTransactions';
 import { BulkOperationsDashboard } from './pages/bulkOperations/BulkOperationsDashboard';
 import { AppLayout } from './components/layout/AppLayout';
+import { Toast } from './components/ui/toast';
 
 function App() {
   return (
@@ -40,6 +41,9 @@ function App() {
               
               {/* Dev tools for development mode */}
               <DevTools />
+              
+              {/* Toast notifications */}
+              <Toast />
               
               <Routes>
               {/* Public routes - only accessible when not authenticated */}

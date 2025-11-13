@@ -12,7 +12,7 @@ interface CalendarTransaction {
   unitNumber: string;
   amount: number;
   amountPaid: number;
-  status: 'draft' | 'pending' | 'paid' | 'partial' | 'overdue';
+  status: 'draft' | 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled';
   billingPeriodStart: string;
   billingPeriodEnd: string;
   dueDate?: string;
@@ -86,6 +86,7 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
     if (transactions.some(t => t.status === 'partial')) return 'partial';
     if (transactions.some(t => t.status === 'paid')) return 'paid';
     if (transactions.some(t => t.status === 'pending')) return 'pending';
+    if (transactions.some(t => t.status === 'cancelled')) return 'cancelled';
     return 'draft';
   };
 
@@ -102,6 +103,8 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
         return { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CalendarIcon, iconColor: 'text-blue-600' };
       case 'draft':
         return { color: 'bg-purple-100 text-purple-800 border-purple-200', icon: Clock, iconColor: 'text-purple-600' };
+      case 'cancelled':
+        return { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: AlertCircle, iconColor: 'text-gray-600' };
       default:
         return { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: CalendarIcon, iconColor: 'text-gray-600' };
     }
@@ -284,6 +287,10 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-purple-100 border border-purple-200 rounded"></div>
             <span>Draft</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-gray-100 border border-gray-200 rounded"></div>
+            <span>Cancelled</span>
           </div>
         </div>
       </CardContent>
