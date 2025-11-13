@@ -200,14 +200,8 @@ export const RentCollectionWorkflowDashboard: React.FC = () => {
   }, [filteredTransactions, units]);
 
   const handleViewTransaction = (transactionId: string) => {
-    // Navigate to the specific transaction detail or unit rent collection page
-    const transaction = transactions.find(t => t.id === transactionId);
-    if (transaction) {
-      const unit = units.find(u => u.id === transaction.unitId);
-      if (unit) {
-        navigate(`/properties/${unit.propertyId}/units/${unit.id}/collect-rent`);
-      }
-    }
+    // Navigate directly to the payment recording page for this transaction
+    navigate(`/rent-transactions/${transactionId}/record-payment`);
   };
 
   const handleBulkNotification = (type: 'invoice' | 'receipt' | 'reminder', propertyId?: string) => {

@@ -116,6 +116,10 @@ export interface ReceiptData {
   // Additional notes
   notes?: string;
   termsAndConditions?: string;
+
+  // Watermark settings
+  watermarkText?: string;
+  isInvoice?: boolean;
 }
 
 export interface ReceiptInput {

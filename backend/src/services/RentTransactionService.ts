@@ -763,6 +763,11 @@ export class RentTransactionService implements IRentTransactionService {
       throw new Error('Transaction not found');
     }
 
+    // Check if invoice already exists for this transaction
+    if (transaction.invoiceGenerated && transaction.receiptNumber) {
+      throw new Error('Invoice already exists for this transaction. Cannot generate duplicate invoice.');
+    }
+
     // Get related data for invoice generation
     const lease = await this.leaseRepository.findById(transaction.leaseId);
     if (!lease) {
@@ -928,7 +933,9 @@ export class RentTransactionService implements IRentTransactionService {
           signatureUrl: property.receiptTemplate?.signatureUrl || undefined,
           watermarkUrl: property.receiptTemplate?.watermarkUrl || undefined
         },
-        notes: transaction.notes || 'Thank you for your payment'
+        notes: transaction.notes || 'Thank you for your payment',
+        watermarkText: 'UNPAID',
+        isInvoice: true
       };
 
       // Generate PDF using PDFGenerator
@@ -1060,7 +1067,9 @@ export class RentTransactionService implements IRentTransactionService {
           signatureUrl: property.receiptTemplate?.signatureUrl || undefined,
           watermarkUrl: property.receiptTemplate?.watermarkUrl || undefined
         },
-        notes: transaction.notes || 'Payment received with thanks'
+        notes: transaction.notes || 'Payment received with thanks',
+        watermarkText: 'PAID',
+        isInvoice: false
       };
 
       // Generate PDF using PDFGenerator

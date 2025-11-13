@@ -7,7 +7,7 @@ import { join } from 'path';
 // Database configuration for main database
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
+  port: parseInt(process.env.DB_PORT || '5434'), // Updated to match docker-compose
   database: process.env.DB_NAME || 'asset_platform_main',
   user: process.env.DB_USER || 'user',
   password: process.env.DB_PASSWORD || 'pass',
@@ -33,5 +33,5 @@ async function runMigration(migrationPath: string) {
 }
 
 // Run the migration
-const migrationPath = join(process.cwd(), 'backend/migrations/013_add_tenant_cascade_delete.sql');
+const migrationPath = join(process.cwd(), 'backend/migrations/014_add_meter_columns.sql');
 runMigration(migrationPath);

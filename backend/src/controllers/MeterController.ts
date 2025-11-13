@@ -63,7 +63,7 @@ export class MeterController {
       }
 
       logger.info('Successfully fetched meters', { count: meters.length, unitId, propertyId });
-      ResponseUtils.success(res, { meters });
+      ResponseUtils.success(res, meters);
     } catch (err) {
       logger.error('Failed to fetch meters', err, { unitId: req.query.unitId, propertyId: req.query.propertyId });
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch meters');

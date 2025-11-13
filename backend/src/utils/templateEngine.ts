@@ -57,6 +57,10 @@ export interface InvoiceTemplateData {
   signatureUrl?: string;
   watermarkUrl?: string;
 
+  // Watermark settings
+  watermarkText?: string;
+  isInvoice?: boolean;
+
   // Footer
   termsAndConditions: string;
 }
@@ -113,6 +117,14 @@ export class TemplateEngine {
     html = html.replace(/{{upiId}}/g, this.escapeHtml(upiId));
 
     html = html.replace(/{{termsAndConditions}}/g, this.escapeHtml(data.termsAndConditions));
+
+    // Watermark settings
+    if (data.watermarkText) {
+      html = html.replace(/{{watermarkText}}/g, this.escapeHtml(data.watermarkText));
+    }
+    if (data.isInvoice !== undefined) {
+      html = html.replace(/{{isInvoice}}/g, data.isInvoice ? 'true' : 'false');
+    }
 
     // Build charges row for the payment table
     // Table has: Rent (Period) | Electricity | Old Balance | Expense Added | Total Due Amount

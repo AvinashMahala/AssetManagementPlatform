@@ -3,6 +3,7 @@ import { IRentTransactionService } from '../interfaces/services/IRentTransaction
 import { RentTransactionInput, RentTransactionStatus, BillingMethod } from '../models/RentTransaction';
 import { ResponseUtils } from '../utils/response';
 import { ErrorUtils } from '../utils/error';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 export class RentTransactionController {
   private service: IRentTransactionService;
@@ -521,9 +522,12 @@ export class RentTransactionController {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  async createTransaction(req: Request, res: Response) {
+  async createTransaction(req: AuthenticatedRequest, res: Response) {
     try {
-      const transactionData: RentTransactionInput = req.body;
+      const transactionData: RentTransactionInput = {
+        ...req.body,
+        createdBy: req.user?.id
+      };
       const transaction = await this.service.createTransaction(transactionData);
       ResponseUtils.created(res, transaction);
     } catch (err) {

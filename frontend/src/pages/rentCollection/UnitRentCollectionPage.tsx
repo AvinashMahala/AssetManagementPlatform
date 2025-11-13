@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye, Trash2, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -61,6 +61,7 @@ export const UnitRentCollectionPage: React.FC = () => {
     currentStep: number;
     totalSteps: number;
   }>({ step: 'idle', message: '', currentStep: 0, totalSteps: 4 });
+  const [generatedTransactionId, setGeneratedTransactionId] = useState<string | null>(null);
 
   const billingPeriod = getCurrentBillingPeriod();
 
@@ -872,6 +873,9 @@ export const UnitRentCollectionPage: React.FC = () => {
       const transaction = response.data;
       console.log('Transaction created successfully:', transaction);
 
+      // Store the generated transaction ID for payment recording
+      setGeneratedTransactionId(transaction.id);
+
       // Step 2: Generate the invoice PDF
       setInvoiceGenerationStatus({ step: 'generating', message: 'Step 2 of 4: Generating invoice PDF...', currentStep: 2, totalSteps: 4 });
       console.log('Calling generateInvoice with transaction ID:', transaction.id);
@@ -1237,6 +1241,16 @@ export const UnitRentCollectionPage: React.FC = () => {
                     </>
                   )}
                 </Button>
+                {invoiceGenerationStatus.step === 'complete' && generatedTransactionId && (
+                  <Button
+                    onClick={() => navigate(`/rent-transactions/${generatedTransactionId}/record-payment`)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    title="Record a payment for this invoice"
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Record Payment
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
@@ -1322,6 +1336,16 @@ export const UnitRentCollectionPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/rent-transactions/${invoice.id}/record-payment`)}
+                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                        title="Record a payment for this invoice"
+                      >
+                        <DollarSign className="h-4 w-4 mr-1" />
+                        Pay
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"

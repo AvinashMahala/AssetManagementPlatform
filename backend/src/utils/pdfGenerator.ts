@@ -4,7 +4,7 @@ import { ReceiptTemplateSettings } from '../models/ReceiptTemplate';
 import { TemplateEngine, InvoiceTemplateData } from './templateEngine';
 
 export class PDFGenerator {
-  static async generateReceiptPDF(receiptData: ReceiptData, templateSettings?: ReceiptTemplateSettings | null): Promise<Buffer> {
+  static async generateReceiptPDF(receiptData: ReceiptData, templateSettings?: ReceiptTemplateSettings | null, isInvoice: boolean = false): Promise<Buffer> {
     try {
       const templateData: InvoiceTemplateData = {
         propertyName: receiptData.property.name,
@@ -33,7 +33,7 @@ export class PDFGenerator {
         amountPaid: this.formatCurrency(receiptData.breakdown.amountPaid),
         balance: receiptData.breakdown.newBalance,
         paymentMethod: receiptData.payment.method?.toUpperCase() || 'N/A',
-        paymentDate: receiptData.payment.paidDate 
+        paymentDate: receiptData.payment.paidDate
           ? new Date(receiptData.payment.paidDate).toLocaleDateString('en-IN', {
               year: 'numeric', month: 'long', day: 'numeric'
             })
@@ -45,11 +45,12 @@ export class PDFGenerator {
         qrCodeUrl: receiptData.settings?.qrCodeUrl,
         signatureUrl: receiptData.settings?.signatureUrl,
         watermarkUrl: receiptData.settings?.watermarkUrl,
-        termsAndConditions: receiptData.termsAndConditions || 
+        // Add watermark/stamp based on document type
+        watermarkText: isInvoice ? 'UNPAID' : 'PAID',
+        isInvoice: isInvoice,
+        termsAndConditions: receiptData.termsAndConditions ||
           'This invoice is generated based on the rental agreement. Payment is due as per the terms mentioned in the lease agreement.'
-      };
-
-      const template = await TemplateEngine.loadTemplate('invoice');
+      };      const template = await TemplateEngine.loadTemplate('invoice');
       const html = TemplateEngine.renderTemplate(template, templateData);
 
       const browser = await puppeteer.launch({

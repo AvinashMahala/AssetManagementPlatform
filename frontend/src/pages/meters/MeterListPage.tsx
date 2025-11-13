@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Edit, Trash2, Eye, Power, PowerOff } from 'lucide-react';
 import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '../../hooks';
 import { MeterType } from '../../types/meter';
@@ -11,9 +11,23 @@ import { AppLayout } from '../../components/layout/AppLayout';
 
 export const MeterListPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: meters, loading, error, refetch } = useMeters();
   const { mutate: deleteMeter, loading: deleting } = useDeleteMeter();
   const { mutate: updateStatus, loading: updatingStatus } = useUpdateMeterStatus();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Check for success message from navigation state
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear the state to prevent showing the message again on refresh
+      navigate(location.pathname, { replace: true });
+      // Auto-hide the message after 5 seconds
+      const timer = setTimeout(() => setSuccessMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Ensure meters is always an array
   const metersArray = Array.isArray(meters) ? meters : [];
@@ -95,6 +109,13 @@ export const MeterListPage: React.FC = () => {
               Add Meter
             </Button>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-4">
+              <p className="text-green-800">{successMessage}</p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
