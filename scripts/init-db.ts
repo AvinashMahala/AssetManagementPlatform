@@ -1,15 +1,16 @@
 #!/usr/bin/env tsx
 
+import { config } from 'dotenv';
 import { Pool } from 'pg';
 import { initializeDatabase } from '../backend/src/config/database/init/index.ts';
 
+// Load environment variables
+config({ path: '../.env' });
+
 // Database configuration
+const mainDbUrl = process.env.MAIN_DATABASE_URL || 'postgresql://user:pass@localhost:5434/asset_platform_main';
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'asset_platform_main',
-  user: process.env.DB_USER || 'user',
-  password: process.env.DB_PASSWORD || 'pass',
+  connectionString: mainDbUrl,
 });
 
 async function initDatabase() {

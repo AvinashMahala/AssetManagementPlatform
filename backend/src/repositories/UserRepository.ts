@@ -32,7 +32,7 @@ export class UserRepository implements IUserRepository {
       return result.rows;
     } catch (error) {
       logger.error('Failed to fetch users', error);
-      throw new Error(`Failed to fetch users: ${error.message || 'Database query failed'}`);
+      throw new Error(`Failed to fetch users: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -55,7 +55,7 @@ export class UserRepository implements IUserRepository {
       return user;
     } catch (error) {
       logger.error('Failed to fetch user by ID', error, { userId: id });
-      throw new Error(`Failed to fetch user: ${error.message || 'Database query failed'}`);
+      throw new Error(`Failed to fetch user: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 

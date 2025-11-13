@@ -349,6 +349,9 @@ export class RentTransactionRepository implements IRentTransactionRepository {
         `UPDATE ${TABLES.RENT_TRANSACTIONS} SET
           ${COLUMNS.RENT_TRANSACTIONS.STATUS} = $1,
           ${COLUMNS.RENT_TRANSACTIONS.UPDATED_AT} = $2
+         WHERE ${COLUMNS.RENT_TRANSACTIONS.ID} = $3 AND ${COLUMNS.RENT_TRANSACTIONS.BILLING_PERIOD_END} < CURRENT_DATE`,
+        [RentTransactionStatus.CANCELLED, new Date(), id]
+      );
       return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
       throw new Error(`Failed to mark rent transaction as overdue: ${(error as Error).message || 'Database update failed'}`);
@@ -413,7 +416,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       const result = await this.pool.query(query, values);
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get total revenue by lease: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -425,7 +428,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get outstanding transactions by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -437,7 +440,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return parseFloat(result.rows[0].total) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get outstanding transactions by tenant: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -474,7 +477,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       const result = await this.pool.query(query, values);
       return result.rows;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get monthly revenue report: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -506,7 +509,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       const result = await this.pool.query(query, values);
       return result.rows;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get transaction statistics: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -518,7 +521,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return parseFloat(result.rows[0].balance) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get current balance by lease: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -530,7 +533,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return parseFloat(result.rows[0].balance) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get current balance by tenant: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -542,7 +545,7 @@ export class RentTransactionRepository implements IRentTransactionRepository {
       );
       return parseFloat(result.rows[0].balance) || 0;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to get current balance by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
