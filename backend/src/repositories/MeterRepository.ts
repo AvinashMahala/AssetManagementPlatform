@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { Meter, MeterInput } from '../models/Meter.js';
 import { TABLES, COLUMNS } from '../constants/database.js';
 import { IMeterRepository } from '../interfaces/repositories/IMeterRepository.js';
+import { PaginationOptions, PaginationResult, MeterFilters } from '../types/pagination.js';
 
 export class MeterRepository implements IMeterRepository {
   private pool: Pool;
@@ -16,6 +17,84 @@ export class MeterRepository implements IMeterRepository {
       return result.rows.map(row => this.mapRowToMeter(row));
     } catch (error) {
       throw new Error(`Failed to fetch meters: ${(error as Error).message || 'Database query failed'}`);
+    }
+  }
+
+  async findPaginated(options: PaginationOptions, filters?: MeterFilters): Promise<PaginationResult<Meter>> {
+    try {
+      const { page, limit } = options;
+      const offset = (page - 1) * limit;
+
+      // Build WHERE clause
+      const whereConditions: string[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
+
+      if (filters?.search) {
+        whereConditions.push(`(${COLUMNS.METERS.METER_NAME} ILIKE $${paramIndex} OR ${COLUMNS.METERS.METER_NUMBER} ILIKE $${paramIndex})`);
+        values.push(`%${filters.search}%`);
+        paramIndex++;
+      }
+
+      if (filters?.meterType) {
+        whereConditions.push(`${COLUMNS.METERS.METER_TYPE} = $${paramIndex}`);
+        values.push(filters.meterType);
+        paramIndex++;
+      }
+
+      if (filters?.status) {
+        const isActive = filters.status === 'active';
+        whereConditions.push(`${COLUMNS.METERS.IS_ACTIVE} = $${paramIndex}`);
+        values.push(isActive);
+        paramIndex++;
+      }
+
+      if (filters?.propertyId) {
+        whereConditions.push(`${COLUMNS.METERS.PROPERTY_ID} = $${paramIndex}`);
+        values.push(filters.propertyId);
+        paramIndex++;
+      }
+
+      if (filters?.unitId) {
+        whereConditions.push(`${COLUMNS.METERS.UNIT_ID} = $${paramIndex}`);
+        values.push(filters.unitId);
+        paramIndex++;
+      }
+
+      const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+      // Get total count
+      const countQuery = `SELECT COUNT(*) as total FROM ${TABLES.METERS} ${whereClause}`;
+      const countResult = await this.pool.query(countQuery, values);
+      const total = parseInt(countResult.rows[0].total);
+
+      // Get paginated data
+      const dataQuery = `
+        SELECT * FROM ${TABLES.METERS}
+        ${whereClause}
+        ORDER BY ${COLUMNS.METERS.CREATED_AT} DESC
+        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      `;
+      values.push(limit, offset);
+
+      const dataResult = await this.pool.query(dataQuery, values);
+      const data = dataResult.rows.map(row => this.mapRowToMeter(row));
+
+      const totalPages = Math.ceil(total / limit);
+      const hasNext = page < totalPages;
+      const hasPrev = page > 1;
+
+      return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext,
+        hasPrev
+      };
+    } catch (error) {
+      throw new Error(`Failed to fetch paginated meters: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 

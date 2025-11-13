@@ -2,17 +2,52 @@ import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '../type
 import type { ApiResponse } from '../types/api';
 import { apiClient } from './apiClient';
 
+export interface PaginationOptions {
+  page: number;
+  limit: number;
+}
+
+export interface PaginationResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface MeterFilters {
+  search?: string;
+  meterType?: string;
+  status?: 'active' | 'inactive';
+  propertyId?: string;
+  unitId?: string;
+}
+
 class MeterService {
   /**
-   * Get all meters with optional filtering
+   * Get all meters with optional filtering and pagination
    */
-  async getAll(propertyId?: string, unitId?: string): Promise<ApiResponse<Meter[]>> {
+  async getAll(options?: PaginationOptions, filters?: MeterFilters): Promise<ApiResponse<PaginationResult<Meter>>> {
     let url = '/api/meters';
     const params = new URLSearchParams();
-    if (propertyId) params.append('propertyId', propertyId);
-    if (unitId) params.append('unitId', unitId);
+
+    if (options) {
+      params.append('page', options.page.toString());
+      params.append('limit', options.limit.toString());
+    }
+
+    if (filters) {
+      if (filters.search) params.append('search', filters.search);
+      if (filters.meterType) params.append('meterType', filters.meterType);
+      if (filters.status) params.append('status', filters.status);
+      if (filters.propertyId) params.append('propertyId', filters.propertyId);
+      if (filters.unitId) params.append('unitId', filters.unitId);
+    }
+
     if (params.toString()) url += `?${params.toString()}`;
-    return apiClient.get<Meter[]>(url);
+    return apiClient.get<PaginationResult<Meter>>(url);
   }
 
   /**

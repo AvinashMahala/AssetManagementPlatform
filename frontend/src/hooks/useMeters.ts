@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
 import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '../types/meter';
-import { meterService } from '../services/meterService';
+import { meterService, type PaginationOptions, type PaginationResult, type MeterFilters } from '../services/meterService';
 import { useApi, useApiMutation } from './useApi';
 
 /**
- * Get all meters with optional filtering
+ * Get all meters with optional filtering and pagination
  */
-export function useMeters(propertyId?: string, unitId?: string) {
-  const query = useCallback(() => meterService.getAll(propertyId, unitId), [propertyId, unitId]);
-  return useApi<Meter[]>(query, [propertyId, unitId]);
+export function useMeters(options?: PaginationOptions, filters?: MeterFilters) {
+  const query = useCallback(() => meterService.getAll(options, filters), [options, filters]);
+  return useApi<PaginationResult<Meter>>(query, [options, filters]);
 }
 
 /**

@@ -4,6 +4,7 @@ import { MeterInput, MeterReadingInput } from '../models/Meter.js';
 import { ResponseUtils } from '../utils/response.js';
 import { ErrorUtils } from '../utils/error.js';
 import { createModuleLogger } from '../utils/logger.js';
+import { PaginationOptions, MeterFilters } from '../types/pagination.js';
 
 const logger = createModuleLogger('MeterController');
 
@@ -23,8 +24,40 @@ export class MeterController {
    * /api/meters:
    *   get:
    *     tags: ['Meters']
-   *     summary: Get all meters
+   *     summary: Get all meters with pagination and filtering
    *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 1
+   *         description: Page number
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 10
+   *         description: Number of items per page
+   *       - in: query
+   *         name: search
+   *         schema:
+   *           type: string
+   *         description: Search in meter name and meter number
+   *       - in: query
+   *         name: meterType
+   *         schema:
+   *           type: string
+   *           enum: [electricity, water, gas]
+   *         description: Filter by meter type
+   *       - in: query
+   *         name: status
+   *         schema:
+   *           type: string
+   *           enum: [active, inactive]
+   *         description: Filter by status
    *       - in: query
    *         name: unitId
    *         schema:
@@ -37,35 +70,78 @@ export class MeterController {
    *         description: Filter meters by property ID
    *     responses:
    *       200:
-   *         description: List of meters
+   *         description: Paginated list of meters
    *         content:
    *           application/json:
    *             schema:
    *               type: object
    *               properties:
-   *                 meters:
+   *                 data:
    *                   type: array
    *                   items:
    *                     $ref: '#/components/schemas/Meter'
+   *                 total:
+   *                   type: integer
+   *                 page:
+   *                   type: integer
+   *                 limit:
+   *                   type: integer
+   *                 totalPages:
+   *                   type: integer
+   *                 hasNext:
+   *                   type: boolean
+   *                 hasPrev:
+   *                   type: boolean
    */
   async getAllMeters(req: Request, res: Response) {
     try {
-      const { unitId, propertyId } = req.query;
-      logger.debug('Fetching meters', { unitId, propertyId });
+      const {
+        page = '1',
+        limit = '10',
+        search,
+        meterType,
+        status,
+        unitId,
+        propertyId
+      } = req.query;
 
-      let meters;
-      if (unitId) {
-        meters = await this.meterService.getMetersByUnit(unitId as string);
-      } else if (propertyId) {
-        meters = await this.meterService.getMetersByProperty(propertyId as string);
-      } else {
-        meters = await this.meterService.getAllMeters();
+      // Parse and validate pagination options
+      const pageNum = parseInt(page as string, 10);
+      const limitNum = parseInt(limit as string, 10);
+
+      if (isNaN(pageNum) || pageNum < 1) {
+        return ResponseUtils.badRequest(res, 'Page must be a positive integer');
+      }
+      if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+        return ResponseUtils.badRequest(res, 'Limit must be between 1 and 100');
       }
 
-      logger.info('Successfully fetched meters', { count: meters.length, unitId, propertyId });
-      ResponseUtils.success(res, meters);
+      const paginationOptions: PaginationOptions = {
+        page: pageNum,
+        limit: limitNum
+      };
+
+      const filters: MeterFilters = {};
+      if (search) filters.search = search as string;
+      if (meterType) filters.meterType = meterType as string;
+      if (status) filters.status = status as 'active' | 'inactive';
+      if (unitId) filters.unitId = unitId as string;
+      if (propertyId) filters.propertyId = propertyId as string;
+
+      logger.debug('Fetching paginated meters', { paginationOptions, filters });
+
+      const result = await this.meterService.getMetersPaginated(paginationOptions, filters);
+
+      logger.info('Successfully fetched paginated meters', {
+        count: result.data.length,
+        total: result.total,
+        page: result.page,
+        filters
+      });
+
+      ResponseUtils.success(res, result);
     } catch (err) {
-      logger.error('Failed to fetch meters', err, { unitId: req.query.unitId, propertyId: req.query.propertyId });
+      logger.error('Failed to fetch paginated meters', err, { query: req.query });
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch meters');
     }
   }

@@ -1,7 +1,9 @@
 import { Meter, MeterInput, MeterReading, MeterReadingInput, MeterTrendData, MeterStatistics } from '../../models/Meter';
+import { PaginationOptions, PaginationResult, MeterFilters } from '../../types/pagination';
 
 export interface IMeterService {
   getAllMeters(): Promise<Meter[]>;
+  getMetersPaginated(options: PaginationOptions, filters?: MeterFilters): Promise<PaginationResult<Meter>>;
   getMeterById(id: string): Promise<Meter | null>;
   getMetersByUnit(unitId: string): Promise<Meter[]>;
   getMetersByProperty(propertyId: string): Promise<Meter[]>;
