@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, DollarSign, Download, Eye, Edit, TrendingUp, Building2, Home, Filter, X, ChevronDown, ChevronUp, CheckCircle, Archive } from 'lucide-react';
+import { Plus, Search, DollarSign, Download, Eye, Edit, TrendingUp, Building2, Home, Filter, X, ChevronDown, ChevronUp, CheckCircle, Archive, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Pagination } from '../../components/ui/pagination';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { AppLayout } from '../../components/layout';
-import { useExpenses, useProperties, useUnits } from '../../hooks';
+import { useExpenses, useProperties, useUnits, useDeleteExpense } from '../../hooks';
 import { format, isWithinInterval } from 'date-fns';
+import { useNotifications } from '../../contexts/NotificationContext';
 import type { Property } from '../../types/property';
 import type { Unit } from '../../types/unit';
 import type { ExpenseWithDetails, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue, ExpenseStatusValue } from '../../types/expense';
@@ -36,9 +38,18 @@ const ExpenseListPage: React.FC = () => {
   const [selectedProperty, setSelectedProperty] = useState<string>('all');
   const [selectedUnit, setSelectedUnit] = useState<string>('all');
 
-  const { expenses, loading } = useExpenses();
+  // Delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<ExpenseWithDetails | null>(null);
+
+  // Bulk delete confirmation dialog
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+
+  const { expenses, loading, refetch } = useExpenses();
   const { properties } = useProperties();
   const { units } = useUnits();
+  const deleteExpense = useDeleteExpense();
+  const { showSuccess, showError } = useNotifications();
 
   // Helper functions
   const getPropertyName = (propertyId: string) => {
@@ -256,6 +267,60 @@ const ExpenseListPage: React.FC = () => {
     setSelectedUnit('all');
     setDateRange({});
     setAmountRange({});
+  };
+
+  const handleDeleteClick = (expense: ExpenseWithDetails) => {
+    setExpenseToDelete(expense);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!expenseToDelete) return;
+
+    try {
+      await deleteExpense.mutate(expenseToDelete.id);
+      showSuccess('Expense Deleted', `Successfully deleted "${expenseToDelete.description}"`);
+      setDeleteDialogOpen(false);
+      setExpenseToDelete(null);
+      // Refresh the expenses list
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete expense:', error);
+      showError('Delete Failed', deleteExpense.error || 'An unexpected error occurred while deleting the expense');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setExpenseToDelete(null);
+  };
+
+  const handleBulkDeleteClick = () => {
+    setBulkDeleteDialogOpen(true);
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    try {
+      const deletePromises = Array.from(selectedExpenses).map(id =>
+        deleteExpense.mutate(id)
+      );
+
+      await Promise.all(deletePromises);
+
+      showSuccess('Expenses Deleted', `Successfully deleted ${selectedExpenses.size} expense${selectedExpenses.size > 1 ? 's' : ''}`);
+      setBulkDeleteDialogOpen(false);
+      setSelectedExpenses(new Set());
+      setShowBulkActions(false);
+      // Refresh the expenses list
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete expenses:', error);
+      showError('Bulk Delete Failed', 'Some expenses could not be deleted. Please try again.');
+    }
+  };
+
+  const handleBulkDeleteCancel = () => {
+    setBulkDeleteDialogOpen(false);
   };
 
   if (loading) {
@@ -509,6 +574,15 @@ const ExpenseListPage: React.FC = () => {
                     <Download className="h-4 w-4 mr-2" />
                     Export Selected
                   </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDeleteClick}
+                    disabled={bulkActionLoading}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Selected
+                  </Button>
                 </div>
               )}
             </CardContent>
@@ -655,6 +729,14 @@ const ExpenseListPage: React.FC = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(expense)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -690,6 +772,76 @@ const ExpenseListPage: React.FC = () => {
             />
           </div>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          {/* Custom backdrop */}
+          {deleteDialogOpen && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40" />
+          )}
+          <DialogContent className="bg-white dark:bg-gray-900 border shadow-xl z-50">
+            <DialogHeader>
+              <DialogTitle>Delete Expense</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this expense? This action cannot be undone.
+                {expenseToDelete && (
+                  <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <p className="font-medium">{expenseToDelete.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {getExpenseTypeLabel(expenseToDelete.type)} • ₹{expenseToDelete.amount.toLocaleString()} • {getPropertyName(expenseToDelete.propertyId)}
+                    </p>
+                  </div>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleDeleteCancel}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteConfirm}
+                disabled={deleteExpense.loading}
+              >
+                {deleteExpense.loading ? 'Deleting...' : 'Delete Expense'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <Dialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+          {/* Custom backdrop */}
+          {bulkDeleteDialogOpen && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40" />
+          )}
+          <DialogContent className="bg-white dark:bg-gray-900 border shadow-xl z-50">
+            <DialogHeader>
+              <DialogTitle>Delete Selected Expenses</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete {selectedExpenses.size} expense{selectedExpenses.size > 1 ? 's' : ''}?
+                This action cannot be undone.
+                <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                  <p className="text-sm text-red-800 dark:text-red-300 font-medium">
+                    ⚠️ This will permanently delete all selected expenses
+                  </p>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleBulkDeleteCancel}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleBulkDeleteConfirm}
+                disabled={deleteExpense.loading}
+              >
+                {deleteExpense.loading ? 'Deleting...' : `Delete ${selectedExpenses.size} Expense${selectedExpenses.size > 1 ? 's' : ''}`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
