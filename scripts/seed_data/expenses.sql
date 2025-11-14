@@ -173,13 +173,13 @@ SELECT
     e.id,
     p.name as property_name,
     u.unit_number,
-    e.expense_type,
+    e.type,
     e.description,
     e.amount,
     e.frequency,
-    e.distribution_method,
+    e.distribution,
     e.status,
-    e.expense_date
+    e.start_date
 FROM expenses e
 LEFT JOIN properties p ON e.property_id = p.id
 LEFT JOIN units u ON e.unit_id = u.id
