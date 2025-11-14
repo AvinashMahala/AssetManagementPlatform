@@ -41,6 +41,19 @@ CREATE TABLE IF NOT EXISTS rent_transactions (
     invoice_date DATE,
     invoice_pdf_url VARCHAR(500),
 
+    -- Workflow tracking fields
+    workflow_status VARCHAR(30) NOT NULL DEFAULT 'invoice_pending'
+        CHECK (workflow_status IN ('invoice_pending', 'invoice_generated', 'notification_sent', 'payment_pending', 'payment_partial', 'payment_completed', 'receipt_generated', 'workflow_completed')),
+    invoice_generated BOOLEAN NOT NULL DEFAULT FALSE,
+    invoice_sent_date TIMESTAMP,
+    notification_sent BOOLEAN NOT NULL DEFAULT FALSE,
+    notification_sent_date TIMESTAMP,
+    notification_method VARCHAR(20) CHECK (notification_method IN ('email', 'sms', 'manual')),
+    last_payment_date TIMESTAMP,
+    receipt_sent BOOLEAN NOT NULL DEFAULT FALSE,
+    receipt_sent_date TIMESTAMP,
+    workflow_completed_date TIMESTAMP,
+
     -- Notes and tracking
     notes TEXT,
     created_by UUID NOT NULL REFERENCES users(id),
@@ -61,6 +74,13 @@ CREATE INDEX IF NOT EXISTS idx_rent_transactions_invoice_number ON rent_transact
 CREATE INDEX IF NOT EXISTS idx_rent_transactions_receipt_number ON rent_transactions(receipt_number);
 CREATE INDEX IF NOT EXISTS idx_rent_transactions_created_at ON rent_transactions(created_at);
 
+-- Workflow tracking indexes
+CREATE INDEX IF NOT EXISTS idx_rent_transactions_workflow_status ON rent_transactions(workflow_status);
+CREATE INDEX IF NOT EXISTS idx_rent_transactions_invoice_generated ON rent_transactions(invoice_generated);
+CREATE INDEX IF NOT EXISTS idx_rent_transactions_notification_sent ON rent_transactions(notification_sent);
+CREATE INDEX IF NOT EXISTS idx_rent_transactions_receipt_sent ON rent_transactions(receipt_sent);
+CREATE INDEX IF NOT EXISTS idx_rent_transactions_workflow_completed_date ON rent_transactions(workflow_completed_date);
+
 -- Add comments for documentation
 COMMENT ON TABLE rent_transactions IS 'Comprehensive rent collection transactions with billing periods, expenses, and balances';
 COMMENT ON COLUMN rent_transactions.billing_method IS 'relative: date-to-date billing, fixed: 1st of month billing';
@@ -70,3 +90,15 @@ COMMENT ON COLUMN rent_transactions.previous_balance IS 'Balance carried forward
 COMMENT ON COLUMN rent_transactions.new_balance IS 'Outstanding balance after payment (can be negative for overpayments)';
 COMMENT ON COLUMN rent_transactions.total_meter_charges IS 'Total utility/meter charges for this billing period';
 COMMENT ON COLUMN rent_transactions.total_expenses IS 'Total additional expenses for this billing period';
+
+-- Workflow tracking comments
+COMMENT ON COLUMN rent_transactions.workflow_status IS 'Workflow status for streamlined rent collection process';
+COMMENT ON COLUMN rent_transactions.invoice_generated IS 'Whether invoice PDF has been generated';
+COMMENT ON COLUMN rent_transactions.invoice_sent_date IS 'Date when invoice was sent to tenant';
+COMMENT ON COLUMN rent_transactions.notification_sent IS 'Whether notification has been sent to tenant';
+COMMENT ON COLUMN rent_transactions.notification_sent_date IS 'Date when notification was sent';
+COMMENT ON COLUMN rent_transactions.notification_method IS 'Method used for notification: email, sms, or manual';
+COMMENT ON COLUMN rent_transactions.last_payment_date IS 'Date of the most recent payment';
+COMMENT ON COLUMN rent_transactions.receipt_sent IS 'Whether receipt has been sent to tenant';
+COMMENT ON COLUMN rent_transactions.receipt_sent_date IS 'Date when receipt was sent';
+COMMENT ON COLUMN rent_transactions.workflow_completed_date IS 'Date when entire workflow was completed';

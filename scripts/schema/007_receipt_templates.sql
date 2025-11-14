@@ -32,6 +32,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_update_receipt_templates_updated_at ON receipt_templates;
 CREATE TRIGGER trigger_update_receipt_templates_updated_at
     BEFORE UPDATE ON receipt_templates
     FOR EACH ROW

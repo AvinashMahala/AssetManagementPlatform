@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS leases (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     property_id UUID NOT NULL REFERENCES properties(id),
     unit_id UUID NOT NULL REFERENCES units(id),
-    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     monthly_rent NUMERIC(10, 2) NOT NULL,
