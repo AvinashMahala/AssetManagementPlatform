@@ -763,11 +763,6 @@ export class RentTransactionService implements IRentTransactionService {
       throw new Error('Transaction not found');
     }
 
-    // Check if invoice already exists for this transaction
-    if (transaction.invoiceGenerated && transaction.receiptNumber) {
-      throw new Error('Invoice already exists for this transaction. Cannot generate duplicate invoice.');
-    }
-
     // Get related data for invoice generation
     const lease = await this.leaseRepository.findById(transaction.leaseId);
     if (!lease) {
@@ -784,190 +779,109 @@ export class RentTransactionService implements IRentTransactionService {
       throw new Error('Tenant not found for transaction');
     }
 
+    // Get property owner (landlord) details
+    const landlord = await this.userRepository.findById(property.ownerId);
+
     // Generate invoice number if not exists
-    const invoiceNumber = transaction.receiptNumber || this.generateInvoiceNumber();
+    const invoiceNumber = transaction.invoiceNumber || this.generateInvoiceNumber();
 
-    // Get meter readings for this transaction
-    const meterReadings = await this.transactionMeterReadingRepository.findByTransaction(transactionId);
+    // Build receipt data structure for invoice (unpaid)
+    const receiptData: ReceiptData = {
+      // Property information
+      property: {
+        name: property.name,
+        address: property.address ? `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}` : '',
+        phone: property.phone || '',
+        email: property.email || '',
+        currency: property.currency || 'INR'
+      },
 
-    try {
-      // Get property owner (landlord) details from user repository
-      const landlord = await this.userRepository.findById(property.ownerId);
-      
-      // Get configured utilities for this unit and calculate their charges
-      const configuredUtilities = await this.calculateUnitUtilityCharges(
-        transaction.unitId,
-        transaction.billingPeriodStart,
-        transaction.billingPeriodEnd
-      );
-      
-      // Build invoice data structure similar to receipt data
-      const invoiceData = {
-        documentType: 'Invoice',
-        documentNumber: invoiceNumber,
-        issueDate: new Date(),
-        dueDate: transaction.billingPeriodEnd,
-        
-        // Property details
-        propertyName: property.name,
-        propertyAddress: property.address,
-        
-        // Tenant details
-        tenantName: `${tenant.firstName} ${tenant.lastName}`,
-        tenantEmail: tenant.email,
-        tenantPhone: tenant.phone,
-        
-        // Transaction details
-        billingPeriod: {
-          start: transaction.billingPeriodStart,
-          end: transaction.billingPeriodEnd
-        },
+      // Landlord information
+      landlord: {
+        name: landlord?.name || 'Property Owner',
+        phone: landlord?.phone || '',
+        email: landlord?.email || ''
+      },
+
+      // Tenant information
+      tenant: {
+        name: `${tenant.firstName} ${tenant.lastName}`,
+        phone: tenant.phone || '',
+        email: tenant.email || '',
+        address: tenant.currentAddress
+          ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}`
+          : ''
+      },
+
+      // Receipt details
+      receiptNumber: invoiceNumber,
+      receiptDate: new Date().toISOString(),
+      period: {
+        from: transaction.billingPeriodStart.toISOString(),
+        to: transaction.billingPeriodEnd.toISOString()
+      },
+
+      // Financial breakdown
+      breakdown: {
         baseRent: transaction.baseRent,
         previousBalance: transaction.previousBalance,
-        
-        // Utility charges from configured utilities
-        utilityCharges: configuredUtilities.map((u: any) => ({
-          type: u.utilityType,
-          description: `${u.utilityName} (${u.billingMethod === 'fixed' ? 'Fixed' : 'Meter-based'})`,
-          amount: u.amount
-        })),
-        
-        // Meter charges
-        meterCharges: meterReadings.map(mr => ({
-          meterName: mr.meterId, // Will need to join with meter table for name
-          previousReading: mr.previousReading,
-          currentReading: mr.currentReading,
-          unitsConsumed: mr.unitsConsumed,
-          costPerUnit: mr.costPerUnit,
-          fixedCharge: mr.fixedCharge,
-          totalCost: mr.totalCost
-        })),
-        
-        // Other expenses (additional expenses added during rent collection)
-        otherExpenses: (transaction.expenses || [])
-          .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
-          .map((e: any) => ({
-            type: e.type,
-            description: e.description,
-            amount: e.amount
-          })),
-        
-        // Totals
-        subtotal: transaction.baseRent,
-        utilityChargesTotal: configuredUtilities.reduce((sum: number, u: any) => sum + u.amount, 0),
-        meterChargesTotal: meterReadings.reduce((sum, mr) => sum + mr.totalCost, 0),
-        otherExpensesTotal: (transaction.expenses || [])
-          .filter((e: any) => e.type && !['electricity', 'water', 'gas', 'internet', 'maintenance', 'parking', 'other'].includes(e.type))
-          .reduce((sum: number, e: any) => sum + e.amount, 0),
+        expenses: transaction.expenses || [],
         totalAmount: transaction.totalAmount,
-        amountPaid: transaction.amountPaid,
-        balanceDue: transaction.newBalance,
-        
-        // Notes
-        notes: transaction.notes || 'Thank you for your payment'
-      };
-      
-      // Build receipt data for PDF generation
-      const receiptData: ReceiptData = {
-        property: {
-          name: property.name,
-          address: `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`,
-          phone: '',  // Property doesn't have phone/email, use landlord's
-          email: '',
-          currency: property.currency || 'INR'
-        },
-        landlord: {
-          name: landlord ? (landlord.name || landlord.username) : 'Property Owner',
-          phone: landlord?.phone || '',
-          email: landlord?.email || ''
-        },
-        tenant: {
-          name: `${tenant.firstName} ${tenant.lastName}`,
-          phone: tenant.phone || '',
-          email: tenant.email,
-          address: tenant.currentAddress 
-            ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}`
-            : undefined
-        },
-        receiptNumber: invoiceNumber,
-        receiptDate: new Date().toISOString(),
-        period: {
-          from: transaction.billingPeriodStart.toISOString(),
-          to: transaction.billingPeriodEnd.toISOString()
-        },
-        breakdown: {
-          baseRent: transaction.baseRent,
-          previousBalance: transaction.previousBalance,
-          expenses: [
-            // Include configured utilities as expenses
-            ...configuredUtilities.map((u: any) => ({
-              type: u.utilityType,
-              description: `${u.utilityName} (${u.billingMethod === 'fixed' ? 'Fixed' : 'Meter-based'})`,
-              amount: u.amount
-            })),
-            // Include additional expenses
-            ...(transaction.expenses || []).map((e: any) => ({
-              type: e.type || 'other',
-              description: e.description,
-              amount: e.amount
-            }))
-          ],
-          totalAmount: transaction.totalAmount,
-          amountPaid: transaction.amountPaid,
-          newBalance: transaction.newBalance
-        },
-        payment: {
-          method: transaction.paymentMethod || undefined,
-          transactionId: transaction.transactionId || undefined,
-          paidDate: transaction.paidDate?.toISOString()
-        },
-        settings: {
-          bankDetails: property.receiptTemplate?.bankDetails || undefined,
-          wallets: property.receiptTemplate?.wallets?.map(wallet => ({
-            type: wallet.type,
-            number: wallet.upiPhoneNumber,
-            name: wallet.upiName
-          })) || undefined,
-          upiId: property.receiptTemplate?.wallets?.find(wallet => wallet.upiId)?.upiId || undefined,
-          qrCodeUrl: property.receiptTemplate?.paymentQRCodeUrl || undefined,
-          signatureUrl: property.receiptTemplate?.signatureUrl || undefined,
-          watermarkUrl: property.receiptTemplate?.watermarkUrl || undefined
-        },
-        notes: transaction.notes || 'Thank you for your payment',
-        watermarkText: 'UNPAID',
-        isInvoice: true
-      };
+        amountPaid: transaction.amountPaid || 0,
+        newBalance: transaction.newBalance
+      },
 
-      // Generate PDF using PDFGenerator
-      const pdfBuffer = await PDFGenerator.generateReceiptPDF(receiptData, null, true);
-      
-      // Ensure invoices directory exists
-      const invoicesDir = path.join(__dirname, '../../public/invoices');
-      if (!fs.existsSync(invoicesDir)) {
-        fs.mkdirSync(invoicesDir, { recursive: true });
-      }
-      
-      // Save PDF to file system
-      const pdfPath = path.join(invoicesDir, `${invoiceNumber}.pdf`);
-      fs.writeFileSync(pdfPath, pdfBuffer);
-      
-      const pdfUrl = `/api/invoices/${invoiceNumber}.pdf`;
-      
-      // Update transaction with invoice details
-      await this.repository.update(transactionId, {
-        receiptNumber: invoiceNumber,
-        receiptGenerated: true,
-        status: RentTransactionStatus.FINALIZED,
-        workflowStatus: RentCollectionWorkflowStatus.INVOICE_GENERATED,
-        invoiceGenerated: true,
-        invoiceSentDate: new Date()
-      });
+      // Payment information (empty for invoice)
+      payment: {
+        method: undefined,
+        transactionId: undefined,
+        paidDate: undefined
+      },
 
-      return { pdfUrl, invoiceNumber };
-    } catch (error) {
-      console.error('Error generating invoice:', error);
-      throw new Error(`Failed to generate invoice PDF: ${error instanceof Error ? error.message : String(error)}`);
+      // Receipt settings (basic)
+      settings: {
+        logoUrl: undefined,
+        bankDetails: undefined,
+        wallets: undefined,
+        upiId: undefined,
+        qrCodeUrl: undefined,
+        signatureUrl: undefined,
+        watermarkUrl: undefined
+      },
+
+      // Additional notes
+      notes: transaction.notes || '',
+      termsAndConditions: 'Payment is due within 30 days.',
+
+      // Watermark settings
+      watermarkText: 'UNPAID',
+      isInvoice: true
+    };
+
+    // Generate PDF
+    const pdfBuffer = await PDFGenerator.generateReceiptPDF(receiptData, null, true);
+
+    // Save PDF to file system
+    const pdfDir = path.join(__dirname, '../../public/invoices');
+    if (!fs.existsSync(pdfDir)) {
+      fs.mkdirSync(pdfDir, { recursive: true });
     }
+
+    const pdfFileName = `${invoiceNumber}.pdf`;
+    const pdfPath = path.join(pdfDir, pdfFileName);
+    fs.writeFileSync(pdfPath, pdfBuffer);
+
+    // Update transaction with invoice details
+    await this.repository.update(transactionId, {
+      invoiceNumber,
+      invoiceGeneratedAt: new Date(),
+      invoicePdfUrl: `/invoices/${pdfFileName}`
+    });
+
+    return {
+      pdfUrl: `/invoices/${pdfFileName}`,
+      invoiceNumber
+    };
   }
 
   async generateReceipt(transactionId: string): Promise<{ pdfUrl: string; receiptNumber: string }> {
@@ -1000,108 +914,109 @@ export class RentTransactionService implements IRentTransactionService {
       throw new Error('Tenant not found for transaction');
     }
 
+    // Get property owner (landlord) details
+    const landlord = await this.userRepository.findById(property.ownerId);
+
     // Generate receipt number if not exists
     const receiptNumber = transaction.receiptNumber || this.generateReceiptNumber();
 
-    // Get meter readings for this transaction
-    const meterReadings = await this.transactionMeterReadingRepository.findByTransaction(transactionId);
+    // Build receipt data structure for receipt (paid)
+    const receiptData: ReceiptData = {
+      // Property information
+      property: {
+        name: property.name,
+        address: property.address ? `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}` : '',
+        phone: property.phone || '',
+        email: property.email || '',
+        currency: property.currency || 'INR'
+      },
 
-    try {
-      // Get property owner (landlord) details from user repository
-      const landlord = await this.userRepository.findById(property.ownerId);
-      
-      // Build receipt data for PDF generation
-      const receiptData: ReceiptData = {
-        property: {
-          name: property.name,
-          address: `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}`,
-          phone: '',
-          email: '',
-          currency: property.currency || 'INR'
-        },
-        landlord: {
-          name: landlord ? (landlord.name || landlord.username) : 'Property Owner',
-          phone: landlord?.phone || '',
-          email: landlord?.email || ''
-        },
-        tenant: {
-          name: `${tenant.firstName} ${tenant.lastName}`,
-          phone: tenant.phone || '',
-          email: tenant.email,
-          address: tenant.currentAddress 
-            ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}`
-            : undefined
-        },
-        receiptNumber: receiptNumber,
-        receiptDate: (transaction.paidDate || new Date()).toISOString(),
-        period: {
-          from: transaction.billingPeriodStart.toISOString(),
-          to: transaction.billingPeriodEnd.toISOString()
-        },
-        breakdown: {
-          baseRent: transaction.baseRent,
-          previousBalance: transaction.previousBalance,
-          expenses: (transaction.expenses || []).map((e: any) => ({
-            type: e.type || 'other',
-            description: e.description,
-            amount: e.amount
-          })),
-          totalAmount: transaction.totalAmount,
-          amountPaid: transaction.amountPaid,
-          newBalance: 0 // Fully paid for receipts
-        },
-        payment: {
-          method: transaction.paymentMethod || undefined,
-          transactionId: transaction.transactionId || undefined,
-          paidDate: transaction.paidDate?.toISOString()
-        },
-        settings: {
-          bankDetails: property.receiptTemplate?.bankDetails || undefined,
-          wallets: property.receiptTemplate?.wallets?.map(wallet => ({
-            type: wallet.type,
-            number: wallet.upiPhoneNumber,
-            name: wallet.upiName
-          })) || undefined,
-          upiId: property.receiptTemplate?.wallets?.find(wallet => wallet.upiId)?.upiId || undefined,
-          qrCodeUrl: property.receiptTemplate?.paymentQRCodeUrl || undefined,
-          signatureUrl: property.receiptTemplate?.signatureUrl || undefined,
-          watermarkUrl: property.receiptTemplate?.watermarkUrl || undefined
-        },
-        notes: transaction.notes || 'Payment received with thanks',
-        watermarkText: 'PAID',
-        isInvoice: false
-      };
+      // Landlord information
+      landlord: {
+        name: landlord?.name || 'Property Owner',
+        phone: landlord?.phone || '',
+        email: landlord?.email || ''
+      },
 
-      // Generate PDF using PDFGenerator
-      const pdfBuffer = await PDFGenerator.generateReceiptPDF(receiptData);
-      
-      // Ensure receipts directory exists
-      const receiptsDir = path.join(__dirname, '../../public/receipts');
-      if (!fs.existsSync(receiptsDir)) {
-        fs.mkdirSync(receiptsDir, { recursive: true });
-      }
-      
-      // Save PDF to file system
-      const pdfPath = path.join(receiptsDir, `${receiptNumber}.pdf`);
-      fs.writeFileSync(pdfPath, pdfBuffer);
-      
-      const pdfUrl = `/api/receipts/${receiptNumber}.pdf`;
-      
-      // Update transaction with receipt details
-      await this.repository.update(transactionId, {
-        receiptNumber: receiptNumber,
-        receiptGenerated: true,
-        workflowStatus: RentCollectionWorkflowStatus.RECEIPT_GENERATED,
-        receiptSent: true,
-        receiptSentDate: new Date(),
-        workflowCompletedDate: new Date()
-      });
+      // Tenant information
+      tenant: {
+        name: `${tenant.firstName} ${tenant.lastName}`,
+        phone: tenant.phone || '',
+        email: tenant.email || '',
+        address: tenant.currentAddress
+          ? `${tenant.currentAddress.street}, ${tenant.currentAddress.city}, ${tenant.currentAddress.state} - ${tenant.currentAddress.pincode}`
+          : ''
+      },
 
-      return { pdfUrl, receiptNumber };
-    } catch (error) {
-      console.error('Error generating receipt:', error);
-      throw new Error(`Failed to generate receipt PDF: ${error instanceof Error ? error.message : String(error)}`);
+      // Receipt details
+      receiptNumber: receiptNumber,
+      receiptDate: (transaction.paidDate || new Date()).toISOString(),
+      period: {
+        from: transaction.billingPeriodStart.toISOString(),
+        to: transaction.billingPeriodEnd.toISOString()
+      },
+
+      // Financial breakdown (what was paid)
+      breakdown: {
+        baseRent: transaction.amountPaid || 0,
+        previousBalance: 0,
+        expenses: [],
+        totalAmount: transaction.amountPaid || 0,
+        amountPaid: transaction.amountPaid || 0,
+        newBalance: 0
+      },
+
+      // Payment information
+      payment: {
+        method: transaction.paymentMethod || 'Unknown',
+        transactionId: transaction.transactionId || undefined,
+        paidDate: (transaction.paidDate || new Date()).toISOString()
+      },
+
+      // Receipt settings (basic)
+      settings: {
+        logoUrl: undefined,
+        bankDetails: undefined,
+        wallets: undefined,
+        upiId: undefined,
+        qrCodeUrl: undefined,
+        signatureUrl: undefined,
+        watermarkUrl: undefined
+      },
+
+      // Additional notes
+      notes: transaction.notes || 'Payment received with thanks',
+      termsAndConditions: '',
+
+      // Watermark settings
+      watermarkText: 'PAID',
+      isInvoice: false
+    };
+
+    // Generate PDF
+    const pdfBuffer = await PDFGenerator.generateReceiptPDF(receiptData, null, false);
+
+    // Save PDF to file system
+    const pdfDir = path.join(__dirname, '../../public/receipts');
+    if (!fs.existsSync(pdfDir)) {
+      fs.mkdirSync(pdfDir, { recursive: true });
     }
+
+    const pdfFileName = `${receiptNumber}.pdf`;
+    const pdfPath = path.join(pdfDir, pdfFileName);
+    fs.writeFileSync(pdfPath, pdfBuffer);
+
+    // Update transaction with receipt details
+    await this.repository.update(transactionId, {
+      receiptNumber,
+      receiptGeneratedAt: new Date(),
+      receiptPdfUrl: `/receipts/${pdfFileName}`
+    });
+
+    return {
+      pdfUrl: `/receipts/${pdfFileName}`,
+      receiptNumber
+    };
   }
 
   async getMonthlySummary(propertyId: string, year: number, month: number): Promise<any> {
@@ -1519,4 +1434,5 @@ export class RentTransactionService implements IRentTransactionService {
       errors
     };
   }
+
 }
