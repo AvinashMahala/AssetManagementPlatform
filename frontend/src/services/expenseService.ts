@@ -40,6 +40,10 @@ class ExpenseService {
     return apiClient.delete<void>(`${API_ENDPOINTS.EXPENSES}/${id}`);
   }
 
+  async archive(id: string): Promise<ApiResponse<void>> {
+    return apiClient.patch<void>(`${API_ENDPOINTS.EXPENSES}/${id}/status`, { status: 'archived' });
+  }
+
   async getStatistics(propertyId?: string): Promise<ApiResponse<ExpenseStatistics>> {
     let url = `${API_ENDPOINTS.EXPENSES}/statistics`;
     if (propertyId) {

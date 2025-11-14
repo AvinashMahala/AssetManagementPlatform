@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Pagination } from '../../components/ui/pagination';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { AppLayout } from '../../components/layout';
-import { useExpenses, useProperties, useUnits, useDeleteExpense } from '../../hooks';
+import { useExpenses, useProperties, useUnits, useDeleteExpense, useArchiveExpense } from '../../hooks';
 import { format, isWithinInterval } from 'date-fns';
 import { useNotifications } from '../../contexts/NotificationContext';
 import type { Property } from '../../types/property';
@@ -25,7 +25,7 @@ const ExpenseListPage: React.FC = () => {
   const [distributionFilter, setDistributionFilter] = useState<string>('all');
   const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
-  const [bulkActionLoading] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(25);
   const [sortBy, setSortBy] = useState<'startDate' | 'amount' | 'type' | 'status'>('startDate');
@@ -49,6 +49,7 @@ const ExpenseListPage: React.FC = () => {
   const { properties } = useProperties();
   const { units } = useUnits();
   const deleteExpense = useDeleteExpense();
+  const archiveExpense = useArchiveExpense();
   const { showSuccess, showError } = useNotifications();
 
   // Helper functions
@@ -300,6 +301,7 @@ const ExpenseListPage: React.FC = () => {
   };
 
   const handleBulkDeleteConfirm = async () => {
+    setBulkActionLoading(true);
     try {
       const deletePromises = Array.from(selectedExpenses).map(id =>
         deleteExpense.mutate(id)
@@ -316,11 +318,88 @@ const ExpenseListPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete expenses:', error);
       showError('Bulk Delete Failed', 'Some expenses could not be deleted. Please try again.');
+    } finally {
+      setBulkActionLoading(false);
     }
   };
 
   const handleBulkDeleteCancel = () => {
     setBulkDeleteDialogOpen(false);
+  };
+
+  const handleBulkArchiveClick = () => {
+    handleBulkArchive();
+  };
+
+  const handleBulkArchive = async () => {
+    setBulkActionLoading(true);
+    try {
+      const archivePromises = Array.from(selectedExpenses).map(id =>
+        archiveExpense.mutate(id)
+      );
+
+      await Promise.all(archivePromises);
+
+      showSuccess('Expenses Archived', `Successfully archived ${selectedExpenses.size} expense${selectedExpenses.size > 1 ? 's' : ''}`);
+      setSelectedExpenses(new Set());
+      setShowBulkActions(false);
+      // Refresh the expenses list
+      refetch();
+    } catch (error) {
+      console.error('Failed to archive expenses:', error);
+      showError('Bulk Archive Failed', 'Some expenses could not be archived. Please try again.');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkExport = () => {
+    setBulkActionLoading(true);
+    try {
+      const selectedData = expenses.filter(expense => selectedExpenses.has(expense.id));
+
+      if (selectedData.length === 0) {
+        showError('Export Failed', 'No expenses selected for export');
+        return;
+      }
+
+      // Create CSV content
+      const headers = ['Description', 'Type', 'Amount', 'Frequency', 'Distribution', 'Property', 'Unit', 'Start Date', 'Status'];
+      const csvContent = [
+        headers.join(','),
+        ...selectedData.map(expense => [
+          `"${expense.description}"`,
+          `"${getExpenseTypeLabel(expense.type)}"`,
+          expense.amount,
+          `"${getFrequencyLabel(expense.frequency)}"`,
+          `"${getDistributionLabel(expense.distribution)}"`,
+          `"${getPropertyName(expense.propertyId)}"`,
+          `"${expense.unit ? expense.unit.name : 'Property-wide'}"`,
+          `"${format(new Date(expense.startDate), 'yyyy-MM-dd')}"`,
+          `"${expense.status}"`
+        ].join(','))
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `expenses_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showSuccess('Export Complete', `Successfully exported ${selectedData.length} expense${selectedData.length > 1 ? 's' : ''} to CSV`);
+      setSelectedExpenses(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('Failed to export expenses:', error);
+      showError('Export Failed', 'Failed to export expenses. Please try again.');
+    } finally {
+      setBulkActionLoading(false);
+    }
   };
 
   if (loading) {
@@ -566,11 +645,11 @@ const ExpenseListPage: React.FC = () => {
 
               {showBulkActions && (
                 <div className="flex gap-2 mt-4">
-                  <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                  <Button variant="outline" size="sm" onClick={handleBulkArchiveClick} disabled={bulkActionLoading}>
                     <Archive className="h-4 w-4 mr-2" />
                     Archive Selected
                   </Button>
-                  <Button variant="outline" size="sm" disabled={bulkActionLoading}>
+                  <Button variant="outline" size="sm" onClick={handleBulkExport} disabled={bulkActionLoading}>
                     <Download className="h-4 w-4 mr-2" />
                     Export Selected
                   </Button>

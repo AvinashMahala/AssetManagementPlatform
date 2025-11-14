@@ -34,6 +34,10 @@ export function useDeleteExpense() {
   return useApiMutation<void, string>((id) => expenseService.delete(id));
 }
 
+export function useArchiveExpense() {
+  return useApiMutation<void, string>((id) => expenseService.archive(id));
+}
+
 export function useExpenseStatistics(propertyId?: string) {
   const query = useCallback(() => expenseService.getStatistics(propertyId), [propertyId]);
   return useApi<ExpenseStatistics>(query, [propertyId]);
