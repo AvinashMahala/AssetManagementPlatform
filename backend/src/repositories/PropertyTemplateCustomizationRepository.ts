@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { PropertyTemplateCustomization } from '../models/TemplateCustomization';
+import { TABLES, COLUMNS } from '../constants/database';
 
 export class PropertyTemplateCustomizationRepository {
   constructor(private pool: Pool) {}
@@ -7,7 +8,7 @@ export class PropertyTemplateCustomizationRepository {
   async findByPropertyId(propertyId: string): Promise<PropertyTemplateCustomization | null> {
     try {
       const result = await this.pool.query(
-        'SELECT * FROM property_template_customizations WHERE property_id = $1',
+        `SELECT * FROM ${TABLES.PROPERTY_TEMPLATE_CUSTOMIZATIONS} WHERE ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.PROPERTY_ID} = $1`,
         [propertyId]
       );
       return result.rows[0] ? this.mapRow(result.rows[0]) : null;
@@ -19,9 +20,9 @@ export class PropertyTemplateCustomizationRepository {
   async create(data: Omit<PropertyTemplateCustomization, 'id'>): Promise<PropertyTemplateCustomization> {
     try {
       const result = await this.pool.query(
-        `INSERT INTO property_template_customizations 
-         (property_id, template_id, custom_styles, custom_logo_url, custom_header, custom_footer, 
-          show_qr_code, qr_code_data, qr_code_position, qr_code_size)
+        `INSERT INTO ${TABLES.PROPERTY_TEMPLATE_CUSTOMIZATIONS} 
+         (${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.PROPERTY_ID}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.TEMPLATE_ID}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_STYLES}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_LOGO_URL}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_HEADER}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_FOOTER}, 
+          ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.SHOW_QR_CODE}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.QR_CODE_DATA}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.QR_CODE_POSITION}, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.QR_CODE_SIZE})
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING *`,
         [data.propertyId, data.templateId, JSON.stringify(data.customStyles), data.customLogoUrl,
@@ -37,16 +38,16 @@ export class PropertyTemplateCustomizationRepository {
   async update(propertyId: string, data: Partial<PropertyTemplateCustomization>): Promise<PropertyTemplateCustomization> {
     try {
       const result = await this.pool.query(
-        `UPDATE property_template_customizations 
-         SET template_id = COALESCE($2, template_id),
-             custom_styles = COALESCE($3, custom_styles),
-             custom_logo_url = COALESCE($4, custom_logo_url),
-             custom_header = COALESCE($5, custom_header),
-             custom_footer = COALESCE($6, custom_footer),
-             show_qr_code = COALESCE($7, show_qr_code),
-             qr_code_data = COALESCE($8, qr_code_data),
-             updated_at = CURRENT_TIMESTAMP
-         WHERE property_id = $1
+        `UPDATE ${TABLES.PROPERTY_TEMPLATE_CUSTOMIZATIONS} 
+         SET ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.TEMPLATE_ID} = COALESCE($2, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.TEMPLATE_ID}),
+             ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_STYLES} = COALESCE($3, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_STYLES}),
+             ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_LOGO_URL} = COALESCE($4, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_LOGO_URL}),
+             ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_HEADER} = COALESCE($5, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_HEADER}),
+             ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_FOOTER} = COALESCE($6, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.CUSTOM_FOOTER}),
+             ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.SHOW_QR_CODE} = COALESCE($7, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.SHOW_QR_CODE}),
+             ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.QR_CODE_DATA} = COALESCE($8, ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.QR_CODE_DATA}),
+             ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.UPDATED_AT} = CURRENT_TIMESTAMP
+         WHERE ${COLUMNS.PROPERTY_TEMPLATE_CUSTOMIZATIONS.PROPERTY_ID} = $1
          RETURNING *`,
         [propertyId, data.templateId, data.customStyles ? JSON.stringify(data.customStyles) : null,
          data.customLogoUrl, data.customHeader, data.customFooter, data.showQrCode,

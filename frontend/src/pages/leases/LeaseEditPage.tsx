@@ -14,6 +14,7 @@ export const LeaseEditPage: React.FC = () => {
   const { showSuccess, showError } = useNotifications();
 
   const [formData, setFormData] = useState<LeaseInput>({
+    propertyId: '',
     unitId: '',
     tenantId: '',
     startDate: '',
@@ -22,13 +23,14 @@ export const LeaseEditPage: React.FC = () => {
     securityDeposit: 0,
     maintenanceCharges: 0,
     rentDueDay: 1,
-    terms: '',
+    termsConditions: '',
     specialConditions: '',
   });
 
   useEffect(() => {
     if (lease) {
       setFormData({
+        propertyId: lease.propertyId,
         unitId: lease.unitId,
         tenantId: lease.tenantId,
         startDate: lease.startDate.split('T')[0],
@@ -37,7 +39,7 @@ export const LeaseEditPage: React.FC = () => {
         securityDeposit: lease.securityDeposit,
         maintenanceCharges: lease.maintenanceCharges,
         rentDueDay: lease.rentDueDay,
-        terms: lease.terms,
+        termsConditions: lease.termsConditions,
         specialConditions: lease.specialConditions,
       });
     }
@@ -168,8 +170,8 @@ export const LeaseEditPage: React.FC = () => {
 
         {/* Terms */}
         <div>
-          <label htmlFor="terms" className="block text-sm font-medium text-gray-700">Lease Terms</label>
-          <textarea id="terms" name="terms" value={formData.terms} onChange={handleChange} rows={4}
+          <label htmlFor="termsConditions" className="block text-sm font-medium text-gray-700">Lease Terms</label>
+          <textarea id="termsConditions" name="termsConditions" value={formData.termsConditions} onChange={handleChange} rows={4}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
         </div>
 

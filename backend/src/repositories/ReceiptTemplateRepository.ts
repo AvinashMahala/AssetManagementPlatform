@@ -53,18 +53,28 @@ export class ReceiptTemplateRepository {
           ${COLUMNS.RECEIPT_TEMPLATES.NAME},
           ${COLUMNS.RECEIPT_TEMPLATES.DESCRIPTION},
           ${COLUMNS.RECEIPT_TEMPLATES.DEFAULT_SETTINGS},
+          ${COLUMNS.RECEIPT_TEMPLATES.TEMPLATE_HTML},
+          ${COLUMNS.RECEIPT_TEMPLATES.TEMPLATE_CSS},
+          ${COLUMNS.RECEIPT_TEMPLATES.LAYOUT_CONFIG},
+          ${COLUMNS.RECEIPT_TEMPLATES.PLACEHOLDERS},
+          ${COLUMNS.RECEIPT_TEMPLATES.PREVIEW_IMAGE_URL},
           ${COLUMNS.RECEIPT_TEMPLATES.IS_ACTIVE},
           ${COLUMNS.RECEIPT_TEMPLATES.IS_DEFAULT},
           ${COLUMNS.RECEIPT_TEMPLATES.SORT_ORDER},
           ${COLUMNS.RECEIPT_TEMPLATES.CREATED_AT},
           ${COLUMNS.RECEIPT_TEMPLATES.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
         [
           crypto.randomUUID(),
           data.type,
           data.name,
           data.description,
           JSON.stringify(data.defaultSettings),
+          data.templateHtml,
+          data.templateCss ? JSON.stringify(data.templateCss) : null,
+          data.layoutConfig ? JSON.stringify(data.layoutConfig) : null,
+          data.placeholders ? JSON.stringify(data.placeholders) : null,
+          data.previewImageUrl,
           data.isActive || true,
           data.isDefault || false,
           data.sortOrder || 0,
@@ -99,6 +109,26 @@ export class ReceiptTemplateRepository {
       if (data.defaultSettings !== undefined) {
         fields.push(`${COLUMNS.RECEIPT_TEMPLATES.DEFAULT_SETTINGS} = $${paramIndex++}`);
         values.push(JSON.stringify(data.defaultSettings));
+      }
+      if (data.templateHtml !== undefined) {
+        fields.push(`${COLUMNS.RECEIPT_TEMPLATES.TEMPLATE_HTML} = $${paramIndex++}`);
+        values.push(data.templateHtml);
+      }
+      if (data.templateCss !== undefined) {
+        fields.push(`${COLUMNS.RECEIPT_TEMPLATES.TEMPLATE_CSS} = $${paramIndex++}`);
+        values.push(data.templateCss ? JSON.stringify(data.templateCss) : null);
+      }
+      if (data.layoutConfig !== undefined) {
+        fields.push(`${COLUMNS.RECEIPT_TEMPLATES.LAYOUT_CONFIG} = $${paramIndex++}`);
+        values.push(data.layoutConfig ? JSON.stringify(data.layoutConfig) : null);
+      }
+      if (data.placeholders !== undefined) {
+        fields.push(`${COLUMNS.RECEIPT_TEMPLATES.PLACEHOLDERS} = $${paramIndex++}`);
+        values.push(data.placeholders ? JSON.stringify(data.placeholders) : null);
+      }
+      if (data.previewImageUrl !== undefined) {
+        fields.push(`${COLUMNS.RECEIPT_TEMPLATES.PREVIEW_IMAGE_URL} = $${paramIndex++}`);
+        values.push(data.previewImageUrl);
       }
       if (data.isActive !== undefined) {
         fields.push(`${COLUMNS.RECEIPT_TEMPLATES.IS_ACTIVE} = $${paramIndex++}`);
@@ -159,6 +189,17 @@ export class ReceiptTemplateRepository {
       defaultSettings: typeof row.default_settings === 'string' 
         ? JSON.parse(row.default_settings) 
         : row.default_settings,
+      templateHtml: row.template_html,
+      templateCss: typeof row.template_css === 'string' 
+        ? JSON.parse(row.template_css) 
+        : row.template_css,
+      layoutConfig: typeof row.layout_config === 'string' 
+        ? JSON.parse(row.layout_config) 
+        : row.layout_config,
+      placeholders: typeof row.placeholders === 'string' 
+        ? JSON.parse(row.placeholders) 
+        : row.placeholders,
+      previewImageUrl: row.preview_image_url,
       isActive: row.is_active,
       isDefault: row.is_default,
       sortOrder: row.sort_order,

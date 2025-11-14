@@ -15,6 +15,13 @@ export interface ReceiptTemplate {
   // Template settings (default values that can be overridden)
   defaultSettings: ReceiptTemplateSettings;
 
+  // Template content (optional HTML/CSS for custom templates)
+  templateHtml?: string;
+  templateCss?: any; // JSONB
+  layoutConfig?: any; // JSONB
+  placeholders?: any; // JSONB
+  previewImageUrl?: string;
+
   // Template metadata
   isActive: boolean; // Whether template is available for selection
   isDefault: boolean; // Whether this is the default template for new properties
@@ -80,6 +87,11 @@ export interface ReceiptTemplateInput {
   type: ReceiptTemplateType;
   description: string;
   defaultSettings: ReceiptTemplateSettings;
+  templateHtml?: string;
+  templateCss?: any;
+  layoutConfig?: any;
+  placeholders?: any;
+  previewImageUrl?: string;
   isActive?: boolean;
   isDefault?: boolean;
   sortOrder?: number;

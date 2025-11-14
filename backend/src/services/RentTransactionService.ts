@@ -397,7 +397,13 @@ export class RentTransactionService implements IRentTransactionService {
         daysCount: daysCount,
         baseRent: baseRent,
         previousBalance: previousBalance,
+        maintenanceCharges: 0,
+        totalMeterCharges: utilityCharges.reduce((sum, utility) => sum + utility.amount, 0),
+        totalExpenses: expenses.reduce((sum, expense) => sum + expense.amount, 0),
         expenses: expenses,
+        payments: [],
+        lateFee: 0,
+        penaltyAmount: 0,
         totalAmount: baseRent + previousBalance + expenses.reduce((sum, expense) => sum + expense.amount, 0),
         amountPaid: 0,
         newBalance: baseRent + previousBalance + expenses.reduce((sum, expense) => sum + expense.amount, 0),
@@ -405,9 +411,19 @@ export class RentTransactionService implements IRentTransactionService {
         receiptGenerated: false,
         workflowStatus: RentCollectionWorkflowStatus.INVOICE_PENDING,
         invoiceGenerated: false,
+        invoiceNumber: undefined,
+        invoicePdfUrl: undefined,
+        receiptNumber: undefined,
+        transactionId: undefined,
+        paidDate: undefined,
+        paymentMethod: undefined,
+        paymentReference: undefined,
+        lastPaymentDate: undefined,
         notificationSent: false,
         receiptSent: false,
-        createdBy: 'system' // This should be the current user ID
+        createdBy: 'system', // This should be the current user ID
+        updatedBy: 'system',
+        notes: undefined
       };
 
       const transaction = await this.repository.create(transactionInput);

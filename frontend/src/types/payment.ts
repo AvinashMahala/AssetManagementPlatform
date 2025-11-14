@@ -8,16 +8,24 @@ export interface RentPayment {
   id: string;
   leaseId: string;
   tenantId: string;
+  propertyId?: string;
   unitId?: string;
   unitNumber?: string;
   amount: number;
   dueDate: string;
   paidDate?: string;
+  status: PaymentStatusValue;
   paymentMethod?: PaymentMethodValue;
   transactionId?: string;
-  status: PaymentStatusValue;
+  paymentReference?: string;
   lateFee?: number;
+  penaltyAmount?: number;
+  rentAmount?: number;
+  maintenanceCharges?: number;
+  otherCharges?: number;
   notes?: string;
+  createdBy?: string;
+  updatedBy?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +38,12 @@ export interface RentPaymentInput {
   paidDate?: string;
   paymentMethod?: PaymentMethodValue;
   transactionId?: string;
+  paymentReference?: string;
   lateFee?: number;
+  penaltyAmount?: number;
+  rentAmount?: number;
+  maintenanceCharges?: number;
+  otherCharges?: number;
   notes?: string;
+  createdBy?: string;
 }

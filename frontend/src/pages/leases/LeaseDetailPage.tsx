@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Card } from '../../components/ui/card';
 import { useLease, useDeleteLease, useUnit, useTenant } from '../../hooks';
 
 export const LeaseDetailPage: React.FC = () => {
@@ -153,11 +154,11 @@ export const LeaseDetailPage: React.FC = () => {
         </div>
 
         {/* Terms */}
-        {lease.terms && (
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold mb-4">Lease Terms</h2>
-            <p className="text-gray-700 whitespace-pre-wrap">{lease.terms}</p>
-          </div>
+                {lease.termsConditions && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Terms & Conditions</h2>
+            <p className="text-gray-700 whitespace-pre-wrap">{lease.termsConditions}</p>
+          </Card>
         )}
 
         {/* Special Conditions */}

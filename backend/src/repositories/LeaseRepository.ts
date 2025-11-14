@@ -96,11 +96,17 @@ export class LeaseRepository implements ILeaseRepository {
         `INSERT INTO ${TABLES.LEASES} (
           ${COLUMNS.LEASES.ID},
           ${COLUMNS.LEASES.PROPERTY_ID},
+          ${COLUMNS.LEASES.UNIT_ID},
           ${COLUMNS.LEASES.TENANT_ID},
           ${COLUMNS.LEASES.START_DATE},
           ${COLUMNS.LEASES.END_DATE},
           ${COLUMNS.LEASES.MONTHLY_RENT},
           ${COLUMNS.LEASES.SECURITY_DEPOSIT},
+          ${COLUMNS.LEASES.LATE_FEE_AMOUNT},
+          ${COLUMNS.LEASES.GRACE_PERIOD_DAYS},
+          ${COLUMNS.LEASES.PAYMENT_DUE_DAY},
+          ${COLUMNS.LEASES.TERMS_CONDITIONS},
+          ${COLUMNS.LEASES.SPECIAL_CLAUSES},
           ${COLUMNS.LEASES.STATUS},
           ${COLUMNS.LEASES.NOTICE_PERIOD_DAYS},
           ${COLUMNS.LEASES.AUTO_RENEWAL},
@@ -118,15 +124,21 @@ export class LeaseRepository implements ILeaseRepository {
           ${COLUMNS.LEASES.LEASE_DOCUMENT_URL},
           ${COLUMNS.LEASES.CREATED_AT},
           ${COLUMNS.LEASES.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30) RETURNING *`,
         [
           crypto.randomUUID(),
           data.propertyId,
+          data.unitId,
           data.tenantId,
           data.startDate,
           data.endDate,
           data.monthlyRent,
           data.securityDeposit,
+          data.lateFeeAmount,
+          data.gracePeriodDays,
+          data.paymentDueDay,
+          data.termsConditions,
+          data.specialClauses,
           data.status || LeaseStatus.DRAFT,
           data.noticePeriodDays,
           data.autoRenewal,
@@ -162,9 +174,9 @@ export class LeaseRepository implements ILeaseRepository {
         fields.push(`${COLUMNS.LEASES.PROPERTY_ID} = $${paramIndex++}`);
         values.push(data.propertyId);
       }
-      if (data.tenantId !== undefined) {
-        fields.push(`${COLUMNS.LEASES.TENANT_ID} = $${paramIndex++}`);
-        values.push(data.tenantId);
+      if (data.unitId !== undefined) {
+        fields.push(`${COLUMNS.LEASES.UNIT_ID} = $${paramIndex++}`);
+        values.push(data.unitId);
       }
       if (data.startDate !== undefined) {
         fields.push(`${COLUMNS.LEASES.START_DATE} = $${paramIndex++}`);
@@ -181,6 +193,26 @@ export class LeaseRepository implements ILeaseRepository {
       if (data.securityDeposit !== undefined) {
         fields.push(`${COLUMNS.LEASES.SECURITY_DEPOSIT} = $${paramIndex++}`);
         values.push(data.securityDeposit);
+      }
+      if (data.lateFeeAmount !== undefined) {
+        fields.push(`${COLUMNS.LEASES.LATE_FEE_AMOUNT} = $${paramIndex++}`);
+        values.push(data.lateFeeAmount);
+      }
+      if (data.gracePeriodDays !== undefined) {
+        fields.push(`${COLUMNS.LEASES.GRACE_PERIOD_DAYS} = $${paramIndex++}`);
+        values.push(data.gracePeriodDays);
+      }
+      if (data.paymentDueDay !== undefined) {
+        fields.push(`${COLUMNS.LEASES.PAYMENT_DUE_DAY} = $${paramIndex++}`);
+        values.push(data.paymentDueDay);
+      }
+      if (data.termsConditions !== undefined) {
+        fields.push(`${COLUMNS.LEASES.TERMS_CONDITIONS} = $${paramIndex++}`);
+        values.push(data.termsConditions);
+      }
+      if (data.specialClauses !== undefined) {
+        fields.push(`${COLUMNS.LEASES.SPECIAL_CLAUSES} = $${paramIndex++}`);
+        values.push(data.specialClauses);
       }
       if (data.status !== undefined) {
         fields.push(`${COLUMNS.LEASES.STATUS} = $${paramIndex++}`);
@@ -320,6 +352,11 @@ export class LeaseRepository implements ILeaseRepository {
       endDate: row.end_date,
       monthlyRent: parseFloat(row.monthly_rent) || 0,
       securityDeposit: parseFloat(row.security_deposit) || 0,
+      lateFeeAmount: row.late_fee_amount ? parseFloat(row.late_fee_amount) : undefined,
+      gracePeriodDays: row.grace_period_days,
+      paymentDueDay: row.payment_due_day,
+      termsConditions: row.terms_conditions,
+      specialClauses: row.special_clauses,
       status: row.status,
       noticePeriodDays: row.notice_period_days,
       autoRenewal: row.auto_renewal,

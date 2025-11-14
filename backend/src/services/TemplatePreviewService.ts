@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { PreviewRequest, PreviewResponse, PreviewSampleData, DEFAULT_PREVIEW_OPTIONS } from '../models/TemplatePreview';
 import { SampleDataGenerator } from '../utils/sampleDataGenerator';
 import { PDFGenerator } from '../utils/pdfGenerator';
+import { TABLES, COLUMNS } from '../constants/database';
 
 export class TemplatePreviewService {
   constructor(private pool: Pool) {}
@@ -527,21 +528,21 @@ export class TemplatePreviewService {
     const expiresAt = new Date(Date.now() + 300000); // 5 minutes
     
     await this.pool.query(
-      `INSERT INTO template_preview_cache 
-       (template_id, property_id, sample_data, preview_html, preview_expires_at)
+      `INSERT INTO ${TABLES.TEMPLATE_PREVIEW_CACHE} 
+       (${COLUMNS.TEMPLATE_PREVIEW_CACHE.TEMPLATE_ID}, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PROPERTY_ID}, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.SAMPLE_DATA}, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PREVIEW_HTML}, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PREVIEW_EXPIRES_AT})
        VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (template_id, property_id) 
-       DO UPDATE SET sample_data = $3, preview_html = $4, preview_expires_at = $5, created_at = CURRENT_TIMESTAMP`,
+       ON CONFLICT (${COLUMNS.TEMPLATE_PREVIEW_CACHE.TEMPLATE_ID}, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PROPERTY_ID}) 
+       DO UPDATE SET ${COLUMNS.TEMPLATE_PREVIEW_CACHE.SAMPLE_DATA} = $3, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PREVIEW_HTML} = $4, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PREVIEW_EXPIRES_AT} = $5, ${COLUMNS.TEMPLATE_PREVIEW_CACHE.CREATED_AT} = CURRENT_TIMESTAMP`,
       [templateId, propertyId, JSON.stringify(previewData.sampleData), previewData.previewHtml, expiresAt]
     );
   }
 
   async getCachedPreview(templateId: string, propertyId?: string): Promise<any | null> {
     const result = await this.pool.query(
-      `SELECT * FROM template_preview_cache 
-       WHERE template_id = $1 AND ($2::uuid IS NULL OR property_id = $2) 
-       AND preview_expires_at > NOW()
-       ORDER BY created_at DESC LIMIT 1`,
+      `SELECT * FROM ${TABLES.TEMPLATE_PREVIEW_CACHE} 
+       WHERE ${COLUMNS.TEMPLATE_PREVIEW_CACHE.TEMPLATE_ID} = $1 AND ($2::uuid IS NULL OR ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PROPERTY_ID} = $2) 
+       AND ${COLUMNS.TEMPLATE_PREVIEW_CACHE.PREVIEW_EXPIRES_AT} > NOW()
+       ORDER BY ${COLUMNS.TEMPLATE_PREVIEW_CACHE.CREATED_AT} DESC LIMIT 1`,
       [templateId, propertyId || null]
     );
     

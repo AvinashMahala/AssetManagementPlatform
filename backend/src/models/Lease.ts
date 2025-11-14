@@ -18,6 +18,11 @@ export interface Lease {
   endDate: Date;
   monthlyRent: number;
   securityDeposit: number;
+  lateFeeAmount?: number;
+  gracePeriodDays?: number;
+  paymentDueDay?: number;
+  termsConditions?: string;
+  specialClauses?: string;
   status: LeaseStatus;
 
   // Additional lease details
@@ -46,11 +51,17 @@ export interface Lease {
 
 export interface LeaseInput {
   propertyId: string;
+  unitId?: string;
   tenantId: string;
   startDate: Date;
   endDate: Date;
   monthlyRent: number;
   securityDeposit: number;
+  lateFeeAmount?: number;
+  gracePeriodDays?: number;
+  paymentDueDay?: number;
+  termsConditions?: string;
+  specialClauses?: string;
   status?: LeaseStatus;
   noticePeriodDays?: number;
   autoRenewal?: boolean;

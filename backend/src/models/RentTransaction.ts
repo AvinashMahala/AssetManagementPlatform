@@ -86,7 +86,10 @@ export interface RentTransaction {
 
   // Amounts
   baseRent: number;
+  maintenanceCharges: number;
   previousBalance: number; // Can be negative (advance) or positive (owed)
+  totalMeterCharges: number;
+  totalExpenses: number;
   expenses: ExpenseLineItem[];
   totalAmount: number;
 
@@ -100,6 +103,11 @@ export interface RentTransaction {
   paymentMethod?: PaymentMethod;
   transactionId?: string;
   paymentReference?: string;
+  payments: any[]; // JSONB array of payment records
+
+  // Late fees and penalties
+  lateFee: number;
+  penaltyAmount: number;
 
   // Receipt
   receiptNumber?: string;
@@ -144,7 +152,10 @@ export interface RentTransactionInput {
   billingMethod: BillingMethod;
   daysCount: number;
   baseRent: number;
+  maintenanceCharges: number;
   previousBalance: number;
+  totalMeterCharges: number;
+  totalExpenses: number;
   expenses: ExpenseLineItem[];
   meterReadings?: MeterReadingForTransaction[]; // Optional meter readings
   totalAmount: number;
@@ -155,6 +166,9 @@ export interface RentTransactionInput {
   paymentMethod?: PaymentMethod;
   transactionId?: string;
   paymentReference?: string;
+  payments: any[]; // JSONB array of payment records
+  lateFee: number;
+  penaltyAmount: number;
   receiptNumber?: string;
   receiptGenerated: boolean;
 

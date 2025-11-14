@@ -22,6 +22,7 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
   const { showSuccess, showError } = useNotifications();
 
   const [formData, setFormData] = useState<LeaseInput>({
+    propertyId: initialData?.propertyId || '',
     unitId: initialData?.unitId || '',
     tenantId: initialData?.tenantId || '',
     startDate: initialData?.startDate || '',
@@ -30,7 +31,7 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
     securityDeposit: initialData?.securityDeposit || 0,
     maintenanceCharges: initialData?.maintenanceCharges || 0,
     rentDueDay: initialData?.rentDueDay || 1,
-    terms: initialData?.terms || '',
+    termsConditions: initialData?.termsConditions || '',
     specialConditions: initialData?.specialConditions || '',
   });
 
@@ -224,8 +225,8 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
 
         <FormField label="Lease Terms">
           <Textarea
-            value={formData.terms}
-            onChange={(e) => handleChange('terms', e.target.value)}
+            value={formData.termsConditions}
+            onChange={(e) => handleChange('termsConditions', e.target.value)}
             placeholder="Standard terms and conditions..."
             rows={3}
             className="resize-none"
