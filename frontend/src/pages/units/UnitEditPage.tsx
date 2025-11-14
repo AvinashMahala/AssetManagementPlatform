@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useUpdateUnit, useProperties } from '../../hooks';
+import { useNotifications } from '../../contexts';
 import type { UnitInput } from '../../types/unit';
 import { UnitStatus, UnitType } from '../../types/unit';
 
@@ -10,6 +11,7 @@ export const UnitEditPage: React.FC = () => {
   const { data: unit, loading: loadingUnit, error: loadError } = useUnit(id!);
   const { mutate: updateUnit, loading: updating, error: updateError } = useUpdateUnit();
   const { properties } = useProperties();
+  const { showSuccess, showError } = useNotifications();
 
   const [formData, setFormData] = useState<UnitInput>({
     propertyId: '',
@@ -104,9 +106,11 @@ export const UnitEditPage: React.FC = () => {
     e.preventDefault();
     try {
       await updateUnit({ id: id!, data: formData });
+      showSuccess('Unit updated successfully!');
       navigate(`/units/${id}`);
     } catch (err) {
       console.error('Failed to update unit:', err);
+      showError('Failed to update unit. Please try again.');
     }
   };
 

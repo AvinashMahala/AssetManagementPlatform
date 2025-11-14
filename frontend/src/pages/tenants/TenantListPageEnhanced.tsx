@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Pagination } from '../../components/ui/pagination';
 import { useTenants } from '../../hooks/useTenants';
+import { useNotifications } from '../../contexts';
 import { AppLayout } from '../../components/layout';
 
 const TenantListPageEnhanced: React.FC = () => {
@@ -21,6 +22,7 @@ const TenantListPageEnhanced: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const { tenants, loading } = useTenants();
+  const { showSuccess, showError } = useNotifications();
 
   const filteredTenants = Array.isArray(tenants) ? tenants.filter(t => {
     const matchesSearch = `${t.firstName} ${t.lastName} ${t.email || ''} ${t.phone || ''}`.toLowerCase().includes(search.toLowerCase());
@@ -102,9 +104,10 @@ const TenantListPageEnhanced: React.FC = () => {
       // Clear selection after successful operation
       setSelectedTenants(new Set());
       setShowBulkActions(false);
+      showSuccess(`${selectedTenants.size} tenant${selectedTenants.size !== 1 ? 's' : ''} deactivated successfully.`);
     } catch (error) {
       console.error('Failed to deactivate tenants:', error);
-      // TODO: Show error toast
+      showError('Failed to deactivate tenants. Please try again.');
     } finally {
       setBulkActionLoading(false);
     }

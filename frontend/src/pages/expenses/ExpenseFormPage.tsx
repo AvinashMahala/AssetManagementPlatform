@@ -11,6 +11,7 @@ import { Checkbox } from '../../components/ui/checkbox';
 import { AppLayout } from '../../components/layout';
 import { useProperties, useUnits, useCreateExpense, useUpdateExpense, useExpense } from '../../hooks';
 import { useAuthContext } from '../../contexts';
+import { useNotifications } from '../../contexts';
 import type { Property } from '../../types/property';
 import type { Unit } from '../../types/unit';
 import type { ExpenseInput, ExpenseUpdateInput, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue } from '../../types/expense';
@@ -20,6 +21,7 @@ const ExpenseFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
   const { user } = useAuthContext();
+  const { showSuccess, showError } = useNotifications();
 
   const [formData, setFormData] = useState<ExpenseInput>({
     propertyId: '',
@@ -113,9 +115,11 @@ const ExpenseFormPage: React.FC = () => {
         await createExpense.mutate(submitData);
       }
 
+      showSuccess(`Expense ${isEditing ? 'updated' : 'created'} successfully!`);
       navigate('/expenses');
     } catch (error) {
       console.error('Error saving expense:', error);
+      showError(`Failed to ${isEditing ? 'update' : 'create'} expense. Please try again.`);
     } finally {
       setLoading(false);
     }

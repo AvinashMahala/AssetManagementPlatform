@@ -11,12 +11,14 @@ import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { AppLayout } from '../../components/layout/AppLayout';
 import type { PaginationOptions, MeterFilters } from '../../services/meterService';
+import { useNotifications } from '../../contexts';
 
 export const MeterListPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { mutate: deleteMeter, loading: deleting } = useDeleteMeter();
   const { mutate: updateStatus, loading: updatingStatus } = useUpdateMeterStatus();
+  const { showSuccess, showError } = useNotifications();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Pagination and filtering state
@@ -92,7 +94,7 @@ export const MeterListPage: React.FC = () => {
         refetch();
       } catch (err) {
         console.error('Failed to delete meter:', err);
-        alert('Failed to delete meter');
+        showError('Failed to delete meter. Please try again.');
       }
     }
   };
@@ -103,7 +105,7 @@ export const MeterListPage: React.FC = () => {
       refetch();
     } catch (err) {
       console.error('Failed to update meter status:', err);
-      alert('Failed to update meter status');
+      showError('Failed to update meter status. Please try again.');
     }
   };
 

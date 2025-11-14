@@ -1,12 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateTenant } from '../../hooks';
+import { useNotifications } from '../../contexts';
 import TenantFormModern from '../../components/forms/TenantFormModern';
 import type { TenantInput } from '../../types/tenant';
 
 const TenantCreatePage: React.FC = () => {
   const navigate = useNavigate();
   const { mutate: createTenant, loading } = useCreateTenant();
+  const { showSuccess, showError } = useNotifications();
 
   const handleSubmit = async (data: TenantInput) => {
     try {
@@ -49,13 +51,14 @@ const TenantCreatePage: React.FC = () => {
       if (response.success && response.data) {
         // Navigate to the created tenant's detail page if id is present, else go back to list
         const newId = (response.data as any).id;
+        showSuccess('Tenant created successfully!');
         navigate(newId ? `/tenants/${newId}` : '/tenants');
       } else {
-        alert('Failed to create tenant: ' + (response.error?.message || 'Unknown error'));
+        showError(response.error?.message || 'Failed to create tenant');
       }
     } catch (err) {
       console.error('Create tenant failed', err);
-      alert('Failed to create tenant. Please try again.');
+      showError('Failed to create tenant. Please try again.');
     }
   };
 

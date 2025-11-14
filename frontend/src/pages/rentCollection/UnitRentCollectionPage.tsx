@@ -11,6 +11,7 @@ import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, u
 import { useUnitUtilities } from '../../hooks/useUnitUtilities';
 import { useAuthContext } from '../../contexts';
 import { rentTransactionService } from '../../services/rentTransactionService';
+import { useNotifications } from '../../contexts';
 import type { MeterReadingInput, ExpenseItem } from '../../types/rentTransaction';
 import { 
   formatCurrency, 
@@ -24,6 +25,7 @@ export const UnitRentCollectionPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
+  const { showSuccess, showError } = useNotifications();
 
   const { data: unit, loading: unitLoading } = useUnit(unitId!);
   const { data: property } = useProperty(propertyId!);
@@ -547,16 +549,16 @@ export const UnitRentCollectionPage: React.FC = () => {
       await deleteTransaction(invoiceId);
       // Refresh the invoice history
       refetchHistory();
-      alert('Invoice deleted successfully');
+      showSuccess('Invoice deleted successfully');
     } catch (error) {
       console.error('Failed to delete invoice:', error);
-      alert('Failed to delete invoice: ' + (error as Error).message);
+      showError('Failed to delete invoice. Please try again.');
     }
   };
 
   const handleSaveDraft = async () => {
     if (!unit || !activeLease || !user) {
-      alert('Missing required data: unit, lease, or user');
+      showError('Missing required data: unit, lease, or user');
       return;
     }
 
@@ -612,7 +614,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       };
 
       await createTransaction(transactionData);
-      alert('Draft saved successfully!');
+      showSuccess('Draft saved successfully!');
       setLastSavedAt(new Date());
       
       // Save to localStorage
@@ -628,7 +630,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       navigate(`/properties/${propertyId}/rent-collection`);
     } catch (error) {
       console.error('Failed to save draft:', error);
-      alert('Failed to save draft: ' + (error as Error).message);
+      showError('Failed to save draft. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -785,7 +787,7 @@ export const UnitRentCollectionPage: React.FC = () => {
 
   const handleGenerateInvoice = async () => {
     if (!unit || !activeLease || !property || !user) {
-      alert('Missing required data: unit, lease, property, or user');
+      showError('Missing required data: unit, lease, property, or user');
       return;
     }
 
@@ -805,7 +807,7 @@ export const UnitRentCollectionPage: React.FC = () => {
     });
 
     if (hasInvalidReadings) {
-      alert('Please fix invalid meter readings before generating invoice');
+      showError('Please fix invalid meter readings before generating invoice');
       return;
     }
 

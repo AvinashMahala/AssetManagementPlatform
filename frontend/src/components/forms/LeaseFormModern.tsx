@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FileText, Calendar, DollarSign } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import { useCreateLease, useUnits, useTenants } from '../../hooks';
+import { useNotifications } from '../../contexts';
 import type { LeaseInput } from '../../types/lease';
 
 interface LeaseFormModernProps {
@@ -18,6 +19,7 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
   const { mutate: createLease } = useCreateLease();
   const { units } = useUnits();
   const { tenants } = useTenants();
+  const { showSuccess, showError } = useNotifications();
 
   const [formData, setFormData] = useState<LeaseInput>({
     unitId: initialData?.unitId || '',
@@ -79,9 +81,11 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
 
     try {
       await createLease(formData);
+      showSuccess('Lease created successfully!');
       navigate('/leases');
     } catch (err) {
       console.error('Failed to create lease:', err);
+      showError('Failed to create lease. Please try again.');
     }
   };
 

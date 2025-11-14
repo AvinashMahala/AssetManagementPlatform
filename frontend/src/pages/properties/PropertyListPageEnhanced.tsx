@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Eye, Edit, Trash2, Building2, MapPin, Grid3x3, List, BarChart3, FileImage, Download, X, Wrench, Receipt } from 'lucide-react';
 import { useProperties, useDeleteProperty } from '../../hooks';
+import { useNotifications } from '../../contexts';
 import { 
   Card, 
   CardContent, 
@@ -50,6 +51,7 @@ const PropertyListPageEnhanced: React.FC = () => {
   
   const { properties, loading, error, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
+  const { showSuccess, showError } = useNotifications();
 
   // Filter properties based on search, status, and type
   const filteredProperties = useMemo(() => {
@@ -100,16 +102,18 @@ const PropertyListPageEnhanced: React.FC = () => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = async () => {
+    const confirmDelete = async () => {
     if (!propertyToDelete) return;
     
     try {
       await deleteProperty(propertyToDelete.id);
+      showSuccess(`Property "${propertyToDelete.name}" has been successfully deleted.`);
       setDeleteDialogOpen(false);
       setPropertyToDelete(null);
       updateFilters({});
     } catch (error) {
       console.error('Failed to delete property:', error);
+      showError('Failed to delete property. Please try again.');
     }
   };
 
@@ -150,9 +154,10 @@ const PropertyListPageEnhanced: React.FC = () => {
       // Clear selection after successful operation
       setSelectedProperties(new Set());
       setShowBulkActions(false);
+      showSuccess(`${selectedProperties.size} propert${selectedProperties.size !== 1 ? 'ies' : 'y'} marked as under maintenance.`);
     } catch (error) {
       console.error('Failed to mark properties as maintenance:', error);
-      // TODO: Show error toast
+      showError('Failed to mark properties as maintenance. Please try again.');
     } finally {
       setBulkActionLoading(false);
     }

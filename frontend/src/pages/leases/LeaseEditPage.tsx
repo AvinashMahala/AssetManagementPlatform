@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLease, useUpdateLease, useUnits, useTenants } from '../../hooks';
+import { useNotifications } from '../../contexts';
 import type { LeaseInput } from '../../types/lease';
 
 export const LeaseEditPage: React.FC = () => {
@@ -10,6 +11,7 @@ export const LeaseEditPage: React.FC = () => {
   const { mutate: updateLease, loading: updating, error: updateError } = useUpdateLease();
   const { units } = useUnits();
   const { tenants } = useTenants();
+  const { showSuccess, showError } = useNotifications();
 
   const [formData, setFormData] = useState<LeaseInput>({
     unitId: '',
@@ -55,9 +57,11 @@ export const LeaseEditPage: React.FC = () => {
     e.preventDefault();
     try {
       await updateLease({ id: id!, data: formData });
+      showSuccess('Lease updated successfully!');
       navigate(`/leases/${id}`);
     } catch (err) {
       console.error('Failed to update lease:', err);
+      showError('Failed to update lease. Please try again.');
     }
   };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useUpdateTenant } from '../../hooks';
+import { useNotifications } from '../../contexts';
 import TenantFormModern from '../../components/forms/TenantFormModern';
 import type { TenantInput } from '../../types/tenant';
 
@@ -9,6 +10,7 @@ const TenantEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: tenant, loading: fetchLoading } = useTenant(id!);
   const { mutate: updateTenant, loading: updateLoading } = useUpdateTenant();
+  const { showSuccess, showError } = useNotifications();
 
   const handleSubmit = async (data: TenantInput) => {
     try {
@@ -40,13 +42,14 @@ const TenantEditPage: React.FC = () => {
 
       const response = await updateTenant({ id: id!, data: payload });
       if (response.success) {
+        showSuccess('Tenant updated successfully!');
         navigate(`/tenants/${id}`);
       } else {
-        alert('Failed to update tenant: ' + (response.error?.message || 'Unknown error'));
+        showError(response.error?.message || 'Failed to update tenant');
       }
     } catch (error) {
       console.error('Error updating tenant:', error);
-      alert('Failed to update tenant. Please try again.');
+      showError('Failed to update tenant. Please try again.');
     }
   };
 

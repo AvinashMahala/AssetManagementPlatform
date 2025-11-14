@@ -8,12 +8,14 @@ import { Label } from '../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { AppLayout } from '../../components/layout';
 import { useRecordPayment } from '../../hooks';
+import { useNotifications } from '../../contexts';
 
 export const RentTransactionRecordPaymentPage: React.FC = () => {
   const { transactionId } = useParams<{ transactionId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { mutate: recordPayment, loading } = useRecordPayment();
+  const { showSuccess, showError } = useNotifications();
 
   const [paymentData, setPaymentData] = useState({
     amount: '',
@@ -24,14 +26,9 @@ export const RentTransactionRecordPaymentPage: React.FC = () => {
     notes: ''
   });
 
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transactionId) return;
-
-    setError(null);
 
     try {
       await recordPayment({
@@ -46,7 +43,8 @@ export const RentTransactionRecordPaymentPage: React.FC = () => {
         }
       });
 
-      setSuccess(true);
+      showSuccess('Payment recorded successfully!');
+      
       // Navigate back after a short delay to show success message
       setTimeout(() => {
         // Check if we came from a unit page
@@ -77,7 +75,8 @@ export const RentTransactionRecordPaymentPage: React.FC = () => {
         }
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to record payment');
+      showError('Failed to record payment. Please try again.');
+      console.error('Payment recording error:', err);
     }
   };
 
@@ -107,18 +106,6 @@ export const RentTransactionRecordPaymentPage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-800 text-sm">{error}</p>
-              </div>
-            )}
-
-            {success && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-green-800 text-sm">Payment recorded successfully!</p>
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -235,7 +222,7 @@ export const RentTransactionRecordPaymentPage: React.FC = () => {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading || success}>
+                <Button type="submit" disabled={loading}>
                   {loading ? 'Recording...' : 'Record Payment'}
                 </Button>
               </div>
