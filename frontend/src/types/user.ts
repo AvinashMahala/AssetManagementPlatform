@@ -9,6 +9,11 @@ export interface User {
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   profilePicture?: string;
+  googleId?: string; // Google OAuth ID
+  emailVerificationToken?: string;
+  emailVerificationExpires?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: string;
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;

@@ -115,6 +115,7 @@ export interface Property {
     city: string;
     state: string;
     pincode: string;
+    country: string;
     landmark?: string;
   };
 
@@ -202,6 +203,7 @@ export interface PropertyInput {
     city: string;
     state: string;
     pincode: string;
+    country?: string;
     landmark?: string;
   };
 

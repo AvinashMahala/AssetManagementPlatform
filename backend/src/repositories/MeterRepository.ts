@@ -157,13 +157,16 @@ export class MeterRepository implements IMeterRepository {
           ${COLUMNS.METERS.METER_TYPE},
           ${COLUMNS.METERS.METER_NAME},
           ${COLUMNS.METERS.METER_NUMBER},
+          ${COLUMNS.METERS.MULTIPLIER},
           ${COLUMNS.METERS.COST_PER_UNIT},
           ${COLUMNS.METERS.FIXED_CHARGE},
+          ${COLUMNS.METERS.INSTALLATION_DATE},
+          ${COLUMNS.METERS.STATUS},
           ${COLUMNS.METERS.REMARKS},
           ${COLUMNS.METERS.IS_ACTIVE},
           ${COLUMNS.METERS.CREATED_AT},
           ${COLUMNS.METERS.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
         [
           crypto.randomUUID(),
           data.unitId,
@@ -171,8 +174,11 @@ export class MeterRepository implements IMeterRepository {
           data.meterType,
           data.meterName,
           data.meterNumber,
+          data.multiplier !== undefined ? data.multiplier : 1.0,
           data.costPerUnit,
           data.fixedCharge,
+          data.installationDate,
+          data.status !== undefined ? data.status : 'active',
           data.remarks,
           data.isActive !== undefined ? data.isActive : true,
           now,
@@ -211,6 +217,10 @@ export class MeterRepository implements IMeterRepository {
         fields.push(`${COLUMNS.METERS.METER_NUMBER} = $${paramIndex++}`);
         values.push(data.meterNumber);
       }
+      if (data.multiplier !== undefined) {
+        fields.push(`${COLUMNS.METERS.MULTIPLIER} = $${paramIndex++}`);
+        values.push(data.multiplier);
+      }
       if (data.costPerUnit !== undefined) {
         fields.push(`${COLUMNS.METERS.COST_PER_UNIT} = $${paramIndex++}`);
         values.push(data.costPerUnit);
@@ -218,6 +228,14 @@ export class MeterRepository implements IMeterRepository {
       if (data.fixedCharge !== undefined) {
         fields.push(`${COLUMNS.METERS.FIXED_CHARGE} = $${paramIndex++}`);
         values.push(data.fixedCharge);
+      }
+      if (data.installationDate !== undefined) {
+        fields.push(`${COLUMNS.METERS.INSTALLATION_DATE} = $${paramIndex++}`);
+        values.push(data.installationDate);
+      }
+      if (data.status !== undefined) {
+        fields.push(`${COLUMNS.METERS.STATUS} = $${paramIndex++}`);
+        values.push(data.status);
       }
       if (data.remarks !== undefined) {
         fields.push(`${COLUMNS.METERS.REMARKS} = $${paramIndex++}`);
@@ -278,8 +296,11 @@ export class MeterRepository implements IMeterRepository {
       meterType: row.meter_type,
       meterName: row.meter_name,
       meterNumber: row.meter_number,
+      multiplier: parseFloat(row.multiplier) || 1.0,
       costPerUnit: parseFloat(row.cost_per_unit) || 0,
       fixedCharge: row.fixed_charge ? parseFloat(row.fixed_charge) : undefined,
+      installationDate: row.installation_date ? new Date(row.installation_date) : undefined,
+      status: row.status || 'active',
       remarks: row.remarks,
       isActive: row.is_active,
       createdAt: new Date(row.created_at),

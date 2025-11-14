@@ -25,7 +25,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS}`
       );
       logger.info('Successfully fetched all users', { count: result.rows.length });
@@ -46,7 +46,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.ID} = $1`,
         [id]
       );
@@ -68,7 +68,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.USERNAME} = $1`,
         [username]
       );
@@ -87,7 +87,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_TOKEN}, ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES},
                 ${COLUMNS.USERS.PASSWORD_RESET_TOKEN}, ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES},
                 ${COLUMNS.USERS.GOOGLE_ID}, ${COLUMNS.USERS.PROFILE_PICTURE},
-                ${COLUMNS.USERS.LAST_LOGIN}, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                ${COLUMNS.USERS.LAST_LOGIN}, name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.EMAIL} = $1`,
         [email]
       );
@@ -107,7 +107,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.PHONE} = $1`,
         [phone]
       );
@@ -126,7 +126,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.GOOGLE_ID} = $1`,
         [googleId]
       );
@@ -145,7 +145,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.EMAIL_VERIFICATION_TOKEN} = $1`,
         [token]
       );
@@ -164,7 +164,7 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.PASSWORD_RESET_TOKEN} = $1`,
         [token]
       );
@@ -245,7 +245,7 @@ export class UserRepository implements IUserRepository {
                      WHERE ${COLUMNS.USERS.ID} = $${updates.length + 1}
                      RETURNING ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
                                ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
-                               ${COLUMNS.USERS.IS_PHONE_VERIFIED}, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}`;
+                               ${COLUMNS.USERS.IS_PHONE_VERIFIED}, name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}`;
       values.push(id);
 
       const result = await this.pool.query(query, values);

@@ -102,6 +102,8 @@ export class MeterService implements IMeterService {
     // Ensure isActive has a default value
     const meterDataToCreate = {
       ...meterData,
+      multiplier: meterData.multiplier !== undefined ? meterData.multiplier : 1.0,
+      status: meterData.status !== undefined ? meterData.status : 'active',
       isActive: meterData.isActive !== undefined ? meterData.isActive : true
     };
 

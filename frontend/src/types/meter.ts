@@ -16,13 +16,16 @@ export interface Meter {
   meterType: MeterType;
   meterName: string; // e.g., "Main Electricity Meter", "Kitchen Water Meter"
   meterNumber?: string; // optional meter number/serial
+  multiplier: number; // multiplier for calculations (default 1.0)
   remarks?: string;
 
   // Pricing configuration
   costPerUnit: number; // cost per unit (e.g., ₹ per kWh, ₹ per liter)
   fixedCharge?: number; // monthly fixed charge if any
 
-  // Status
+  // Installation and status
+  installationDate?: string;
+  status: string; // meter status (active, inactive, faulty, etc.)
   isActive: boolean;
 
   // Metadata
@@ -38,13 +41,16 @@ export interface MeterInput {
   meterType: MeterType;
   meterName: string;
   meterNumber?: string;
+  multiplier?: number;
   remarks?: string;
 
   // Pricing configuration
   costPerUnit: number;
   fixedCharge?: number;
 
-  // Status
+  // Installation and status
+  installationDate?: string;
+  status?: string;
   isActive?: boolean;
 }
 

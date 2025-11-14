@@ -30,6 +30,7 @@ export interface PropertyAddress {
   city: string;
   state: string;
   pincode: string;
+  country?: string;
   landmark?: string;
 }
 
@@ -151,6 +152,13 @@ export interface Property {
   ownerId: string; // UUID reference to users table
   coOwners?: string[]; // array of user UUIDs
 
+  // Receipt customization settings
+  receiptSettings?: any;
+
+  // Receipt template settings
+  templateId?: string;
+  templateOverrides?: any;
+
   // Metadata
   createdAt: string;
   updatedAt: string;
@@ -191,6 +199,13 @@ export interface PropertyInput {
   // Ownership details
   ownerId: string;
   coOwners?: string[];
+
+  // Receipt customization settings
+  receiptSettings?: any;
+
+  // Receipt template settings
+  templateId?: string;
+  templateOverrides?: any;
 }
 
 export interface PropertyFilters {

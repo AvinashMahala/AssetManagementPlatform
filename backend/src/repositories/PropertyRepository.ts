@@ -56,10 +56,12 @@ export class PropertyRepository implements IPropertyRepository {
           ${COLUMNS.PROPERTIES.DESCRIPTION},
           ${COLUMNS.PROPERTIES.PROPERTY_TYPE},
           ${COLUMNS.PROPERTIES.STATUS},
+          ${COLUMNS.PROPERTIES.CURRENCY},
           ${COLUMNS.PROPERTIES.ADDRESS_STREET},
           ${COLUMNS.PROPERTIES.ADDRESS_CITY},
           ${COLUMNS.PROPERTIES.ADDRESS_STATE},
           ${COLUMNS.PROPERTIES.ADDRESS_PINCODE},
+          ${COLUMNS.PROPERTIES.ADDRESS_COUNTRY},
           ${COLUMNS.PROPERTIES.ADDRESS_LANDMARK},
           ${COLUMNS.PROPERTIES.AREA},
           ${COLUMNS.PROPERTIES.TOTAL_FLOORS},
@@ -78,17 +80,19 @@ export class PropertyRepository implements IPropertyRepository {
           owner_website,
           ${COLUMNS.PROPERTIES.CREATED_AT},
           ${COLUMNS.PROPERTIES.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30) RETURNING *`,
         [
           crypto.randomUUID(),
           data.name,
           data.description,
           data.propertyType,
           data.status || 'available',
+          data.currency || 'INR',
           data.address.street,
           data.address.city,
           data.address.state,
           data.address.pincode,
+          data.address.country || 'India',
           data.address.landmark,
           data.totalArea,
           data.totalFloors,
@@ -133,9 +137,13 @@ export class PropertyRepository implements IPropertyRepository {
         fields.push(`${COLUMNS.PROPERTIES.PROPERTY_TYPE} = $${paramIndex++}`);
         values.push(data.propertyType);
       }
-      if (data.status !== undefined) {
-        fields.push(`${COLUMNS.PROPERTIES.STATUS} = $${paramIndex++}`);
-        values.push(data.status);
+      if (data.currency !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.CURRENCY} = $${paramIndex++}`);
+        values.push(data.currency);
+      }
+      if (data.address?.country !== undefined) {
+        fields.push(`${COLUMNS.PROPERTIES.ADDRESS_COUNTRY} = $${paramIndex++}`);
+        values.push(data.address.country);
       }
       if (data.address?.street !== undefined) {
         fields.push(`${COLUMNS.PROPERTIES.ADDRESS_STREET} = $${paramIndex++}`);
@@ -288,6 +296,7 @@ export class PropertyRepository implements IPropertyRepository {
         city: row.address_city,
         state: row.address_state,
         pincode: row.address_pincode,
+        country: row.address_country || 'India',
         landmark: row.address_landmark,
       },
       totalArea: parseFloat(row.area) || 0,

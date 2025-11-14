@@ -52,6 +52,7 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
       city: initialData?.address?.city || '',
       state: initialData?.address?.state || '',
       pincode: initialData?.address?.pincode || '',
+      country: initialData?.address?.country || 'India',
       landmark: initialData?.address?.landmark || '',
     },
     totalArea: initialData?.totalArea || 0,
