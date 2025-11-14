@@ -28,7 +28,7 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<boolean>;
   resendVerification: (email: string) => Promise<boolean>;
   requestPhoneVerification: (phone: string) => Promise<boolean>;
-  verifyPhone: (phone: string, code: string) => Promise<boolean>;
+  verifyPhone: (code: string) => Promise<boolean>;
   getPasswordResetOptions: () => Promise<PasswordResetOptions>;
   enableResetMethod: (methodType: string) => Promise<boolean>;
   disableResetMethod: (methodType: string) => Promise<boolean>;
@@ -171,9 +171,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const verifyPhone = async (phone: string, code: string): Promise<boolean> => {
+  const verifyPhone = async (code: string): Promise<boolean> => {
     try {
-      await authService.verifyPhone(phone, code);
+      await authService.verifyPhone(code);
       // Refresh user data after verification
       await checkAuth();
       return true;

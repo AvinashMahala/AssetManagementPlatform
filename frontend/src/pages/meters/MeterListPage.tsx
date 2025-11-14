@@ -18,7 +18,7 @@ export const MeterListPage: React.FC = () => {
   const location = useLocation();
   const { mutate: deleteMeter, loading: deleting } = useDeleteMeter();
   const { mutate: updateStatus, loading: updatingStatus } = useUpdateMeterStatus();
-  const { showSuccess, showError } = useNotifications();
+  const { showError } = useNotifications();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Pagination and filtering state

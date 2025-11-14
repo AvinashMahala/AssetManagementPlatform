@@ -88,9 +88,19 @@ export interface RecoveryCode {
   id: string; // UUID
   userId: string; // UUID
   codeHash: string;
-  isUsed: boolean;
+  used: boolean; // Changed from isUsed to match schema
   createdAt: Date;
   usedAt?: Date;
+}
+
+export interface PhoneVerificationCode {
+  id: string; // UUID
+  userId: string; // UUID
+  phone: string;
+  code: string;
+  expiresAt: Date;
+  verified: boolean;
+  createdAt: Date;
 }
 
 export interface SecurityQuestionSetup {

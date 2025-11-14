@@ -68,12 +68,15 @@ export const initializeTables = async (pool: Pool) => {
       '019_meter_readings.sql',
       '020_rent_transaction_meter_readings.sql',
       '021_unit_utilities.sql',
-      '022_expenses.sql'
+      '022_expenses.sql',
+      '023_file_metadata.sql',
+      '024_property_files.sql',
+      '025_property_receipt_templates.sql'
     ];
 
     // Execute each schema file
     for (const schemaFile of schemaFiles) {
-      const schemaPath = join(process.cwd(), 'scripts', 'schema', schemaFile);
+      const schemaPath = join(process.cwd(), '..', 'scripts', 'schema', schemaFile);
       console.log(`Running schema: ${schemaFile}`);
 
       const sql = readFileSync(schemaPath, 'utf8');

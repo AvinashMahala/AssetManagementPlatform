@@ -160,8 +160,8 @@ class AuthService {
     return response.data;
   }
 
-  async verifyPhone(phone: string, code: string): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>('/api/auth/verify-phone', { phone, code });
+  async verifyPhone(code: string): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/api/auth/verify-phone', { code });
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Phone verification failed');
     }

@@ -247,8 +247,13 @@ export class UserController {
 
   async requestPhoneVerification(req: Request, res: Response) {
     try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return ResponseUtils.unauthorized(res, 'User not authenticated');
+      }
+
       const { phone }: PhoneVerificationRequest = req.body;
-      const code = await this.service.requestPhoneVerification(phone);
+      const code = await this.service.requestPhoneVerification(userId, phone);
       // In production, send SMS here instead of returning the code
       ResponseUtils.success(res, {
         message: 'Verification code sent successfully',
@@ -267,8 +272,12 @@ export class UserController {
 
   async verifyPhone(req: Request, res: Response) {
     try {
-      const { phone, code }: PhoneVerificationConfirm = req.body;
-      const verified = await this.service.verifyPhone(phone, code);
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return ResponseUtils.unauthorized(res, 'User not authenticated');
+      }
+      const { code }: { code: string } = req.body;
+      const verified = await this.service.verifyPhone(userId, code);
       if (!verified) {
         return ResponseUtils.badRequest(res, 'Invalid or expired verification code');
       }

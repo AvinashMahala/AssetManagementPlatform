@@ -6,56 +6,25 @@ import { Form } from '../../components/ui/form';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 interface VerifyPhoneFormProps {
-  phone?: string;
   onSuccess?: () => void;
-  onRequestCode?: () => void;
 }
 
 export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
-  phone,
-  onSuccess,
-  onRequestCode
+  onSuccess
 }) => {
-  const { requestPhoneVerification, verifyPhone, loading } = useAuthContext();
-  const [phoneNumber, setPhoneNumber] = useState(phone || '');
+  const { verifyPhone, loading } = useAuthContext();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  const [requestLoading, setRequestLoading] = useState(false);
-  const [step, setStep] = useState<'request' | 'verify'>(phone ? 'verify' : 'request');
-
-  const handleRequestCode = async () => {
-    if (!phoneNumber) {
-      setError('Please enter your phone number');
-      return;
-    }
-
-    setRequestLoading(true);
-    try {
-      const success = await requestPhoneVerification(phoneNumber);
-      if (success) {
-        setSuccess('Verification code sent to your phone!');
-        setError('');
-        setStep('verify');
-        onRequestCode?.();
-      } else {
-        setError('Failed to send verification code');
-      }
-    } catch (_err) {
-      setError('Failed to send verification code. Please try again.');
-    } finally {
-      setRequestLoading(false);
-    }
-  };
 
   const handleVerify = async () => {
-    if (!phoneNumber || !code) {
-      setError('Please enter both phone number and verification code');
+    if (!code) {
+      setError('Please enter the verification code');
       return;
     }
 
     try {
-      const success = await verifyPhone(phoneNumber, code);
+      const success = await verifyPhone(code);
       if (success) {
         setSuccess('Phone number verified successfully!');
         setError('');
@@ -72,25 +41,11 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
     setError('');
     setSuccess('');
 
-    if (step === 'request') {
-      if (!data.phoneNumber) {
-        setError('Please enter your phone number');
-        return;
-      }
-      await handleRequestCode();
-    } else {
-      if (!data.phoneNumber || !data.code) {
-        setError('Please enter both phone number and verification code');
-        return;
-      }
-      await handleVerify();
+    if (!data.code) {
+      setError('Please enter the verification code');
+      return;
     }
-  };
-
-  const handleBack = () => {
-    setStep('request');
-    setError('');
-    setSuccess('');
+    await handleVerify();
   };
 
   return (
@@ -101,10 +56,7 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
             Verify Your Phone
           </h2>
           <p className="text-center text-gray-600">
-            {step === 'request'
-              ? 'Enter your phone number to receive a verification code'
-              : `We've sent a code to ${phoneNumber}`
-            }
+            Enter the verification code sent to your phone
           </p>
         </div>
 
@@ -120,30 +72,17 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
           </div>
         )}
 
-        <Form onSubmit={handleSubmit} loading={loading || requestLoading}>
-                    <FormField label="Phone Number" required>
+        <Form onSubmit={handleSubmit} loading={loading}>
+          <FormField label="Verification Code" required>
             <Input
-              name="phoneNumber"
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="Enter your phone number"
-              disabled={step === 'verify'}
+              name="code"
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Enter the 6-digit code"
+              maxLength={6}
             />
           </FormField>
-
-          {step === 'verify' && (
-            <FormField label="Verification Code" required>
-              <Input
-                name="code"
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter the 6-digit code"
-                maxLength={6}
-              />
-            </FormField>
-          )}
 
           <Button
             type="submit"
@@ -151,37 +90,9 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
             size="large"
             className="w-full"
           >
-            {loading || requestLoading ? 'Processing...' :
-             step === 'request' ? 'Send Code' : 'Verify Phone'}
+            {loading ? 'Verifying...' : 'Verify Phone'}
           </Button>
         </Form>
-
-        {step === 'verify' && (
-          <div className="text-center space-y-3">
-            <p className="text-gray-600">
-              Didn't receive the code?
-            </p>
-            <Button
-              type="button"
-              variant="secondary"
-              size="medium"
-              onClick={handleRequestCode}
-              disabled={requestLoading}
-            >
-              {requestLoading ? 'Sending...' : 'Resend Code'}
-            </Button>
-
-            <div>
-              <button
-                type="button"
-                onClick={handleBack}
-                className="text-blue-600 hover:text-blue-500 font-medium"
-              >
-                Use Different Number
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className="text-center">
           <button
@@ -189,7 +100,7 @@ export const VerifyPhoneForm: React.FC<VerifyPhoneFormProps> = ({
             onClick={() => window.history.back()}
             className="text-blue-600 hover:text-blue-500 font-medium"
           >
-            Back to Sign In
+            Back
           </button>
         </div>
       </div>

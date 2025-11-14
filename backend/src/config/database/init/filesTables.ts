@@ -19,16 +19,14 @@ export const initializeFilesTables = async (pool: Pool) => {
       }
     }
 
-    // List of file-related schema files in order
+    // List of file-related schema files in order (only files that don't reference main DB tables)
     const fileSchemaFiles = [
-      '023_file_metadata.sql',
-      '024_property_files.sql',
-      '025_property_receipt_templates.sql'
+      '023_file_metadata.sql'
     ];
 
     // Execute each file schema file
     for (const schemaFile of fileSchemaFiles) {
-      const schemaPath = join(process.cwd(), 'scripts', 'schema', schemaFile);
+      const schemaPath = join(process.cwd(), '..', 'scripts', 'schema', schemaFile);
       console.log(`Running schema: ${schemaFile}`);
 
       const sql = readFileSync(schemaPath, 'utf8');

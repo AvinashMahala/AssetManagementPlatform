@@ -193,7 +193,7 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/request-phone-verification', validateRequest.requestPhoneVerification, userController.requestPhoneVerification.bind(userController));
+  router.post('/request-phone-verification', authenticate, validateRequest.requestPhoneVerification, userController.requestPhoneVerification.bind(userController));
 
   /**
    * @swagger
@@ -202,6 +202,8 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *     tags: ['Authentication']
    *     summary: Verify phone number
    *     description: Confirm phone number using SMS verification code
+   *     security:
+   *       - bearerAuth: []
    *     requestBody:
    *       required: true
    *       content:
@@ -209,7 +211,6 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *           schema:
    *             $ref: '#/components/schemas/PhoneVerificationConfirm'
    *           example:
-   *             phone: "+1234567890"
    *             code: "123456"
    *     responses:
    *       200:
@@ -225,7 +226,7 @@ export const createAuthRoutes = (userService: IUserService, passwordResetService
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  router.post('/verify-phone', validateRequest.verifyPhone, userController.verifyPhone.bind(userController));
+  router.post('/verify-phone', authenticate, validateRequest.verifyPhone, userController.verifyPhone.bind(userController));
 
   /**
    * @swagger

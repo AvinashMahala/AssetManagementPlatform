@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { User, UserInput } from '../models/User';
+import { User, UserInput, PhoneVerificationCode } from '../models/User.js';
 import { TABLES, COLUMNS, DEFAULTS } from '../constants/database';
 import { PasswordUtils } from '../utils/password';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
@@ -380,16 +380,14 @@ export class UserRepository implements IUserRepository {
   }
 
   // Phone verification operations
-  async storePhoneVerificationCode(phone: string, code: string, expiresAt: Date): Promise<boolean> {
+  async storePhoneVerificationCode(userId: string, phone: string, code: string, expiresAt: Date): Promise<boolean> {
     try {
-      // For now, we'll store this in a simple in-memory store or database table
-      // In production, you'd want a dedicated table for phone verification codes
-      // For simplicity, we'll use a temporary approach
       const result = await this.pool.query(
-        `INSERT INTO phone_verification_codes (phone, code, expires_at, created_at)
-         VALUES ($1, $2, $3, NOW())
-         ON CONFLICT (phone) DO UPDATE SET code = $2, expires_at = $3, created_at = NOW()`,
-        [phone, code, expiresAt]
+        `INSERT INTO phone_verification_codes (user_id, phone, code, expires_at, created_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         ON CONFLICT (phone) DO UPDATE SET 
+           user_id = $1, code = $3, expires_at = $4, created_at = NOW()`,
+        [userId, phone, code, expiresAt]
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
@@ -397,12 +395,12 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async verifyPhoneCode(phone: string, code: string): Promise<boolean> {
+  async verifyPhoneCode(userId: string, code: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `SELECT code, expires_at FROM phone_verification_codes
-         WHERE phone = $1 AND expires_at > NOW()`,
-        [phone]
+         WHERE user_id = $1 AND expires_at > NOW()`,
+        [userId]
       );
 
       if (result.rows.length === 0) {
@@ -412,13 +410,27 @@ export class UserRepository implements IUserRepository {
       const storedCode = result.rows[0].code;
       if (storedCode === code) {
         // Delete the used code
-        await this.pool.query(`DELETE FROM phone_verification_codes WHERE phone = $1`, [phone]);
+        await this.pool.query(`DELETE FROM phone_verification_codes WHERE user_id = $1`, [userId]);
         return true;
       }
 
       return false;
     } catch (error) {
       throw new Error(`Failed to verify phone code: ${(error as Error).message || 'Database query failed'}`);
+    }
+  }
+
+  async getPhoneVerificationCode(userId: string): Promise<PhoneVerificationCode | null> {
+    try {
+      const result = await this.pool.query(
+        `SELECT id, user_id, phone, code, expires_at, verified, created_at 
+         FROM phone_verification_codes 
+         WHERE user_id = $1 AND expires_at > NOW()`,
+        [userId]
+      );
+      return result.rows[0] || null;
+    } catch (error) {
+      throw new Error(`Failed to get phone verification code: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 }

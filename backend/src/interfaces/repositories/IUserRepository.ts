@@ -1,4 +1,4 @@
-import { User, UserInput } from '../../models/User';
+import { User, UserInput, PhoneVerificationCode } from '../../models/User';
 
 export interface IUserRepository {
   // Basic CRUD operations
@@ -26,7 +26,8 @@ export interface IUserRepository {
   verifyPhone(userId: string): Promise<boolean>;
   linkGoogleAccount(userId: string, googleId: string, profilePicture?: string): Promise<boolean>;
 
-  // Phone verification operations
-  storePhoneVerificationCode(phone: string, code: string, expiresAt: Date): Promise<boolean>;
-  verifyPhoneCode(phone: string, code: string): Promise<boolean>;
+  // Phone verification operations (updated to match schema)
+  storePhoneVerificationCode(userId: string, phone: string, code: string, expiresAt: Date): Promise<boolean>;
+  verifyPhoneCode(userId: string, code: string): Promise<boolean>;
+  getPhoneVerificationCode(userId: string): Promise<PhoneVerificationCode | null>;
 }

@@ -381,7 +381,13 @@ export class UserService implements IUserService {
   }
 
   // Phone verification methods
-  async requestPhoneVerification(phone: string): Promise<string> {
+  async requestPhoneVerification(userId: string, phone: string): Promise<string> {
+    // Verify user exists
+    const user = await this.repository.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     const phoneValidation = ValidationUtils.validatePhone(phone);
     if (!phoneValidation.isValid) {
       throw new Error(phoneValidation.message);
@@ -391,19 +397,16 @@ export class UserService implements IUserService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await this.repository.storePhoneVerificationCode(phone, code, expiresAt);
+    await this.repository.storePhoneVerificationCode(userId, phone, code, expiresAt);
 
     return code; // In production, this would be sent via SMS
   }
 
-  async verifyPhone(phone: string, code: string): Promise<boolean> {
-    const isValid = await this.repository.verifyPhoneCode(phone, code);
+  async verifyPhone(userId: string, code: string): Promise<boolean> {
+    const isValid = await this.repository.verifyPhoneCode(userId, code);
     if (isValid) {
       // Update user phone verification status
-      const user = await this.repository.findByPhone(phone);
-      if (user) {
-        await this.repository.verifyPhone(user.id);
-      }
+      await this.repository.verifyPhone(userId);
     }
     return isValid;
   }

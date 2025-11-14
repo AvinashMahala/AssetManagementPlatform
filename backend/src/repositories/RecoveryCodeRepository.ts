@@ -13,7 +13,7 @@ export class RecoveryCodeRepository {
       const query = `
         INSERT INTO recovery_codes (user_id, code_hash)
         VALUES ($1, $2)
-        RETURNING id, user_id, code_hash, is_used, created_at, used_at
+        RETURNING id, user_id, code_hash, used, created_at, used_at
       `;
       const result = await this.pool.query(query, [userId, codeHash]);
       return result.rows[0];
@@ -30,7 +30,7 @@ export class RecoveryCodeRepository {
       const query = `
         INSERT INTO recovery_codes (user_id, code_hash)
         VALUES ${values}
-        RETURNING id, user_id, code_hash, is_used, created_at, used_at
+        RETURNING id, user_id, code_hash, used, created_at, used_at
       `;
       const result = await this.pool.query(query, params);
       return result.rows;
@@ -42,7 +42,7 @@ export class RecoveryCodeRepository {
   async findByUserId(userId: string): Promise<RecoveryCode[]> {
     try {
       const query = `
-        SELECT id, user_id, code_hash, is_used, created_at, used_at
+        SELECT id, user_id, code_hash, used, created_at, used_at
         FROM recovery_codes
         WHERE user_id = $1
         ORDER BY created_at
@@ -57,9 +57,9 @@ export class RecoveryCodeRepository {
   async findUnusedByUserId(userId: string): Promise<RecoveryCode[]> {
     try {
       const query = `
-        SELECT id, user_id, code_hash, is_used, created_at, used_at
+        SELECT id, user_id, code_hash, used, created_at, used_at
         FROM recovery_codes
-        WHERE user_id = $1 AND is_used = false
+        WHERE user_id = $1 AND used = false
         ORDER BY created_at
       `;
       const result = await this.pool.query(query, [userId]);
@@ -87,8 +87,8 @@ export class RecoveryCodeRepository {
     try {
       const query = `
         UPDATE recovery_codes
-        SET is_used = true, used_at = CURRENT_TIMESTAMP
-        WHERE id = $1 AND is_used = false
+        SET used = true, used_at = CURRENT_TIMESTAMP
+        WHERE id = $1 AND used = false
       `;
       const result = await this.pool.query(query, [id]);
       return (result.rowCount ?? 0) > 0;
