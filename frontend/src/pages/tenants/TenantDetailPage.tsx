@@ -173,13 +173,6 @@ const TenantDetailPage: React.FC = () => {
             </Card>
           )}
 
-          {tenant.notes && (
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Notes</h2>
-              <p className="text-sm text-gray-900 whitespace-pre-wrap">{tenant.notes}</p>
-            </Card>
-          )}
-
           <ReceiptList tenantId={tenant.id} showHeader={true} />
         </div>
 

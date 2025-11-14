@@ -36,15 +36,6 @@ const TenantCreatePage: React.FC = () => {
           data.emergencyContact.phone 
           ? data.emergencyContact 
           : undefined,
-        // Enhanced fields
-        photoUrl: data.photoUrl && data.photoUrl.trim() !== '' ? data.photoUrl.trim() : undefined,
-        numberOfPeople: data.numberOfPeople !== undefined && data.numberOfPeople > 0 ? data.numberOfPeople : undefined,
-        moveInDate: data.moveInDate && data.moveInDate !== '' ? data.moveInDate : undefined,
-        rentStartDate: data.rentStartDate && data.rentStartDate !== '' ? data.rentStartDate : undefined,
-        leaseStartDate: data.leaseStartDate && data.leaseStartDate !== '' ? data.leaseStartDate : undefined,
-        leasePeriodMonths: data.leasePeriodMonths !== undefined && data.leasePeriodMonths > 0 ? data.leasePeriodMonths : undefined,
-        leaseExpiryDate: data.leaseExpiryDate && data.leaseExpiryDate !== '' ? data.leaseExpiryDate : undefined,
-        extraServices: data.extraServices && data.extraServices.length > 0 ? data.extraServices : undefined,
       };
 
       const response = await createTenant(payload);

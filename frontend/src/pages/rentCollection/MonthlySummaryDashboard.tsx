@@ -268,7 +268,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
     // Export all tenant and room details
     // Since tenants aren't directly associated with units in the data structure,
     // we'll use the most recent transaction for each unit to get tenant info
-    let csv = 'Property,Unit Number,Unit Status,Monthly Rent,Tenant Name,Tenant Email,Tenant Phone,Tenant Status,Prefix,Profession,Occupation,Number of People,Move-in Date,Rent Start Date,Lease Type,Lease Start Date,Lease Period,Lease Expiry,Extra Services\n';
+    let csv = 'Property,Unit Number,Unit Status,Monthly Rent,Tenant Name,Tenant Email,Tenant Phone,Tenant Status,Occupation\n';
 
     units.forEach((unit) => {
       // Find the most recent transaction for this unit to get tenant info
@@ -285,10 +285,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
 
       csv += `"${property?.name}","${unit.unitNumber}","${unit.status}",${unit.monthlyRent || 0},`;
       csv += `"${tenantName}","${tenantEmail}","${tenantPhone}","${recentTransaction?.tenant ? 'Active' : 'Vacant'}",`;
-      csv += `"${tenantDetails?.prefix || ''}","${tenantDetails?.profession || ''}","${tenantDetails?.occupation || ''}",`;
-      csv += `${tenantDetails?.numberOfPeople || ''},"${tenantDetails?.moveInDate || ''}","${tenantDetails?.rentStartDate || ''}",`;
-      csv += `"${tenantDetails?.leaseType || ''}","${tenantDetails?.leaseStartDate || ''}",${tenantDetails?.leasePeriodMonths || ''},"${tenantDetails?.leaseExpiryDate || ''}",`;
-      csv += `"${tenantDetails?.extraServices?.join(', ') || ''}"\n`;
+      csv += `"${tenantDetails?.occupation || ''}"\n`;
     });
 
     // Create and download the CSV file

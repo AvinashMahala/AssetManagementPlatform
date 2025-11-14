@@ -791,8 +791,8 @@ export class RentTransactionService implements IRentTransactionService {
       property: {
         name: property.name,
         address: property.address ? `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}` : '',
-        phone: property.phone || '',
-        email: property.email || '',
+        phone: property.ownerDetails?.mobileNumbers?.[0] || '',
+        email: property.ownerDetails?.emailIds?.[0] || '',
         currency: property.currency || 'INR'
       },
 
@@ -874,7 +874,7 @@ export class RentTransactionService implements IRentTransactionService {
     // Update transaction with invoice details
     await this.repository.update(transactionId, {
       invoiceNumber,
-      invoiceGeneratedAt: new Date(),
+      invoiceGenerated: true,
       invoicePdfUrl: `/invoices/${pdfFileName}`
     });
 
@@ -926,8 +926,8 @@ export class RentTransactionService implements IRentTransactionService {
       property: {
         name: property.name,
         address: property.address ? `${property.address.street}, ${property.address.city}, ${property.address.state} - ${property.address.pincode}` : '',
-        phone: property.phone || '',
-        email: property.email || '',
+        phone: property.ownerDetails?.mobileNumbers?.[0] || '',
+        email: property.ownerDetails?.emailIds?.[0] || '',
         currency: property.currency || 'INR'
       },
 
@@ -1009,8 +1009,7 @@ export class RentTransactionService implements IRentTransactionService {
     // Update transaction with receipt details
     await this.repository.update(transactionId, {
       receiptNumber,
-      receiptGeneratedAt: new Date(),
-      receiptPdfUrl: `/receipts/${pdfFileName}`
+      receiptGenerated: true
     });
 
     return {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Briefcase, Home, AlertCircle, CheckCircle, Calendar, Car, Bike } from 'lucide-react';
-import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
+import { User, MapPin, Briefcase, Home, AlertCircle, CheckCircle } from 'lucide-react';
+import { BaseForm, FormColumn, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import type { TenantInput } from '../../types/tenant';
 
 interface TenantFormModernProps {
@@ -36,7 +36,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
 }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<TenantInput>({
-    prefix: initialData?.prefix,
     firstName: initialData?.firstName || '',
     lastName: initialData?.lastName || '',
     email: initialData?.email || '',
@@ -44,7 +43,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
     alternatePhone: initialData?.alternatePhone || '',
     dateOfBirth: initialData?.dateOfBirth || '',
     gender: initialData?.gender,
-    profession: initialData?.profession,
     occupation: initialData?.occupation || '',
     companyName: initialData?.companyName || '',
     monthlyIncome: initialData?.monthlyIncome,
@@ -70,19 +68,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
       phone: '',
     },
     status: initialData?.status || 'active',
-    preferredLocations: initialData?.preferredLocations || [],
-    notes: initialData?.notes || '',
-
-    // Enhanced fields
-    photoUrl: initialData?.photoUrl || '',
-    numberOfPeople: initialData?.numberOfPeople,
-    moveInDate: initialData?.moveInDate || '',
-    rentStartDate: initialData?.rentStartDate || '',
-    leaseType: initialData?.leaseType,
-    leaseStartDate: initialData?.leaseStartDate || '',
-    leasePeriodMonths: initialData?.leasePeriodMonths,
-    leaseExpiryDate: initialData?.leaseExpiryDate || '',
-    extraServices: initialData?.extraServices || [],
   });
 
   const [showPermanentAddress, setShowPermanentAddress] = useState(
@@ -92,20 +77,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isFormValid, setIsFormValid] = useState(false);
-
-  // Auto-calculate lease expiry date
-  useEffect(() => {
-    if (formData.leaseStartDate && formData.leasePeriodMonths) {
-      const startDate = new Date(formData.leaseStartDate);
-      const expiryDate = new Date(startDate);
-      expiryDate.setMonth(expiryDate.getMonth() + formData.leasePeriodMonths);
-      
-      const expiryDateString = expiryDate.toISOString().split('T')[0];
-      if (expiryDateString !== formData.leaseExpiryDate) {
-        setFormData(prev => ({ ...prev, leaseExpiryDate: expiryDateString }));
-      }
-    }
-  }, [formData.leaseStartDate, formData.leasePeriodMonths]);
 
   // Mark field as touched
   const markTouched = (field: string) => {
@@ -405,37 +376,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
         description="Personal details"
         icon={<User className="h-5 w-5" />}
       >
-        <FormField label="Photo">
-          <Input
-            type="url"
-            value={formData.photoUrl}
-            onChange={(e) => handleChange('photoUrl', e.target.value)}
-            placeholder="https://example.com/photo.jpg"
-            className="h-10"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Optional. Enter a URL to the tenant's photo/avatar
-          </p>
-        </FormField>
-
-        <FormField label="Prefix">
-          <Select
-            value={formData.prefix || ''}
-            onValueChange={(value) => handleChange('prefix', value)}
-          >
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Select prefix (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Mr.">Mr.</SelectItem>
-              <SelectItem value="Mrs.">Mrs.</SelectItem>
-              <SelectItem value="Ms.">Ms.</SelectItem>
-              <SelectItem value="Dr.">Dr.</SelectItem>
-              <SelectItem value="Prof.">Prof.</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
-
         <FormField label="First Name" required>
           <Input
             value={formData.firstName}
@@ -460,26 +400,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
             data-error={!!errors.lastName}
             maxLength={100}
           />
-        </FormField>
-
-        <FormField label="Number of People in Room">
-          <Input
-            type="number"
-            value={formData.numberOfPeople ?? ''}
-            onChange={(e) =>
-              handleChange(
-                'numberOfPeople',
-                e.target.value === '' ? undefined : Number(e.target.value)
-              )
-            }
-            placeholder="1"
-            min="1"
-            max="20"
-            className="h-10"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Optional. Number of people occupying the room
-          </p>
         </FormField>
 
         <FormField label="Email" required>
@@ -764,32 +684,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
         description="Work details and emergency contact"
         icon={<Briefcase className="h-5 w-5" />}
       >
-        <FormField label="Profession">
-          <Select
-            value={formData.profession || ''}
-            onValueChange={(value) => handleChange('profession', value)}
-          >
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Select profession (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Engineer">Engineer</SelectItem>
-              <SelectItem value="Doctor">Doctor</SelectItem>
-              <SelectItem value="Teacher">Teacher</SelectItem>
-              <SelectItem value="Lawyer">Lawyer</SelectItem>
-              <SelectItem value="Accountant">Accountant</SelectItem>
-              <SelectItem value="Business Owner">Business Owner</SelectItem>
-              <SelectItem value="Student">Student</SelectItem>
-              <SelectItem value="Consultant">Consultant</SelectItem>
-              <SelectItem value="Designer">Designer</SelectItem>
-              <SelectItem value="Marketing Professional">Marketing Professional</SelectItem>
-              <SelectItem value="Sales Professional">Sales Professional</SelectItem>
-              <SelectItem value="IT Professional">IT Professional</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
-
         <FormField label="Occupation">
           <Input
             value={formData.occupation}
@@ -798,7 +692,7 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
             className="h-10"
             maxLength={100}
           />
-          <p className="text-xs text-gray-500 mt-1">Optional. Specify if "Other" profession selected</p>
+          <p className="text-xs text-gray-500 mt-1">Optional</p>
         </FormField>
 
         <FormField label="Company Name">
@@ -882,154 +776,6 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
           </FormField>
         </div>
 
-        <FormField label="Notes">
-          <Textarea
-            value={formData.notes}
-            onChange={(e) => handleChange('notes', e.target.value)}
-            placeholder="Enter any additional notes or special requirements..."
-            rows={4}
-            className="resize-none"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Optional. Add any additional information about the tenant
-          </p>
-        </FormField>
-      </FormColumn>
-
-      <FormColumn
-        title="Lease & Occupancy"
-        description="Lease details and occupancy information"
-        icon={<Calendar className="h-5 w-5" />}
-      >
-        <FormField label="Move-in Date">
-          <Input
-            type="date"
-            value={formData.moveInDate}
-            onChange={(e) => handleChange('moveInDate', e.target.value)}
-            className="h-10"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Optional. When did the tenant physically move in?
-          </p>
-        </FormField>
-
-        <FormField label="Rent Start Date">
-          <Input
-            type="date"
-            value={formData.rentStartDate}
-            onChange={(e) => handleChange('rentStartDate', e.target.value)}
-            className="h-10"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Optional. When should rent payments begin? (May differ from move-in date)
-          </p>
-        </FormField>
-
-        <FormField label="Lease Type">
-          <Select
-            value={formData.leaseType || ''}
-            onValueChange={(value) => handleChange('leaseType', value)}
-          >
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Select lease type (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="until_leaves">Until Leaves</SelectItem>
-              <SelectItem value="fixed_defined">Fixed & Defined</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
-
-        {formData.leaseType === 'fixed_defined' && (
-          <>
-            <FormField label="Lease Start Date">
-              <Input
-                type="date"
-                value={formData.leaseStartDate}
-                onChange={(e) => handleChange('leaseStartDate', e.target.value)}
-                className="h-10"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                When does the fixed lease period begin?
-              </p>
-            </FormField>
-
-            <FormField label="Lease Period (Months)">
-              <Input
-                type="number"
-                value={formData.leasePeriodMonths ?? ''}
-                onChange={(e) =>
-                  handleChange(
-                    'leasePeriodMonths',
-                    e.target.value === '' ? undefined : Number(e.target.value)
-                  )
-                }
-                placeholder="12"
-                min="1"
-                max="120"
-                className="h-10"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Duration of the lease in months
-              </p>
-            </FormField>
-
-            <FormField label="Lease Expiry Date">
-              <Input
-                type="date"
-                value={formData.leaseExpiryDate}
-                readOnly
-                className="h-10 bg-gray-50"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Auto-calculated based on start date and period
-              </p>
-            </FormField>
-          </>
-        )}
-
-        <FormField label="Extra Services">
-          <div className="space-y-2">
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.extraServices?.includes('bike_parking') || false}
-                onChange={(e) => {
-                  const currentServices = formData.extraServices || [];
-                  if (e.target.checked) {
-                    handleChange('extraServices', [...currentServices, 'bike_parking']);
-                  } else {
-                    handleChange('extraServices', currentServices.filter(s => s !== 'bike_parking'));
-                  }
-                }}
-                className="h-4 w-4 text-blue-600 rounded"
-              />
-              <Bike className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-700 dark:text-gray-300">Bike Parking</span>
-            </label>
-
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.extraServices?.includes('car_parking') || false}
-                onChange={(e) => {
-                  const currentServices = formData.extraServices || [];
-                  if (e.target.checked) {
-                    handleChange('extraServices', [...currentServices, 'car_parking']);
-                  } else {
-                    handleChange('extraServices', currentServices.filter(s => s !== 'car_parking'));
-                  }
-                }}
-                className="h-4 w-4 text-blue-600 rounded"
-              />
-              <Car className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-700 dark:text-gray-300">Car Parking</span>
-            </label>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            Optional. Select additional services the tenant is using
-          </p>
-        </FormField>
       </FormColumn>
     </BaseForm>
   );

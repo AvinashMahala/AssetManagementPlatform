@@ -29,7 +29,6 @@ export type ExtraServiceValue = typeof ExtraServices[keyof typeof ExtraServices]
 
 export interface Tenant {
   id: string;
-  prefix?: TenantPrefixValue;
   firstName: string;
   lastName: string;
   email: string;
@@ -37,8 +36,7 @@ export interface Tenant {
   alternatePhone?: string;
   dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other';
-  profession?: ProfessionValue;
-  occupation?: string; // For custom profession input
+  occupation?: string;
   companyName?: string;
   monthlyIncome?: number;
   currentAddress: { street: string; city: string; state: string; pincode: string };
@@ -47,26 +45,11 @@ export interface Tenant {
   status: TenantStatusValue;
   totalRentals?: number;
   currentPropertyId?: string;
-  preferredLocations?: string[];
-  notes?: string;
-
-  // Enhanced fields
-  photoUrl?: string;
-  numberOfPeople?: number;
-  moveInDate?: string;
-  rentStartDate?: string;
-  leaseType?: LeaseTypeValue;
-  leaseStartDate?: string;
-  leasePeriodMonths?: number;
-  leaseExpiryDate?: string; // Auto-calculated
-  extraServices?: ExtraServiceValue[];
-
   createdAt: string;
   updatedAt: string;
 }
 
 export interface TenantInput {
-  prefix?: TenantPrefixValue;
   firstName: string;
   lastName: string;
   email: string;
@@ -74,8 +57,7 @@ export interface TenantInput {
   alternatePhone?: string;
   dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other';
-  profession?: ProfessionValue;
-  occupation?: string; // For custom profession input
+  occupation?: string;
   companyName?: string;
   monthlyIncome?: number;
   currentAddress: { street: string; city: string; state: string; pincode: string };
@@ -84,17 +66,4 @@ export interface TenantInput {
   status?: TenantStatusValue;
   totalRentals?: number;
   currentPropertyId?: string;
-  preferredLocations?: string[];
-  notes?: string;
-
-  // Enhanced fields
-  photoUrl?: string;
-  numberOfPeople?: number;
-  moveInDate?: string;
-  rentStartDate?: string;
-  leaseType?: LeaseTypeValue;
-  leaseStartDate?: string;
-  leasePeriodMonths?: number;
-  leaseExpiryDate?: string; // Auto-calculated
-  extraServices?: ExtraServiceValue[];
 }

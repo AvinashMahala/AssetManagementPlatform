@@ -105,6 +105,11 @@ export interface RentTransaction {
   receiptNumber?: string;
   receiptGenerated: boolean;
 
+  // Invoice
+  invoiceNumber?: string;
+  invoiceDate?: Date;
+  invoicePdfUrl?: string;
+
   // Workflow tracking for streamlined process
   workflowStatus: RentCollectionWorkflowStatus;
   invoiceGenerated: boolean;
@@ -152,6 +157,11 @@ export interface RentTransactionInput {
   paymentReference?: string;
   receiptNumber?: string;
   receiptGenerated: boolean;
+
+  // Invoice
+  invoiceNumber?: string;
+  invoiceDate?: Date;
+  invoicePdfUrl?: string;
 
   // Workflow tracking fields
   workflowStatus: RentCollectionWorkflowStatus;
