@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS properties (
     description TEXT,
     property_type VARCHAR(100),
     status VARCHAR(50) DEFAULT 'active',
+    currency VARCHAR(10) DEFAULT 'INR',
     address_street VARCHAR(255),
     address_city VARCHAR(100),
     address_state VARCHAR(100),
@@ -13,7 +14,7 @@ CREATE TABLE IF NOT EXISTS properties (
     address_landmark VARCHAR(255), -- Landmark or nearby location reference
     area NUMERIC(10, 2),
     total_floors INTEGER,
-    construction_year INTEGER,
+    year_built INTEGER,
     parking_spaces INTEGER,
     amenities JSONB DEFAULT '{
       "basic": [],

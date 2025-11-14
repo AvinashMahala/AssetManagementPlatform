@@ -1,11 +1,23 @@
-import { Expense, ExpenseInput, ExpenseFilters, ExpenseStatistics, ExpenseStatus } from '../models/Expense';
-import { IExpenseRepository, IExpenseService } from '../interfaces/repositories/IExpenseRepository';
+import { Expense, ExpenseInput, ExpenseUpdateInput, ExpenseFilters, ExpenseStatistics, ExpenseWithDetails, ExpenseStatus } from '../models/Expense';
+import { IExpenseRepository } from '../interfaces/repositories/IExpenseRepository';
+import { IExpenseService } from '../interfaces/services/IExpenseService';
+import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
+import { IUnitRepository } from '../interfaces/repositories/IUnitRepository';
 
 export class ExpenseService implements IExpenseService {
-  constructor(private expenseRepository: IExpenseRepository) {}
+  constructor(
+    private expenseRepository: IExpenseRepository,
+    private propertyRepository: IPropertyRepository,
+    private unitRepository: IUnitRepository
+  ) {}
 
   async getAllExpenses(): Promise<Expense[]> {
     return this.expenseRepository.findAll();
+  }
+
+  async getAllExpensesWithDetails(): Promise<ExpenseWithDetails[]> {
+    const expenses = await this.expenseRepository.findAll();
+    return this.populateExpenseDetails(expenses);
   }
 
   async getExpenseById(id: string): Promise<Expense | null> {
@@ -32,54 +44,58 @@ export class ExpenseService implements IExpenseService {
     return this.expenseRepository.findWithFilters(filters);
   }
 
-  async createExpense(data: ExpenseInput): Promise<Expense> {
+  async createExpense(expenseData: ExpenseInput, userId: string): Promise<Expense> {
     // Validate required fields
-    if (!data.propertyId) {
+    if (!expenseData.propertyId) {
       throw new Error('Property ID is required');
     }
-    if (!data.type) {
+    if (!expenseData.type) {
       throw new Error('Expense type is required');
     }
-    if (!data.description) {
+    if (!expenseData.description) {
       throw new Error('Expense description is required');
     }
-    if (!data.amount || data.amount <= 0) {
+    if (!expenseData.amount || expenseData.amount <= 0) {
       throw new Error('Valid expense amount is required');
     }
-    if (!data.frequency) {
+    if (!expenseData.frequency) {
       throw new Error('Expense frequency is required');
     }
-    if (!data.startDate) {
+    if (!expenseData.startDate) {
       throw new Error('Start date is required');
     }
-    if (!data.distribution) {
+    if (!expenseData.distribution) {
       throw new Error('Distribution method is required');
     }
-    if (!data.createdBy) {
-      throw new Error('Created by user ID is required');
-    }
 
-    // Set default status if not provided
-    const expenseData: ExpenseInput = {
-      ...data,
-      status: data.status || ExpenseStatus.ACTIVE
+    // Set default status if not provided and add createdBy
+    const expenseDataWithUser: ExpenseInput = {
+      ...expenseData,
+      createdBy: userId,
+      status: expenseData.status || ExpenseStatus.ACTIVE
     };
 
-    return this.expenseRepository.create(expenseData);
+    return this.expenseRepository.create(expenseDataWithUser);
   }
 
-  async updateExpense(id: string, data: Partial<ExpenseInput>): Promise<Expense | null> {
+  async updateExpense(id: string, expenseData: ExpenseUpdateInput, userId: string): Promise<Expense | null> {
     // Validate that at least one field is being updated
-    if (Object.keys(data).length === 0) {
+    if (Object.keys(expenseData).length === 0) {
       throw new Error('At least one field must be provided for update');
     }
 
     // Validate amount if provided
-    if (data.amount !== undefined && data.amount <= 0) {
+    if (expenseData.amount !== undefined && expenseData.amount <= 0) {
       throw new Error('Expense amount must be greater than 0');
     }
 
-    return this.expenseRepository.update(id, data);
+    // Add updatedBy to the update data
+    const updateDataWithUser = {
+      ...expenseData,
+      updatedBy: userId
+    };
+
+    return this.expenseRepository.update(id, updateDataWithUser);
   }
 
   async deleteExpense(id: string): Promise<boolean> {
@@ -96,13 +112,11 @@ export class ExpenseService implements IExpenseService {
     return this.expenseRepository.updateStatus(id, status);
   }
 
-  async getExpenseStatistics(propertyId?: string, startDate?: Date, endDate?: Date): Promise<ExpenseStatistics> {
+  async getExpenseStatistics(propertyId: string): Promise<ExpenseStatistics> {
     // For now, return basic statistics
     // In a real implementation, this would aggregate data from the repository
     const expenses = await this.expenseRepository.findWithFilters({
-      propertyId,
-      startDateFrom: startDate,
-      startDateTo: endDate
+      propertyId
     });
 
     const totalExpenses = expenses.length;
@@ -129,5 +143,127 @@ export class ExpenseService implements IExpenseService {
       expensesByFrequency,
       expensesByDistribution
     };
+  }
+
+  // Additional methods to satisfy interface
+  async archiveExpense(id: string, userId: string): Promise<boolean> {
+    return this.updateExpenseStatus(id, 'archived');
+  }
+
+  async activateExpense(id: string, userId: string): Promise<boolean> {
+    return this.updateExpenseStatus(id, 'active');
+  }
+
+  async getMonthlyExpenseAmount(propertyId: string, month: Date): Promise<number> {
+    const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+    
+    const expenses = await this.expenseRepository.findWithFilters({
+      propertyId,
+      startDateFrom: startOfMonth,
+      startDateTo: endOfMonth,
+      isActive: true
+    });
+
+    return expenses
+      .filter(e => e.frequency === 'monthly')
+      .reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  async getExpensesForRentTransaction(propertyId: string, unitId: string | null, billingMonth: string): Promise<Expense[]> {
+    // Parse billing month (assuming format like "2024-11")
+    const [year, month] = billingMonth.split('-').map(Number);
+    const billingDate = new Date(year, month - 1, 1);
+    
+    return this.expenseRepository.findWithFilters({
+      propertyId,
+      unitId: unitId || undefined,
+      startDateTo: billingDate,
+      isActive: true
+    });
+  }
+
+  async duplicateExpense(id: string, userId: string): Promise<Expense> {
+    const originalExpense = await this.getExpenseById(id);
+    if (!originalExpense) {
+      throw new Error('Expense not found');
+    }
+
+    const duplicatedData: ExpenseInput = {
+      ...originalExpense,
+      description: `${originalExpense.description} (Copy)`,
+      createdBy: userId,
+      updatedBy: userId
+    };
+
+    // Remove fields that shouldn't be duplicated
+    delete (duplicatedData as any).id;
+    delete (duplicatedData as any).createdAt;
+    delete (duplicatedData as any).updatedAt;
+
+    return this.createExpense(duplicatedData, userId);
+  }
+
+  async bulkUpdateExpenses(expenseIds: string[], updates: ExpenseUpdateInput, userId: string): Promise<number> {
+    let updatedCount = 0;
+    for (const id of expenseIds) {
+      try {
+        await this.updateExpense(id, updates, userId);
+        updatedCount++;
+      } catch (error) {
+        // Continue with other expenses if one fails
+        console.error(`Failed to update expense ${id}:`, error);
+      }
+    }
+    return updatedCount;
+  }
+
+  // With related data methods
+  async getExpenseWithDetails(id: string): Promise<ExpenseWithDetails | null> {
+    const expense = await this.getExpenseById(id);
+    if (!expense) return null;
+
+    const expensesWithDetails = await this.populateExpenseDetails([expense]);
+    return expensesWithDetails[0] || null;
+  }
+
+  async getExpensesWithDetailsByProperty(propertyId: string): Promise<ExpenseWithDetails[]> {
+    const expenses = await this.getExpensesByProperty(propertyId);
+    return this.populateExpenseDetails(expenses);
+  }
+
+  private async populateExpenseDetails(expenses: Expense[]): Promise<ExpenseWithDetails[]> {
+    // Get unique property IDs and unit IDs
+    const propertyIds = [...new Set(expenses.map(e => e.propertyId))];
+    const unitIds = [...new Set(expenses.flatMap(e => e.affectedUnitIds || []).concat(expenses.map(e => e.unitId).filter(Boolean) as string[]))];
+
+    // Fetch properties and units
+    const properties = await Promise.all(propertyIds.map(id => this.propertyRepository.findById(id)));
+    const units = await Promise.all(unitIds.map(id => this.unitRepository.findById(id)));
+
+    // Create lookup maps
+    const propertyMap = new Map(properties.filter((p): p is NonNullable<typeof p> => p !== null).map(p => [p.id, p]));
+    const unitMap = new Map(units.filter((u): u is NonNullable<typeof u> => u !== null).map(u => [u.id, u]));
+
+    return expenses.map(expense => ({
+      ...expense,
+      property: expense.propertyId ? {
+        id: expense.propertyId,
+        name: propertyMap.get(expense.propertyId)?.name || 'Unknown Property'
+      } : undefined,
+      unit: expense.unitId ? {
+        id: expense.unitId,
+        name: unitMap.get(expense.unitId)?.unitName || `Unit ${unitMap.get(expense.unitId)?.unitNumber}`,
+        unitNumber: unitMap.get(expense.unitId)?.unitNumber || ''
+      } : undefined,
+      affectedUnits: expense.affectedUnitIds?.map(unitId => {
+        const unit = unitMap.get(unitId);
+        return unit ? {
+          id: unit.id,
+          name: unit.unitName || `Unit ${unit.unitNumber}`,
+          unitNumber: unit.unitNumber || ''
+        } : null;
+      }).filter((u): u is NonNullable<typeof u> => u !== null) || []
+    }));
   }
 }

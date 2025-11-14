@@ -12,7 +12,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './src/config/swagger/index.js';
 import { swaggerUiOptions } from './src/config/swagger/index.js';
-import { initializeDatabase } from './src/config/database/init/index.js';
+// import { initializeDatabase } from './src/config/database/init/index.js';
 import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
 import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
 import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
@@ -137,7 +137,7 @@ const startServer = async () => {
   app.use(express.json());
 
   // Serve static PDF files
-  app.use('/api/invoices', express.static('public/invoices'));
+  app.use('/invoices', express.static('public/invoices'));
   app.use('/api/receipts', express.static('public/receipts'));
 
   // Logging middleware (must be before routes)
@@ -147,7 +147,7 @@ const startServer = async () => {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
 
   // Initialize database tables
-  await initializeDatabase(mainPool, filesPool);
+  // await initializeDatabase(mainPool, filesPool);
 
   /**
    * @swagger

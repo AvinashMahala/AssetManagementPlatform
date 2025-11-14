@@ -21,7 +21,8 @@ import { IReceiptRepository } from '../interfaces/repositories/IReceiptRepositor
 import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { IUnitUtilityRepository } from '../interfaces/repositories/IUnitUtilityRepository';
 import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService';
-import { IExpenseRepository, IExpenseService } from '../interfaces/repositories/IExpenseRepository';
+import { IExpenseRepository } from '../interfaces/repositories/IExpenseRepository';
+import { IExpenseService } from '../interfaces/services/IExpenseService';
 import { IPropertyFileRepository } from '../interfaces/repositories/IPropertyFileRepository';
 import { IPropertyReceiptTemplateRepository } from '../interfaces/repositories/IPropertyReceiptTemplateRepository';
 import { IPropertyFileService } from '../interfaces/services/IPropertyFileService';
@@ -409,7 +410,7 @@ export class DependencyContainer {
 
   public get expenseService(): IExpenseService {
     if (!this._expenseService) {
-      this._expenseService = new ExpenseService(this.expenseRepository);
+      this._expenseService = new ExpenseService(this.expenseRepository, this.propertyRepository, this.unitRepository);
     }
     return this._expenseService;
   }

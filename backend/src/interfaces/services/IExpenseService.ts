@@ -3,6 +3,7 @@ import { Expense, ExpenseInput, ExpenseUpdateInput, ExpenseFilters, ExpenseStati
 export interface IExpenseService {
   // CRUD operations
   getAllExpenses(): Promise<Expense[]>;
+  getAllExpensesWithDetails(): Promise<ExpenseWithDetails[]>;
   getExpenseById(id: string): Promise<Expense | null>;
   getExpensesByProperty(propertyId: string): Promise<Expense[]>;
   getExpensesByUnit(unitId: string): Promise<Expense[]>;

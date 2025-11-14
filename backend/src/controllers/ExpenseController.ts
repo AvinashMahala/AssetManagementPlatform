@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IExpenseService } from '../interfaces/repositories/IExpenseRepository';
+import { IExpenseService } from '../interfaces/services/IExpenseService';
 import { ExpenseInput, ExpenseFilters } from '../models/Expense';
 import { createModuleLogger, PerformanceLogger } from '../utils/logger.js';
 import { AppError } from '../middlewares/errorHandler.js';
@@ -16,7 +16,7 @@ export class ExpenseController {
 
     try {
       logger.info('Fetching all expenses');
-      const expenses = await this.expenseService.getAllExpenses();
+      const expenses = await this.expenseService.getAllExpensesWithDetails();
 
       logger.info('Successfully fetched expenses', { count: expenses.length });
       perfLogger.end({ count: expenses.length });
@@ -162,12 +162,10 @@ export class ExpenseController {
 
   async createExpense(req: Request, res: Response): Promise<void> {
     try {
-      const expenseData: ExpenseInput = {
-        ...req.body,
-        createdBy: (req as any).user?.id
-      };
+      const expenseData: ExpenseInput = req.body;
+      const userId = (req as any).user?.id;
 
-      const expense = await this.expenseService.createExpense(expenseData);
+      const expense = await this.expenseService.createExpense(expenseData, userId);
 
       res.status(201).json({
         success: true,
@@ -187,12 +185,10 @@ export class ExpenseController {
   async updateExpense(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const updateData: Partial<ExpenseInput> = {
-        ...req.body,
-        updatedBy: (req as any).user?.id
-      };
+      const updateData: Partial<ExpenseInput> = req.body;
+      const userId = (req as any).user?.id;
 
-      const expense = await this.expenseService.updateExpense(id, updateData);
+      const expense = await this.expenseService.updateExpense(id, updateData, userId);
 
       if (!expense) {
         res.status(404).json({
@@ -247,6 +243,7 @@ export class ExpenseController {
     try {
       const { id } = req.params;
       const { status } = req.body;
+      const userId = (req as any).user?.id;
 
       if (!status) {
         res.status(400).json({
@@ -256,7 +253,18 @@ export class ExpenseController {
         return;
       }
 
-      const updated = await this.expenseService.updateExpenseStatus(id, status);
+      let updated: boolean;
+      if (status === 'archived') {
+        updated = await this.expenseService.archiveExpense(id, userId);
+      } else if (status === 'active') {
+        updated = await this.expenseService.activateExpense(id, userId);
+      } else {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid status. Use "active" or "archived"'
+        });
+        return;
+      }
 
       if (!updated) {
         res.status(404).json({
@@ -282,13 +290,17 @@ export class ExpenseController {
 
   async getExpenseStatistics(req: Request, res: Response): Promise<void> {
     try {
-      const { propertyId, startDate, endDate } = req.query;
+      const { propertyId } = req.query;
 
-      const statistics = await this.expenseService.getExpenseStatistics(
-        propertyId as string,
-        startDate ? new Date(startDate as string) : undefined,
-        endDate ? new Date(endDate as string) : undefined
-      );
+      if (!propertyId) {
+        res.status(400).json({
+          success: false,
+          message: 'Property ID is required'
+        });
+        return;
+      }
+
+      const statistics = await this.expenseService.getExpenseStatistics(propertyId as string);
 
       res.json({
         success: true,
