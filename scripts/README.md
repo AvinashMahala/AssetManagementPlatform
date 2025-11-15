@@ -53,12 +53,57 @@ python3 scripts/seed_property_data.py
 
 **Dependencies**: Requires foreign key relationships, so seed in correct order.
 
+### 3. `clean_unit_data.py`
+**Purpose**: Clears all unit-related data while preserving core system data.
+
+**What it clears**:
+- Units
+- Unit-tenant relationships
+- Leases associated with units
+- Rent payments for those leases
+- Meter readings for units
+
+**What it preserves**:
+- Users
+- Properties
+- Tenants
+- Receipt templates
+- Other system data
+
+**Usage**:
+```bash
+python3 scripts/clean_unit_data.py
+```
+
+**Safety**: Asks for confirmation before proceeding. This action cannot be undone.
+
+### 4. `seed_unit_data.py`
+**Purpose**: Seeds unit-related data back to the database after cleanup.
+
+**What it seeds**:
+- Units for existing properties
+- Leases and rent payments for occupied units
+- Unit-tenant relationships
+- Sample meter readings
+
+**Usage**:
+```bash
+python3 scripts/seed_unit_data.py
+```
+
+**Dependencies**: Requires existing properties and tenants in the database.
+
 ## Workflow
 
 ### To reset property data:
 1. **Backup** your current data if needed
 2. Run cleanup: `python3 scripts/clean_property_data.py`
 3. Run seeding: `python3 scripts/seed_property_data.py`
+
+### To reset unit data:
+1. **Backup** your current data if needed
+2. Run cleanup: `python3 scripts/clean_unit_data.py`
+3. Run seeding: `python3 scripts/seed_unit_data.py`
 
 ### Prerequisites
 - Python 3.x

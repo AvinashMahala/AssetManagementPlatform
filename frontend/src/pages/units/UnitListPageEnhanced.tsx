@@ -243,9 +243,23 @@ const UnitListPageEnhanced: React.FC = () => {
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
-            <Button onClick={() => navigate('/units/create')} size="lg">
-              <Plus className="mr-2 h-4 w-4" /> Add Unit
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/units/create')}
+                size="lg"
+                title="Add a unit quickly with essential details"
+              >
+                <Plus className="mr-2 h-4 w-4" /> Quick Add
+              </Button>
+              <Button
+                onClick={() => navigate('/units/create-tabbed')}
+                size="lg"
+                title="Step through a comprehensive unit creation process"
+              >
+                <Plus className="mr-2 h-4 w-4" /> Guided Add
+              </Button>
+            </div>
           </div>
         </div>
 

@@ -4,10 +4,10 @@ import { ProtectedRoute, PublicRoute } from './components/auth';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConsentDialog, DevTools } from './components/ConsentDialog';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
-import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
+import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyCreatePageTabbed, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
 import { TenantCreatePageEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
-import { UnitCreatePageEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
+import { UnitCreatePageEnhanced, UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
 import { LeaseCreatePageEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
 import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
@@ -119,6 +119,15 @@ function App() {
               />
 
               <Route
+                path="/properties/create-tabbed"
+                element={
+                  <ProtectedRoute>
+                    <PropertyCreatePageTabbed />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/properties/:id/dashboard"
                 element={
                   <ProtectedRoute>
@@ -154,6 +163,7 @@ function App() {
               
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
               <Route path="/units/create" element={<ProtectedRoute><UnitCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/units/create-tabbed" element={<ProtectedRoute><UnitCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/units/:id" element={<ProtectedRoute><AppLayout><UnitDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/dashboard" element={<ProtectedRoute><AppLayout><UnitDashboardPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/edit" element={<ProtectedRoute><UnitEditPageEnhanced /></ProtectedRoute>} />

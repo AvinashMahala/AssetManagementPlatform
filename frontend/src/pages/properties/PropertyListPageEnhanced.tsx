@@ -295,9 +295,20 @@ const PropertyListPageEnhanced: React.FC = () => {
               <FileImage className="mr-2 h-4 w-4" />
               Templates
             </Button>
-            <Button onClick={() => navigate('/properties/create')}>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/properties/create')}
+              title="Quick form with all sections on one page"
+            >
               <Plus className="mr-2 h-4 w-4" />
-              Add Property
+              Quick Add
+            </Button>
+            <Button
+              onClick={() => navigate('/properties/create-tabbed')}
+              title="Step-by-step guided form with progress tracking"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Guided Add
             </Button>
           </div>
         </div>
