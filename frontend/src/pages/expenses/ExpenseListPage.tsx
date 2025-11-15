@@ -418,7 +418,16 @@ const ExpenseListPage: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg text-muted-foreground">Loading expenses...</p>
+            <p className="text-sm text-muted-foreground">Please wait while we fetch your expense data</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -929,6 +938,7 @@ const ExpenseListPage: React.FC = () => {
           </DialogContent>
         </Dialog>
       </div>
+      )}
     </AppLayout>
   );
 };

@@ -281,7 +281,16 @@ const PropertyListPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="container mx-auto py-6 space-y-6">
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg text-muted-foreground">Loading properties...</p>
+            <p className="text-sm text-muted-foreground">Please wait while we fetch your property data</p>
+          </div>
+        </div>
+      ) : (
+        <div className="container mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -489,13 +498,6 @@ const PropertyListPageEnhanced: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         )}
 
@@ -724,7 +726,6 @@ const PropertyListPageEnhanced: React.FC = () => {
             </CardContent>
           </Card>
         )}
-      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -735,6 +736,8 @@ const PropertyListPageEnhanced: React.FC = () => {
             onPageChange={setCurrentPage}
           />
         </div>
+      )}
+      </div>
       )}
 
       {/* Delete Confirmation Dialog */}

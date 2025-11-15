@@ -149,7 +149,16 @@ export const MeterListPage: React.FC = () => {
 
   return (
     <AppLayout title="Meters">
-      <div className="flex flex-col h-full">
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg text-muted-foreground">Loading meters...</p>
+            <p className="text-sm text-muted-foreground">Please wait while we fetch your meter data</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col h-full">
         {/* Fixed Header Section */}
         <div className="flex-shrink-0 space-y-6">
           <div className="flex justify-between items-center">
@@ -445,6 +454,7 @@ export const MeterListPage: React.FC = () => {
           </Card>
         </div>
       </div>
+      )}
     </AppLayout>
   );
 };
