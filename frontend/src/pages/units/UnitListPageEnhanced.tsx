@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench } from 'lucide-react';
+import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
 import { Pagination } from '../../components/ui/pagination';
-import { useUnits } from '../../hooks/useUnits';
+import { useUnits, useDeleteUnit } from '../../hooks/useUnits';
 import { useProperties } from '../../hooks/useProperties';
 import { AppLayout } from '../../components/layout';
 
@@ -20,9 +28,12 @@ const UnitListPageEnhanced: React.FC = () => {
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [unitToDelete, setUnitToDelete] = useState<{id: string, name: string} | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const { units, loading } = useUnits();
+  const { mutate: deleteUnit, loading: deleteLoading } = useDeleteUnit();
   const { properties } = useProperties();
 
   const filteredUnits = Array.isArray(units) ? units.filter(u => {
@@ -132,6 +143,33 @@ const UnitListPageEnhanced: React.FC = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedUnits.size === 0) return;
+
+    const confirmMessage = `Are you sure you want to delete ${selectedUnits.size} unit${selectedUnits.size !== 1 ? 's' : ''}? This action cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) return;
+
+    setBulkActionLoading(true);
+    try {
+      // Delete units one by one
+      const deletePromises = Array.from(selectedUnits).map(id => deleteUnit(id));
+      await Promise.all(deletePromises);
+
+      console.log('Deleted units:', Array.from(selectedUnits));
+
+      // Clear selection after successful operation
+      setSelectedUnits(new Set());
+      setShowBulkActions(false);
+      // TODO: Show success toast
+    } catch (error) {
+      console.error('Failed to delete units:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   const handleBulkExport = () => {
     const selectedData = filteredUnits.filter(u => selectedUnits.has(u.id));
 
@@ -166,6 +204,25 @@ const UnitListPageEnhanced: React.FC = () => {
     // Clear selection after export
     setSelectedUnits(new Set());
     setShowBulkActions(false);
+  };
+
+  const handleDeleteClick = (id: string, name: string) => {
+    setUnitToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!unitToDelete) return;
+
+    try {
+      await deleteUnit(unitToDelete.id);
+      setDeleteDialogOpen(false);
+      setUnitToDelete(null);
+      // TODO: Show success toast
+    } catch (error) {
+      console.error('Failed to delete unit:', error);
+      // TODO: Show error toast
+    }
   };
 
   const clearSelection = () => {
@@ -325,6 +382,19 @@ const UnitListPageEnhanced: React.FC = () => {
                     Mark as Maintenance
                   </Button>
                   <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Delete Selected
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={handleBulkExport}
@@ -430,6 +500,16 @@ const UnitListPageEnhanced: React.FC = () => {
                                 }}
                               >
                                 📊
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(unit.id, unit.unitNumber);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
                               </Button>
                             </div>
                           </TableCell>
@@ -549,6 +629,34 @@ const UnitListPageEnhanced: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Unit</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete unit "{unitToDelete?.name}"? This action cannot be undone and will also delete all associated leases and payment records.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

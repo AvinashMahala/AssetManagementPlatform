@@ -37,6 +37,7 @@ import {
   PropertyStatusChart
 } from '../../components/ui/charts';
 import { AppLayout } from '../../components/layout/AppLayout';
+import { getErrorMessage } from '../../types/api';
 
 export const PropertyDashboardPageEnhanced: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -200,7 +201,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           <Card className="border-red-200 dark:border-red-800">
             <CardHeader>
               <CardTitle className="text-red-600 dark:text-red-400">Error</CardTitle>
-              <CardDescription>{propertyError || 'Property not found'}</CardDescription>
+              <CardDescription>{getErrorMessage(propertyError) || 'Property not found'}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button onClick={() => navigate('/properties')}>

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { AppLayout } from '../../components/layout/AppLayout';
 import type { PaginationOptions, MeterFilters } from '../../services/meterService';
 import { useNotifications } from '../../contexts';
+import { getErrorMessage } from '../../types/api';
 
 export const MeterListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ export const MeterListPage: React.FC = () => {
     return (
       <AppLayout title="Meters">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">Error loading meters: {error}</p>
+          <p className="text-red-800">Error loading meters: {getErrorMessage(error)}</p>
         </div>
       </AppLayout>
     );

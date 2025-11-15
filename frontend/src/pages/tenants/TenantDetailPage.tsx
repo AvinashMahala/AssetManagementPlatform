@@ -4,6 +4,7 @@ import { useTenant, useDeleteTenant } from '../../hooks';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common';
 import { ReceiptList } from '../../components/receipts';
+import { getErrorMessage } from '../../types/api';
 
 const TenantDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,7 +45,7 @@ const TenantDetailPage: React.FC = () => {
           <Button onClick={() => navigate('/tenants')}>Back to List</Button>
         </div>
         <Card className="p-8 text-center">
-          <p className="text-red-600 mb-4">{error || 'Tenant not found'}</p>
+          <p className="text-red-600 mb-4">{getErrorMessage(error) || 'Tenant not found'}</p>
           <Button onClick={() => navigate('/tenants')}>Go Back</Button>
         </Card>
       </div>

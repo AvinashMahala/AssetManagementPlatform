@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useDeleteUnit } from '../../hooks';
 import { PhotoCarousel } from '../../componentDesignLibrary';
 import { UnitUtilitiesManager } from '../../components/units/UnitUtilitiesManager';
+import { getErrorMessage } from '../../types/api';
 
 export const UnitDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +34,7 @@ export const UnitDetailPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error || 'Unit not found'}</p>
+          <p className="text-red-800">{getErrorMessage(error) || 'Unit not found'}</p>
         </div>
       </div>
     );

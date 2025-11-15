@@ -3,6 +3,7 @@ import type { UnitUtility, UtilityTypeValue, UtilityBillingMethodValue } from '.
 import { UtilityType, UtilityBillingMethod } from '../../types/unit';
 import { useUnitUtilities, useCreateUnitUtility, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility } from '../../hooks';
 import { useLastMeterReadings } from '../../hooks/useRentTransactions';
+import { getErrorMessage } from '../../types/api';
 
 interface UnitUtilitiesManagerProps {
   unitId: string;
@@ -159,7 +160,7 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <p className="text-red-800">Error loading utilities: {error}</p>
+        <p className="text-red-800">Error loading utilities: {getErrorMessage(error)}</p>
       </div>
     );
   }

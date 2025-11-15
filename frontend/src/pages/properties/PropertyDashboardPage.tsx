@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '../../components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui';
+import { getErrorMessage } from '../../types/api';
 
 export const PropertyDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -89,7 +90,7 @@ export const PropertyDashboardPage: React.FC = () => {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Error</CardTitle>
-            <CardDescription>{propertyError || 'Property not found'}</CardDescription>
+            <CardDescription>{getErrorMessage(propertyError) || 'Property not found'}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate('/properties')}>Back to Properties</Button>

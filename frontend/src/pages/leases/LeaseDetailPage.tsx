@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/card';
 import { useLease, useDeleteLease, useUnit, useTenant } from '../../hooks';
+import { getErrorMessage } from '../../types/api';
 
 export const LeaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +37,7 @@ export const LeaseDetailPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error || 'Lease not found'}</p>
+          <p className="text-red-800">{getErrorMessage(error) || 'Lease not found'}</p>
         </div>
       </div>
     );

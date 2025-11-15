@@ -4,6 +4,7 @@ import { useUnit, useUpdateUnit, useProperties } from '../../hooks';
 import { useNotifications } from '../../contexts';
 import type { UnitInput } from '../../types/unit';
 import { UnitStatus, UnitType } from '../../types/unit';
+import { getErrorMessage } from '../../types/api';
 
 export const UnitEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -126,7 +127,7 @@ export const UnitEditPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{loadError || 'Unit not found'}</p>
+          <p className="text-red-800">{getErrorMessage(loadError) || 'Unit not found'}</p>
         </div>
       </div>
     );
@@ -141,7 +142,7 @@ export const UnitEditPage: React.FC = () => {
 
       {updateError && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-800">{updateError}</p>
+          <p className="text-red-800">{getErrorMessage(updateError)}</p>
         </div>
       )}
 

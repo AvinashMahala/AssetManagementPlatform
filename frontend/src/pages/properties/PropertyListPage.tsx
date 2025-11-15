@@ -8,7 +8,6 @@ import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { AppLayout } from '../../components/layout/AppLayout';
-import { getErrorMessage } from '../../types/api';
 import type { PropertyFilters } from '../../types/property';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { createPageLogger } from '../../utils/logger';

@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePayment, useDeletePayment, useLease, useTenant } from '../../hooks';
 import { ReceiptGenerator } from '../../components/receipts/ReceiptGenerator';
+import { getErrorMessage } from '../../types/api';
 
 export const PaymentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +32,7 @@ export const PaymentDetailPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error || 'Payment not found'}</p>
+          <p className="text-red-800">{getErrorMessage(error) || 'Payment not found'}</p>
         </div>
       </div>
     );

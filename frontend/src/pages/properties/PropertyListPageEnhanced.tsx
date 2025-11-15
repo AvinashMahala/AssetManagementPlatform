@@ -199,6 +199,33 @@ const PropertyListPageEnhanced: React.FC = () => {
     setShowBulkActions(false);
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedProperties.size === 0) return;
+
+    const confirmMessage = `Are you sure you want to delete ${selectedProperties.size} propert${selectedProperties.size !== 1 ? 'ies' : 'y'}? This action cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) return;
+
+    setBulkActionLoading(true);
+    try {
+      // Delete properties one by one
+      const deletePromises = Array.from(selectedProperties).map(id => deleteProperty(id));
+      await Promise.all(deletePromises);
+
+      showSuccess(`${selectedProperties.size} propert${selectedProperties.size !== 1 ? 'ies' : 'y'} deleted successfully.`);
+      
+      // Clear selection and refresh data
+      setSelectedProperties(new Set());
+      setShowBulkActions(false);
+      updateFilters({});
+    } catch (error) {
+      console.error('Failed to delete properties:', error);
+      showError('Failed to delete some properties. Please try again.');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   const clearSelection = () => {
     setSelectedProperties(new Set());
     setShowBulkActions(false);
@@ -435,6 +462,19 @@ const PropertyListPageEnhanced: React.FC = () => {
                     <Wrench className="h-4 w-4 mr-2" />
                   )}
                   Mark as Maintenance
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={bulkActionLoading}
+                >
+                  {bulkActionLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-2" />
+                  )}
+                  Delete Selected
                 </Button>
                 <Button
                   variant="outline"

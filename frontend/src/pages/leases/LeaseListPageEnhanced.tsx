@@ -1,13 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, CheckCircle2, XCircle, Clock, AlertTriangle, Calendar, Eye, Edit, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { Plus, Search, FileText, CheckCircle2, XCircle, Clock, AlertTriangle, Calendar, Eye, Edit, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, Download, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
 import { Pagination } from '../../components/ui/pagination';
-import { useLeases } from '../../hooks/useLeases';
+import { useLeases, useDeleteLease } from '../../hooks/useLeases';
 import { useTenants } from '../../hooks/useTenants';
 import { useUnits } from '../../hooks/useUnits';
 import { AppLayout } from '../../components/layout';
@@ -35,10 +43,13 @@ const LeaseListPageEnhanced: React.FC = () => {
   const [selectedLeases, setSelectedLeases] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [leaseToDelete, setLeaseToDelete] = useState<{id: string, tenantName: string} | null>(null);
   
   const { leases, loading } = useLeases();
   const { tenants } = useTenants();
   const { units } = useUnits();
+  const { mutate: deleteLease, loading: deleteLoading } = useDeleteLease();
 
   // Helper functions
   const getTenantName = (tenantId: string) => {
@@ -231,6 +242,33 @@ const LeaseListPageEnhanced: React.FC = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedLeases.size === 0) return;
+
+    const confirmMessage = `Are you sure you want to delete ${selectedLeases.size} lease${selectedLeases.size !== 1 ? 's' : ''}? This action cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) return;
+
+    setBulkActionLoading(true);
+    try {
+      // Delete leases one by one
+      const deletePromises = Array.from(selectedLeases).map(id => deleteLease(id));
+      await Promise.all(deletePromises);
+
+      console.log('Deleted leases:', Array.from(selectedLeases));
+
+      // Clear selection after successful operation
+      setSelectedLeases(new Set());
+      setShowBulkActions(false);
+      // TODO: Show success toast
+    } catch (error) {
+      console.error('Failed to delete leases:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   const handleBulkExport = () => {
     const selectedData = paginatedLeases.filter(l => selectedLeases.has(l.id));
 
@@ -269,6 +307,25 @@ const LeaseListPageEnhanced: React.FC = () => {
     // Clear selection after export
     setSelectedLeases(new Set());
     setShowBulkActions(false);
+  };
+
+  const handleDeleteClick = (id: string, tenantName: string) => {
+    setLeaseToDelete({ id, tenantName });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!leaseToDelete) return;
+
+    try {
+      await deleteLease(leaseToDelete.id);
+      setDeleteDialogOpen(false);
+      setLeaseToDelete(null);
+      // TODO: Show success toast
+    } catch (error) {
+      console.error('Failed to delete lease:', error);
+      // TODO: Show error toast
+    }
   };
 
   const clearSelection = () => {
@@ -627,6 +684,19 @@ const LeaseListPageEnhanced: React.FC = () => {
                     Terminate Selected
                   </Button>
                   <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Delete Selected
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={handleBulkExport}
@@ -751,6 +821,16 @@ const LeaseListPageEnhanced: React.FC = () => {
                                   }}
                                 >
                                   <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(lease.id, getTenantName(lease.tenantId));
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
                                 </Button>
                               </div>
                             </TableCell>
@@ -904,6 +984,34 @@ const LeaseListPageEnhanced: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Lease</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the lease for "{leaseToDelete?.tenantName}"? This action cannot be undone and will also delete all associated payment records.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

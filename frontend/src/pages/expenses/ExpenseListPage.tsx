@@ -15,6 +15,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import type { Property } from '../../types/property';
 import type { Unit } from '../../types/unit';
 import type { ExpenseWithDetails, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue, ExpenseStatusValue } from '../../types/expense';
+import { getErrorMessage } from '../../types/api';
 
 const ExpenseListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -287,7 +288,7 @@ const ExpenseListPage: React.FC = () => {
       refetch();
     } catch (error) {
       console.error('Failed to delete expense:', error);
-      showError('Delete Failed', deleteExpense.error || 'An unexpected error occurred while deleting the expense');
+      showError('Delete Failed', getErrorMessage(deleteExpense.error) || 'An unexpected error occurred while deleting the expense');
     }
   };
 
