@@ -8,6 +8,7 @@ import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { AppLayout } from '../../components/layout/AppLayout';
+import { getErrorMessage } from '../../types/api';
 import type { PropertyFilters } from '../../types/property';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { createPageLogger } from '../../utils/logger';
@@ -18,7 +19,7 @@ const PropertyListPage: React.FC = () => {
   const navigate = useNavigate();
   const [filters] = useState<PropertyFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const { properties, loading, error, updateFilters } = useProperties(filters);
+  const { properties, loading, error, displayError, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
 
   React.useEffect(() => {
@@ -107,7 +108,7 @@ const PropertyListPage: React.FC = () => {
           </div>
           <div className="flex-1 flex items-center justify-center">
             <Card className="p-8 text-center max-w-md">
-              <p className="text-red-600 mb-4">Error loading properties: {error}</p>
+              <p className="text-red-600 mb-4">Error loading properties: {displayError}</p>
               <Button onClick={() => updateFilters({})}>Try Again</Button>
             </Card>
           </div>

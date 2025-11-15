@@ -12,6 +12,13 @@ export interface ApiError {
   details?: Record<string, unknown>;
 }
 
+// Utility function to get error message from string or ApiError
+export function getErrorMessage(error: string | ApiError | null | undefined): string {
+  if (!error) return '';
+  if (typeof error === 'string') return error;
+  return error.message;
+}
+
 export interface AuthResponse {
   user: any; // TODO: Define proper user type
   tokens: {
@@ -63,5 +70,5 @@ export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
 export interface AsyncState<T> {
   data: T | null;
   loading: boolean;
-  error: string | null;
+  error: string | ApiError | null;
 }

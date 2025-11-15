@@ -121,6 +121,90 @@ export class PropertyController {
       ResponseUtils.created(res, property, 'Property created successfully');
     } catch (err) {
       const errorMessage = (err as Error).message;
+
+      // Map backend validation errors to field-specific errors
+      const fieldErrors: Record<string, string> = {};
+
+      // Name validation errors
+      if (errorMessage.includes('Property name is required')) {
+        fieldErrors.name = 'Property name is required';
+      } else if (errorMessage.includes('Property name must be less than')) {
+        fieldErrors.name = 'Property name is too long (max 255 characters)';
+      }
+
+      // Description validation errors
+      if (errorMessage.includes('Property description must be less than')) {
+        fieldErrors.description = 'Description is too long (max 1000 characters)';
+      }
+
+      // Property type validation
+      if (errorMessage.includes('Invalid property type')) {
+        fieldErrors.propertyType = 'Please select a valid property type';
+      }
+
+      // Status validation
+      if (errorMessage.includes('Invalid property status')) {
+        fieldErrors.status = 'Please select a valid property status';
+      }
+
+      // Area validation
+      if (errorMessage.includes('Property area is required')) {
+        fieldErrors.totalArea = 'Property area is required';
+      } else if (errorMessage.includes('Property area must be between')) {
+        fieldErrors.totalArea = 'Property area must be between 1 and 100,000 sq ft';
+      }
+
+      // Address validation errors
+      if (errorMessage.includes('Street address is required')) {
+        fieldErrors['address.street'] = 'Street address is required';
+      } else if (errorMessage.includes('Street address must be less than')) {
+        fieldErrors['address.street'] = 'Street address is too long (max 255 characters)';
+      }
+
+      if (errorMessage.includes('City is required')) {
+        fieldErrors['address.city'] = 'City is required';
+      } else if (errorMessage.includes('City must be less than')) {
+        fieldErrors['address.city'] = 'City is too long (max 100 characters)';
+      }
+
+      if (errorMessage.includes('State is required')) {
+        fieldErrors['address.state'] = 'State is required';
+      } else if (errorMessage.includes('State must be less than')) {
+        fieldErrors['address.state'] = 'State is too long (max 100 characters)';
+      }
+
+      if (errorMessage.includes('Pincode must be a valid')) {
+        fieldErrors['address.pincode'] = 'Pincode must be a valid 5 or 6-digit number';
+      }
+
+      // Owner validation
+      if (errorMessage.includes('Property owner is required')) {
+        fieldErrors.ownerId = 'Property owner is required';
+      }
+
+      // Amenities validation
+      if (errorMessage.includes('Too many amenities')) {
+        fieldErrors.buildingAmenities = 'Too many amenities selected (max 50)';
+      }
+
+      // Photos validation
+      if (errorMessage.includes('Too many photos')) {
+        fieldErrors.buildingPhotos = 'Too many photos selected (max 20)';
+      }
+
+      // If we have field-specific errors, return them
+      if (Object.keys(fieldErrors).length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Validation failed',
+            details: fieldErrors
+          }
+        });
+      }
+
+      // Fallback for other validation errors
       if (errorMessage.includes('required') || errorMessage.includes('Invalid') ||
           errorMessage.includes('cannot be') || errorMessage.includes('must be')) {
         ResponseUtils.badRequest(res, errorMessage);

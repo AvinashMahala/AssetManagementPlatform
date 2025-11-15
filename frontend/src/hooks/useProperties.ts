@@ -17,7 +17,7 @@ export function useProperties(filters?: PropertyFilters) {
     return propertyService.getAll(currentFilters);
   }, [currentFilters]);
 
-  const { data, loading, error, refetch } = useApi<Property[]>(query, [currentFilters]);
+  const { data, loading, error, refetch, displayError } = useApi<Property[]>(query, [currentFilters]);
 
   const updateFilters = useCallback((newFilters: Partial<PropertyFilters>) => {
     setCurrentFilters(prev => ({ ...prev, ...newFilters }));
@@ -40,6 +40,7 @@ export function useProperties(filters?: PropertyFilters) {
     properties: Array.isArray(properties) ? properties : [],
     loading,
     error,
+    displayError,
     refetch,
     filters: currentFilters,
     updateFilters,

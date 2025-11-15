@@ -12,7 +12,7 @@ import { formatDate } from '../../utils';
 const PropertyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: property, loading, error } = useProperty(id!);
+  const { data: property, loading, error, displayError } = useProperty(id!);
 
   if (loading) {
     return (
@@ -29,7 +29,7 @@ const PropertyDetailPage: React.FC = () => {
     return (
       <div className="container mx-auto py-6 max-w-6xl">
         <Card className="p-8 text-center">
-          <p className="text-destructive mb-4">{error || 'Property not found'}</p>
+          <p className="text-destructive mb-4">{displayError || 'Property not found'}</p>
           <Button onClick={() => navigate('/properties')}>Back to Properties</Button>
         </Card>
       </div>

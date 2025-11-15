@@ -10,7 +10,7 @@ const PropertyEditPageEnhanced: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: property, loading: fetchLoading } = useProperty(id!);
-  const { mutate: updateProperty, loading: updateLoading } = useUpdateProperty();
+  const { mutate: updateProperty, loading: updateLoading, error: updateError } = useUpdateProperty();
 
   const handleSubmit = async (data: PropertyInput) => {
     if (!id) {
@@ -18,19 +18,12 @@ const PropertyEditPageEnhanced: React.FC = () => {
     }
 
     try {
-      const response = await updateProperty({ id, data });
-
-      if (!response.success) {
-        const errorMessage = response.error?.message || 'Failed to update property';
-        alert(`Error: ${errorMessage}`);
-        return;
-      }
-
+      await updateProperty({ id, data });
       alert('Property updated successfully!');
       navigate(`/properties/${id}/dashboard`);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      alert(`Error: ${errorMessage}`);
+      console.error('Failed to update property:', error);
+      throw error; // Re-throw to let the form handle it
     }
   };
 
@@ -84,7 +77,8 @@ const PropertyEditPageEnhanced: React.FC = () => {
         onSubmit={handleSubmit}
         loading={updateLoading}
         isEdit={true}
-        propertyName={property.name}
+        propertyName={property?.name}
+        apiError={updateError}
       />
     </AppLayout>
   );

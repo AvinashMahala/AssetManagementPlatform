@@ -8,6 +8,7 @@ import { AppLayout } from '../../components/layout';
 import { useExpense, useProperties, useUnits } from '../../hooks';
 import type { Property } from '../../types/property';
 import type { Unit } from '../../types/unit';
+import { getErrorMessage } from '../../types/api';
 
 const ExpenseDetailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const ExpenseDetailPage: React.FC = () => {
           <div className="text-center">
             <div className="text-red-600">
               <p className="text-lg font-semibold">Error loading expense</p>
-              <p className="mt-2">{error || 'Expense not found'}</p>
+              <p className="mt-2">{getErrorMessage(error) || 'Expense not found'}</p>
             </div>
             <Button
               onClick={() => navigate('/expenses')}

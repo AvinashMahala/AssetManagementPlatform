@@ -68,7 +68,6 @@ export class PropertyRepository implements IPropertyRepository {
           ${COLUMNS.PROPERTIES.YEAR_BUILT},
           ${COLUMNS.PROPERTIES.PARKING_SPACES},
           ${COLUMNS.PROPERTIES.AMENITIES},
-          ${COLUMNS.PROPERTIES.PHOTOS},
           ${COLUMNS.PROPERTIES.OWNER_ID},
           ${COLUMNS.PROPERTIES.CO_OWNERS},
           ${COLUMNS.PROPERTIES.RECEIPT_SETTINGS},
@@ -80,7 +79,7 @@ export class PropertyRepository implements IPropertyRepository {
           owner_website,
           ${COLUMNS.PROPERTIES.CREATED_AT},
           ${COLUMNS.PROPERTIES.UPDATED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *`,
         [
           crypto.randomUUID(),
           data.name,
@@ -99,7 +98,6 @@ export class PropertyRepository implements IPropertyRepository {
           data.yearBuilt,
           data.parkingSpaces,
           JSON.stringify(data.buildingAmenities || []),
-          JSON.stringify(data.buildingPhotos || []),
           data.ownerId,
           JSON.stringify(data.coOwners || []),
           JSON.stringify(data.receiptSettings || null),

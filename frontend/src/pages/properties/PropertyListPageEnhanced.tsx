@@ -49,7 +49,7 @@ const PropertyListPageEnhanced: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   
-  const { properties, loading, error, updateFilters } = useProperties(filters);
+  const { properties, loading, error, displayError, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
   const { showSuccess, showError } = useNotifications();
 
@@ -241,7 +241,7 @@ const PropertyListPageEnhanced: React.FC = () => {
           <Card className="border-red-200 dark:border-red-800">
             <CardHeader>
               <CardTitle className="text-red-600 dark:text-red-400">Error Loading Properties</CardTitle>
-              <CardDescription>{error}</CardDescription>
+              <CardDescription>{displayError}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button onClick={() => updateFilters({})}>Try Again</Button>

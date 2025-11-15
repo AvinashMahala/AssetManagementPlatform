@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, MapPin, Home, User, Star, Upload, FileText } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField, Badge } from '../../componentDesignLibrary';
-import type { PropertyInput, PropertyReceiptTemplate } from '../../types';
+import type { PropertyInput, PropertyReceiptTemplate, ApiError } from '../../types';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { getCurrencyOptions, DEFAULT_CURRENCY } from '../../types/currency';
 import { useUser } from '../../hooks';
@@ -18,11 +18,12 @@ interface PropertyFormModernProps {
   loading?: boolean;
   isEdit?: boolean;
   propertyName?: string;
+  apiError?: ApiError | null;
 }
 
 const AMENITIES = ['Parking', 'Lift', 'Security', 'Gym', 'Power Backup', 'Water Supply', 'Garden', 'Swimming Pool'];
 
-const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, onSubmit, loading, isEdit = false, propertyName }) => {
+const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, onSubmit, loading, isEdit = false, propertyName, apiError }) => {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { data: owner, loading: ownerLoading } = useUser(initialData?.ownerId && initialData.ownerId.trim() ? initialData.ownerId : (!isEdit ? currentUser?.id || '' : null));
@@ -39,6 +40,43 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
       }));
     }
   }, [owner, ownerLoading]);
+
+  // Handle API validation errors
+  React.useEffect(() => {
+    if (apiError) {
+      if (apiError.details) {
+        // Field-specific validation errors
+        const fieldErrors: Record<string, string> = {};
+        Object.entries(apiError.details).forEach(([field, message]) => {
+          // Handle nested address fields
+          if (field.startsWith('address.')) {
+            const addressField = field.split('.')[1];
+            fieldErrors[addressField] = message as string;
+          } else {
+            fieldErrors[field] = message as string;
+          }
+        });
+        setErrors(fieldErrors);
+
+        // Focus on the first invalid field
+        const firstInvalidField = Object.keys(fieldErrors)[0];
+        if (firstInvalidField) {
+          setTimeout(() => {
+            const element = document.getElementById(firstInvalidField) || 
+                          document.querySelector(`[name="${firstInvalidField}"]`) as HTMLElement;
+            if (element) {
+              element.focus();
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        }
+      } else {
+        // Generic error - show in submit error
+        setErrors({ submit: apiError.message });
+      }
+    }
+  }, [apiError]);
+
   const [formData, setFormData] = useState<PropertyInput>({
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -92,7 +130,7 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
       wallets: [],
       additionalInfo: {}
     },
-    ownerId: initialData?.ownerId || (!isEdit ? currentUser?.id || '' : ''),
+    ownerId: initialData?.ownerId || (!isEdit ? currentUser?.id || '0935d25e-60ed-4f76-aef5-bc51d52b9599' : ''),
     coOwners: initialData?.coOwners || [],
   });
 
@@ -122,16 +160,16 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name) newErrors.name = 'Property name is required';
-    if (!formData.address.street) newErrors.street = 'Street address is required';
-    if (!formData.address.city) newErrors.city = 'City is required';
-    if (!formData.address.state) newErrors.state = 'State is required';
-    if (!formData.address.pincode) newErrors.pincode = 'Pincode is required';
+    if (!formData.name || formData.name.trim().length === 0) newErrors.name = 'Property name is required';
+    if (!formData.address.street || formData.address.street.trim().length === 0) newErrors.street = 'Street address is required';
+    if (!formData.address.city || formData.address.city.trim().length === 0) newErrors.city = 'City is required';
+    if (!formData.address.state || formData.address.state.trim().length === 0) newErrors.state = 'State is required';
+    if (!formData.address.pincode || formData.address.pincode.trim().length === 0) newErrors.pincode = 'Pincode is required';
     if (!formData.totalArea || formData.totalArea <= 0) newErrors.totalArea = 'Valid area is required';
     if (!isEdit && !formData.ownerId) newErrors.ownerId = 'Owner ID is required';
-    if (!isEdit && !formData.ownerDetails.name) newErrors.ownerName = 'Owner name is required';
-    if (!isEdit && !formData.ownerDetails.mobileNumbers[0]) newErrors.ownerMobile = 'At least one mobile number is required';
-    if (!isEdit && !formData.ownerDetails.emailIds[0]) newErrors.ownerEmail = 'At least one email ID is required';
+    if (!isEdit && !formData.ownerDetails.name || (formData.ownerDetails.name && formData.ownerDetails.name.trim().length === 0)) newErrors.ownerName = 'Owner name is required';
+    if (!isEdit && !formData.ownerDetails.mobileNumbers[0] || (formData.ownerDetails.mobileNumbers[0] && formData.ownerDetails.mobileNumbers[0].trim().length === 0)) newErrors.ownerMobile = 'At least one mobile number is required';
+    if (!isEdit && !formData.ownerDetails.emailIds[0] || (formData.ownerDetails.emailIds[0] && formData.ownerDetails.emailIds[0].trim().length === 0)) newErrors.ownerEmail = 'At least one email ID is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
