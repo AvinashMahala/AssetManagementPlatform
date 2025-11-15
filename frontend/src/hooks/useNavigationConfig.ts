@@ -31,13 +31,13 @@ const defaultNavItems: NavItem[] = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', enabled: true },
   { id: 'properties', name: 'Properties', icon: Building2, path: '/properties', enabled: true },
   { id: 'units', name: 'Units', icon: Home, path: '/units', enabled: true },
+  { id: 'meters', name: 'Meters', icon: Zap, path: '/meters', enabled: true },
   { id: 'tenants', name: 'Tenants', icon: Users, path: '/tenants', enabled: true },
   { id: 'leases', name: 'Leases', icon: FileText, path: '/leases', enabled: true },
-  { id: 'payments', name: 'Payments', icon: CreditCard, path: '/payments', enabled: true },
   { id: 'expenses', name: 'Expenses', icon: Receipt, path: '/expenses', enabled: true },
+  { id: 'payments', name: 'Payments', icon: CreditCard, path: '/payments', enabled: true },
   { id: 'bulk-operations', name: 'Bulk Operations', icon: Wrench, path: '/bulk-operations', enabled: true },
   { id: 'files', name: 'Files', icon: FileText, path: '/files', enabled: true },
-  { id: 'meters', name: 'Meters', icon: Zap, path: '/meters', enabled: true },
   { id: 'templates', name: 'Templates', icon: FileImage, path: '/templates', enabled: true },
 ];
 

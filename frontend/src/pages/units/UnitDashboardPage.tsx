@@ -259,7 +259,15 @@ export const UnitDashboardPage: React.FC = () => {
 
       {/* Utility Consumption */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Utility Consumption</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Utility Consumption</h2>
+          <Button
+            onClick={() => navigate(`/meters/create?propertyId=${unit.propertyId}&unitId=${id}`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Add Meter
+          </Button>
+        </div>
         
         {utilityAnalytics.hasMeters ? (
           <>

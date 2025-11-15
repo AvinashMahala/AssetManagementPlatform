@@ -58,8 +58,8 @@ const MeterFormModern: React.FC<MeterFormModernProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.propertyId) newErrors.propertyId = 'Property is required';
-    if (!formData.unitId) newErrors.unitId = 'Unit is required';
+    if (!formData.propertyId && !initialData?.propertyId) newErrors.propertyId = 'Property is required';
+    if (!formData.unitId && !initialData?.unitId) newErrors.unitId = 'Unit is required';
     if (!formData.meterName.trim()) newErrors.meterName = 'Meter name is required';
     if (!formData.meterType) newErrors.meterType = 'Meter type is required';
     if (formData.costPerUnit <= 0) newErrors.costPerUnit = 'Cost per unit must be greater than 0';
@@ -99,7 +99,7 @@ const MeterFormModern: React.FC<MeterFormModernProps> = ({
           <Select
             value={formData.propertyId}
             onValueChange={(value) => handleChange('propertyId', value)}
-            disabled={propertiesLoading}
+            disabled={propertiesLoading || !!initialData?.propertyId}
           >
             <SelectTrigger error={errors.propertyId} className="h-10">
               <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
@@ -112,13 +112,18 @@ const MeterFormModern: React.FC<MeterFormModernProps> = ({
               ))}
             </SelectContent>
           </Select>
+          {initialData?.propertyId && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Property is pre-selected from the current context
+            </p>
+          )}
         </FormField>
 
         <FormField label="Unit" required>
           <Select
             value={formData.unitId}
             onValueChange={(value) => handleChange('unitId', value)}
-            disabled={!formData.propertyId || unitsLoading}
+            disabled={!formData.propertyId || unitsLoading || !!initialData?.unitId}
           >
             <SelectTrigger error={errors.unitId} className="h-10">
               <SelectValue
@@ -139,6 +144,11 @@ const MeterFormModern: React.FC<MeterFormModernProps> = ({
               ))}
             </SelectContent>
           </Select>
+          {initialData?.unitId && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Unit is pre-selected from the current context
+            </p>
+          )}
         </FormField>
 
         <FormField label="Meter Type" required>
