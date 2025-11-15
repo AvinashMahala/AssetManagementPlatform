@@ -427,10 +427,25 @@ const ExpenseListPage: React.FC = () => {
               Manage property and unit expenses
             </p>
           </div>
-          <Button onClick={() => navigate('/expenses/create')} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add Expense
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/expenses/create')}
+              title="Quick form with all sections on one page"
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Quick Add
+            </Button>
+            <Button
+              onClick={() => navigate('/expenses/create-tabbed')}
+              title="Step-by-step guided form with progress tracking"
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Guided Add
+            </Button>
+          </div>
         </div>
 
         {/* Statistics Cards */}

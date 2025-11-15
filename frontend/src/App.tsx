@@ -9,12 +9,13 @@ import { TenantCreatePageEnhanced, TenantCreatePageTabbed, TenantDetailPage, Ten
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
 import { UnitCreatePageEnhanced, UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
-import { LeaseCreatePageEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
+import { LeaseCreatePageEnhanced, LeaseCreatePageTabbed, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
 import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
-import { PaymentCreatePageEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
+import { PaymentCreatePageEnhanced, PaymentCreatePageTabbed, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import ExpenseListPage from './pages/expenses/ExpenseListPage';
 import ExpenseFormPage from './pages/expenses/ExpenseFormPage';
+import ExpenseCreatePageTabbed from './pages/expenses/ExpenseCreatePageTabbed';
 import ExpenseDetailPage from './pages/expenses/ExpenseDetailPage';
 import NavigationConfigPage from './pages/NavigationConfigPage';
 import DashboardEnhanced from './pages/DashboardEnhanced';
@@ -171,16 +172,19 @@ function App() {
               
               <Route path="/leases" element={<ProtectedRoute><LeaseListPageEnhanced /></ProtectedRoute>} />
               <Route path="/leases/create" element={<ProtectedRoute><LeaseCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/leases/create-tabbed" element={<ProtectedRoute><LeaseCreatePageTabbed /></ProtectedRoute>} />
               <Route path="/leases/:id" element={<ProtectedRoute><AppLayout><LeaseDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/leases/:id/edit" element={<ProtectedRoute><LeaseEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/payments" element={<ProtectedRoute><PaymentListPageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/payments/create-tabbed" element={<ProtectedRoute><PaymentCreatePageTabbed /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
 
               <Route path="/expenses" element={<ProtectedRoute><ExpenseListPage /></ProtectedRoute>} />
               <Route path="/expenses/create" element={<ProtectedRoute><ExpenseFormPage /></ProtectedRoute>} />
+              <Route path="/expenses/create-tabbed" element={<ProtectedRoute><ExpenseCreatePageTabbed /></ProtectedRoute>} />
               <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetailPage /></ProtectedRoute>} />
               <Route path="/expenses/:id/edit" element={<ProtectedRoute><ExpenseFormPage /></ProtectedRoute>} />
 
