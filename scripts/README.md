@@ -77,21 +77,41 @@ python3 scripts/clean_unit_data.py
 
 **Safety**: Asks for confirmation before proceeding. This action cannot be undone.
 
-### 4. `seed_unit_data.py`
-**Purpose**: Seeds unit-related data back to the database after cleanup.
+### 5. `clean_meter_data.py`
+**Purpose**: Clears all meter-related data while preserving core system data.
 
-**What it seeds**:
-- Units for existing properties
-- Leases and rent payments for occupied units
-- Unit-tenant relationships
-- Sample meter readings
+**What it clears**:
+- Meters
+- Meter readings
+
+**What it preserves**:
+- Users
+- Properties
+- Units
+- Tenants
+- Other system data
 
 **Usage**:
 ```bash
-python3 scripts/seed_unit_data.py
+python3 scripts/clean_meter_data.py
 ```
 
-**Dependencies**: Requires existing properties and tenants in the database.
+**Safety**: Asks for confirmation before proceeding. This action cannot be undone.
+
+### 6. `seed_meter_data.py`
+**Purpose**: Seeds meter-related data back to the database after cleanup.
+
+**What it seeds**:
+- Meters for existing units (electricity, water, gas)
+- Historical meter readings for the past 6-12 months
+- Realistic pricing configurations
+
+**Usage**:
+```bash
+python3 scripts/seed_meter_data.py
+```
+
+**Dependencies**: Requires existing properties and units in the database.
 
 ## Workflow
 
@@ -104,6 +124,11 @@ python3 scripts/seed_unit_data.py
 1. **Backup** your current data if needed
 2. Run cleanup: `python3 scripts/clean_unit_data.py`
 3. Run seeding: `python3 scripts/seed_unit_data.py`
+
+### To reset meter data:
+1. **Backup** your current data if needed
+2. Run cleanup: `python3 scripts/clean_meter_data.py`
+3. Run seeding: `python3 scripts/seed_meter_data.py`
 
 ### Prerequisites
 - Python 3.x

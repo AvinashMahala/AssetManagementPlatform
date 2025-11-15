@@ -157,13 +157,24 @@ export const MeterListPage: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900">Meters</h1>
               <p className="mt-2 text-gray-600">Manage utility meters for your properties</p>
             </div>
-            <Button
-              onClick={() => navigate('/meters/create')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Meter
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/meters/create')}
+                title="Add a meter quickly with essential details"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Quick Add
+              </Button>
+              <Button
+                onClick={() => navigate('/meters/create-tabbed')}
+                title="Step through a comprehensive meter configuration process"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Guided Add
+              </Button>
+            </div>
           </div>
 
           {/* Success Message */}

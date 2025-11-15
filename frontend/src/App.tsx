@@ -5,7 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConsentDialog, DevTools } from './components/ConsentDialog';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyCreatePageTabbed, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
-import { TenantCreatePageEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
+import { TenantCreatePageEnhanced, TenantCreatePageTabbed, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
 import { UnitCreatePageEnhanced, UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
@@ -22,7 +22,7 @@ import TemplateEditor from './pages/TemplateEditor';
 import TemplateGallery from './pages/TemplateGallery';
 import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
 import { PropertyRentCollectionPage, UnitRentCollectionPage, MonthlySummaryDashboard, RentCollectionWorkflowDashboard } from './pages/rentCollection';
-import { MeterListPage, MeterCreatePage, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
+import { MeterListPage, MeterCreatePage, MeterCreatePageTabbedEnhanced, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
 import FilesPage from './pages/FilesPage';
 import { RentTransactionInvoicePage, RentTransactionRecordPaymentPage, RentTransactionReceiptPage } from './pages/rentTransactions';
 import { BulkOperationsDashboard } from './pages/bulkOperations/BulkOperationsDashboard';
@@ -158,6 +158,7 @@ function App() {
 
               <Route path="/tenants" element={<ProtectedRoute><TenantListPageEnhanced /></ProtectedRoute>} />
               <Route path="/tenants/create" element={<ProtectedRoute><TenantCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/tenants/create-tabbed" element={<ProtectedRoute><TenantCreatePageTabbed /></ProtectedRoute>} />
               <Route path="/tenants/:id" element={<ProtectedRoute><AppLayout><TenantDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPageEnhanced /></ProtectedRoute>} />
               
@@ -187,6 +188,7 @@ function App() {
 
               <Route path="/meters" element={<ProtectedRoute><MeterListPage /></ProtectedRoute>} />
               <Route path="/meters/create" element={<ProtectedRoute><MeterCreatePage /></ProtectedRoute>} />
+              <Route path="/meters/create-tabbed" element={<ProtectedRoute><MeterCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/meters/:id" element={<ProtectedRoute><MeterDetailPage /></ProtectedRoute>} />
               <Route path="/meters/:id/edit" element={<ProtectedRoute><MeterEditPage /></ProtectedRoute>} />
               <Route path="/meters/:id/readings/create" element={<ProtectedRoute><MeterReadingCreatePage /></ProtectedRoute>} />

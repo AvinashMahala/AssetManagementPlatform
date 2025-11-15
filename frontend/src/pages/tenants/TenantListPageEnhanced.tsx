@@ -222,8 +222,22 @@ const TenantListPageEnhanced: React.FC = () => {
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
-            <Button onClick={() => navigate('/tenants/create')} size="lg">
-              <Plus className="mr-2 h-4 w-4" /> Add Tenant
+            <Button
+              variant="outline"
+              onClick={() => navigate('/tenants/create')}
+              title="Quick form with all sections on one page"
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Quick Add
+            </Button>
+            <Button
+              onClick={() => navigate('/tenants/create-tabbed')}
+              title="Step-by-step guided form with progress tracking"
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Guided Add
             </Button>
           </div>
         </div>
