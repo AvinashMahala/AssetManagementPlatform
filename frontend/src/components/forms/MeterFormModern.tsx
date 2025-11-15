@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Zap, Settings, DollarSign } from 'lucide-react';
 import { BaseForm, FormColumn, FormField } from '../../componentDesignLibrary';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useProperties, useUnits } from '../../hooks';
 import { MeterType } from '../../types/meter';
 import type { MeterInput } from '../../types/meter';
+import { generateMeterName } from '../../utils/helpers';
 
 interface MeterFormModernProps {
   initialData?: Partial<MeterInput>;
@@ -40,6 +41,27 @@ const MeterFormModern: React.FC<MeterFormModernProps> = ({
 
   // Filter units based on selected property
   const availableUnits = allUnits?.filter(unit => unit.propertyId === formData.propertyId) || [];
+
+  // Auto-generate meter name when property, unit, and meter type are available
+  useEffect(() => {
+    if (formData.propertyId && formData.unitId && formData.meterType && !initialData?.meterName) {
+      const selectedProperty = availableProperties.find(p => p.id === formData.propertyId);
+      const currentAvailableUnits = allUnits?.filter(unit => unit.propertyId === formData.propertyId) || [];
+      const selectedUnit = currentAvailableUnits.find(u => u.id === formData.unitId);
+
+      if (selectedProperty && selectedUnit) {
+        const generatedName = generateMeterName(
+          selectedProperty.name,
+          selectedUnit.unitNumber,
+          formData.meterType
+        );
+        // Only update if the generated name is different from current name
+        if (generatedName !== formData.meterName) {
+          setFormData(prev => ({ ...prev, meterName: generatedName }));
+        }
+      }
+    }
+  }, [formData.propertyId, formData.unitId, formData.meterType, availableProperties, allUnits, initialData?.meterName]);
 
   const handleChange = (field: keyof MeterInput, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));

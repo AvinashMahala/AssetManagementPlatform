@@ -21,7 +21,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (credentials: UserCredentials) => Promise<boolean>;
+  login: (credentials: UserCredentials) => Promise<{ success: boolean; error?: string }>;
   register: (userData: UserRegistrationInput) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -44,7 +44,34 @@ interface AuthContextType {
   devModeLogin: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  isAuthenticated: false,
+  loading: true,
+  login: async () => ({ success: false, error: 'AuthProvider not initialized' }),
+  register: async () => false,
+  logout: async () => {},
+  checkAuth: async () => {},
+  verifyEmail: async () => false,
+  resendVerification: async () => false,
+  requestPhoneVerification: async () => false,
+  verifyPhone: async () => false,
+  getPasswordResetOptions: async () => ({ availableMethods: [], enabledMethods: [], hasSecurityQuestions: false, recoveryCodesCount: 0 }),
+  enableResetMethod: async () => false,
+  disableResetMethod: async () => false,
+  setupSecurityQuestions: async () => false,
+  generateRecoveryCodes: async () => [],
+  resetPasswordViaSecurityQuestions: async () => false,
+  resetPasswordViaRecoveryCode: async () => false,
+  adminResetPassword: async () => '',
+  googleAuth: async () => false,
+  refreshToken: async () => false,
+  updateProfile: async () => false,
+  linkGoogle: async () => false,
+  devModeLogin: () => {},
+};
+
+const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -105,17 +132,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (credentials: UserCredentials): Promise<boolean> => {
+  const login = async (credentials: UserCredentials): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
     try {
+      // Remove in Prod : Simulate network delay for better UX in development
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const authResponse = await authService.login(credentials);
       setUser(authResponse.user);
       setIsAuthenticated(true);
       apiClient.setAuthToken(authResponse.tokens.accessToken);
       // Store refresh token in localStorage or secure storage
       localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
-      return true;
-    } catch (_error) {
-      return false;
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Login failed';
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -355,7 +389,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuthContext = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuthContext must be used within an AuthProvider');
   }
   return context;
