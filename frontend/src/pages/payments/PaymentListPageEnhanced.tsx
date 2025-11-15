@@ -497,21 +497,12 @@ const PaymentListPageEnhanced: React.FC = () => {
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
             <Button
-              variant="outline"
-              onClick={() => navigate('/payments/create')}
-              title="Quick form with all sections on one page"
-              size="lg"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Quick Add
-            </Button>
-            <Button
               onClick={() => navigate('/payments/create-tabbed')}
               title="Step-by-step guided form with progress tracking"
               size="lg"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Guided Add
+              Record Payment
             </Button>
           </div>
         </div>

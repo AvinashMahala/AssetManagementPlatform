@@ -5,13 +5,13 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConsentDialog, DevTools } from './components/ConsentDialog';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyCreatePageTabbed, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
-import { TenantCreatePageEnhanced, TenantCreatePageTabbedEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
+import { TenantCreatePageTabbedEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
-import { UnitCreatePageEnhanced, UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
+import { UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
-import { LeaseCreatePageEnhanced, LeaseCreatePageTabbedEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
+import { LeaseCreatePageTabbedEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
 import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
-import { PaymentCreatePageEnhanced, PaymentCreatePageTabbedEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
+import { PaymentCreatePageTabbedEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import ExpenseListPage from './pages/expenses/ExpenseListPage';
 import ExpenseFormPage from './pages/expenses/ExpenseFormPage';
@@ -23,7 +23,7 @@ import TemplateEditor from './pages/TemplateEditor';
 import TemplateGallery from './pages/TemplateGallery';
 import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
 import { PropertyRentCollectionPage, UnitRentCollectionPage, MonthlySummaryDashboard, RentCollectionWorkflowDashboard } from './pages/rentCollection';
-import { MeterListPage, MeterCreatePage, MeterCreatePageTabbedEnhanced, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
+import { MeterListPage, MeterCreatePageTabbedEnhanced, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
 import FilesPage from './pages/FilesPage';
 import { RentTransactionInvoicePage, RentTransactionRecordPaymentPage, RentTransactionReceiptPage } from './pages/rentTransactions';
 import { BulkOperationsDashboard } from './pages/bulkOperations/BulkOperationsDashboard';
@@ -158,32 +158,32 @@ function App() {
               />
 
               <Route path="/tenants" element={<ProtectedRoute><TenantListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/tenants/create" element={<ProtectedRoute><TenantCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/tenants/create" element={<Navigate to="/tenants/create-tabbed" replace />} />
               <Route path="/tenants/create-tabbed" element={<ProtectedRoute><TenantCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/tenants/:id" element={<ProtectedRoute><AppLayout><TenantDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/units/create" element={<ProtectedRoute><UnitCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/units/create" element={<Navigate to="/units/create-tabbed" replace />} />
               <Route path="/units/create-tabbed" element={<ProtectedRoute><UnitCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/units/:id" element={<ProtectedRoute><AppLayout><UnitDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/dashboard" element={<ProtectedRoute><AppLayout><UnitDashboardPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/edit" element={<ProtectedRoute><UnitEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/leases" element={<ProtectedRoute><LeaseListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/leases/create" element={<ProtectedRoute><LeaseCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/leases/create" element={<Navigate to="/leases/create-tabbed" replace />} />
               <Route path="/leases/create-tabbed" element={<ProtectedRoute><LeaseCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/leases/:id" element={<ProtectedRoute><AppLayout><LeaseDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/leases/:id/edit" element={<ProtectedRoute><LeaseEditPageEnhanced /></ProtectedRoute>} />
               
               <Route path="/payments" element={<ProtectedRoute><PaymentListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/payments/create" element={<ProtectedRoute><PaymentCreatePageEnhanced /></ProtectedRoute>} />
+              <Route path="/payments/create" element={<Navigate to="/payments/create-tabbed" replace />} />
               <Route path="/payments/create-tabbed" element={<ProtectedRoute><PaymentCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
 
               <Route path="/expenses" element={<ProtectedRoute><ExpenseListPage /></ProtectedRoute>} />
-              <Route path="/expenses/create" element={<ProtectedRoute><ExpenseFormPage /></ProtectedRoute>} />
+              <Route path="/expenses/create" element={<Navigate to="/expenses/create-tabbed" replace />} />
               <Route path="/expenses/create-tabbed" element={<ProtectedRoute><ExpenseCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetailPage /></ProtectedRoute>} />
               <Route path="/expenses/:id/edit" element={<ProtectedRoute><ExpenseFormPage /></ProtectedRoute>} />
@@ -191,7 +191,7 @@ function App() {
               <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
 
               <Route path="/meters" element={<ProtectedRoute><MeterListPage /></ProtectedRoute>} />
-              <Route path="/meters/create" element={<ProtectedRoute><MeterCreatePage /></ProtectedRoute>} />
+              <Route path="/meters/create" element={<Navigate to="/meters/create-tabbed" replace />} />
               <Route path="/meters/create-tabbed" element={<ProtectedRoute><MeterCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/meters/:id" element={<ProtectedRoute><MeterDetailPage /></ProtectedRoute>} />
               <Route path="/meters/:id/edit" element={<ProtectedRoute><MeterEditPage /></ProtectedRoute>} />
