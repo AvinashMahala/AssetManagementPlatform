@@ -16,6 +16,8 @@ interface UnitFormTabbedProps {
   initialData?: Partial<UnitInput>;
   onSubmit: (data: UnitInput) => Promise<void>;
   loading?: boolean;
+  isEdit?: boolean;
+  unitId?: string;
 }
 
 const COMMON_AMENITIES = [
@@ -33,7 +35,9 @@ const TABS = [
 const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   initialData,
   onSubmit,
-  loading
+  loading,
+  isEdit = false,
+  unitId
 }) => {
   const navigate = useNavigate();
   const { properties: availableProperties, loading: propertiesLoading } = useProperties();
@@ -100,11 +104,31 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  const hasTabData = (tabId: string): boolean => {
+    switch (tabId) {
+      case 'basic':
+        return !!(formData.propertyId || formData.unitNumber || formData.floor || formData.unitType || formData.status);
+      case 'physical':
+        return !!(formData.area || formData.bedrooms || formData.bathrooms || formData.balconies);
+      case 'financial':
+        return !!(formData.monthlyRent || formData.securityDeposit || formData.maintenanceCharges);
+      case 'amenities':
+        return !!((formData.unitAmenities && formData.unitAmenities.length > 0) || formData.description || (formData.unitPhotos && formData.unitPhotos.length > 0));
+      default:
+        return false;
+    }
+  };
+
   const handleTabChange = (tabId: string) => {
-    // Validate current tab before allowing navigation
-    if (validateTab(currentTab)) {
-      setCompletedTabs(prev => new Set([...prev, currentTab]));
+    // In edit mode, allow free navigation without validation
+    if (isEdit) {
       setCurrentTab(tabId);
+    } else {
+      // In create mode, validate current tab before allowing navigation
+      if (validateTab(currentTab)) {
+        setCompletedTabs(prev => new Set([...prev, currentTab]));
+        setCurrentTab(tabId);
+      }
     }
   };
 
@@ -150,7 +174,11 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/units');
+    if (isEdit && unitId) {
+      navigate(`/units/${unitId}`);
+    } else {
+      navigate('/units');
+    }
   };
 
   const currentTabIndex = TABS.findIndex(tab => tab.id === currentTab);
@@ -160,8 +188,12 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Unit - Guided Setup</h1>
-        <p className="text-gray-600">Complete each section to create your unit step by step.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {isEdit ? 'Edit Unit' : 'Create Unit - Guided Setup'}
+        </h1>
+        <p className="text-gray-600">
+          {isEdit ? 'Update unit information across different sections.' : 'Complete each section to create your unit step by step.'}
+        </p>
       </div>
 
       {/* Progress Indicator */}
@@ -170,20 +202,24 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
           {TABS.map((tab, index) => {
             const isCompleted = completedTabs.has(tab.id);
             const isCurrent = tab.id === currentTab;
+            const hasData = isEdit ? hasTabData(tab.id) : isCompleted;
             const Icon = tab.icon;
 
             return (
               <React.Fragment key={tab.id}>
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                    isCompleted ? 'bg-green-500 border-green-500 text-white' :
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 relative ${
+                    hasData ? 'bg-green-500 border-green-500 text-white' :
                     isCurrent ? 'bg-blue-500 border-blue-500 text-white' :
                     'bg-gray-100 border-gray-300 text-gray-400'
                   }`}>
-                    {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    {hasData ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    {isEdit && hasData && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    )}
                   </div>
                   <span className={`text-sm mt-2 font-medium ${
-                    isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                    isCurrent ? 'text-blue-600' : hasData ? 'text-green-600' : 'text-gray-400'
                   }`}>
                     {tab.label}
                   </span>
@@ -193,7 +229,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                 </div>
                 {index < TABS.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-4 mt-5 ${
-                    completedTabs.has(tab.id) ? 'bg-green-500' : 'bg-gray-200'
+                    hasData ? 'bg-green-500' : 'bg-gray-200'
                   }`} />
                 )}
               </React.Fragment>
@@ -557,7 +593,22 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
             </div>
 
             <div className="flex space-x-4">
-              {!isLastTab ? (
+              {/* Navigation buttons for edit mode */}
+              {isEdit && !isFirstTab && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={loading}
+                  className="flex items-center space-x-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Previous</span>
+                </Button>
+              )}
+
+              {/* Next button for create mode */}
+              {!isLastTab && !isEdit ? (
                 <Button
                   type="button"
                   onClick={handleNext}
@@ -574,7 +625,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                   className="flex items-center space-x-2"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{loading ? 'Creating Unit...' : 'Create Unit'}</span>
+                  <span>{loading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Unit')}</span>
                 </Button>
               )}
             </div>

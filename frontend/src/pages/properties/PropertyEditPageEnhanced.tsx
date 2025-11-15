@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProperty, useUpdateProperty } from '../../hooks';
-import PropertyFormModern from '../../components/forms/PropertyFormModern';
+import PropertyFormTabbed from '../../components/forms/PropertyFormTabbed';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { Card, CardContent } from '../../components/ui/card';
 import type { PropertyInput } from '../../types';
@@ -72,14 +72,17 @@ const PropertyEditPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <PropertyFormModern
-        initialData={property}
-        onSubmit={handleSubmit}
-        loading={updateLoading}
-        isEdit={true}
-        propertyName={property?.name}
-        apiError={updateError}
-      />
+      <div className="py-8">
+        <PropertyFormTabbed
+          initialData={property}
+          onSubmit={handleSubmit}
+          loading={updateLoading}
+          isEdit={true}
+          propertyName={property?.name}
+          propertyId={id}
+          apiError={updateError}
+        />
+      </div>
     </AppLayout>
   );
 };

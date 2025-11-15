@@ -14,6 +14,7 @@ interface LeaseFormTabbedProps {
   initialData?: Partial<LeaseInput>;
   onSubmit: (data: LeaseInput) => Promise<void>;
   loading?: boolean;
+  isEdit?: boolean;
 }
 
 const TABS = [
@@ -25,7 +26,8 @@ const TABS = [
 const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
   initialData,
   onSubmit,
-  loading
+  loading,
+  isEdit = false
 }) => {
   const navigate = useNavigate();
   const { units } = useUnits();

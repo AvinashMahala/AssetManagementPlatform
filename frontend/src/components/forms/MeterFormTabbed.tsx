@@ -16,6 +16,7 @@ interface MeterFormTabbedProps {
   initialData?: Partial<MeterInput>;
   onSubmit: (data: MeterInput) => Promise<void>;
   loading?: boolean;
+  isEdit?: boolean;
 }
 
 const TABS = [
@@ -27,7 +28,8 @@ const TABS = [
 const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
   initialData,
   onSubmit,
-  loading
+  loading,
+  isEdit = false
 }) => {
   const navigate = useNavigate();
   const { properties: availableProperties, loading: propertiesLoading } = useProperties();
@@ -110,11 +112,29 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  const hasTabData = (tabId: string): boolean => {
+    switch (tabId) {
+      case 'basic':
+        return !!(formData.propertyId || formData.unitId || formData.meterType || formData.meterName || formData.meterNumber);
+      case 'pricing':
+        return !!(formData.costPerUnit || formData.fixedCharge);
+      case 'settings':
+        return !!(formData.remarks);
+      default:
+        return false;
+    }
+  };
+
   const handleTabChange = (tabId: string) => {
-    // Validate current tab before allowing navigation
-    if (validateTab(currentTab)) {
-      setCompletedTabs(prev => new Set([...prev, currentTab]));
+    // In edit mode, allow free navigation without validation
+    if (isEdit) {
       setCurrentTab(tabId);
+    } else {
+      // In create mode, validate current tab before allowing navigation
+      if (validateTab(currentTab)) {
+        setCompletedTabs(prev => new Set([...prev, currentTab]));
+        setCurrentTab(tabId);
+      }
     }
   };
 
@@ -170,8 +190,12 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Meter - Guided Setup</h1>
-        <p className="text-gray-600">Complete each section to configure your utility meter step by step.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {isEdit ? 'Edit Meter' : 'Create Meter - Guided Setup'}
+        </h1>
+        <p className="text-gray-600">
+          {isEdit ? 'Update meter information across different sections.' : 'Complete each section to configure your meter step by step.'}
+        </p>
       </div>
 
       {/* Progress Indicator */}
@@ -180,17 +204,21 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
           {TABS.map((tab, index) => {
             const isCompleted = completedTabs.has(tab.id);
             const isCurrent = tab.id === currentTab;
+            const hasData = isEdit ? hasTabData(tab.id) : isCompleted;
             const Icon = tab.icon;
 
             return (
               <React.Fragment key={tab.id}>
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                    isCompleted ? 'bg-green-500 border-green-500 text-white' :
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 relative ${
+                    hasData ? 'bg-green-500 border-green-500 text-white' :
                     isCurrent ? 'bg-blue-500 border-blue-500 text-white' :
                     'bg-gray-100 border-gray-300 text-gray-400'
                   }`}>
-                    {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    {hasData ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    {isEdit && hasData && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    )}
                   </div>
                   <span className={`text-sm mt-2 font-medium ${
                     isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
@@ -203,7 +231,7 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
                 </div>
                 {index < TABS.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-4 mt-5 ${
-                    completedTabs.has(tab.id) ? 'bg-green-500' : 'bg-gray-200'
+                    hasData ? 'bg-green-500' : 'bg-gray-200'
                   }`} />
                 )}
               </React.Fragment>
@@ -471,7 +499,7 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
             </div>
 
             <div className="flex space-x-4">
-              {!isLastTab ? (
+              {!isLastTab && !isEdit ? (
                 <Button
                   type="button"
                   onClick={handleNext}
@@ -481,16 +509,16 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
                   <span>Next</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center space-x-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>{loading ? 'Creating Meter...' : 'Create Meter'}</span>
-                </Button>
-              )}
+              ) : null}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex items-center space-x-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>{loading ? (isEdit ? 'Saving Changes...' : 'Creating Meter...') : (isEdit ? 'Save Changes' : 'Create Meter')}</span>
+              </Button>
             </div>
           </div>
         </div>

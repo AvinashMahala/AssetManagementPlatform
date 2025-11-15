@@ -42,6 +42,7 @@ interface PropertyFormTabbedProps {
   loading?: boolean;
   isEdit?: boolean;
   propertyName?: string;
+  propertyId?: string;
   apiError?: ApiError | null;
 }
 
@@ -105,6 +106,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
   loading,
   isEdit = false,
   propertyName,
+  propertyId,
   apiError
 }) => {
   const navigate = useNavigate();
@@ -321,10 +323,15 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
   };
 
   const handleTabChange = (tabId: string) => {
-    // Validate current tab before allowing navigation
-    if (validateTab(activeTab)) {
-      setCompletedTabs(prev => new Set([...prev, activeTab]));
+    // In edit mode, allow free navigation without validation
+    if (isEdit) {
       setActiveTab(tabId);
+    } else {
+      // In create mode, validate current tab before allowing navigation
+      if (validateTab(activeTab)) {
+        setCompletedTabs(prev => new Set([...prev, activeTab]));
+        setActiveTab(tabId);
+      }
     }
   };
 
@@ -364,10 +371,36 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/properties');
+    if (isEdit && propertyId) {
+      // In edit mode, go back to property detail/dashboard
+      navigate(`/properties/${propertyId}/dashboard`);
+    } else {
+      navigate('/properties');
+    }
   };
 
   const currentTabIndex = TABS.findIndex(tab => tab.id === activeTab);
+
+  const hasTabData = (tabId: string): boolean => {
+    switch (tabId) {
+      case 'basic':
+        return !!(formData.name || formData.description || formData.propertyType || formData.status);
+      case 'address':
+        return !!(formData.address?.street || formData.address?.city || formData.address?.state || formData.address?.pincode);
+      case 'details':
+        return !!(formData.totalArea || formData.totalFloors || formData.yearBuilt || formData.parkingSpaces || (formData.buildingAmenities && formData.buildingAmenities.length > 0));
+      case 'owner':
+        return !!(formData.ownerDetails?.name || (formData.ownerDetails?.mobileNumbers && formData.ownerDetails.mobileNumbers.some(m => m)) || (formData.ownerDetails?.emailIds && formData.ownerDetails.emailIds.some(e => e)));
+      case 'amenities':
+        return !!((formData.amenities?.basic && formData.amenities.basic.length > 0) || (formData.amenities?.luxury && formData.amenities.luxury.length > 0));
+      case 'files':
+        return !!((formData.buildingPhotos && formData.buildingPhotos.length > 0) || (formData.files && formData.files.length > 0));
+      case 'receipt':
+        return !!(formData.receiptTemplate?.bankDetails?.bankName || formData.receiptTemplate?.bankDetails?.accountNumber);
+      default:
+        return false;
+    }
+  };
   const isFirstTab = currentTabIndex === 0;
   const isLastTab = currentTabIndex === TABS.length - 1;
 
@@ -390,16 +423,17 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
             const Icon = tab.icon;
             const isCompleted = completedTabs.has(tab.id);
             const isActive = activeTab === tab.id;
-            const isAccessible = index === 0 || completedTabs.has(TABS[index - 1].id);
+            const hasData = isEdit ? hasTabData(tab.id) : isCompleted;
+            const isAccessible = isEdit ? true : (index === 0 || completedTabs.has(TABS[index - 1].id));
 
             return (
               <React.Fragment key={tab.id}>
                 <button
                   onClick={() => isAccessible && handleTabChange(tab.id)}
-                  className={`flex flex-col items-center p-3 rounded-lg transition-all ${
+                  className={`flex flex-col items-center p-3 rounded-lg transition-all relative ${
                     isActive
                       ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500'
-                      : isCompleted
+                      : hasData
                       ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-500'
                       : isAccessible
                       ? 'bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -407,22 +441,25 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
                   }`}
                   disabled={!isAccessible}
                 >
-                  <div className={`p-2 rounded-full mb-2 ${
+                  <div className={`p-2 rounded-full mb-2 relative ${
                     isActive
                       ? 'bg-blue-500 text-white'
-                      : isCompleted
+                      : hasData
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
                   }`}>
-                    {isCompleted && !isActive ? (
+                    {hasData && !isActive ? (
                       <CheckCircle className="h-5 w-5" />
                     ) : (
                       <Icon className="h-5 w-5" />
                     )}
+                    {isEdit && hasData && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                    )}
                   </div>
                   <span className={`text-sm font-medium ${
                     isActive ? 'text-blue-700 dark:text-blue-300' :
-                    isCompleted ? 'text-green-700 dark:text-green-300' :
+                    hasData ? 'text-green-700 dark:text-green-300' :
                     'text-gray-600 dark:text-gray-400'
                   }`}>
                     {tab.title}
@@ -433,7 +470,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
                 </button>
                 {index < TABS.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-4 mt-8 ${
-                    completedTabs.has(tab.id) ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                    hasData ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
                   }`} />
                 )}
               </React.Fragment>
@@ -774,7 +811,32 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
               Cancel
             </Button>
 
-            {!isLastTab ? (
+            {/* Navigation buttons for edit mode */}
+            {isEdit && !isFirstTab && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Previous</span>
+              </Button>
+            )}
+
+            {isEdit && !isLastTab && (
+              <Button
+                type="button"
+                onClick={handleNext}
+                className="flex items-center space-x-2"
+              >
+                <span>Next</span>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* Next button for create mode */}
+            {!isLastTab && !isEdit ? (
               <Button
                 type="button"
                 onClick={handleNext}
@@ -793,10 +855,10 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Creating...</span>
+                    <span>{isEdit ? "Updating..." : "Creating..."}</span>
                   </>
                 ) : (
-                  <span>{isEdit ? "Update Property" : "Create Property"}</span>
+                  <span>{isEdit ? "Save Changes" : "Create Property"}</span>
                 )}
               </Button>
             )}

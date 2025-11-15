@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useUpdateTenant } from '../../hooks';
 import { useNotifications } from '../../contexts';
-import TenantFormModern from '../../components/forms/TenantFormModern';
+import TenantFormTabbed from '../../components/forms/TenantFormTabbed';
 import type { TenantInput } from '../../types/tenant';
 
 const TenantEditPage: React.FC = () => {
@@ -72,11 +72,15 @@ const TenantEditPage: React.FC = () => {
   }
 
   return (
-    <TenantFormModern
-      initialData={tenant}
-      onSubmit={handleSubmit}
-      loading={updateLoading}
-    />
+    <div className="py-8">
+      <TenantFormTabbed
+        initialData={tenant}
+        onSubmit={handleSubmit}
+        loading={updateLoading}
+        isEdit={true}
+        tenantId={id}
+      />
+    </div>
   );
 };
 
