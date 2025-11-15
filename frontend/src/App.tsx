@@ -5,13 +5,13 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConsentDialog, DevTools } from './components/ConsentDialog';
 import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './pages/auth';
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyCreatePageTabbed, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
-import { TenantCreatePageTabbedEnhanced, TenantDetailPage, TenantEditPageEnhanced } from './pages/tenants';
+import { TenantCreatePageTabbedEnhanced, TenantDetailPage, TenantEditPage } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
-import { UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPageEnhanced } from './pages/units';
+import { UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPage } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
-import { LeaseCreatePageTabbedEnhanced, LeaseDetailPage, LeaseEditPageEnhanced } from './pages/leases';
+import { LeaseCreatePageTabbedEnhanced, LeaseDetailPage, LeaseEditPage } from './pages/leases';
 import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
-import { PaymentCreatePageTabbedEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
+import { PaymentCreatePageTabbedEnhanced, PaymentDetailPage, PaymentEditPage } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import ExpenseListPage from './pages/expenses/ExpenseListPage';
 import ExpenseCreatePageTabbedEnhanced from './pages/expenses/ExpenseCreatePageTabbedEnhanced';
@@ -161,26 +161,26 @@ function App() {
               <Route path="/tenants/create" element={<Navigate to="/tenants/create-tabbed" replace />} />
               <Route path="/tenants/create-tabbed" element={<ProtectedRoute><TenantCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/tenants/:id" element={<ProtectedRoute><AppLayout><TenantDetailPage /></AppLayout></ProtectedRoute>} />
-              <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPageEnhanced /></ProtectedRoute>} />
+              <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPage /></ProtectedRoute>} />
               
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
               <Route path="/units/create" element={<Navigate to="/units/create-tabbed" replace />} />
               <Route path="/units/create-tabbed" element={<ProtectedRoute><UnitCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/units/:id" element={<ProtectedRoute><AppLayout><UnitDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/dashboard" element={<ProtectedRoute><AppLayout><UnitDashboardPage /></AppLayout></ProtectedRoute>} />
-              <Route path="/units/:id/edit" element={<ProtectedRoute><UnitEditPageEnhanced /></ProtectedRoute>} />
+              <Route path="/units/:id/edit" element={<ProtectedRoute><UnitEditPage /></ProtectedRoute>} />
               
               <Route path="/leases" element={<ProtectedRoute><LeaseListPageEnhanced /></ProtectedRoute>} />
               <Route path="/leases/create" element={<Navigate to="/leases/create-tabbed" replace />} />
               <Route path="/leases/create-tabbed" element={<ProtectedRoute><LeaseCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/leases/:id" element={<ProtectedRoute><AppLayout><LeaseDetailPage /></AppLayout></ProtectedRoute>} />
-              <Route path="/leases/:id/edit" element={<ProtectedRoute><LeaseEditPageEnhanced /></ProtectedRoute>} />
+              <Route path="/leases/:id/edit" element={<ProtectedRoute><LeaseEditPage /></ProtectedRoute>} />
               
               <Route path="/payments" element={<ProtectedRoute><PaymentListPageEnhanced /></ProtectedRoute>} />
               <Route path="/payments/create" element={<Navigate to="/payments/create-tabbed" replace />} />
               <Route path="/payments/create-tabbed" element={<ProtectedRoute><PaymentCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/payments/:id" element={<ProtectedRoute><AppLayout><PaymentDetailPage /></AppLayout></ProtectedRoute>} />
-              <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPageEnhanced /></ProtectedRoute>} />
+              <Route path="/payments/:id/edit" element={<ProtectedRoute><PaymentEditPage /></ProtectedRoute>} />
 
               <Route path="/expenses" element={<ProtectedRoute><ExpenseListPage /></ProtectedRoute>} />
               <Route path="/expenses/create" element={<Navigate to="/expenses/create-tabbed" replace />} />
