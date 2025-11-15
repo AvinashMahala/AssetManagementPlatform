@@ -123,7 +123,7 @@ export const PropertyDashboardPage: React.FC = () => {
           <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
             Edit Property
           </Button>
-          <Button onClick={() => navigate(`/units/create`)}>
+          <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
             Add Unit
           </Button>
         </div>
@@ -199,7 +199,7 @@ export const PropertyDashboardPage: React.FC = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Units in this Property</CardTitle>
-                <Button size="sm" onClick={() => navigate(`/units/create`)}>
+                <Button size="sm" onClick={() => navigate(`/units/create?propertyId=${id}`)}>
                   Add Unit
                 </Button>
               </div>
@@ -214,7 +214,7 @@ export const PropertyDashboardPage: React.FC = () => {
                   <Home className="mx-auto h-12 w-12 text-muted-foreground" />
                   <h3 className="mt-4 text-lg font-semibold">No units yet</h3>
                   <p className="text-muted-foreground mb-4">Add units to this property to get started.</p>
-                  <Button onClick={() => navigate(`/units/create`)}>Add First Unit</Button>
+                  <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>Add First Unit</Button>
                 </div>
               ) : (
                 <div className="rounded-md border">

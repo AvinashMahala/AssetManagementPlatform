@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCreateUnit } from '../../hooks';
 import { useNotifications } from '../../contexts';
 import UnitFormModern from '../../components/forms/UnitFormModern';
@@ -7,8 +7,11 @@ import type { UnitInput } from '../../types/unit';
 
 export const UnitCreatePage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { mutate: createUnit, loading } = useCreateUnit();
   const { showSuccess, showError } = useNotifications();
+
+  const propertyId = searchParams.get('propertyId');
 
   const handleSubmit = async (data: UnitInput) => {
     try {
@@ -25,6 +28,7 @@ export const UnitCreatePage: React.FC = () => {
     <UnitFormModern
       onSubmit={handleSubmit}
       loading={loading}
+      initialData={propertyId ? { propertyId } : undefined}
     />
   );
 };

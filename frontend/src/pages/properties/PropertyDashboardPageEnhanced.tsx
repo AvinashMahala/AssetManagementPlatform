@@ -260,7 +260,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
               <FileImage className="w-4 h-4 mr-2" />
               Templates
             </Button>
-            <Button onClick={() => navigate(`/units/create`)}>
+            <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Unit
             </Button>
@@ -425,7 +425,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                   {metrics.totalUnits} total units • {metrics.occupiedUnits} occupied
                 </p>
               </div>
-              <Button size="sm" onClick={() => navigate(`/units/create`)}>
+              <Button size="sm" onClick={() => navigate(`/units/create?propertyId=${id}`)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Unit
               </Button>
@@ -438,7 +438,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                     <Home className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No units yet</h3>
                     <p className="text-muted-foreground mb-4">Add units to this property to get started.</p>
-                    <Button onClick={() => navigate(`/units/create`)}>
+                    <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
                       <Plus className="w-4 h-4 mr-2" />
                       Add First Unit
                     </Button>

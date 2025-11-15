@@ -64,7 +64,7 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.propertyId) newErrors.propertyId = 'Property is required';
+    if (!formData.propertyId && !initialData?.propertyId) newErrors.propertyId = 'Property is required';
     if (!formData.unitNumber.trim()) newErrors.unitNumber = 'Unit number is required';
     if (formData.area <= 0) newErrors.area = 'Area must be greater than 0';
     if (formData.bedrooms && formData.bedrooms < 0) newErrors.bedrooms = 'Bedrooms cannot be negative';
@@ -107,7 +107,7 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
           <Select
             value={formData.propertyId}
             onValueChange={(value) => handleChange('propertyId', value)}
-            disabled={propertiesLoading}
+            disabled={propertiesLoading || !!initialData?.propertyId}
           >
             <SelectTrigger error={errors.propertyId} className="h-10">
               <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
@@ -120,6 +120,11 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
               ))}
             </SelectContent>
           </Select>
+          {initialData?.propertyId && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Property is pre-selected from the current context
+            </p>
+          )}
         </FormField>
 
         <FormField label="Unit Number" required>
