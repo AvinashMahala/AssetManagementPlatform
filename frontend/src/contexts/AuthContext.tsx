@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useNotifications } from './NotificationContext';
 import type {
   User,
   UserRegistrationInput,
@@ -81,6 +82,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { showError } = useNotifications();
 
   useEffect(() => {
     // Initialize token from localStorage on app start
@@ -135,9 +137,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: UserCredentials): Promise<{ success: boolean; error?: string }> => {
     setLoading(true);
     try {
-      // Remove in Prod : Simulate network delay for better UX in development
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       const authResponse = await authService.login(credentials);
       setUser(authResponse.user);
       setIsAuthenticated(true);
@@ -147,6 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: true };
     } catch (error: any) {
       const errorMessage = error?.message || 'Login failed';
+      showError('Login Failed', errorMessage);
       return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
