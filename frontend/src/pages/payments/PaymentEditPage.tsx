@@ -1,180 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { usePayment, useUpdatePayment, useLeases, useTenants } from '../../hooks';
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { usePayment, useUpdatePayment } from '../../hooks';
+import { Button } from '../../components/ui/button';
+import { AppLayout } from '../../components/layout/AppLayout';
+import PaymentFormTabbed from '../../components/forms/PaymentFormTabbed';
 import type { RentPaymentInput } from '../../types/payment';
-import { PaymentMethod } from '../../types/payment';
-import { getErrorMessage } from '../../types/api';
 
 export const PaymentEditPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: payment, loading: loadingPayment, error: loadError } = usePayment(id!);
-  const { mutate: updatePayment, loading: updating, error: updateError } = useUpdatePayment();
-  const { leases } = useLeases();
-  const { tenants } = useTenants();
+  const { id } = useParams<{ id: string }>();
+  const { data: payment, loading: loadingPayment, error: paymentError } = usePayment(id!);
+  const { mutate: updatePayment, loading: updating } = useUpdatePayment();
 
-  const [formData, setFormData] = useState<RentPaymentInput>({
-    leaseId: '',
-    tenantId: '',
-    amount: 0,
-    dueDate: '',
-    paidDate: '',
-    paymentMethod: undefined,
-    transactionId: '',
-    lateFee: 0,
-    notes: '',
-  });
+  const handleSubmit = async (data: RentPaymentInput) => {
+    if (!id) return;
 
-  useEffect(() => {
-    if (payment) {
-      setFormData({
-        leaseId: payment.leaseId,
-        tenantId: payment.tenantId,
-        amount: payment.amount,
-        dueDate: payment.dueDate.split('T')[0],
-        paidDate: payment.paidDate ? payment.paidDate.split('T')[0] : '',
-        paymentMethod: payment.paymentMethod,
-        transactionId: payment.transactionId,
-        lateFee: payment.lateFee,
-        notes: payment.notes,
-      });
-    }
-  }, [payment]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: ['amount', 'lateFee'].includes(name) ? Number(value) : value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     try {
-      await updatePayment({ id: id!, data: formData });
-      navigate(`/payments/${id}`);
-    } catch (err) {
-      console.error('Failed to update payment:', err);
+      await updatePayment({ id, data });
+      navigate('/payments', {
+        state: { message: 'Payment updated successfully!' }
+      });
+    } catch (error) {
+      console.error('Failed to update payment:', error);
+      throw error; // Re-throw to let the form handle it
     }
   };
 
   if (loadingPayment) {
-    return <div className="flex justify-center items-center h-64"><div className="text-gray-600">Loading payment details...</div></div>;
+    return (
+      <AppLayout title="Edit Payment">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading payment...</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
   }
 
-  if (loadError || !payment) {
+  if (paymentError || !payment) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{getErrorMessage(loadError) || 'Payment not found'}</p>
+      <AppLayout title="Edit Payment">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Not Found</h2>
+            <p className="text-gray-600 mb-4">The payment you're trying to edit doesn't exist or has been deleted.</p>
+            <Button onClick={() => navigate('/payments')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Payments
+            </Button>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Edit Payment</h1>
-        <p className="mt-2 text-gray-600">Update payment record details</p>
+    <AppLayout title="Edit Payment">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/payments')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Payments
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Edit Payment</h1>
+            <p className="mt-2 text-gray-600">Update payment record details</p>
+          </div>
+        </div>
+
+        <PaymentFormTabbed
+          initialData={payment}
+          onSubmit={handleSubmit}
+          loading={updating}
+          isEdit={true}
+        />
       </div>
-
-      {updateError && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-800">{getErrorMessage(updateError)}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-md rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="leaseId" className="block text-sm font-medium text-gray-700">Lease *</label>
-            <select id="leaseId" name="leaseId" value={formData.leaseId} onChange={handleChange} required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="">Select a lease</option>
-              {leases.map(lease => (
-                <option key={lease.id} value={lease.id}>Lease {lease.id.substring(0, 8)} - ₹{lease.monthlyRent}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="tenantId" className="block text-sm font-medium text-gray-700">Tenant *</label>
-            <select id="tenantId" name="tenantId" value={formData.tenantId} onChange={handleChange} required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="">Select a tenant</option>
-              {tenants.map(tenant => (
-                <option key={tenant.id} value={tenant.id}>{tenant.firstName} {tenant.lastName}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount (₹) *</label>
-            <input type="number" id="amount" name="amount" value={formData.amount} onChange={handleChange} required min="0"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-          </div>
-
-          <div>
-            <label htmlFor="lateFee" className="block text-sm font-medium text-gray-700">Late Fee (₹)</label>
-            <input type="number" id="lateFee" name="lateFee" value={formData.lateFee} onChange={handleChange} min="0"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">Due Date *</label>
-            <input type="date" id="dueDate" name="dueDate" value={formData.dueDate} onChange={handleChange} required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-          </div>
-
-          <div>
-            <label htmlFor="paidDate" className="block text-sm font-medium text-gray-700">Paid Date</label>
-            <input type="date" id="paidDate" name="paidDate" value={formData.paidDate} onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">Payment Method</label>
-            <select id="paymentMethod" name="paymentMethod" value={formData.paymentMethod || ''} onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="">Select method</option>
-              <option value={PaymentMethod.CASH}>Cash</option>
-              <option value={PaymentMethod.BANK_TRANSFER}>Bank Transfer</option>
-              <option value={PaymentMethod.UPI}>UPI</option>
-              <option value={PaymentMethod.CHEQUE}>Cheque</option>
-              <option value={PaymentMethod.CARD}>Card</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="transactionId" className="block text-sm font-medium text-gray-700">Transaction ID</label>
-            <input type="text" id="transactionId" name="transactionId" value={formData.transactionId} onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
-          <textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} rows={3}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-        </div>
-
-        <div className="flex gap-4 justify-end">
-          <button type="button" onClick={() => navigate(`/payments/${id}`)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button type="submit" disabled={updating}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400">
-            {updating ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </form>
-    </div>
+    </AppLayout>
   );
 };

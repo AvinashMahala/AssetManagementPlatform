@@ -14,9 +14,9 @@ import LeaseListPageEnhanced from './pages/leases/LeaseListPageEnhanced';
 import { PaymentCreatePageTabbedEnhanced, PaymentDetailPage, PaymentEditPageEnhanced } from './pages/payments';
 import PaymentListPageEnhanced from './pages/payments/PaymentListPageEnhanced';
 import ExpenseListPage from './pages/expenses/ExpenseListPage';
-import ExpenseFormPage from './pages/expenses/ExpenseFormPage';
 import ExpenseCreatePageTabbedEnhanced from './pages/expenses/ExpenseCreatePageTabbedEnhanced';
 import ExpenseDetailPage from './pages/expenses/ExpenseDetailPage';
+import { ExpenseEditPage } from './pages/expenses';
 import NavigationConfigPage from './pages/NavigationConfigPage';
 import DashboardEnhanced from './pages/DashboardEnhanced';
 import TemplateEditor from './pages/TemplateEditor';
@@ -186,7 +186,7 @@ function App() {
               <Route path="/expenses/create" element={<Navigate to="/expenses/create-tabbed" replace />} />
               <Route path="/expenses/create-tabbed" element={<ProtectedRoute><ExpenseCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetailPage /></ProtectedRoute>} />
-              <Route path="/expenses/:id/edit" element={<ProtectedRoute><ExpenseFormPage /></ProtectedRoute>} />
+              <Route path="/expenses/:id/edit" element={<ProtectedRoute><ExpenseEditPage /></ProtectedRoute>} />
 
               <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
 

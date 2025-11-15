@@ -15,6 +15,7 @@ interface ExpenseFormTabbedProps {
   initialData?: Partial<ExpenseInput>;
   onSubmit: (data: ExpenseInput) => Promise<void>;
   loading?: boolean;
+  isEdit?: boolean;
 }
 
 const TABS = [
@@ -27,7 +28,8 @@ const TABS = [
 const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
   initialData,
   onSubmit,
-  loading
+  loading,
+  isEdit = false
 }) => {
   const navigate = useNavigate();
   const { properties } = useProperties();
@@ -170,11 +172,31 @@ const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
     }) as any;
   };
 
+  const hasTabData = (tabId: string): boolean => {
+    switch (tabId) {
+      case 'basic':
+        return !!(formData.propertyId && formData.type && formData.description && formData.amount > 0);
+      case 'schedule':
+        return !!(formData.frequency && formData.startDate);
+      case 'distribution':
+        return !!(formData.distribution);
+      case 'details':
+        return true; // Details tab is always considered to have data
+      default:
+        return false;
+    }
+  };
+
   const handleTabChange = async (tabId: string) => {
-    const isValid = await validateTab(currentTab);
-    if (isValid) {
-      setCompletedTabs(prev => new Set([...prev, currentTab]));
+    if (isEdit) {
+      // Allow free navigation in edit mode
       setCurrentTab(tabId);
+    } else {
+      const isValid = await validateTab(currentTab);
+      if (isValid) {
+        setCompletedTabs(prev => new Set([...prev, currentTab]));
+        setCurrentTab(tabId);
+      }
     }
   };
 
@@ -243,8 +265,12 @@ const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Expense - Guided Setup</h1>
-        <p className="text-gray-600">Complete each section to create an expense record step by step.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {isEdit ? 'Edit Expense' : 'Create Expense - Guided Setup'}
+        </h1>
+        <p className="text-gray-600">
+          {isEdit ? 'Update expense information across different sections.' : 'Complete each section to create an expense record step by step.'}
+        </p>
       </div>
 
       {/* Progress Indicator */}
@@ -253,17 +279,23 @@ const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
           {TABS.map((tab, index) => {
             const isCompleted = completedTabs.has(tab.id);
             const isCurrent = tab.id === currentTab;
+            const hasData = hasTabData(tab.id);
             const Icon = tab.icon;
 
             return (
               <React.Fragment key={tab.id}>
                 <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                    isCompleted ? 'bg-green-500 border-green-500 text-white' :
-                    isCurrent ? 'bg-blue-500 border-blue-500 text-white' :
-                    'bg-gray-100 border-gray-300 text-gray-400'
-                  }`}>
-                    {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                  <div className="relative">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                      isCompleted ? 'bg-green-500 border-green-500 text-white' :
+                      isCurrent ? 'bg-blue-500 border-blue-500 text-white' :
+                      'bg-gray-100 border-gray-300 text-gray-400'
+                    }`}>
+                      {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    </div>
+                    {isEdit && hasData && !isCompleted && !isCurrent && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white"></div>
+                    )}
                   </div>
                   <span className={`text-sm mt-2 font-medium ${
                     isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
@@ -291,17 +323,21 @@ const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isCompleted = completedTabs.has(tab.id);
+              const hasData = hasTabData(tab.id);
               return (
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className={`flex items-center space-x-2 ${
+                  className={`flex items-center space-x-2 relative ${
                     isCompleted ? 'text-green-600' : ''
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>
                   {isCompleted && <CheckCircle className="w-3 h-3 text-green-500" />}
+                  {isEdit && hasData && !isCompleted && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                  )}
                 </TabsTrigger>
               );
             })}
@@ -649,7 +685,7 @@ const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
             </div>
 
             <div className="flex space-x-4">
-              {!isLastTab ? (
+              {!isLastTab && !isEdit ? (
                 <Button
                   type="button"
                   onClick={handleNext}
@@ -659,16 +695,16 @@ const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
                   <span>Next</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center space-x-2"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>{loading ? 'Creating Expense...' : 'Create Expense'}</span>
-                </Button>
-              )}
+              ) : null}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex items-center space-x-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>{loading ? (isEdit ? 'Saving Changes...' : 'Creating Expense...') : (isEdit ? 'Save Changes' : 'Create Expense')}</span>
+              </Button>
             </div>
           </div>
         </div>
