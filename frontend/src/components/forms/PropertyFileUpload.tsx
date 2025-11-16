@@ -81,8 +81,9 @@ const PropertyFileUpload: React.FC<PropertyFileUploadProps> = ({
       // For now, we'll create mock PropertyFile objects
       const propertyFiles: PropertyFile[] = validFiles.map(file => ({
         id: `temp-${Date.now()}-${Math.random()}`,
+        propertyId: '', // Will be set when uploaded
+        fileId: `temp-file-${Date.now()}-${Math.random()}`,
         fileName: file.name,
-        fileUrl: URL.createObjectURL(file), // Temporary URL for preview
         fileType: file.type.startsWith('image/') ? 'photo' : 'document',
         uploadedAt: new Date().toISOString(),
         description: ''
@@ -170,7 +171,7 @@ const PropertyFileUpload: React.FC<PropertyFileUploadProps> = ({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open(file.fileUrl, '_blank')}
+                      disabled
                       className="p-1"
                     >
                       <Eye className="h-4 w-4" />
@@ -181,7 +182,7 @@ const PropertyFileUpload: React.FC<PropertyFileUploadProps> = ({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => window.open(file.fileUrl, '_blank')}
+                    disabled
                     className="p-1"
                   >
                     <Download className="h-4 w-4" />

@@ -236,6 +236,22 @@ const FilesPage: React.FC = () => {
       await Promise.all(deletePromises);
       clearSelection();
       loadFiles(); // Refresh the file list
+      
+      // Dispatch events for each deleted file
+      Array.from(selectedFiles).forEach(fileId => {
+        const event = new CustomEvent('file-deleted', {
+          detail: { fileId }
+        });
+        window.dispatchEvent(event);
+      });
+      
+      // Store bulk deletion info in localStorage
+      localStorage.setItem('file-deleted', JSON.stringify({ 
+        fileIds: Array.from(selectedFiles), 
+        timestamp: Date.now(),
+        bulk: true 
+      }));
+      
       setDeletingFileId(null); // Close the dialog after successful bulk deletion
     } catch (error) {
       console.error('Bulk delete failed:', error);
@@ -274,9 +290,18 @@ const FilesPage: React.FC = () => {
     // Don't close dialog automatically - let user decide
   };
 
-  const handleFileDeleted = (_fileId: string) => {
+  const handleFileDeleted = (fileId: string) => {
     // Refresh the current page to show updated results and total count
     loadFiles();
+    
+    // Dispatch event to notify other components (like PropertyFileGallery) that a file was deleted
+    const event = new CustomEvent('file-deleted', {
+      detail: { fileId }
+    });
+    window.dispatchEvent(event);
+    
+    // Also store in localStorage for cross-tab communication
+    localStorage.setItem('file-deleted', JSON.stringify({ fileId, timestamp: Date.now() }));
   };
 
   const handleDeleteFile = async (fileId: string) => {

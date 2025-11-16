@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { FileUpload, FileGallery } from '../../components/files';
+import { FileUpload, PropertyFileGallery } from '../../components/files';
 import { formatDate } from '../../utils';
 
 const PropertyDetailPage: React.FC = () => {
@@ -115,10 +115,9 @@ const PropertyDetailPage: React.FC = () => {
             </TabsList>
 
             <TabsContent value="gallery" className="mt-6">
-              <FileGallery
-                entityType="property"
-                entityId={property.id}
-                onFileDeleted={(fileId) => {
+              <PropertyFileGallery
+                propertyId={property.id}
+                onFileDeleted={(fileId: string) => {
                   console.log('File deleted:', fileId);
                 }}
               />

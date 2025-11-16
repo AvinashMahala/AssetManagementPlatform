@@ -279,7 +279,7 @@ export class PropertyService implements IPropertyService {
   async uploadPropertyFile(
     propertyId: string,
     fileName: string,
-    fileUrl: string,
+    fileId: string,
     fileType: 'photo' | 'document',
     description?: string
   ) {
@@ -293,7 +293,7 @@ export class PropertyService implements IPropertyService {
       throw new Error('Property not found');
     }
 
-    return await this.fileService.uploadFile(propertyId, fileName, fileUrl, fileType, description);
+    return await this.fileService.uploadFile(propertyId, fileName, fileId, fileType, description);
   }
 
   async getPropertyFiles(propertyId: string) {

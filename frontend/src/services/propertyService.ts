@@ -78,11 +78,7 @@ class PropertyService {
       formData.append('description', description);
     }
 
-    return apiClient.post<PropertyFile>(`${API_ENDPOINTS.PROPERTIES}/${propertyId}/files`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    return apiClient.post<PropertyFile>(`${API_ENDPOINTS.PROPERTIES}/${propertyId}/files`, formData);
   }
 
   async updatePropertyFile(propertyId: string, fileId: string, updates: Partial<PropertyFile>): Promise<ApiResponse<PropertyFile>> {

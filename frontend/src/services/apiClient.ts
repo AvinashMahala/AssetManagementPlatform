@@ -3,21 +3,22 @@ import { API_BASE_URL, API_TIMEOUT } from '../constants/api';
 
 class ApiClient {
   private baseURL: string;
-  private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    };
   }
 
   private getAuthToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  private getHeaders(additionalHeaders?: Record<string, string>): Record<string, string> {
-    const headers = { ...this.defaultHeaders };
+  private getHeaders(additionalHeaders?: Record<string, string>, skipContentType?: boolean): Record<string, string> {
+    const headers: Record<string, string> = {};
+
+    // Only set default content-type if not skipping
+    if (!skipContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     // Add cache control to prevent 304 responses
     headers['Cache-Control'] = 'no-cache';
@@ -168,10 +169,17 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
     try {
+      // Handle FormData differently - don't stringify and don't set Content-Type
+      const isFormData = data instanceof FormData;
+      const headers = isFormData 
+        ? this.getHeaders(config?.headers, true) // Skip default content-type
+        : this.getHeaders(config?.headers);
+      const body = isFormData ? data : (data ? JSON.stringify(data) : undefined);
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: this.getHeaders(config?.headers),
-        body: data ? JSON.stringify(data) : undefined,
+        headers,
+        body,
         signal: controller.signal,
         ...config,
       });
@@ -209,10 +217,17 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
 
     try {
+      // Handle FormData differently - don't stringify and don't set Content-Type
+      const isFormData = data instanceof FormData;
+      const headers = isFormData 
+        ? this.getHeaders(config?.headers, true) // Skip default content-type
+        : this.getHeaders(config?.headers);
+      const body = isFormData ? data : (data ? JSON.stringify(data) : undefined);
+
       const response = await fetch(url, {
         method: 'PUT',
-        headers: this.getHeaders(config?.headers),
-        body: data ? JSON.stringify(data) : undefined,
+        headers,
+        body,
         signal: controller.signal,
         ...config,
       });

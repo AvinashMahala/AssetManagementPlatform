@@ -57,8 +57,9 @@ export interface PropertyAmenities {
 // File attachments for property
 export interface PropertyFile {
   id: string;
+  propertyId: string;
+  fileId: string;
   fileName: string;
-  fileUrl: string;
   fileType: 'photo' | 'document';
   uploadedAt: string;
   description?: string;

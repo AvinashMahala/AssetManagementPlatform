@@ -55,6 +55,7 @@ import { createExpenseRoutes } from './src/routes/expenseRoutes.js';
 import { BulkOperationsController } from './src/controllers/BulkOperationsController.js';
 import { createBulkOperationsRoutes } from './src/routes/bulkOperations.js';
 import { DependencyContainer } from './src/utils/DependencyContainer.js';
+import { FileStorageService } from './src/services/FileStorageService.js';
 
 // Setup global process error handlers
 setupProcessErrorHandlers();
@@ -83,6 +84,9 @@ const startServer = async () => {
     connectionString: process.env.FILES_DATABASE_URL,
   });
 
+  // Initialize file storage service
+  const fileStorageService = new FileStorageService(mainPool, filesPool);
+
   // Initialize dependency injection container
   const container = DependencyContainer.initialize(mainPool);
 
@@ -106,7 +110,7 @@ const startServer = async () => {
 
   // Create controllers with injected services
   const propertyController = new PropertyController(propertyService);
-  const propertyFileController = new PropertyFileController(propertyService);
+  const propertyFileController = new PropertyFileController(propertyService, fileStorageService);
   const propertyReceiptTemplateController = new PropertyReceiptTemplateController(propertyService);
   const userController = new UserController(userService, passwordResetService);
   const tenantController = new TenantController(tenantService);

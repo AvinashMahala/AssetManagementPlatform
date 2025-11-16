@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
@@ -32,6 +32,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui';
+import { PropertyFileGallery } from '../../components/files';
 import {
   RevenueTrendChart,
   PropertyStatusChart
@@ -48,6 +49,43 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
   const { leases } = useLeases();
   const { payments } = usePayments();
   const { tenants } = useTenants();
+
+  // State for refreshing file gallery when files are deleted from elsewhere
+  const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0);
+
+  // Listen for file deletion events from other components (like FilesPage)
+  useEffect(() => {
+    const handleFileDeleted = (event: CustomEvent) => {
+      // Check if the deleted file belongs to this property
+      if (event.detail?.propertyId === id || event.detail?.entityId === id) {
+        setFileRefreshTrigger(prev => prev + 1);
+      }
+    };
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'file-deleted' && event.newValue) {
+        try {
+          const data = JSON.parse(event.newValue);
+          // For bulk deletions, check if any of the deleted files belong to this property
+          // Since we don't have the file details here, we'll refresh on any file deletion
+          // In a more sophisticated implementation, we could check file ownership
+          setFileRefreshTrigger(prev => prev + 1);
+        } catch (e) {
+          // Ignore invalid JSON
+        }
+      }
+    };
+
+    // Listen for custom events
+    window.addEventListener('file-deleted', handleFileDeleted as EventListener);
+    // Listen for storage events (fallback for cross-tab communication)
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('file-deleted', handleFileDeleted as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [id]);
 
   // Filter leases for this property's units
   const propertyUnitIds = useMemo(() => units.map(u => u.id), [units]);
@@ -397,7 +435,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
 
         {/* Tabs for detailed views */}
         <Tabs defaultValue="units" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="units">
               <Home className="w-4 h-4 mr-2" />
               Units
@@ -409,6 +447,10 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
             <TabsTrigger value="payments">
               <DollarSign className="w-4 h-4 mr-2" />
               Payments
+            </TabsTrigger>
+            <TabsTrigger value="files">
+              <FileImage className="w-4 h-4 mr-2" />
+              Files
             </TabsTrigger>
             <TabsTrigger value="details">
               <Building2 className="w-4 h-4 mr-2" />
@@ -702,6 +744,30 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Files Tab */}
+          <TabsContent value="files" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileImage className="h-5 w-5" />
+                  Property Files & Documents
+                </CardTitle>
+                <CardDescription>
+                  Upload and manage photos and documents for this property
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PropertyFileGallery
+                  propertyId={id!}
+                  refreshTrigger={fileRefreshTrigger}
+                  onFileDeleted={(fileId: string) => {
+                    console.log('File deleted:', fileId);
+                  }}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Details Tab */}

@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '../../components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui';
+import { PropertyFileGallery } from '../../components/files';
 import { getErrorMessage } from '../../types/api';
 
 export const PropertyDashboardPage: React.FC = () => {
@@ -190,6 +191,7 @@ export const PropertyDashboardPage: React.FC = () => {
           <TabsTrigger value="units">Units</TabsTrigger>
           <TabsTrigger value="leases">Leases</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="files">Files</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
         </TabsList>
 
@@ -420,6 +422,26 @@ export const PropertyDashboardPage: React.FC = () => {
                   </div>
                 </>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Files Tab */}
+        <TabsContent value="files" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Property Files & Documents</CardTitle>
+              <CardDescription>
+                Upload and manage photos and documents for this property
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PropertyFileGallery
+                propertyId={id!}
+                onFileDeleted={(fileId: string) => {
+                  console.log('File deleted:', fileId);
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>

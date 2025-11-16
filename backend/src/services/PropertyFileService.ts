@@ -17,7 +17,7 @@ export class PropertyFileService implements IPropertyFileService {
   async uploadFile(
     propertyId: string,
     fileName: string,
-    fileUrl: string,
+    fileId: string,
     fileType: 'photo' | 'document',
     description?: string
   ): Promise<PropertyFile> {
@@ -31,9 +31,9 @@ export class PropertyFileService implements IPropertyFileService {
       throw new Error('File name is required');
     }
 
-    // Validate file URL
-    if (!fileUrl || fileUrl.trim().length === 0) {
-      throw new Error('File URL is required');
+    // Validate file ID
+    if (!fileId || fileId.trim().length === 0) {
+      throw new Error('File ID is required');
     }
 
     // Validate file type
@@ -49,7 +49,7 @@ export class PropertyFileService implements IPropertyFileService {
     const fileData = {
       propertyId,
       fileName: fileName.trim(),
-      fileUrl: fileUrl.trim(),
+      fileId: fileId.trim(),
       fileType,
       description: description?.trim(),
       uploadedAt: new Date()

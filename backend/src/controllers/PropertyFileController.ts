@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import { IPropertyService } from '../interfaces/services/IPropertyService.js';
+import { FileStorageService } from '../services/FileStorageService.js';
 import { ResponseUtils } from '../utils/response.js';
 import { ErrorUtils } from '../utils/error.js';
 
 export class PropertyFileController {
   private propertyService: IPropertyService;
+  private fileStorageService: FileStorageService;
 
-  constructor(propertyService: IPropertyService) {
+  constructor(propertyService: IPropertyService, fileStorageService: FileStorageService) {
     this.propertyService = propertyService;
+    this.fileStorageService = fileStorageService;
   }
 
   /**
@@ -26,20 +29,16 @@ export class PropertyFileController {
    *     requestBody:
    *       required: true
    *       content:
-   *         application/json:
+   *         multipart/form-data:
    *           schema:
    *             type: object
    *             required:
-   *               - fileName
-   *               - fileUrl
-   *               - fileType
+   *               - file
    *             properties:
-   *               fileName:
+   *               file:
    *                 type: string
-   *                 description: Name of the file
-   *               fileUrl:
-   *                 type: string
-   *                 description: URL where the file is stored
+   *                 format: binary
+   *                 description: File to upload
    *               fileType:
    *                 type: string
    *                 enum: [photo, document]
@@ -47,6 +46,9 @@ export class PropertyFileController {
    *               description:
    *                 type: string
    *                 description: Optional description of the file
+   *               customName:
+   *                 type: string
+   *                 description: Optional custom name for the file
    *     responses:
    *       201:
    *         description: File uploaded successfully
@@ -60,21 +62,35 @@ export class PropertyFileController {
   async uploadFile(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
-      const { fileName, fileUrl, fileType, description } = req.body;
+      const { fileType, description, customName } = req.body;
 
-      if (!fileName || !fileUrl || !fileType) {
-        return ResponseUtils.badRequest(res, 'fileName, fileUrl, and fileType are required');
+      if (!req.file) {
+        return ResponseUtils.badRequest(res, 'No file uploaded');
       }
 
-      if (!['photo', 'document'].includes(fileType)) {
+      if (!fileType || !['photo', 'document'].includes(fileType)) {
         return ResponseUtils.badRequest(res, 'fileType must be either "photo" or "document"');
       }
 
+      // Upload file using FileStorageService
+      const metadata = {
+        entityType: 'property' as const,
+        entityId: propertyId,
+        filename: customName || req.file.originalname,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        category: fileType,
+        uploadedBy: req.user?.id || null
+      };
+
+      const fileId = await this.fileStorageService.uploadFile(req.file.buffer, metadata);
+
+      // Create property file record with fileId reference
       const file = await this.propertyService.uploadPropertyFile(
         propertyId,
-        fileName,
-        fileUrl,
-        fileType,
+        customName || req.file.originalname,
+        fileId, // Store fileId instead of URL
+        fileType as 'photo' | 'document',
         description
       );
 
@@ -202,11 +218,17 @@ export class PropertyFileController {
 
   /**
    * @swagger
-   * /api/properties/files/{fileId}:
+   * /api/properties/{propertyId}/files/{fileId}:
    *   delete:
    *     tags: ['Property Files']
-   *     summary: Delete a file
+   *     summary: Delete a file from a property
    *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
    *       - in: path
    *         name: fileId
    *         required: true
@@ -217,11 +239,19 @@ export class PropertyFileController {
    *       200:
    *         description: File deleted successfully
    *       404:
-   *         description: File not found
+   *         description: File not found or does not belong to the property
    */
   async deleteFile(req: Request, res: Response) {
     try {
-      const { fileId } = req.params;
+      const { propertyId, fileId } = req.params;
+
+      // First verify the file belongs to the property
+      const propertyFiles = await this.propertyService.getPropertyFiles(propertyId);
+      const propertyFile = propertyFiles.find(f => f.id === fileId);
+
+      if (!propertyFile) {
+        return ResponseUtils.notFound(res, 'File not found or does not belong to this property');
+      }
 
       const deleted = await this.propertyService.deletePropertyFile(fileId);
       if (!deleted) {
@@ -231,6 +261,66 @@ export class PropertyFileController {
       ResponseUtils.success(res, null, 'File deleted successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to delete file');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/properties/{propertyId}/files/{fileId}/download:
+   *   get:
+   *     tags: ['Property Files']
+   *     summary: Download a property file
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *       - in: path
+   *         name: fileId
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: File downloaded successfully
+   *       404:
+   *         description: File not found
+   *       500:
+   *         description: Server error
+   */
+  async downloadFile(req: Request, res: Response) {
+    try {
+      const { propertyId, fileId } = req.params;
+
+      // First, get the property file record to verify it exists and get the fileId
+      const propertyFiles = await this.propertyService.getPropertyFiles(propertyId);
+      const propertyFile = propertyFiles.find(f => f.id === fileId);
+
+      if (!propertyFile) {
+        return ResponseUtils.notFound(res, 'Property file not found');
+      }
+
+      // Use FileStorageService to download the actual file
+      const fileBuffer = await this.fileStorageService.downloadFile(propertyFile.fileId);
+
+      // Get file metadata to determine content type
+      const metadata = await this.fileStorageService.getFileMetadata(propertyFile.fileId);
+
+      // Set appropriate headers
+      res.setHeader('Content-Type', metadata?.mimeType || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${propertyFile.fileName}"`);
+
+      // Send the file buffer
+      res.send(fileBuffer);
+
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('not found')) {
+        ResponseUtils.notFound(res, 'File not found');
+      } else {
+        ErrorUtils.handleGenericError(res, err, 'Failed to download file');
+      }
     }
   }
 }
