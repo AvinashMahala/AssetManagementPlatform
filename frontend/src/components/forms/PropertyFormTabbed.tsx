@@ -29,7 +29,7 @@ import { Tabs, TabsContent } from '../ui/tabs';
 import type { PropertyInput, PropertyReceiptTemplate, ApiError } from '../../types';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { getCurrencyOptions, DEFAULT_CURRENCY } from '../../types/currency';
-import { useUser } from '../../hooks';
+import { useUser, useUsers } from '../../hooks';
 import { useAuth } from '../../hooks';
 import OwnerContactForm from './OwnerContactForm';
 import EnhancedAmenitiesForm from './EnhancedAmenitiesForm';
@@ -116,6 +116,15 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       ? initialData.ownerId
       : (!isEdit ? currentUser?.id || '' : null)
   );
+  const { data: users, loading: usersLoading, error: usersError } = useUsers();
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('PropertyFormTabbed - currentUser:', currentUser);
+    console.log('PropertyFormTabbed - users:', users);
+    console.log('PropertyFormTabbed - usersLoading:', usersLoading);
+    console.log('PropertyFormTabbed - usersError:', usersError);
+  }, [currentUser, users, usersLoading, usersError]);
 
   const [activeTab, setActiveTab] = useState('basic');
   const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
@@ -260,7 +269,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       propertyType: 'basic',
       status: 'basic',
       currency: 'basic',
-      ownerName: 'basic',
+      ownerId: 'basic',
       street: 'address',
       city: 'address',
       state: 'address',
@@ -283,7 +292,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
     switch (tabId) {
       case 'basic':
         if (!formData.name || formData.name.trim().length === 0) newErrors.name = 'Property name is required';
-        if (!isEdit && !formData.ownerDetails.name || (formData.ownerDetails.name && formData.ownerDetails.name.trim().length === 0)) newErrors.ownerName = 'Owner name is required';
+        if (!isEdit && !formData.ownerId) newErrors.ownerId = 'Owner selection is required';
         break;
       case 'address':
         if (!formData.address.street || formData.address.street.trim().length === 0) newErrors.street = 'Street address is required';
@@ -313,8 +322,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
     if (!formData.address.state || formData.address.state.trim().length === 0) newErrors.state = 'State is required';
     if (!formData.address.pincode || formData.address.pincode.trim().length === 0) newErrors.pincode = 'Pincode is required';
     if (!formData.totalArea || formData.totalArea <= 0) newErrors.totalArea = 'Valid area is required';
-    if (!isEdit && !formData.ownerId) newErrors.ownerId = 'Owner ID is required';
-    if (!isEdit && !formData.ownerDetails.name || (formData.ownerDetails.name && formData.ownerDetails.name.trim().length === 0)) newErrors.ownerName = 'Owner name is required';
+    if (!isEdit && !formData.ownerId) newErrors.ownerId = 'Owner selection is required';
     if (!isEdit && !formData.ownerDetails.mobileNumbers[0] || (formData.ownerDetails.mobileNumbers[0] && formData.ownerDetails.mobileNumbers[0].trim().length === 0)) newErrors.ownerMobile = 'At least one mobile number is required';
     if (!isEdit && !formData.ownerDetails.emailIds[0] || (formData.ownerDetails.emailIds[0] && formData.ownerDetails.emailIds[0].trim().length === 0)) newErrors.ownerEmail = 'At least one email ID is required';
 
@@ -384,7 +392,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
   const hasTabData = (tabId: string): boolean => {
     switch (tabId) {
       case 'basic':
-        return !!(formData.name || formData.description || formData.propertyType || formData.status);
+        return !!(formData.name || formData.description || formData.propertyType || formData.status || formData.ownerId);
       case 'address':
         return !!(formData.address?.street || formData.address?.city || formData.address?.state || formData.address?.pincode);
       case 'details':
@@ -545,15 +553,31 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
               </FormField>
 
               <FormField label="Owner Name" required>
-                <Input
-                  id="ownerName"
-                  value={owner?.name || owner?.username || formData.ownerDetails.name || ''}
-                  onChange={(e) => handleChange('ownerDetails', { ...formData.ownerDetails, name: e.target.value })}
-                  error={errors.ownerName}
-                  placeholder={ownerLoading ? "Loading owner..." : "Enter owner name"}
-                  className="h-10"
-                  disabled={ownerLoading}
-                />
+                <Select
+                  value={formData.ownerId || ''}
+                  onValueChange={(value) => {
+                    const selectedUser = users?.find(u => u.id === value);
+                    handleChange('ownerId', value);
+                    if (selectedUser) {
+                      handleChange('ownerDetails', {
+                        ...formData.ownerDetails,
+                        name: selectedUser.name || selectedUser.username || ''
+                      });
+                    }
+                  }}
+                  disabled={usersLoading}
+                >
+                  <SelectTrigger error={errors.ownerId} className="h-10">
+                    <SelectValue placeholder={usersLoading ? "Loading owners..." : "Select owner"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users && users.length > 0 && users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name || user.username || user.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FormField>
 
               <FormField label="Description">

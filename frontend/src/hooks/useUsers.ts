@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { User, UserInput, UserLoginInput, AuthUser } from '../types/user';
+import type { User, UserInput, UserLoginInput } from '../types/user';
 import { useApi, useApiMutation } from './useApi';
 import { userService } from '../services/userService';
 
@@ -83,20 +83,11 @@ export function useRegister() {
   return useApiMutation<User, UserInput>((userData) => userService.register(userData));
 }
 
-export function useLogin() {
-  const { mutate, loading, error, reset } = useApiMutation<AuthUser, UserLoginInput>(
-    (credentials) => userService.login(credentials)
-  );
-
-  const login = useCallback(async (credentials: UserLoginInput) => {
-    const response = await mutate(credentials);
-    return response;
-  }, [mutate]);
-
+export function useUsers() {
+  const query = useCallback(() => userService.getAllUsers(), []);
+  const apiResult = useApi<{users: User[]}>(query);
   return {
-    login,
-    loading,
-    error,
-    reset,
+    ...apiResult,
+    data: apiResult.data?.users || null,
   };
 }

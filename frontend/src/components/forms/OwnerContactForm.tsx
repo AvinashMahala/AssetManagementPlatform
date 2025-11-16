@@ -8,9 +8,10 @@ interface OwnerContactFormProps {
   onChange: (value: OwnerContact) => void;
   errors?: Record<string, string>;
   isEdit?: boolean;
+  readOnlyName?: boolean;
 }
 
-const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, errors, isEdit = false }) => {
+const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, errors, isEdit = false, readOnlyName = false }) => {
   const handleChange = (field: keyof OwnerContact, fieldValue: any) => {
     onChange({ ...value, [field]: fieldValue });
   };
@@ -58,6 +59,7 @@ const OwnerContactForm: React.FC<OwnerContactFormProps> = ({ value, onChange, er
             error={errors?.name}
             placeholder="Enter owner's full name"
             className="pl-10 h-10"
+            disabled={readOnlyName}
           />
         </div>
       </FormField>

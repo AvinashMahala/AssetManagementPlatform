@@ -97,7 +97,15 @@ export class PropertyRepository implements IPropertyRepository {
           data.totalFloors,
           data.yearBuilt,
           data.parkingSpaces,
-          JSON.stringify(data.buildingAmenities || []),
+          JSON.stringify(data.amenities || {
+            basic: data.buildingAmenities || [],
+            luxury: [],
+            additionalInfo: {
+              petFriendly: false,
+              smokingAllowed: false,
+              eventsAllowed: false
+            }
+          }),
           data.ownerId,
           JSON.stringify(data.coOwners || []),
           JSON.stringify(data.receiptSettings || null),

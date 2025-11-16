@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   RECEIPTS: '/api/receipts',
   EXPENSES: '/api/expenses',
   USERS: '/api/users',
+  USER_BY_ID: (id: string) => `/api/users/${id}`,
   AUTH: {
     LOGIN: '/api/auth/login',
     REGISTER: '/api/auth/register',

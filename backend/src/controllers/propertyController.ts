@@ -117,6 +117,18 @@ export class PropertyController {
   async create(req: Request, res: Response) {
     try {
       const propertyData: PropertyInput = req.body;
+      
+      // Handle ownerId based on user role
+      const authenticatedUser = (req as any).user;
+      if (authenticatedUser) {
+        // If user is admin, allow them to set ownerId, otherwise use their own ID
+        if (authenticatedUser.role !== 'admin' && propertyData.ownerId) {
+          propertyData.ownerId = authenticatedUser.id;
+        } else if (!propertyData.ownerId) {
+          propertyData.ownerId = authenticatedUser.id;
+        }
+      }
+      
       const property = await this.service.createProperty(propertyData);
       ResponseUtils.created(res, property, 'Property created successfully');
     } catch (err) {

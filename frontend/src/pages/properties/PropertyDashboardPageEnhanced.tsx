@@ -65,7 +65,6 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'file-deleted' && event.newValue) {
         try {
-          const data = JSON.parse(event.newValue);
           // For bulk deletions, check if any of the deleted files belong to this property
           // Since we don't have the file details here, we'll refresh on any file deletion
           // In a more sophisticated implementation, we could check file ownership

@@ -23,8 +23,12 @@ class UserService {
     return apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
   }
 
+  async getAllUsers(): Promise<ApiResponse<{users: User[]}>> {
+    return apiClient.get<{users: User[]}>(API_ENDPOINTS.USERS);
+  }
+
   async getUserById(id: string): Promise<ApiResponse<User>> {
-    return apiClient.get<User>(`${API_ENDPOINTS.USERS}/${id}`);
+    return apiClient.get<User>(API_ENDPOINTS.USER_BY_ID(id));
   }
 
   async logout(): Promise<void> {
