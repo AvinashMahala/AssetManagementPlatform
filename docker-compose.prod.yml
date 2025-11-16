@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY}/frontend:latest
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY}/backend:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MAIN_DATABASE_URL=${MAIN_DATABASE_URL}
+      - PORT=5000
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_ACCESS_TOKEN_EXPIRY=${JWT_ACCESS_TOKEN_EXPIRY}
+      - JWT_REFRESH_TOKEN_EXPIRY=${JWT_REFRESH_TOKEN_EXPIRY}
+      - JWT_ACCESS_TOKEN_EXPIRY_REMEMBER=${JWT_ACCESS_TOKEN_EXPIRY_REMEMBER}
+      - JWT_REFRESH_TOKEN_EXPIRY_REMEMBER=${JWT_REFRESH_TOKEN_EXPIRY_REMEMBER}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: asset_platform_main
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/clean_and_seed.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d asset_platform_main"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    driver: bridge

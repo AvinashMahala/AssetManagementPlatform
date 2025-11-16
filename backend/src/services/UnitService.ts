@@ -3,23 +3,63 @@ import { Unit, UnitInput, UnitTenant, UnitTenantInput, UnitStatus } from '../mod
 import { ValidationUtils } from '../utils/validation.js';
 import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IUnitService } from '../interfaces/services/IUnitService.js';
+import { IRentPaymentService } from '../interfaces/services/IRentPaymentService.js';
+import { IMeterService } from '../interfaces/services/IMeterService.js';
+import { IMeterReadingService } from '../interfaces/services/IMeterService.js';
+import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UnitService');
 
 export class UnitService implements IUnitService {
   private repository: IUnitRepository;
+  private rentPaymentService: IRentPaymentService;
+  private meterService: IMeterService;
+  private meterReadingService: IMeterReadingService;
+  private unitUtilityService: IUnitUtilityService;
 
-  constructor(repository: IUnitRepository) {
+  constructor(repository: IUnitRepository, rentPaymentService: IRentPaymentService, meterService: IMeterService, meterReadingService: IMeterReadingService, unitUtilityService: IUnitUtilityService) {
     this.repository = repository;
+    this.rentPaymentService = rentPaymentService;
+    this.meterService = meterService;
+    this.meterReadingService = meterReadingService;
+    this.unitUtilityService = unitUtilityService;
   }
 
   async getAllUnits(): Promise<Unit[]> {
-    return await this.repository.findAll();
+    try {
+      logger.debug('Fetching all units');
+      const units = await this.repository.findAll();
+      const unitsWithUtilities = await this.loadUtilitiesForUnits(units);
+      logger.info('Successfully fetched all units', { count: unitsWithUtilities.length });
+      return unitsWithUtilities;
+    } catch (error) {
+      logger.error('Failed to fetch all units', error);
+      throw error;
+    }
   }
 
   async getUnitById(id: string): Promise<Unit | null> {
-    if (!id || id.trim().length === 0) {
-      throw new Error(ERROR_MESSAGES.UNIT.INVALID_ID);
+    try {
+      if (!id || id.trim().length === 0) {
+        logger.warn('Invalid unit ID provided', { unitId: id });
+        throw new Error(ERROR_MESSAGES.UNIT.INVALID_ID);
+      }
+
+      logger.debug('Fetching unit by ID', { unitId: id });
+      const unit = await this.repository.findById(id);
+      if (unit) {
+        const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(unit.id);
+        unit.utilities = utilities;
+        logger.info('Successfully fetched unit', { unitId: id });
+      } else {
+        logger.warn('Unit not found', { unitId: id });
+      }
+      return unit;
+    } catch (error) {
+      logger.error('Failed to fetch unit by ID', error, { unitId: id });
+      throw error;
     }
-    return await this.repository.findById(id);
   }
 
   async getUnitsByProperty(propertyId: string): Promise<Unit[]> {
@@ -27,7 +67,8 @@ export class UnitService implements IUnitService {
     if (!propertyValidation.isValid) {
       throw new Error(propertyValidation.message);
     }
-    return await this.repository.findByProperty(propertyId);
+    const units = await this.repository.findByProperty(propertyId);
+    return await this.loadUtilitiesForUnits(units);
   }
 
   async getUnitsByStatus(status: string): Promise<Unit[]> {
@@ -35,7 +76,8 @@ export class UnitService implements IUnitService {
     if (!statusValidation.isValid) {
       throw new Error(statusValidation.message);
     }
-    return await this.repository.findByStatus(status);
+    const units = await this.repository.findByStatus(status);
+    return await this.loadUtilitiesForUnits(units);
   }
 
   async createUnit(unitData: UnitInput): Promise<Unit> {
@@ -306,7 +348,12 @@ export class UnitService implements IUnitService {
       }
     }
 
-    return await this.repository.update(id, unitData);
+    const updatedUnit = await this.repository.update(id, unitData);
+    if (updatedUnit) {
+      const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(updatedUnit.id);
+      updatedUnit.utilities = utilities;
+    }
+    return updatedUnit;
   }
 
   async deleteUnit(id: string): Promise<boolean> {
@@ -423,5 +470,376 @@ export class UnitService implements IUnitService {
     }
 
     return await this.repository.updateTenantAssignment(unitId, tenantId, updates);
+  }
+
+  // ===== ANALYTICS METHODS =====
+
+  /**
+   * Get comprehensive analytics for a specific unit
+   */
+  async getUnitAnalytics(unitId: string): Promise<any> {
+    if (!unitId || unitId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.UNIT.INVALID_ID);
+    }
+
+    const unit = await this.repository.findById(unitId);
+    if (!unit) {
+      throw new Error('Unit not found');
+    }
+
+    // Get financial summary
+    const financialSummary = await this.getUnitFinancialSummary(unitId);
+
+    // Get occupancy analytics
+    const occupancyAnalytics = await this.getUnitOccupancyAnalytics(unitId);
+
+    // Get payment history (last 12 months)
+    const paymentHistory = await this.getUnitPaymentHistory(unitId, 12);
+
+    // Get utility consumption analytics
+    const utilityAnalytics = await this.getUnitUtilityAnalytics(unitId);
+
+    // Get current tenants
+    const currentTenants = await this.repository.findUnitTenants(unitId);
+
+    return {
+      unit: unit,
+      financialSummary,
+      occupancyAnalytics,
+      paymentHistory,
+      utilityAnalytics,
+      currentTenants,
+      generatedAt: new Date()
+    };
+  }
+
+  /**
+   * Get financial summary for a unit
+   */
+  async getUnitFinancialSummary(unitId: string): Promise<any> {
+    // This would typically involve querying rent_payments and leases tables
+    // For now, return basic unit financial info
+    const unit = await this.repository.findById(unitId);
+    if (!unit) {
+      throw new Error('Unit not found');
+    }
+
+    return {
+      monthlyRent: unit.monthlyRent,
+      securityDeposit: unit.securityDeposit,
+      maintenanceCharges: unit.maintenanceCharges || 0,
+      totalMonthlyCharges: unit.monthlyRent + (unit.maintenanceCharges || 0)
+    };
+  }
+
+  /**
+   * Get occupancy analytics for a unit
+   */
+  async getUnitOccupancyAnalytics(unitId: string): Promise<any> {
+    const unit = await this.repository.findById(unitId);
+    if (!unit) {
+      throw new Error('Unit not found');
+    }
+
+    const currentTenants = await this.repository.findUnitTenants(unitId);
+    const hasActiveTenants = currentTenants.some((tenant: UnitTenant) => tenant.status === 'active');
+
+    // Calculate occupancy rate (simplified - in real implementation would check lease dates)
+    const occupancyStatus = hasActiveTenants ? 'occupied' : 'vacant';
+
+    return {
+      currentStatus: unit.status,
+      occupancyStatus,
+      tenantCount: currentTenants.filter((t: UnitTenant) => t.status === 'active').length,
+      maxOccupants: unit.maxOccupants || 1,
+      hasActiveLease: hasActiveTenants
+    };
+  }
+
+  /**
+   * Get payment history for a unit
+   */
+  async getUnitPaymentHistory(unitId: string, months: number = 12): Promise<any> {
+    try {
+      // Get current tenants for this unit
+      const currentTenants = await this.repository.findUnitTenants(unitId);
+      const tenantIds = currentTenants
+        .filter((tenant: UnitTenant) => tenant.status === 'active')
+        .map((tenant: UnitTenant) => tenant.tenantId);
+
+      if (tenantIds.length === 0) {
+        return {
+          totalPayments: 0,
+          totalAmount: 0,
+          onTimePayments: 0,
+          latePayments: 0,
+          averagePaymentTime: 0,
+          recentPayments: [],
+          paymentTrends: []
+        };
+      }
+
+      // Get payments for all tenants in this unit
+      const allPayments = [];
+      for (const tenantId of tenantIds) {
+        const tenantPayments = await this.rentPaymentService.getPaymentsByTenant(tenantId);
+        allPayments.push(...tenantPayments);
+      }
+
+      // Filter payments from the last N months
+      const cutoffDate = new Date();
+      cutoffDate.setMonth(cutoffDate.getMonth() - months);
+
+      const recentPayments = allPayments.filter(payment => {
+        const paymentDate = payment.paidDate || payment.dueDate;
+        return paymentDate >= cutoffDate;
+      });
+
+      // Calculate payment statistics
+      const paidPayments = recentPayments.filter(p => p.status === 'paid');
+      const overduePayments = recentPayments.filter(p => p.status === 'overdue');
+
+      const totalAmount = paidPayments.reduce((sum, p) => sum + p.amount, 0);
+      const onTimePayments = paidPayments.filter(p => {
+        if (!p.paidDate) return false;
+        return p.paidDate <= p.dueDate;
+      }).length;
+
+      // Calculate payment trends (monthly data)
+      const paymentTrends = this.calculatePaymentTrends(recentPayments);
+
+      // Get recent payments (last 5)
+      const recentPaymentsList = paidPayments
+        .sort((a, b) => {
+          const dateA = a.paidDate || a.dueDate;
+          const dateB = b.paidDate || b.dueDate;
+          return dateB.getTime() - dateA.getTime();
+        })
+        .slice(0, 5)
+        .map(payment => ({
+          id: payment.id,
+          amount: payment.amount,
+          date: payment.paidDate || payment.dueDate,
+          status: payment.status,
+          tenantId: payment.tenantId
+        }));
+
+      return {
+        totalPayments: paidPayments.length,
+        totalAmount,
+        onTimePayments,
+        latePayments: overduePayments.length,
+        averagePaymentTime: this.calculateAveragePaymentTime(paidPayments),
+        recentPayments: recentPaymentsList,
+        paymentTrends
+      };
+    } catch (error) {
+      console.error('Error fetching payment history:', error);
+      // Return empty data structure on error
+      return {
+        totalPayments: 0,
+        totalAmount: 0,
+        onTimePayments: 0,
+        latePayments: 0,
+        averagePaymentTime: 0,
+        recentPayments: [],
+        paymentTrends: []
+      };
+    }
+  }
+
+  /**
+   * Calculate payment trends by month
+   */
+  private calculatePaymentTrends(payments: any[]): any[] {
+    const monthlyData: { [key: string]: { total: number, count: number, onTime: number } } = {};
+
+    payments.forEach(payment => {
+      if (payment.status === 'paid') {
+        const date = payment.paidDate || payment.dueDate;
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = { total: 0, count: 0, onTime: 0 };
+        }
+
+        monthlyData[monthKey].total += payment.amount;
+        monthlyData[monthKey].count += 1;
+
+        if (payment.paidDate && payment.paidDate <= payment.dueDate) {
+          monthlyData[monthKey].onTime += 1;
+        }
+      }
+    });
+
+    return Object.entries(monthlyData)
+      .map(([month, data]) => ({
+        month,
+        totalAmount: data.total,
+        paymentCount: data.count,
+        onTimePercentage: data.count > 0 ? (data.onTime / data.count) * 100 : 0
+      }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+  }
+
+  /**
+   * Calculate average payment time in days
+   */
+  private calculateAveragePaymentTime(payments: any[]): number {
+    const paidOnTime = payments.filter(p => p.paidDate && p.paidDate <= p.dueDate);
+
+    if (paidOnTime.length === 0) return 0;
+
+    const totalDays = paidOnTime.reduce((sum, p) => {
+      const diffTime = p.paidDate.getTime() - p.dueDate.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      return sum + diffDays;
+    }, 0);
+
+    return Math.round(totalDays / paidOnTime.length);
+  }
+
+  /**
+   * Get utility consumption analytics for a unit
+   */
+  async getUnitUtilityAnalytics(unitId: string): Promise<any> {
+    try {
+      // Get all meters for this unit
+      const meters = await this.meterService.getActiveMetersByUnit(unitId);
+
+      if (meters.length === 0) {
+        return {
+          hasMeters: false,
+          meters: [],
+          consumptionTrends: [],
+          totalCosts: { monthly: 0, yearly: 0 },
+          efficiency: null
+        };
+      }
+
+      // Get consumption data for each meter (last 12 months)
+      const consumptionTrends = [];
+      let totalMonthlyCost = 0;
+      let totalYearlyCost = 0;
+
+      for (const meter of meters) {
+        const readings = await this.meterReadingService.getMeterReadingsByMeter(meter.id);
+
+        // Calculate monthly consumption and costs
+        const monthlyData = this.calculateMonthlyConsumption(readings, meter);
+        consumptionTrends.push({
+          meterId: meter.id,
+          meterName: meter.meterName,
+          meterType: meter.meterType,
+          monthlyConsumption: monthlyData
+        });
+
+        // Calculate total costs
+        const meterCosts = monthlyData.reduce((sum, month) => sum + month.totalCost, 0);
+        totalMonthlyCost += meterCosts / 12; // Average monthly
+        totalYearlyCost += meterCosts;
+      }
+
+      return {
+        hasMeters: true,
+        meters: meters.map(m => ({
+          id: m.id,
+          name: m.meterName,
+          type: m.meterType,
+          costPerUnit: m.costPerUnit
+        })),
+        consumptionTrends,
+        totalCosts: {
+          monthly: Math.round(totalMonthlyCost * 100) / 100,
+          yearly: Math.round(totalYearlyCost * 100) / 100
+        },
+        efficiency: this.calculateEfficiencyScore(consumptionTrends)
+      };
+    } catch (error) {
+      console.error('Error fetching utility analytics:', error);
+      return {
+        hasMeters: false,
+        meters: [],
+        consumptionTrends: [],
+        totalCosts: { monthly: 0, yearly: 0 },
+        efficiency: null
+      };
+    }
+  }
+
+  /**
+   * Calculate monthly consumption data from meter readings
+   */
+  private calculateMonthlyConsumption(readings: any[], meter: any): any[] {
+    const monthlyData: { [key: string]: { consumption: number, cost: number, readings: number } } = {};
+
+    // Sort readings by date
+    readings.sort((a, b) => a.readingDate.getTime() - b.readingDate.getTime());
+
+    for (let i = 1; i < readings.length; i++) {
+      const current = readings[i];
+      const previous = readings[i - 1];
+
+      const monthKey = `${current.readingDate.getFullYear()}-${String(current.readingDate.getMonth() + 1).padStart(2, '0')}`;
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { consumption: 0, cost: 0, readings: 0 };
+      }
+
+      monthlyData[monthKey].consumption += current.unitsConsumed;
+      monthlyData[monthKey].cost += current.totalCost;
+      monthlyData[monthKey].readings += 1;
+    }
+
+    return Object.entries(monthlyData)
+      .map(([month, data]) => ({
+        month,
+        consumption: Math.round(data.consumption * 100) / 100,
+        totalCost: Math.round(data.cost * 100) / 100,
+        averageCost: data.readings > 0 ? Math.round((data.cost / data.readings) * 100) / 100 : 0
+      }))
+      .sort((a, b) => a.month.localeCompare(b.month))
+      .slice(-12); // Last 12 months
+  }
+
+  /**
+   * Calculate efficiency score based on consumption patterns
+   */
+  private calculateEfficiencyScore(consumptionTrends: any[]): any {
+    if (consumptionTrends.length === 0) return null;
+
+    // Simple efficiency calculation based on consistency and cost trends
+    let totalScore = 0;
+    let meterCount = 0;
+
+    for (const trend of consumptionTrends) {
+      if (trend.monthlyConsumption.length >= 3) {
+        const recent = trend.monthlyConsumption.slice(-3);
+        const avgConsumption = recent.reduce((sum: number, m: any) => sum + m.consumption, 0) / recent.length;
+        const variance = recent.reduce((sum: number, m: any) => sum + Math.pow(m.consumption - avgConsumption, 2), 0) / recent.length;
+        const consistencyScore = Math.max(0, 100 - (variance / avgConsumption) * 100);
+
+        totalScore += consistencyScore;
+        meterCount++;
+      }
+    }
+
+    return meterCount > 0 ? Math.round(totalScore / meterCount) : null;
+  }
+
+  /**
+   * Load utilities for units
+   */
+  private async loadUtilitiesForUnits(units: Unit[]): Promise<Unit[]> {
+    for (const unit of units) {
+      try {
+        const utilities = await this.unitUtilityService.getUnitUtilitiesByUnit(unit.id);
+        unit.utilities = utilities;
+      } catch (error) {
+        console.error(`Error loading utilities for unit ${unit.id}:`, error);
+        unit.utilities = [];
+      }
+    }
+    return units;
   }
 }

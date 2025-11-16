@@ -2,6 +2,9 @@ import { Pool } from 'pg';
 import { Unit, UnitInput, UnitTenant, UnitTenantInput, UnitStatus } from '../models/Unit.js';
 import { TABLES, COLUMNS } from '../constants/database.js';
 import { IUnitRepository } from '../interfaces/repositories/IUnitRepository.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UnitRepository');
 
 export class UnitRepository implements IUnitRepository {
   private pool: Pool;
@@ -12,21 +15,29 @@ export class UnitRepository implements IUnitRepository {
 
   async findAll(): Promise<Unit[]> {
     try {
+      logger.debug('Executing findAll query for units');
       const result = await this.pool.query(`SELECT * FROM ${TABLES.UNITS}`);
-      return result.rows.map(row => this.mapRowToUnit(row));
+      const units = result.rows.map(row => this.mapRowToUnit(row));
+      logger.info('Successfully fetched all units', { count: units.length });
+      return units;
     } catch (error) {
+      logger.error('Failed to fetch units', error);
       throw new Error('Failed to fetch units');
     }
   }
 
   async findById(id: string): Promise<Unit | null> {
     try {
+      logger.debug('Executing findById query for unit', { unitId: id });
       const result = await this.pool.query(
         `SELECT * FROM ${TABLES.UNITS} WHERE ${COLUMNS.UNITS.ID} = $1`,
         [id]
       );
-      return result.rows[0] ? this.mapRowToUnit(result.rows[0]) : null;
+      const unit = result.rows[0] ? this.mapRowToUnit(result.rows[0]) : null;
+      logger.info('Unit lookup result', { unitId: id, found: !!unit });
+      return unit;
     } catch (error) {
+      logger.error('Failed to fetch unit by ID', error, { unitId: id });
       throw new Error('Failed to fetch unit');
     }
   }
@@ -39,7 +50,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return result.rows.map(row => this.mapRowToUnit(row));
     } catch (error) {
-      throw new Error('Failed to fetch units by property');
+      throw new Error(`Failed to find units by property: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -51,7 +62,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return result.rows.map(row => this.mapRowToUnit(row));
     } catch (error) {
-      throw new Error('Failed to fetch units by status');
+      throw new Error(`Failed to find units by status: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -108,7 +119,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return this.mapRowToUnit(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create unit: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -201,7 +212,7 @@ export class UnitRepository implements IUnitRepository {
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToUnit(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update unit: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -213,7 +224,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to delete unit');
+      throw new Error(`Failed to delete unit: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -225,7 +236,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update unit status');
+      throw new Error(`Failed to update unit status: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -237,7 +248,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return result.rows.map(row => this.mapRowToUnitTenant(row));
     } catch (error) {
-      throw new Error('Failed to fetch unit tenants');
+      throw new Error(`Failed to find unit tenants: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -274,7 +285,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return this.mapRowToUnitTenant(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to assign tenant to unit: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -286,7 +297,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to remove tenant from unit');
+      throw new Error(`Failed to remove tenant from unit: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -335,7 +346,7 @@ export class UnitRepository implements IUnitRepository {
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToUnitTenant(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update tenant assignment: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -347,7 +358,7 @@ export class UnitRepository implements IUnitRepository {
       );
       return result.rows[0] ? this.mapRowToUnitTenant(result.rows[0]) : null;
     } catch (error) {
-      throw new Error('Failed to fetch tenant assignment');
+      throw new Error(`Failed to find tenant assignment: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 

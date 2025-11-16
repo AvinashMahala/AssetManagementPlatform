@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useTenant, useUpdateTenant } from '../../hooks';
-import { Button } from '../../components/common/Button';
-import { Input } from '../../components/common/Input';
-import { Card } from '../../components/common';
+import { Button } from '../../components/ui/button';
+import { AppLayout } from '../../components/layout/AppLayout';
+import TenantFormTabbed from '../../components/forms/TenantFormTabbed';
 import type { TenantInput } from '../../types/tenant';
 
 const TenantEditPage: React.FC = () => {
@@ -11,386 +12,76 @@ const TenantEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: tenant, loading: fetchLoading } = useTenant(id!);
   const { mutate: updateTenant, loading: updateLoading } = useUpdateTenant();
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState<TenantInput>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    alternatePhone: '',
-    dateOfBirth: '',
-    gender: undefined,
-    occupation: '',
-    companyName: '',
-    monthlyIncome: undefined,
-    currentAddress: {
-      street: '',
-      city: '',
-      state: '',
-      pincode: '',
-    },
-    emergencyContact: {
-      name: '',
-      relationship: '',
-      phone: '',
-    },
-    status: 'active',
-    preferredLocations: [],
-    notes: '',
-  });
 
-  useEffect(() => {
-    if (tenant) {
-      setFormData({
-        firstName: tenant.firstName,
-        lastName: tenant.lastName,
-        email: tenant.email,
-        phone: tenant.phone || '',
-        alternatePhone: tenant.alternatePhone || '',
-        dateOfBirth: tenant.dateOfBirth || '',
-        gender: tenant.gender,
-        occupation: tenant.occupation || '',
-        companyName: tenant.companyName || '',
-        monthlyIncome: tenant.monthlyIncome,
-        currentAddress: tenant.currentAddress,
-        emergencyContact: tenant.emergencyContact,
-        status: tenant.status,
-        preferredLocations: tenant.preferredLocations || [],
-        notes: tenant.notes || '',
-      });
-    }
-  }, [tenant]);
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    
-    if (!formData.currentAddress.street.trim()) newErrors['currentAddress.street'] = 'Street is required';
-    if (!formData.currentAddress.city.trim()) newErrors['currentAddress.city'] = 'City is required';
-    if (!formData.currentAddress.state.trim()) newErrors['currentAddress.state'] = 'State is required';
-    if (!formData.currentAddress.pincode.trim()) newErrors['currentAddress.pincode'] = 'Pincode is required';
-
-    if (!formData.emergencyContact.name.trim()) newErrors['emergencyContact.name'] = 'Emergency contact name is required';
-    if (!formData.emergencyContact.relationship.trim()) newErrors['emergencyContact.relationship'] = 'Relationship is required';
-    if (!formData.emergencyContact.phone.trim()) newErrors['emergencyContact.phone'] = 'Emergency phone is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
+  const handleSubmit = async (data: TenantInput) => {
+    if (!id) return;
 
     try {
-      const response = await updateTenant({ id: id!, data: formData });
-      if (response.success) {
-        navigate(`/tenants/${id}`);
-      } else {
-        alert('Failed to update tenant: ' + (response.error?.message || 'Unknown error'));
-      }
+      await updateTenant({ id, data });
+      navigate('/tenants', {
+        state: { message: 'Tenant updated successfully!' }
+      });
     } catch (error) {
-      console.error('Error updating tenant:', error);
-      alert('Failed to update tenant. Please try again.');
+      console.error('Failed to update tenant:', error);
+      throw error; // Re-throw to let the form handle it
     }
   };
 
   if (fetchLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <AppLayout title="Edit Tenant">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading tenant...</p>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
   if (!tenant) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Tenant Not Found</h1>
-          <Button onClick={() => navigate('/tenants')}>Back to List</Button>
+      <AppLayout title="Edit Tenant">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Tenant Not Found</h2>
+            <p className="text-gray-600 mb-4">The tenant you're trying to edit doesn't exist or has been deleted.</p>
+            <Button onClick={() => navigate('/tenants')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Tenants
+            </Button>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Edit Tenant</h1>
-        <Button variant="secondary" onClick={() => navigate(`/tenants/${id}`)}>
-          Cancel
-        </Button>
+    <AppLayout title="Edit Tenant">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/tenants')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Tenants
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Edit Tenant</h1>
+            <p className="mt-2 text-gray-600">Update tenant record details</p>
+          </div>
+        </div>
+
+        <TenantFormTabbed
+          initialData={tenant}
+          onSubmit={handleSubmit}
+          loading={updateLoading}
+          isEdit={true}
+        />
       </div>
-
-      <form onSubmit={handleSubmit}>
-        <Card className="p-6 space-y-6">
-          {/* Basic Information */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  error={errors.firstName}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  error={errors.lastName}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  error={errors.email}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alternate Phone</label>
-                <Input
-                  value={formData.alternatePhone}
-                  onChange={(e) => setFormData({ ...formData, alternatePhone: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                <Input
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.gender || ''}
-                  onChange={(e) => setFormData({ ...formData, gender: e.target.value as any })}
-                >
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="blacklisted">Blacklisted</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Employment Information */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Employment Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
-                <Input
-                  value={formData.occupation}
-                  onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                <Input
-                  value={formData.companyName}
-                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Income</label>
-                <Input
-                  type="number"
-                  value={formData.monthlyIncome || ''}
-                  onChange={(e) => setFormData({ ...formData, monthlyIncome: Number(e.target.value) })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Current Address */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Current Address</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Street <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.currentAddress.street}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      currentAddress: { ...formData.currentAddress, street: e.target.value },
-                    })
-                  }
-                  error={errors['currentAddress.street']}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.currentAddress.city}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      currentAddress: { ...formData.currentAddress, city: e.target.value },
-                    })
-                  }
-                  error={errors['currentAddress.city']}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.currentAddress.state}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      currentAddress: { ...formData.currentAddress, state: e.target.value },
-                    })
-                  }
-                  error={errors['currentAddress.state']}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pincode <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.currentAddress.pincode}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      currentAddress: { ...formData.currentAddress, pincode: e.target.value },
-                    })
-                  }
-                  error={errors['currentAddress.pincode']}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Emergency Contact */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Emergency Contact</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.emergencyContact.name}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      emergencyContact: { ...formData.emergencyContact, name: e.target.value },
-                    })
-                  }
-                  error={errors['emergencyContact.name']}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Relationship <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.emergencyContact.relationship}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      emergencyContact: { ...formData.emergencyContact, relationship: e.target.value },
-                    })
-                  }
-                  error={errors['emergencyContact.relationship']}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={formData.emergencyContact.phone}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      emergencyContact: { ...formData.emergencyContact, phone: e.target.value },
-                    })
-                  }
-                  error={errors['emergencyContact.phone']}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-            <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={4}
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            />
-          </div>
-
-          {/* Submit */}
-          <div className="flex justify-end space-x-3">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate(`/tenants/${id}`)}
-              disabled={updateLoading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" loading={updateLoading}>
-              Update Tenant
-            </Button>
-          </div>
-        </Card>
-      </form>
-    </div>
+    </AppLayout>
   );
 };
 

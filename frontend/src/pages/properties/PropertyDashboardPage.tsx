@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, DollarSign, TrendingUp, Home } from 'lucide-react';
+import { ArrowLeft, FileText, DollarSign, TrendingUp, Home, Receipt } from 'lucide-react';
 import { useProperty, useUnits, useLeases, usePayments } from '../../hooks';
 import {
   Card,
@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '../../components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui';
+import { getErrorMessage } from '../../types/api';
 
 export const PropertyDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -89,7 +90,7 @@ export const PropertyDashboardPage: React.FC = () => {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Error</CardTitle>
-            <CardDescription>{propertyError || 'Property not found'}</CardDescription>
+            <CardDescription>{getErrorMessage(propertyError) || 'Property not found'}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate('/properties')}>Back to Properties</Button>
@@ -115,10 +116,14 @@ export const PropertyDashboardPage: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
+            <Receipt className="h-4 w-4 mr-2" />
+            Rent Collection
+          </Button>
           <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
             Edit Property
           </Button>
-          <Button onClick={() => navigate(`/units/create`)}>
+          <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
             Add Unit
           </Button>
         </div>
@@ -194,7 +199,7 @@ export const PropertyDashboardPage: React.FC = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Units in this Property</CardTitle>
-                <Button size="sm" onClick={() => navigate(`/units/create`)}>
+                <Button size="sm" onClick={() => navigate(`/units/create?propertyId=${id}`)}>
                   Add Unit
                 </Button>
               </div>
@@ -209,7 +214,7 @@ export const PropertyDashboardPage: React.FC = () => {
                   <Home className="mx-auto h-12 w-12 text-muted-foreground" />
                   <h3 className="mt-4 text-lg font-semibold">No units yet</h3>
                   <p className="text-muted-foreground mb-4">Add units to this property to get started.</p>
-                  <Button onClick={() => navigate(`/units/create`)}>Add First Unit</Button>
+                  <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>Add First Unit</Button>
                 </div>
               ) : (
                 <div className="rounded-md border">
@@ -230,7 +235,7 @@ export const PropertyDashboardPage: React.FC = () => {
                           <TableCell>
                             <Badge variant="outline">{unit.unitType.toUpperCase()}</Badge>
                           </TableCell>
-                          <TableCell>{formatCurrency(unit.rent)}/mo</TableCell>
+                          <TableCell>{formatCurrency(unit.monthlyRent)}/mo</TableCell>
                           <TableCell>
                             <Badge variant={getUnitStatusColor(unit.status)}>
                               {unit.status.replace('_', ' ')}

@@ -25,8 +25,10 @@ export enum PaymentMethod {
 export interface RentPayment {
   id: string; // UUID
   leaseId: string; // UUID reference to leases
-  propertyId: string; // UUID reference to properties
+  propertyId?: string; // UUID reference to properties (optional - not in current schema)
   tenantId: string; // UUID reference to tenants
+  unitId?: string; // UUID reference to units (added for joined queries)
+  unitNumber?: string; // Unit number (added for joined queries)
 
   // Payment details
   amount: number;
@@ -44,7 +46,7 @@ export interface RentPayment {
   penaltyAmount?: number;
 
   // Amount breakdown
-  rentAmount: number;
+  rentAmount?: number; // Optional - not in current schema, using amount instead
   maintenanceCharges?: number;
   otherCharges?: number;
 
@@ -62,7 +64,7 @@ export interface RentPayment {
 
 export interface RentPaymentInput {
   leaseId: string;
-  propertyId: string;
+  propertyId?: string;
   tenantId: string;
   amount: number;
   dueDate: Date;
@@ -73,7 +75,7 @@ export interface RentPaymentInput {
   paymentReference?: string;
   lateFee?: number;
   penaltyAmount?: number;
-  rentAmount: number;
+  rentAmount?: number;
   maintenanceCharges?: number;
   otherCharges?: number;
   notes?: string;

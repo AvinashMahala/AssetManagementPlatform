@@ -28,6 +28,10 @@ class PaymentService {
   async delete(id: string): Promise<ApiResponse<void>> {
     return apiClient.delete<void>(`${API_ENDPOINTS.RENT_PAYMENTS}/${id}`);
   }
+
+  async deleteBulk(ids: string[]): Promise<ApiResponse<{ deleted: number; failed: string[] }>> {
+    return apiClient.delete<{ deleted: number; failed: string[] }>(`${API_ENDPOINTS.RENT_PAYMENTS}/bulk-delete`, { data: { ids } });
+  }
 }
 
 export const paymentService = new PaymentService();

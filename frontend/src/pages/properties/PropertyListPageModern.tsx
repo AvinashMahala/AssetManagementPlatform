@@ -30,6 +30,7 @@ import {
 } from '../../components/ui/dialog';
 import type { PropertyFilters } from '../../types/property';
 import { PropertyType, PropertyStatus } from '../../types/property';
+import { getErrorMessage } from '../../types/api';
 
 const PropertyListPageModern: React.FC = () => {
   const navigate = useNavigate();
@@ -100,7 +101,7 @@ const PropertyListPageModern: React.FC = () => {
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Error Loading Properties</CardTitle>
-            <CardDescription>{error}</CardDescription>
+            <CardDescription>{getErrorMessage(error)}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => updateFilters({})}>Try Again</Button>

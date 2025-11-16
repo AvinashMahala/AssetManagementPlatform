@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useDeleteTenant } from '../../hooks';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common';
+import { ReceiptList } from '../../components/receipts';
+import { getErrorMessage } from '../../types/api';
 
 const TenantDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,7 +45,7 @@ const TenantDetailPage: React.FC = () => {
           <Button onClick={() => navigate('/tenants')}>Back to List</Button>
         </div>
         <Card className="p-8 text-center">
-          <p className="text-red-600 mb-4">{error || 'Tenant not found'}</p>
+          <p className="text-red-600 mb-4">{getErrorMessage(error) || 'Tenant not found'}</p>
           <Button onClick={() => navigate('/tenants')}>Go Back</Button>
         </Card>
       </div>
@@ -141,30 +143,38 @@ const TenantDetailPage: React.FC = () => {
             </address>
           </Card>
 
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Emergency Contact</h2>
-            <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Name</dt>
-                <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Relationship</dt>
-                <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.relationship}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.phone}</dd>
-              </div>
-            </dl>
-          </Card>
-
-          {tenant.notes && (
+          {tenant.permanentAddress && (
             <Card className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Notes</h2>
-              <p className="text-sm text-gray-900 whitespace-pre-wrap">{tenant.notes}</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Permanent Address</h2>
+              <address className="not-italic text-sm text-gray-900">
+                {tenant.permanentAddress.street}
+                <br />
+                {tenant.permanentAddress.city}, {tenant.permanentAddress.state} {tenant.permanentAddress.pincode}
+              </address>
             </Card>
           )}
+
+          {tenant.emergencyContact && (
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Emergency Contact</h2>
+              <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Name</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Relationship</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.relationship}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{tenant.emergencyContact.phone}</dd>
+                </div>
+              </dl>
+            </Card>
+          )}
+
+          <ReceiptList tenantId={tenant.id} showHeader={true} />
         </div>
 
         {/* Sidebar */}

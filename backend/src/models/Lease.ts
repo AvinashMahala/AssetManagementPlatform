@@ -10,12 +10,19 @@ export interface Lease {
   id: string; // UUID
   propertyId: string; // UUID reference to properties
   tenantId: string; // UUID reference to tenants
+  unitId?: string; // UUID reference to units (added for joined queries)
+  unitNumber?: string; // Unit number (added for joined queries)
 
   // Lease terms
   startDate: Date;
   endDate: Date;
   monthlyRent: number;
   securityDeposit: number;
+  lateFeeAmount?: number;
+  gracePeriodDays?: number;
+  paymentDueDay?: number;
+  termsConditions?: string;
+  specialClauses?: string;
   status: LeaseStatus;
 
   // Additional lease details
@@ -44,11 +51,17 @@ export interface Lease {
 
 export interface LeaseInput {
   propertyId: string;
+  unitId?: string;
   tenantId: string;
   startDate: Date;
   endDate: Date;
   monthlyRent: number;
   securityDeposit: number;
+  lateFeeAmount?: number;
+  gracePeriodDays?: number;
+  paymentDueDay?: number;
+  termsConditions?: string;
+  specialClauses?: string;
   status?: LeaseStatus;
   noticePeriodDays?: number;
   autoRenewal?: boolean;

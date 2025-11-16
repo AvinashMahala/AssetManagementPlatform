@@ -1,8 +1,11 @@
 import { Pool } from 'pg';
-import { User, UserInput } from '../models/User';
+import { User, UserInput, PhoneVerificationCode } from '../models/User.js';
 import { TABLES, COLUMNS, DEFAULTS } from '../constants/database';
 import { PasswordUtils } from '../utils/password';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UserRepository');
 
 export class UserRepository implements IUserRepository {
   private pool: Pool;
@@ -14,6 +17,7 @@ export class UserRepository implements IUserRepository {
   // Basic CRUD operations
   async findAll(): Promise<User[]> {
     try {
+      logger.debug('Executing findAll query for users');
       const result = await this.pool.query(
         `SELECT ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
                 ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
@@ -21,17 +25,20 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS}`
       );
+      logger.info('Successfully fetched all users', { count: result.rows.length });
       return result.rows;
     } catch (error) {
-      throw new Error('Failed to fetch users');
+      logger.error('Failed to fetch users', error);
+      throw new Error(`Failed to fetch users: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
   async findById(id: string): Promise<User | null> {
     try {
+      logger.debug('Executing findById query for user', { userId: id });
       const result = await this.pool.query(
         `SELECT ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
                 ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
@@ -39,13 +46,16 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.ID} = $1`,
         [id]
       );
-      return result.rows[0] || null;
+      const user = result.rows[0] || null;
+      logger.info('User lookup result', { userId: id, found: !!user });
+      return user;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      logger.error('Failed to fetch user by ID', error, { userId: id });
+      throw new Error(`Failed to fetch user: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -58,13 +68,13 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.USERNAME} = $1`,
         [username]
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by username: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -77,13 +87,14 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_TOKEN}, ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES},
                 ${COLUMNS.USERS.PASSWORD_RESET_TOKEN}, ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES},
                 ${COLUMNS.USERS.GOOGLE_ID}, ${COLUMNS.USERS.PROFILE_PICTURE},
-                ${COLUMNS.USERS.LAST_LOGIN}, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                ${COLUMNS.USERS.LAST_LOGIN}, name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.EMAIL} = $1`,
         [email]
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      console.error('❌ Error in findByEmail:', error);
+      throw new Error(`Failed to fetch user by email: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -96,13 +107,13 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.PHONE} = $1`,
         [phone]
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by phone: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -115,13 +126,13 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.GOOGLE_ID} = $1`,
         [googleId]
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by Google ID: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -134,13 +145,13 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.EMAIL_VERIFICATION_TOKEN} = $1`,
         [token]
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by email verification token: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -153,13 +164,13 @@ export class UserRepository implements IUserRepository {
                 ${COLUMNS.USERS.EMAIL_VERIFICATION_EXPIRES}, ${COLUMNS.USERS.PASSWORD_RESET_TOKEN},
                 ${COLUMNS.USERS.PASSWORD_RESET_EXPIRES}, ${COLUMNS.USERS.GOOGLE_ID},
                 ${COLUMNS.USERS.PROFILE_PICTURE}, ${COLUMNS.USERS.LAST_LOGIN},
-                ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
+                name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}
          FROM ${TABLES.USERS} WHERE ${COLUMNS.USERS.PASSWORD_RESET_TOKEN} = $1`,
         [token]
       );
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Failed to fetch user');
+      throw new Error(`Failed to fetch user by password reset token: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 
@@ -197,7 +208,7 @@ export class UserRepository implements IUserRepository {
       );
       return result.rows[0];
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create user: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -234,13 +245,13 @@ export class UserRepository implements IUserRepository {
                      WHERE ${COLUMNS.USERS.ID} = $${updates.length + 1}
                      RETURNING ${COLUMNS.USERS.ID}, ${COLUMNS.USERS.USERNAME}, ${COLUMNS.USERS.EMAIL},
                                ${COLUMNS.USERS.PHONE}, ${COLUMNS.USERS.ROLE}, ${COLUMNS.USERS.IS_EMAIL_VERIFIED},
-                               ${COLUMNS.USERS.IS_PHONE_VERIFIED}, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}`;
+                               ${COLUMNS.USERS.IS_PHONE_VERIFIED}, name, ${COLUMNS.USERS.CREATED_AT}, ${COLUMNS.USERS.UPDATED_AT}`;
       values.push(id);
 
       const result = await this.pool.query(query, values);
       return result.rows[0] || null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update user: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -252,7 +263,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to delete user');
+      throw new Error(`Failed to delete user: ${(error as Error).message || 'Database delete failed'}`);
     }
   }
 
@@ -267,7 +278,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update email verification token');
+      throw new Error(`Failed to update email verification token: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -281,7 +292,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update password reset token');
+      throw new Error(`Failed to update password reset token: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -294,7 +305,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update password');
+      throw new Error(`Failed to update password: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -307,7 +318,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to update last login');
+      throw new Error(`Failed to update last login: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -321,7 +332,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to clear password reset token');
+      throw new Error(`Failed to clear password reset token: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -336,7 +347,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to verify email');
+      throw new Error(`Failed to verify email: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -349,7 +360,7 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to verify phone');
+      throw new Error(`Failed to verify phone: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
@@ -364,34 +375,32 @@ export class UserRepository implements IUserRepository {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to link Google account');
+      throw new Error(`Failed to link Google account: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 
   // Phone verification operations
-  async storePhoneVerificationCode(phone: string, code: string, expiresAt: Date): Promise<boolean> {
+  async storePhoneVerificationCode(userId: string, phone: string, code: string, expiresAt: Date): Promise<boolean> {
     try {
-      // For now, we'll store this in a simple in-memory store or database table
-      // In production, you'd want a dedicated table for phone verification codes
-      // For simplicity, we'll use a temporary approach
       const result = await this.pool.query(
-        `INSERT INTO phone_verification_codes (phone, code, expires_at, created_at)
-         VALUES ($1, $2, $3, NOW())
-         ON CONFLICT (phone) DO UPDATE SET code = $2, expires_at = $3, created_at = NOW()`,
-        [phone, code, expiresAt]
+        `INSERT INTO phone_verification_codes (user_id, phone, code, expires_at, created_at)
+         VALUES ($1, $2, $3, $4, NOW())
+         ON CONFLICT (phone) DO UPDATE SET 
+           user_id = $1, code = $3, expires_at = $4, created_at = NOW()`,
+        [userId, phone, code, expiresAt]
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
-      throw new Error('Failed to store phone verification code');
+      throw new Error(`Failed to store phone verification code: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
-  async verifyPhoneCode(phone: string, code: string): Promise<boolean> {
+  async verifyPhoneCode(userId: string, code: string): Promise<boolean> {
     try {
       const result = await this.pool.query(
         `SELECT code, expires_at FROM phone_verification_codes
-         WHERE phone = $1 AND expires_at > NOW()`,
-        [phone]
+         WHERE user_id = $1 AND expires_at > NOW()`,
+        [userId]
       );
 
       if (result.rows.length === 0) {
@@ -401,13 +410,27 @@ export class UserRepository implements IUserRepository {
       const storedCode = result.rows[0].code;
       if (storedCode === code) {
         // Delete the used code
-        await this.pool.query(`DELETE FROM phone_verification_codes WHERE phone = $1`, [phone]);
+        await this.pool.query(`DELETE FROM phone_verification_codes WHERE user_id = $1`, [userId]);
         return true;
       }
 
       return false;
     } catch (error) {
-      throw new Error('Failed to verify phone code');
+      throw new Error(`Failed to verify phone code: ${(error as Error).message || 'Database query failed'}`);
+    }
+  }
+
+  async getPhoneVerificationCode(userId: string): Promise<PhoneVerificationCode | null> {
+    try {
+      const result = await this.pool.query(
+        `SELECT id, user_id, phone, code, expires_at, verified, created_at 
+         FROM phone_verification_codes 
+         WHERE user_id = $1 AND expires_at > NOW()`,
+        [userId]
+      );
+      return result.rows[0] || null;
+    } catch (error) {
+      throw new Error(`Failed to get phone verification code: ${(error as Error).message || 'Database query failed'}`);
     }
   }
 }

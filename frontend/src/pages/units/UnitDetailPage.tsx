@@ -1,6 +1,9 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useDeleteUnit } from '../../hooks';
+import { PhotoCarousel } from '../../componentDesignLibrary';
+import { UnitUtilitiesManager } from '../../components/units/UnitUtilitiesManager';
+import { getErrorMessage } from '../../types/api';
 
 export const UnitDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +34,7 @@ export const UnitDetailPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error || 'Unit not found'}</p>
+          <p className="text-red-800">{getErrorMessage(error) || 'Unit not found'}</p>
         </div>
       </div>
     );
@@ -69,16 +72,13 @@ export const UnitDetailPage: React.FC = () => {
       </div>
 
       {/* Photos */}
-      {unit.photos && unit.photos.length > 0 && (
-        <div className="mb-6 grid grid-cols-2 md:grid-cols-3 gap-4">
-          {unit.photos.map((photo, index) => (
-            <img
-              key={index}
-              src={photo}
-              alt={`Unit ${unit.unitNumber} - Photo ${index + 1}`}
-              className="w-full h-48 object-cover rounded-lg shadow-md"
-            />
-          ))}
+      {unit.unitPhotos && unit.unitPhotos.length > 0 && (
+        <div className="mb-6">
+          <PhotoCarousel
+            photos={unit.unitPhotos}
+            altPrefix={`Unit ${unit.unitNumber}`}
+            className="mb-4"
+          />
         </div>
       )}
 
@@ -92,29 +92,29 @@ export const UnitDetailPage: React.FC = () => {
               <p className="font-medium">{unit.unitType.toUpperCase()}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Furnishing</p>
-              <p className="font-medium">{unit.furnishingType.replace('_', ' ')}</p>
+              <p className="text-sm text-gray-500">Furnished</p>
+              <p className="font-medium">{unit.furnished ? 'Yes' : 'No'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Bedrooms</p>
-              <p className="font-medium">{unit.bedrooms}</p>
+              <p className="font-medium">{unit.bedrooms || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Bathrooms</p>
-              <p className="font-medium">{unit.bathrooms}</p>
+              <p className="font-medium">{unit.bathrooms || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Balconies</p>
               <p className="font-medium">{unit.balconies || 0}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Carpet Area</p>
-              <p className="font-medium">{unit.carpetArea} sq ft</p>
+              <p className="text-sm text-gray-500">Area</p>
+              <p className="font-medium">{unit.area} sq ft</p>
             </div>
-            {unit.builtUpArea && (
+            {unit.maxOccupants && (
               <div>
-                <p className="text-sm text-gray-500">Built-up Area</p>
-                <p className="font-medium">{unit.builtUpArea} sq ft</p>
+                <p className="text-sm text-gray-500">Max Occupants</p>
+                <p className="font-medium">{unit.maxOccupants}</p>
               </div>
             )}
           </div>
@@ -126,7 +126,7 @@ export const UnitDetailPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-gray-500">Monthly Rent</p>
-              <p className="text-lg font-semibold text-green-600">{formatCurrency(unit.rent)}</p>
+              <p className="text-lg font-semibold text-green-600">{formatCurrency(unit.monthlyRent)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Security Deposit</p>
@@ -142,11 +142,11 @@ export const UnitDetailPage: React.FC = () => {
         </div>
 
         {/* Amenities */}
-        {unit.amenities && unit.amenities.length > 0 && (
+        {unit.unitAmenities && unit.unitAmenities.length > 0 && (
           <div className="p-6 border-b">
             <h2 className="text-xl font-semibold mb-4">Amenities</h2>
             <div className="flex flex-wrap gap-2">
-              {unit.amenities.map((amenity, index) => (
+              {unit.unitAmenities.map((amenity, index) => (
                 <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                   {amenity}
                 </span>
@@ -163,15 +163,10 @@ export const UnitDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* Availability */}
-        {unit.availableFrom && (
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold mb-4">Availability</h2>
-            <p className="text-gray-700">
-              Available from: {new Date(unit.availableFrom).toLocaleDateString()}
-            </p>
-          </div>
-        )}
+        {/* Utilities */}
+        <div className="p-6 border-b">
+          <UnitUtilitiesManager unitId={unit.id} propertyId={unit.propertyId} />
+        </div>
 
         {/* Metadata */}
         <div className="p-6 bg-gray-50">
@@ -197,8 +192,14 @@ export const UnitDetailPage: React.FC = () => {
           Back to Units
         </button>
         <button
-          onClick={() => navigate(`/units/${id}/edit`)}
+          onClick={() => navigate(`/units/${id}/dashboard`)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          View Dashboard
+        </button>
+        <button
+          onClick={() => navigate(`/units/${id}/edit`)}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
         >
           Edit Unit
         </button>

@@ -144,7 +144,7 @@ export class TenantService implements ITenantService {
   }
 
   async updateTenant(id: string, tenantData: Partial<TenantInput>): Promise<Tenant | null> {
-    const idValidation = ValidationUtils.validateId(id);
+    const idValidation = ValidationUtils.validateUUID(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
     }
@@ -191,10 +191,33 @@ export class TenantService implements ITenantService {
     }
 
     if (tenantData.monthlyIncome !== undefined) {
-      const incomeValidation = ValidationUtils.validateTenantIncome(tenantData.monthlyIncome);
+      // Convert string to number if needed
+      const income = typeof tenantData.monthlyIncome === 'string' 
+        ? parseFloat(tenantData.monthlyIncome) 
+        : tenantData.monthlyIncome;
+      
+      const incomeValidation = ValidationUtils.validateTenantIncome(income);
       if (!incomeValidation.isValid) {
         throw new Error(incomeValidation.message);
       }
+      
+      // Update the tenantData with the converted value
+      tenantData.monthlyIncome = income;
+    }
+
+    if (tenantData.totalRentals !== undefined) {
+      // Convert string to number if needed
+      const totalRentals = typeof tenantData.totalRentals === 'string' 
+        ? parseInt(tenantData.totalRentals, 10) 
+        : tenantData.totalRentals;
+      
+      // Basic validation for totalRentals
+      if (totalRentals < 0) {
+        throw new Error('Total rentals cannot be negative');
+      }
+      
+      // Update the tenantData with the converted value
+      tenantData.totalRentals = totalRentals;
     }
 
     if (tenantData.currentAddress !== undefined) {
@@ -226,7 +249,7 @@ export class TenantService implements ITenantService {
   }
 
   async deleteTenant(id: string): Promise<boolean> {
-    const idValidation = ValidationUtils.validateId(id);
+    const idValidation = ValidationUtils.validateUUID(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
     }
@@ -235,7 +258,7 @@ export class TenantService implements ITenantService {
   }
 
   async updateTenantStatus(id: string, status: string): Promise<boolean> {
-    const idValidation = ValidationUtils.validateId(id);
+    const idValidation = ValidationUtils.validateUUID(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
     }
@@ -251,7 +274,7 @@ export class TenantService implements ITenantService {
 
   // Document management methods
   async addTenantDocument(tenantId: string, document: Omit<TenantDocument, 'id' | 'tenantId' | 'uploadedAt'>): Promise<TenantDocument> {
-    const idValidation = ValidationUtils.validateId(tenantId);
+    const idValidation = ValidationUtils.validateUUID(tenantId);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
     }
@@ -271,7 +294,7 @@ export class TenantService implements ITenantService {
   }
 
   async getTenantDocuments(tenantId: string): Promise<TenantDocument[]> {
-    const idValidation = ValidationUtils.validateId(tenantId);
+    const idValidation = ValidationUtils.validateUUID(tenantId);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.TENANT.INVALID_ID);
     }
@@ -280,7 +303,7 @@ export class TenantService implements ITenantService {
   }
 
   async updateTenantDocument(documentId: string, data: Partial<TenantDocument>): Promise<TenantDocument | null> {
-    const idValidation = ValidationUtils.validateId(documentId);
+    const idValidation = ValidationUtils.validateUUID(documentId);
     if (!idValidation.isValid) {
       throw new Error('Invalid document ID');
     }
@@ -296,7 +319,7 @@ export class TenantService implements ITenantService {
   }
 
   async deleteTenantDocument(documentId: string): Promise<boolean> {
-    const idValidation = ValidationUtils.validateId(documentId);
+    const idValidation = ValidationUtils.validateUUID(documentId);
     if (!idValidation.isValid) {
       throw new Error('Invalid document ID');
     }
@@ -305,12 +328,12 @@ export class TenantService implements ITenantService {
   }
 
   async verifyTenantDocument(documentId: string, verifiedBy: string): Promise<boolean> {
-    const documentIdValidation = ValidationUtils.validateId(documentId);
+    const documentIdValidation = ValidationUtils.validateUUID(documentId);
     if (!documentIdValidation.isValid) {
       throw new Error('Invalid document ID');
     }
 
-    const verifiedByValidation = ValidationUtils.validateId(verifiedBy);
+    const verifiedByValidation = ValidationUtils.validateUUID(verifiedBy);
     if (!verifiedByValidation.isValid) {
       throw new Error('Invalid verifier ID');
     }

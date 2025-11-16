@@ -15,4 +15,7 @@ export interface IUnitService {
   assignTenantToUnit(unitTenantData: UnitTenantInput): Promise<UnitTenant>;
   removeTenantFromUnit(unitId: string, tenantId: string): Promise<boolean>;
   updateTenantAssignment(unitId: string, tenantId: string, updates: Partial<UnitTenantInput>): Promise<UnitTenant | null>;
+
+  // Analytics methods
+  getUnitAnalytics(unitId: string): Promise<any>;
 }

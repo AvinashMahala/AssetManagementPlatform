@@ -3,6 +3,7 @@ import { IRentTransactionService } from '../interfaces/services/IRentTransaction
 import { RentTransactionInput, RentTransactionStatus, BillingMethod } from '../models/RentTransaction';
 import { ResponseUtils } from '../utils/response';
 import { ErrorUtils } from '../utils/error';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 export class RentTransactionController {
   private service: IRentTransactionService;
@@ -264,6 +265,68 @@ export class RentTransactionController {
 
   /**
    * @swagger
+   * /api/rent-transactions/unit/{unitId}/history:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get transaction history for a unit
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: unitId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Unit ID
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 5
+   *         description: Maximum number of transactions to return (optional, defaults to 5)
+   *     responses:
+   *       200:
+   *         description: Transaction history for the unit
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     transactions:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/RentTransaction'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUnitHistory(req: Request, res: Response) {
+    try {
+      const { unitId } = req.params;
+      const { limit } = req.query;
+      
+      const limitNum = limit ? parseInt(limit as string) : undefined;
+      const transactions = await this.service.getUnitHistory(unitId, limitNum);
+      ResponseUtils.success(res, transactions, 'Unit transaction history retrieved successfully');
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to fetch unit transaction history');
+    }
+  }
+
+  /**
+   * @swagger
    * /api/rent-transactions/pending:
    *   get:
    *     tags: [Rent Transactions]
@@ -459,9 +522,12 @@ export class RentTransactionController {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  async createTransaction(req: Request, res: Response) {
+  async createTransaction(req: AuthenticatedRequest, res: Response) {
     try {
-      const transactionData: RentTransactionInput = req.body;
+      const transactionData: RentTransactionInput = {
+        ...req.body,
+        createdBy: req.user?.id
+      };
       const transaction = await this.service.createTransaction(transactionData);
       ResponseUtils.created(res, transaction);
     } catch (err) {
@@ -1321,6 +1387,709 @@ export class RentTransactionController {
         return ResponseUtils.badRequest(res, errorMessage);
       }
       ErrorUtils.handleGenericError(res, err, 'Failed to get monthly revenue report');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/unit/{unitId}/current-month:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get current month's transaction for a unit
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: unitId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Unit ID
+   *     responses:
+   *       200:
+   *         description: Current month's transaction for the unit (or null if none exists)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/RentTransaction'
+   *       500:
+   *         description: Internal server error
+   */
+  async getCurrentMonthTransaction(req: Request, res: Response) {
+    try {
+      const { unitId } = req.params;
+      const transaction = await this.service.getCurrentMonthTransaction(unitId);
+      ResponseUtils.success(res, transaction);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get current month transaction');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/unit/{unitId}/last-meter-readings:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get last meter readings for a unit
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: unitId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Unit ID
+   *     responses:
+   *       200:
+   *         description: Last meter readings for the unit
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *       500:
+   *         description: Internal server error
+   */
+  async getLastMeterReadings(req: Request, res: Response) {
+    try {
+      const { unitId } = req.params;
+      const readings = await this.service.getLastMeterReadings(unitId);
+      ResponseUtils.success(res, readings);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get last meter readings');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/{id}/record-payment:
+   *   post:
+   *     tags: [Rent Transactions]
+   *     summary: Record a payment for a transaction
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Transaction ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - amountPaid
+   *               - paymentMethod
+   *               - paymentDate
+   *             properties:
+   *               amountPaid:
+   *                 type: number
+   *                 description: Amount paid
+   *               paymentMethod:
+   *                 type: string
+   *                 description: Payment method used
+   *               paymentDate:
+   *                 type: string
+   *                 format: date-time
+   *                 description: Date of payment
+   *               paymentReference:
+   *                 type: string
+   *                 description: Payment reference or transaction ID
+   *     responses:
+   *       200:
+   *         description: Payment recorded successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/RentTransaction'
+   *       400:
+   *         description: Invalid payment data
+   *       404:
+   *         description: Transaction not found
+   *       500:
+   *         description: Internal server error
+   */
+  async recordPayment(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { amountPaid, paymentMethod, paymentDate, paymentReference } = req.body;
+
+      if (!amountPaid || !paymentMethod || !paymentDate) {
+        return ResponseUtils.badRequest(res, 'Amount paid, payment method, and payment date are required');
+      }
+
+      const transaction = await this.service.recordPayment(
+        id,
+        amountPaid,
+        paymentMethod,
+        new Date(paymentDate),
+        paymentReference
+      );
+
+      if (!transaction) {
+        return ResponseUtils.notFound(res, 'Transaction not found');
+      }
+
+      ResponseUtils.success(res, transaction);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('Transaction not found') || errorMessage.includes('Amount paid must be greater than 0')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to record payment');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/generate-invoice:
+   *   post:
+   *     tags: [Rent Transactions]
+   *     summary: Generate invoice PDF for a transaction
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - transactionId
+   *             properties:
+   *               transactionId:
+   *                 type: string
+   *                 format: uuid
+   *                 description: Transaction ID
+   *     responses:
+   *       200:
+   *         description: Invoice generated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     pdfUrl:
+   *                       type: string
+   *                       description: URL to download the invoice PDF
+   *                     invoiceNumber:
+   *                       type: string
+   *                       description: Generated invoice number
+   *       400:
+   *         description: Transaction ID required
+   *       404:
+   *         description: Transaction not found
+   *       500:
+   *         description: Internal server error
+   */
+  async generateInvoice(req: Request, res: Response) {
+    try {
+      const { transactionId } = req.body;
+
+      if (!transactionId) {
+        return ResponseUtils.badRequest(res, 'Transaction ID is required');
+      }
+
+      const result = await this.service.generateInvoice(transactionId);
+      ResponseUtils.success(res, result);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('Transaction not found')) {
+        return ResponseUtils.notFound(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to generate invoice');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/generate-receipt:
+   *   post:
+   *     tags: [Rent Transactions]
+   *     summary: Generate receipt PDF for a paid transaction
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - transactionId
+   *             properties:
+   *               transactionId:
+   *                 type: string
+   *                 format: uuid
+   *                 description: Transaction ID
+   *     responses:
+   *       200:
+   *         description: Receipt generated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     pdfUrl:
+   *                       type: string
+   *                       description: URL to download the receipt PDF
+   *                     receiptNumber:
+   *                       type: string
+   *                       description: Generated receipt number
+   *       400:
+   *         description: Transaction ID required or transaction not paid
+   *       404:
+   *         description: Transaction not found
+   *       500:
+   *         description: Internal server error
+   */
+  async generateReceipt(req: Request, res: Response) {
+    try {
+      const { transactionId } = req.body;
+
+      if (!transactionId) {
+        return ResponseUtils.badRequest(res, 'Transaction ID is required');
+      }
+
+      const result = await this.service.generateReceipt(transactionId);
+      ResponseUtils.success(res, result);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('Transaction not found')) {
+        return ResponseUtils.notFound(res, errorMessage);
+      }
+      if (errorMessage.includes('Cannot generate receipt for unpaid transaction')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to generate receipt');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/property/{propertyId}/monthly-summary:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get monthly summary for a property
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Property ID
+   *       - in: query
+   *         name: year
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Year
+   *       - in: query
+   *         name: month
+   *         required: true
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 12
+   *         description: Month (1-12)
+   *     responses:
+   *       200:
+   *         description: Monthly summary for the property
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *       400:
+   *         description: Invalid parameters
+   *       500:
+   *         description: Internal server error
+   */
+  async getMonthlySummary(req: Request, res: Response) {
+    try {
+      const { propertyId } = req.params;
+      const { year, month } = req.query;
+
+      if (!year || !month) {
+        return ResponseUtils.badRequest(res, 'Year and month are required');
+      }
+
+      const summary = await this.service.getMonthlySummary(
+        propertyId,
+        parseInt(year as string),
+        parseInt(month as string)
+      );
+      ResponseUtils.success(res, summary);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('required') || errorMessage.includes('Valid year and month')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to get monthly summary');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/utility-revenue/property/{propertyId}:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get utility revenue breakdown by property
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Property ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for revenue calculation (optional)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for revenue calculation (optional)
+   *     responses:
+   *       200:
+   *         description: Utility revenue breakdown for the property
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUtilityRevenueByProperty(req: Request, res: Response) {
+    try {
+      const { propertyId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const revenue = await this.service.getUtilityRevenueByProperty(
+        propertyId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      ResponseUtils.success(res, revenue);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get utility revenue by property');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/utility-revenue/unit/{unitId}:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get utility revenue breakdown by unit
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: unitId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Unit ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for revenue calculation (optional)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for revenue calculation (optional)
+   *     responses:
+   *       200:
+   *         description: Utility revenue breakdown for the unit
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUtilityRevenueByUnit(req: Request, res: Response) {
+    try {
+      const { unitId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const revenue = await this.service.getUtilityRevenueByUnit(
+        unitId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      ResponseUtils.success(res, revenue);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get utility revenue by unit');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/utility-revenue/summary:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Get overall utility revenue summary
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: propertyId
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Filter by property ID (optional)
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for revenue calculation (optional)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for revenue calculation (optional)
+   *     responses:
+   *       200:
+   *         description: Overall utility revenue summary
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async getUtilityRevenueSummary(req: Request, res: Response) {
+    try {
+      const { propertyId, startDate, endDate } = req.query;
+
+      const summary = await this.service.getUtilityRevenueSummary(
+        propertyId as string | undefined,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      ResponseUtils.success(res, summary);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to get utility revenue summary');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/{id}/preview-invoice:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Preview invoice data for a transaction
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Transaction ID
+   *     responses:
+   *       200:
+   *         description: Invoice preview data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/InvoiceReceiptData'
+   *       404:
+   *         description: Transaction not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async previewInvoice(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const invoiceData = await this.service.previewInvoice(id);
+      ResponseUtils.success(res, invoiceData);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('Transaction not found') ||
+          errorMessage.includes('Lease not found') ||
+          errorMessage.includes('Property not found') ||
+          errorMessage.includes('Tenant not found')) {
+        return ResponseUtils.notFound(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to preview invoice');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/rent-transactions/{id}/preview-receipt:
+   *   get:
+   *     tags: [Rent Transactions]
+   *     summary: Preview receipt data for a paid transaction
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: Transaction ID
+   *     responses:
+   *       200:
+   *         description: Receipt preview data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   $ref: '#/components/schemas/InvoiceReceiptData'
+   *       400:
+   *         description: Transaction not paid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       404:
+   *         description: Transaction not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async previewReceipt(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const receiptData = await this.service.previewReceipt(id);
+      ResponseUtils.success(res, receiptData);
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      if (errorMessage.includes('Transaction not found') ||
+          errorMessage.includes('Lease not found') ||
+          errorMessage.includes('Property not found') ||
+          errorMessage.includes('Tenant not found')) {
+        return ResponseUtils.notFound(res, errorMessage);
+      }
+      if (errorMessage.includes('Cannot preview receipt for unpaid transaction')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
+      ErrorUtils.handleGenericError(res, err, 'Failed to preview receipt');
     }
   }
 }

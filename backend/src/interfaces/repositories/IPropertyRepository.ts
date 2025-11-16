@@ -5,7 +5,8 @@ export interface IPropertyRepository {
   findById(id: string): Promise<Property | null>;
   findByOwner(ownerId: string): Promise<Property[]>;
   create(data: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>): Promise<Property>;
-  update(id: string, data: Partial<Omit<Property, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Property | null>;
+  update(id: string, data: Partial<PropertyInput>): Promise<Property | null>;
   delete(id: string): Promise<boolean>;
   updateStatus(id: string, status: string): Promise<boolean>;
+  updateReceiptSettings(id: string, settings: any): Promise<boolean>;
 }

@@ -1,0 +1,152 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: 'Backend API URL (leave empty for demo mode)'
+        required: false
+        default: ''
+        type: string
+  push:
+    branches: [ main, master ]
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-backend-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: actions/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build backend
+        run: |
+          cd backend
+          npm ci
+          npm run build
+
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+        env:
+          VITE_API_URL: ${{ inputs.backend_url || 'https://your-backend-service.onrender.com/api' }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./frontend/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  create-deployment-summary:
+    needs: [build-backend-image, deploy-frontend]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.build-backend-image.result }}" = "success" ]; then
+            echo "✅ Backend image built and pushed to GitHub Container Registry" >> $GITHUB_STEP_SUMMARY
+            echo "📦 Image: ghcr.io/${{ github.repository }}/backend:latest" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Backend build failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.deploy-frontend.result }}" = "success" ]; then
+            echo "✅ Frontend deployed to GitHub Pages" >> $GITHUB_STEP_SUMMARY
+            echo "🌐 Frontend URL: ${{ needs.deploy-frontend.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Frontend deployment failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Next Steps for Backend Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Choose a free backend hosting service:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 **Render**: https://render.com (Free tier available)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏃 **Railway**: https://railway.app (Free tier available)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🪶 **Fly.io**: https://fly.io (Free tier available)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Steps:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Sign up for your chosen service" >> $GITHUB_STEP_SUMMARY
+          echo "2. Connect your GitHub repository" >> $GITHUB_STEP_SUMMARY
+          echo "3. Set environment variables (see DEPLOYMENT.md)" >> $GITHUB_STEP_SUMMARY
+          echo "4. Deploy the backend" >> $GITHUB_STEP_SUMMARY
+          echo "5. Update VITE_API_URL in GitHub Pages deployment" >> $GITHUB_STEP_SUMMARY

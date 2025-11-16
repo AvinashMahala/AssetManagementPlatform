@@ -23,6 +23,10 @@ class UserService {
     return apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
   }
 
+  async getUserById(id: string): Promise<ApiResponse<User>> {
+    return apiClient.get<User>(`${API_ENDPOINTS.USERS}/${id}`);
+  }
+
   async logout(): Promise<void> {
     apiClient.setAuthToken(null);
   }

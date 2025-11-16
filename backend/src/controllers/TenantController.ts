@@ -3,6 +3,9 @@ import { ITenantService } from '../interfaces/services/ITenantService.js';
 import { TenantInput, TenantDocument, DocumentType } from '../models/Tenant.js';
 import { ValidationUtils } from '../utils/validation.js';
 import { ResponseUtils } from '../utils/response.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('TenantController');
 
 export class TenantController {
   private tenantService: ITenantService;
@@ -41,10 +44,13 @@ export class TenantController {
   // GET /tenants
   async getAllTenants(req: Request, res: Response): Promise<void> {
     try {
+      logger.debug('Fetching all tenants');
       const tenants = await this.tenantService.getAllTenants();
+      logger.info('Successfully retrieved tenants', { count: tenants.length });
       ResponseUtils.success(res, tenants, 'Tenants retrieved successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to retrieve tenants');
+      logger.error('Failed to retrieve tenants', error);
+      ResponseUtils.error(res, 'Failed to retrieve tenants', undefined, error as Error);
     }
   }
 
@@ -94,7 +100,7 @@ export class TenantController {
 
       ResponseUtils.success(res, tenant, 'Tenant retrieved successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to retrieve tenant');
+      ResponseUtils.error(res, 'Failed to retrieve tenant', undefined, error as Error);
     }
   }
 
@@ -145,7 +151,7 @@ export class TenantController {
 
       ResponseUtils.success(res, tenant, 'Tenant retrieved successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to retrieve tenant');
+      ResponseUtils.error(res, 'Failed to retrieve tenant', undefined, error as Error);
     }
   }
 
@@ -195,7 +201,7 @@ export class TenantController {
 
       ResponseUtils.success(res, tenant, 'Tenant retrieved successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to retrieve tenant');
+      ResponseUtils.error(res, 'Failed to retrieve tenant', undefined, error as Error);
     }
   }
 
@@ -239,7 +245,8 @@ export class TenantController {
       const tenant = await this.tenantService.createTenant(tenantData);
       ResponseUtils.created(res, tenant, 'Tenant created successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to create tenant');
+      console.error('Error creating tenant:', error);
+      ResponseUtils.error(res, 'Failed to create tenant', undefined, error as Error);
     }
   }
 
@@ -327,7 +334,15 @@ export class TenantController {
 
       ResponseUtils.success(res, tenant, 'Tenant updated successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to update tenant');
+      // Log the actual error with full details
+      if (req.requestLogger) {
+        req.requestLogger.error('Failed to update tenant', error, {
+          tenantId: req.params.id,
+          tenantData: req.body,
+        });
+      }
+
+      ResponseUtils.error(res, 'Failed to update tenant', undefined, error as Error);
     }
   }
 
@@ -372,7 +387,7 @@ export class TenantController {
 
       ResponseUtils.success(res, null, 'Tenant deleted successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to delete tenant');
+      ResponseUtils.error(res, 'Failed to delete tenant', undefined, error as Error);
     }
   }  /**
    * @swagger
@@ -436,7 +451,7 @@ export class TenantController {
 
       ResponseUtils.success(res, null, 'Tenant status updated successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to update tenant status');
+      ResponseUtils.error(res, 'Failed to update tenant status', undefined, error as Error);
     }
   }
 
@@ -525,7 +540,7 @@ export class TenantController {
       const document = await this.tenantService.addTenantDocument(tenantId, documentData);
       ResponseUtils.created(res, document, 'Document added successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to add document');
+      ResponseUtils.error(res, 'Failed to add document', undefined, error as Error);
     }
   }
 
@@ -596,7 +611,7 @@ export class TenantController {
       const documents = await this.tenantService.getTenantDocuments(tenantId);
       ResponseUtils.success(res, documents, 'Documents retrieved successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to retrieve documents');
+      ResponseUtils.error(res, 'Failed to retrieve documents', undefined, error as Error);
     }
   }  /**
    * @swagger
@@ -687,7 +702,7 @@ export class TenantController {
 
       ResponseUtils.success(res, document, 'Document updated successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to update document');
+      ResponseUtils.error(res, 'Failed to update document', undefined, error as Error);
     }
   }
 
@@ -732,7 +747,7 @@ export class TenantController {
 
       ResponseUtils.success(res, null, 'Document deleted successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to delete document');
+      ResponseUtils.error(res, 'Failed to delete document', undefined, error as Error);
     }
   }
 
@@ -797,7 +812,7 @@ export class TenantController {
 
       ResponseUtils.success(res, null, 'Document verified successfully');
     } catch (error) {
-      ResponseUtils.error(res, 'Failed to verify document');
+      ResponseUtils.error(res, 'Failed to verify document', undefined, error as Error);
     }
   }
 }

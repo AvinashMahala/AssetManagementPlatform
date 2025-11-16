@@ -1,0 +1,11 @@
+# Ignore all log files
+*.log
+*.log.*
+
+# But track the README
+!README.md
+!.gitignore
+
+# Keep directory structure
+!backend/.gitkeep
+!frontend/.gitkeep

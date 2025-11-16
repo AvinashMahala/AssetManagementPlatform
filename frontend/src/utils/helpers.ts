@@ -123,3 +123,35 @@ export function memoize<T extends (...args: any[]) => any>( // eslint-disable-li
     return result;
   }) as T;
 }
+
+export function generateMeterName(
+  propertyName: string,
+  unitNumber: string,
+  meterType: string
+): string {
+  // Generate property initials (first letters of first two words)
+  const propertyInitials = propertyName
+    .split(' ')
+    .slice(0, 2)
+    .map(word => word.charAt(0).toUpperCase())
+    .join('');
+
+  // Generate unit identifier (remove special characters, keep alphanumeric)
+  const unitIdentifier = unitNumber.replace(/[^a-zA-Z0-9]/g, '');
+
+  // Generate meter type abbreviation
+  const meterTypeAbbrev = getMeterTypeAbbreviation(meterType);
+
+  // Combine: PROPERTY-UNIT-TYPE
+  return `${propertyInitials}-${unitIdentifier}-${meterTypeAbbrev}`;
+}
+
+function getMeterTypeAbbreviation(meterType: string): string {
+  const abbreviations: Record<string, string> = {
+    electricity: 'ELEC',
+    water: 'WTR',
+    gas: 'GAS'
+  };
+
+  return abbreviations[meterType.toLowerCase()] || meterType.toUpperCase().slice(0, 4);
+}

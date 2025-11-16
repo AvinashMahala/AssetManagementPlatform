@@ -12,6 +12,7 @@ export interface IRentPaymentService {
   createPayment(paymentData: RentPaymentInput): Promise<RentPayment>;
   updatePayment(id: string, paymentData: Partial<RentPaymentInput>): Promise<RentPayment | null>;
   deletePayment(id: string): Promise<boolean>;
+  deletePayments(ids: string[]): Promise<{ deleted: number; failed: string[] }>;
   markPaymentAsPaid(id: string, paidDate: Date, paymentMethod?: string, transactionId?: string): Promise<boolean>;
 
   // Financial calculations

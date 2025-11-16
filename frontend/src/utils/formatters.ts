@@ -1,9 +1,51 @@
 // Formatting utilities
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  }).format(amount);
+import { getCurrencyLocale, type CurrencyCode, type CurrencyDisplayOptions } from '../types/currency';
+
+export function formatCurrency(
+  amount: number,
+  currency: CurrencyCode = 'INR',
+  options: CurrencyDisplayOptions = {}
+): string {
+  const {
+    showSymbol = true,
+    showCode = false,
+    locale,
+    minimumFractionDigits = 0,
+    maximumFractionDigits = 2,
+  } = options;
+
+  const currencyLocale = locale || getCurrencyLocale(currency);
+
+  try {
+    const formatted = new Intl.NumberFormat(currencyLocale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits,
+      maximumFractionDigits,
+    }).format(amount);
+
+    // If we don't want to show symbol, remove it
+    if (!showSymbol) {
+      // This is a simplified approach - in a real app you might want more sophisticated parsing
+      return formatted.replace(/[^\d.,\s-]/g, '').trim();
+    }
+
+    // If we want to show code instead of symbol, replace symbol with code
+    if (showCode && !showSymbol) {
+      return `${currency} ${formatted.replace(/[^\d.,\s-]/g, '').trim()}`;
+    }
+
+    return formatted;
+  } catch (error) {
+    // Fallback formatting if Intl.NumberFormat fails
+    console.warn(`Failed to format currency ${currency}, falling back to basic formatting`, error);
+    return `${currency} ${amount.toFixed(maximumFractionDigits)}`;
+  }
+}
+
+// Legacy function for backward compatibility - will be deprecated
+export function formatCurrencyLegacy(amount: number, currency: string = 'USD'): string {
+  return formatCurrency(amount, currency as CurrencyCode);
 }
 
 export function formatDate(date: string | Date): string {

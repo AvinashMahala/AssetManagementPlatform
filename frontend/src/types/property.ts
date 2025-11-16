@@ -1,4 +1,6 @@
 // Property-related type definitions for frontend
+import type { CurrencyCode } from './currency';
+
 export const PropertyType = {
   APARTMENT: 'apartment',
   HOUSE: 'house',
@@ -28,7 +30,89 @@ export interface PropertyAddress {
   city: string;
   state: string;
   pincode: string;
+  country?: string;
   landmark?: string;
+}
+
+// Owner contact information
+export interface OwnerContact {
+  name: string;
+  mobileNumbers: string[]; // Up to 5 mobile numbers
+  emailIds: string[]; // Up to 5 email IDs
+  website?: string;
+}
+
+// Property amenities and additional information
+export interface PropertyAmenities {
+  basic: string[]; // Basic amenities (parking, security, etc.)
+  luxury: string[]; // Luxury amenities (gym, pool, etc.)
+  additionalInfo: {
+    petFriendly: boolean;
+    smokingAllowed: boolean;
+    eventsAllowed: boolean;
+    customRules?: string;
+  };
+}
+
+// File attachments for property
+export interface PropertyFile {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: 'photo' | 'document';
+  uploadedAt: string;
+  description?: string;
+}
+
+// Bank details for receipts
+export interface BankDetails {
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  accountHolderName: string;
+}
+
+// Wallet details for UPI payments
+export interface WalletDetails {
+  type: 'PAYTM' | 'PHONEPE' | 'GPAY' | 'AMAZONPAY' | 'OTHER';
+  upiPhoneNumber: string;
+  upiName: string;
+  upiId: string;
+  generateUPILinks: boolean; // Checkbox for UPI payment links
+}
+
+// Receipt template settings tied to property
+export interface PropertyReceiptTemplate {
+  id?: string;
+  propertyId: string;
+
+  // Bank Details
+  bankDetails: BankDetails;
+
+  // Wallet Details (multiple wallets allowed)
+  wallets: WalletDetails[];
+
+  // Payment QR Code
+  paymentQRCodeUrl?: string;
+  paymentQRCodeFile?: File;
+
+  // Signature and Watermark
+  signatureUrl?: string;
+  signatureFile?: File;
+  watermarkUrl?: string;
+  watermarkFile?: File;
+
+  // Additional receipt information
+  additionalInfo: {
+    termsAndConditions?: string;
+    paymentInstructions?: string;
+    contactInfo?: string;
+    customFooter?: string;
+  };
+
+  // Template metadata
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Property {
@@ -37,6 +121,7 @@ export interface Property {
   description?: string;
   propertyType: PropertyTypeValue;
   status: PropertyStatusValue;
+  currency: CurrencyCode; // Currency for this property
 
   // Address details (Indian format)
   address: PropertyAddress;
@@ -51,9 +136,28 @@ export interface Property {
   buildingAmenities: string[];
   buildingPhotos: string[];
 
+  // Enhanced owner details
+  ownerDetails: OwnerContact;
+
+  // Enhanced amenities and additional info
+  amenities: PropertyAmenities;
+
+  // Place photos and documents
+  files: PropertyFile[];
+
+  // Receipt template tied to this property
+  receiptTemplate?: PropertyReceiptTemplate;
+
   // Ownership details
   ownerId: string; // UUID reference to users table
   coOwners?: string[]; // array of user UUIDs
+
+  // Receipt customization settings
+  receiptSettings?: any;
+
+  // Receipt template settings
+  templateId?: string;
+  templateOverrides?: any;
 
   // Metadata
   createdAt: string;
@@ -65,6 +169,7 @@ export interface PropertyInput {
   description?: string;
   propertyType: PropertyTypeValue;
   status?: PropertyStatusValue;
+  currency?: CurrencyCode; // Currency for this property
 
   // Address details
   address: PropertyAddress;
@@ -79,9 +184,28 @@ export interface PropertyInput {
   buildingAmenities?: string[];
   buildingPhotos?: string[];
 
+  // Enhanced owner details
+  ownerDetails: OwnerContact;
+
+  // Enhanced amenities and additional info
+  amenities?: PropertyAmenities;
+
+  // Place photos and documents (file uploads handled separately)
+  files?: PropertyFile[];
+
+  // Receipt template tied to this property
+  receiptTemplate?: Omit<PropertyReceiptTemplate, 'id' | 'propertyId' | 'createdAt' | 'updatedAt'>;
+
   // Ownership details
   ownerId: string;
   coOwners?: string[];
+
+  // Receipt customization settings
+  receiptSettings?: any;
+
+  // Receipt template settings
+  templateId?: string;
+  templateOverrides?: any;
 }
 
 export interface PropertyFilters {

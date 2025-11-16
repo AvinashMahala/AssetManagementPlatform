@@ -7,7 +7,7 @@ import type { PropertyInput } from '../../types';
 
 const PropertyCreatePageEnhanced: React.FC = () => {
   const navigate = useNavigate();
-  const { mutate: createProperty, loading } = useCreateProperty();
+  const { mutate: createProperty, loading, error } = useCreateProperty();
 
   const handleSubmit = async (data: PropertyInput) => {
     try {
@@ -16,6 +16,7 @@ const PropertyCreatePageEnhanced: React.FC = () => {
       navigate('/properties');
     } catch (error) {
       console.error('Failed to create property:', error);
+      throw error; // Re-throw to let the form handle it
     }
   };
 
@@ -24,7 +25,7 @@ const PropertyCreatePageEnhanced: React.FC = () => {
       <PropertyFormModern
         onSubmit={handleSubmit}
         loading={loading}
-        title="Create New Property"
+        apiError={error}
       />
     </AppLayout>
   );

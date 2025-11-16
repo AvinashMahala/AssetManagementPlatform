@@ -1,16 +1,18 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Building2, MapPin, Home, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Building2, MapPin, Home, Calendar, FileImage, Receipt, FileText } from 'lucide-react';
 import { useProperty } from '../../hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { FileUpload, FileGallery } from '../../components/files';
 import { formatDate } from '../../utils';
 
 const PropertyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: property, loading, error } = useProperty(id!);
+  const { data: property, loading, error, displayError } = useProperty(id!);
 
   if (loading) {
     return (
@@ -27,7 +29,7 @@ const PropertyDetailPage: React.FC = () => {
     return (
       <div className="container mx-auto py-6 max-w-6xl">
         <Card className="p-8 text-center">
-          <p className="text-destructive mb-4">{error || 'Property not found'}</p>
+          <p className="text-destructive mb-4">{displayError || 'Property not found'}</p>
           <Button onClick={() => navigate('/properties')}>Back to Properties</Button>
         </Card>
       </div>
@@ -38,7 +40,17 @@ const PropertyDetailPage: React.FC = () => {
     <div className="container mx-auto py-6 max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => navigate('/properties')}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
-        <Button onClick={() => navigate(`/properties/${id}/edit`)}><Edit className="mr-2 h-4 w-4" /> Edit Property</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
+            <Receipt className="mr-2 h-4 w-4" />
+            Rent Collection
+          </Button>
+          <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
+            <FileImage className="mr-2 h-4 w-4" />
+            Templates
+          </Button>
+          <Button onClick={() => navigate(`/properties/${id}/edit`)}><Edit className="mr-2 h-4 w-4" /> Edit Property</Button>
+        </div>
       </div>
 
       <Card>
@@ -86,6 +98,47 @@ const PropertyDetailPage: React.FC = () => {
           <CardContent><div className="flex flex-wrap gap-2">{property.buildingAmenities.map((amenity: string, i: number) => <Badge key={i} variant="outline">{amenity}</Badge>)}</div></CardContent>
         </Card>
       )}
+
+      {/* File Management Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Property Files & Documents
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="gallery" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="gallery">File Gallery</TabsTrigger>
+              <TabsTrigger value="upload">Upload Files</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="gallery" className="mt-6">
+              <FileGallery
+                entityType="property"
+                entityId={property.id}
+                onFileDeleted={(fileId) => {
+                  console.log('File deleted:', fileId);
+                }}
+              />
+            </TabsContent>
+
+            <TabsContent value="upload" className="mt-6">
+              <FileUpload
+                entityType="property"
+                entityId={property.id}
+                onUploadSuccess={(file) => {
+                  console.log('File uploaded:', file);
+                }}
+                onUploadError={(error) => {
+                  console.error('Upload error:', error);
+                }}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" /> Timeline</CardTitle></CardHeader>

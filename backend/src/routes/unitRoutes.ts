@@ -21,5 +21,8 @@ export const createUnitRoutes = (controller: UnitController, userService: IUserS
   router.put('/units/:unitId/tenants/:tenantId', auth, controller.updateTenantAssignment.bind(controller));
   router.delete('/units/:unitId/tenants/:tenantId', auth, controller.removeTenant.bind(controller));
 
+  // Unit analytics routes
+  router.get('/units/:id/analytics', auth, controller.getAnalytics.bind(controller));
+
   return router;
 };

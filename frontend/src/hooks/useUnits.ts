@@ -33,3 +33,8 @@ export function useUpdateUnit() {
 export function useDeleteUnit() {
   return useApiMutation<void, string>((id) => unitService.delete(id));
 }
+
+export function useUnitAnalytics(id: string) {
+  const query = useCallback(() => unitService.getAnalytics(id), [id]);
+  return useApi<any>(query, [id]);
+}

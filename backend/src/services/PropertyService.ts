@@ -3,12 +3,30 @@ import { Property, PropertyInput, PropertyStatus } from '../models/Property.js';
 import { ValidationUtils } from '../utils/validation.js';
 import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IPropertyService } from '../interfaces/services/IPropertyService.js';
+import { ReceiptTemplateService } from './ReceiptTemplateService.js';
+import { ReceiptTemplateSettings } from '../models/ReceiptTemplate.js';
+import { IPropertyFileService } from '../interfaces/services/IPropertyFileService.js';
+import { IPropertyReceiptTemplateService } from '../interfaces/services/IPropertyReceiptTemplateService.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('PropertyService');
 
 export class PropertyService implements IPropertyService {
   private repository: IPropertyRepository;
+  private templateService: ReceiptTemplateService;
+  private fileService: IPropertyFileService;
+  private receiptTemplateService: IPropertyReceiptTemplateService;
 
-  constructor(repository: IPropertyRepository) {
+  constructor(
+    repository: IPropertyRepository,
+    templateService: ReceiptTemplateService,
+    fileService: IPropertyFileService,
+    receiptTemplateService: IPropertyReceiptTemplateService
+  ) {
     this.repository = repository;
+    this.templateService = templateService;
+    this.fileService = fileService;
+    this.receiptTemplateService = receiptTemplateService;
   }
 
   async getAllProperties(): Promise<Property[]> {
@@ -97,7 +115,11 @@ export class PropertyService implements IPropertyService {
       description: propertyData.description,
       propertyType: propertyData.propertyType,
       status: propertyData.status || PropertyStatus.AVAILABLE,
-      address: propertyData.address,
+      currency: propertyData.currency || 'INR',
+      address: {
+        ...propertyData.address,
+        country: propertyData.address.country || 'India',
+      },
       totalArea: propertyData.totalArea,
       totalFloors: propertyData.totalFloors,
       yearBuilt: propertyData.yearBuilt,
@@ -106,6 +128,23 @@ export class PropertyService implements IPropertyService {
       buildingPhotos: propertyData.buildingPhotos || [],
       ownerId: propertyData.ownerId,
       coOwners: propertyData.coOwners || [],
+      // New enhanced fields
+      ownerDetails: propertyData.ownerDetails || {
+        name: undefined,
+        mobileNumbers: [],
+        emailIds: [],
+        website: undefined,
+      },
+      amenities: propertyData.amenities || {
+        basic: [],
+        luxury: [],
+        additionalInfo: {
+          petFriendly: false,
+          smokingAllowed: false,
+          eventsAllowed: false,
+        },
+      },
+      receiptTemplate: undefined, // Will be set separately
     };
 
     return await this.repository.create(propertyDataWithDefaults);
@@ -201,5 +240,135 @@ export class PropertyService implements IPropertyService {
     }
 
     return await this.repository.updateStatus(id, status);
+  }
+
+  // Template management methods
+  async getPropertyTemplateSettings(propertyId: string): Promise<ReceiptTemplateSettings | null> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    return await this.templateService.getPropertyTemplateSettings(propertyId);
+  }
+
+  async setPropertyTemplate(propertyId: string, templateId: string, overrides?: Partial<ReceiptTemplateSettings>): Promise<boolean> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    if (!templateId || templateId.trim().length === 0) {
+      throw new Error('Template ID is required');
+    }
+
+    return await this.templateService.setPropertyTemplate(propertyId, templateId, overrides);
+  }
+
+  async removePropertyTemplate(propertyId: string): Promise<boolean> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    // Set templateId to null and clear overrides
+    return await this.repository.update(propertyId, {
+      templateId: undefined,
+      templateOverrides: undefined
+    }) !== null;
+  }
+
+  // File management methods
+  async uploadPropertyFile(
+    propertyId: string,
+    fileName: string,
+    fileUrl: string,
+    fileType: 'photo' | 'document',
+    description?: string
+  ) {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    // Verify property exists
+    const property = await this.repository.findById(propertyId);
+    if (!property) {
+      throw new Error('Property not found');
+    }
+
+    return await this.fileService.uploadFile(propertyId, fileName, fileUrl, fileType, description);
+  }
+
+  async getPropertyFiles(propertyId: string) {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    return await this.fileService.getFilesByProperty(propertyId);
+  }
+
+  async getPropertyFilesByType(propertyId: string, fileType: 'photo' | 'document') {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    return await this.fileService.getFilesByPropertyAndType(propertyId, fileType);
+  }
+
+  async updatePropertyFile(id: string, updates: { fileName?: string; description?: string }) {
+    return await this.fileService.updateFile(id, updates);
+  }
+
+  async deletePropertyFile(id: string): Promise<boolean> {
+    return await this.fileService.deleteFile(id);
+  }
+
+  // Receipt template management methods
+  async createPropertyReceiptTemplate(propertyId: string, templateData: any) {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    // Verify property exists
+    const property = await this.repository.findById(propertyId);
+    if (!property) {
+      throw new Error('Property not found');
+    }
+
+    return await this.receiptTemplateService.createTemplate(propertyId, templateData);
+  }
+
+  async getPropertyReceiptTemplate(propertyId: string) {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    return await this.receiptTemplateService.getTemplateByPropertyId(propertyId);
+  }
+
+  async updatePropertyReceiptTemplate(propertyId: string, updates: any) {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    return await this.receiptTemplateService.updateTemplate(propertyId, updates);
+  }
+
+  async deletePropertyReceiptTemplate(propertyId: string): Promise<boolean> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    return await this.receiptTemplateService.deleteTemplate(propertyId);
+  }
+
+  async generatePropertyUPILinks(propertyId: string, amount?: number) {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
+    }
+
+    const template = await this.receiptTemplateService.getTemplateByPropertyId(propertyId);
+    if (!template) {
+      throw new Error('Receipt template not found for this property');
+    }
+
+    return this.receiptTemplateService.generateUPILinks(template.wallets, amount);
   }
 }

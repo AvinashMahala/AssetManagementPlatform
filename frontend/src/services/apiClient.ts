@@ -79,11 +79,27 @@ class ApiClient {
     }
 
     // Handle error responses
-    const errorData = responseData as { error?: { code?: string; message?: string; details?: unknown }; message?: string };
+    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string };
+    let errorMessage: string;
+    
+    if (typeof errorData?.error === 'string') {
+      // Backend sends { success: false, error: "error message" }
+      errorMessage = errorData.error;
+    } else if (errorData?.error?.message) {
+      // Backend sends { success: false, error: { message: "error message" } }
+      errorMessage = errorData.error.message;
+    } else if (errorData?.message) {
+      // Fallback to message field
+      errorMessage = errorData.message;
+    } else {
+      // Final fallback to HTTP status
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    }
+    
     const error: ApiError = {
-      code: errorData?.error?.code || `HTTP_${response.status}`,
-      message: errorData?.error?.message || errorData?.message || `HTTP ${response.status}: ${response.statusText}`,
-      details: errorData?.error?.details as Record<string, unknown> | undefined,
+      code: (typeof errorData?.error === 'object' ? errorData.error.code : undefined) || `HTTP_${response.status}`,
+      message: errorMessage,
+      details: (typeof errorData?.error === 'object' ? errorData.error.details : undefined) as Record<string, unknown> | undefined,
     };
 
     return {
@@ -98,14 +114,20 @@ class ApiClient {
     console.log('[apiClient.get] URL:', url);
     console.log('[apiClient.get] Headers:', this.getHeaders(config?.headers));
 
+    // Create AbortController for manual timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
     try {
       const response = await fetch(url, {
         method: 'GET',
         headers: this.getHeaders(config?.headers),
-        signal: AbortSignal.timeout(API_TIMEOUT),
+        signal: controller.signal,
         ...config,
       });
 
+      clearTimeout(timeoutId);
+      
       console.log('[apiClient.get] Response status:', response.status);
       console.log('[apiClient.get] Response ok:', response.ok);
       
@@ -114,6 +136,19 @@ class ApiClient {
       
       return result;
     } catch (_error) {
+      clearTimeout(timeoutId);
+      
+      if (_error instanceof Error && _error.name === 'AbortError') {
+        console.error('[apiClient.get] Request timed out after', API_TIMEOUT, 'ms');
+        return {
+          success: false,
+          error: {
+            code: 'TIMEOUT_ERROR',
+            message: `Request timed out after ${API_TIMEOUT}ms`,
+          },
+        };
+      }
+      
       console.error('[apiClient.get] Error:', _error);
       return {
         success: false,
@@ -128,17 +163,34 @@ class ApiClient {
   async post<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
+    // Create AbortController for manual timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: this.getHeaders(config?.headers),
         body: data ? JSON.stringify(data) : undefined,
-        signal: AbortSignal.timeout(API_TIMEOUT),
+        signal: controller.signal,
         ...config,
       });
 
+      clearTimeout(timeoutId);
       return this.handleResponse<T>(response);
     } catch (_error) {
+      clearTimeout(timeoutId);
+      
+      if (_error instanceof Error && _error.name === 'AbortError') {
+        return {
+          success: false,
+          error: {
+            code: 'TIMEOUT_ERROR',
+            message: `Request timed out after ${API_TIMEOUT}ms`,
+          },
+        };
+      }
+      
       return {
         success: false,
         error: {
@@ -152,17 +204,34 @@ class ApiClient {
   async put<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
+    // Create AbortController for manual timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
     try {
       const response = await fetch(url, {
         method: 'PUT',
         headers: this.getHeaders(config?.headers),
         body: data ? JSON.stringify(data) : undefined,
-        signal: AbortSignal.timeout(API_TIMEOUT),
+        signal: controller.signal,
         ...config,
       });
 
+      clearTimeout(timeoutId);
       return this.handleResponse<T>(response);
     } catch (_error) {
+      clearTimeout(timeoutId);
+      
+      if (_error instanceof Error && _error.name === 'AbortError') {
+        return {
+          success: false,
+          error: {
+            code: 'TIMEOUT_ERROR',
+            message: `Request timed out after ${API_TIMEOUT}ms`,
+          },
+        };
+      }
+      
       return {
         success: false,
         error: {
@@ -176,16 +245,47 @@ class ApiClient {
   async delete<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
+    console.log('[apiClient.delete] URL:', url);
+    console.log('[apiClient.delete] Headers:', this.getHeaders(config?.headers));
+    console.log('[apiClient.delete] Config data:', config?.data);
+
+    // Create AbortController for manual timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
     try {
       const response = await fetch(url, {
         method: 'DELETE',
         headers: this.getHeaders(config?.headers),
-        signal: AbortSignal.timeout(API_TIMEOUT),
+        body: config?.data ? JSON.stringify(config.data) : undefined,
+        signal: controller.signal,
         ...config,
       });
 
-      return this.handleResponse<T>(response);
+      clearTimeout(timeoutId);
+      
+      console.log('[apiClient.delete] Response status:', response.status);
+      console.log('[apiClient.delete] Response ok:', response.ok);
+      
+      const result = await this.handleResponse<T>(response);
+      console.log('[apiClient.delete] Handled response:', result);
+      
+      return result;
     } catch (_error) {
+      clearTimeout(timeoutId);
+      
+      if (_error instanceof Error && _error.name === 'AbortError') {
+        console.error('[apiClient.delete] Request timed out after', API_TIMEOUT, 'ms');
+        return {
+          success: false,
+          error: {
+            code: 'TIMEOUT_ERROR',
+            message: `Request timed out after ${API_TIMEOUT}ms`,
+          },
+        };
+      }
+      
+      console.error('[apiClient.delete] Error:', _error);
       return {
         success: false,
         error: {
@@ -199,17 +299,34 @@ class ApiClient {
   async patch<T>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
+    // Create AbortController for manual timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
     try {
       const response = await fetch(url, {
         method: 'PATCH',
         headers: this.getHeaders(config?.headers),
         body: data ? JSON.stringify(data) : undefined,
-        signal: AbortSignal.timeout(API_TIMEOUT),
+        signal: controller.signal,
         ...config,
       });
 
+      clearTimeout(timeoutId);
       return this.handleResponse<T>(response);
     } catch (_error) {
+      clearTimeout(timeoutId);
+      
+      if (_error instanceof Error && _error.name === 'AbortError') {
+        return {
+          success: false,
+          error: {
+            code: 'TIMEOUT_ERROR',
+            message: `Request timed out after ${API_TIMEOUT}ms`,
+          },
+        };
+      }
+      
       return {
         success: false,
         error: {
@@ -229,9 +346,38 @@ class ApiClient {
     }
   }
 
-  // Utility method to check if user is authenticated
+  // Check if user is authenticated (has a stored token)
   isAuthenticated(): boolean {
-    return !!this.getAuthToken();
+    const token = this.getAuthToken();
+    return !!token;
+  }
+
+  async download(endpoint: string, config?: RequestConfig): Promise<Response> {
+    const url = this.buildURL(endpoint, config?.params);
+
+    // Create AbortController for manual timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(config?.headers),
+        signal: controller.signal,
+        ...config,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response;
+    } catch (_error) {
+      clearTimeout(timeoutId);
+      throw new Error(_error instanceof Error ? _error.message : 'Download failed');
+    }
   }
 }
 

@@ -9,8 +9,8 @@ import type { PropertyInput } from '../../types';
 const PropertyEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: property, loading: fetchLoading, error: fetchError } = useProperty(id!);
-  const { mutate: updateProperty, loading: updateLoading } = useUpdateProperty();
+  const { data: property, loading: fetchLoading, error: fetchError, displayError: fetchDisplayError } = useProperty(id!);
+  const { mutate: updateProperty, loading: updateLoading, error: updateError } = useUpdateProperty();
 
   if (fetchLoading) {
     return (
@@ -34,7 +34,7 @@ const PropertyEditPage: React.FC = () => {
       <div className="container mx-auto py-6 max-w-4xl">
         <Card className="p-8 text-center">
           <p className="text-destructive mb-4">
-            {fetchError || 'Property not found'}
+            {fetchDisplayError || 'Property not found'}
           </p>
           <Button onClick={() => navigate('/properties')}>
             Back to Properties
@@ -46,16 +46,25 @@ const PropertyEditPage: React.FC = () => {
 
   const handleSubmit = async (data: PropertyInput) => {
     if (!id) return;
-    await updateProperty({ id, data });
+    try {
+      await updateProperty({ id, data });
+    } catch (error) {
+      console.error('Failed to update property:', error);
+      throw error; // Re-throw to let the form handle it
+    }
   };
 
   return (
-    <PropertyFormModern
-      initialData={property}
-      onSubmit={handleSubmit}
-      loading={updateLoading}
-      title={`Edit Property: ${property.name}`}
-    />
+    <div className="container mx-auto py-6 max-w-4xl">
+      <PropertyFormModern
+        initialData={property}
+        onSubmit={handleSubmit}
+        loading={updateLoading}
+        isEdit={true}
+        propertyName={property.name}
+        apiError={updateError}
+      />
+    </div>
   );
 };
 

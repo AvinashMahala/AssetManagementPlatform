@@ -117,7 +117,7 @@ export class MeterReadingRepository implements IMeterReadingRepository {
       );
       return this.mapRowToMeterReading(result.rows[0]);
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to create meter reading: ${(error as Error).message || 'Database insert failed'}`);
     }
   }
 
@@ -173,7 +173,7 @@ export class MeterReadingRepository implements IMeterReadingRepository {
 
       return result.rows[0] ? this.mapRowToMeterReading(result.rows[0]) : null;
     } catch (error) {
-      throw error;
+      throw new Error(`Failed to update meter reading: ${(error as Error).message || 'Database update failed'}`);
     }
   }
 

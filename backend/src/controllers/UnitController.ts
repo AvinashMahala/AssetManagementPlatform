@@ -3,6 +3,9 @@ import { IUnitService } from '../interfaces/services/IUnitService.js';
 import { UnitInput } from '../models/Unit.js';
 import { ResponseUtils } from '../utils/response.js';
 import { ErrorUtils } from '../utils/error.js';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UnitController');
 
 export class UnitController {
   private service: IUnitService;
@@ -44,6 +47,7 @@ export class UnitController {
   async getAll(req: Request, res: Response) {
     try {
       const { propertyId, status } = req.query;
+      logger.debug('Fetching units', { propertyId, status });
 
       let units;
       if (propertyId) {
@@ -54,8 +58,10 @@ export class UnitController {
         units = await this.service.getAllUnits();
       }
 
+      logger.info('Successfully fetched units', { count: units.length, propertyId, status });
       ResponseUtils.success(res, units);
     } catch (err) {
+      logger.error('Failed to fetch units', err, { propertyId: req.query.propertyId, status: req.query.status });
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch units');
     }
   }
@@ -446,6 +452,54 @@ export class UnitController {
       ResponseUtils.success(res, null, 'Tenant removed from unit successfully');
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to remove tenant from unit');
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/units/{id}/analytics:
+   *   get:
+   *     tags: ['Units']
+   *     summary: Get comprehensive analytics for a unit
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Unit analytics data
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 unit:
+   *                   $ref: '#/components/schemas/Unit'
+   *                 financialSummary:
+   *                   type: object
+   *                 occupancyAnalytics:
+   *                   type: object
+   *                 paymentHistory:
+   *                   type: object
+   *                 currentTenants:
+   *                   type: array
+   *                 generatedAt:
+   *                   type: string
+   *                   format: date-time
+   *       404:
+   *         description: Unit not found
+   */
+  async getAnalytics(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const unitId = id;
+
+      const analytics = await this.service.getUnitAnalytics(unitId);
+      ResponseUtils.success(res, analytics);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to fetch unit analytics');
     }
   }
 }

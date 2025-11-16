@@ -69,6 +69,16 @@ export function useUserProfile() {
   return useApi<User>(query);
 }
 
+export function useUser(id: string | null | undefined) {
+  const query = useCallback(() => {
+    if (!id || !id.trim()) {
+      return Promise.resolve({ success: true, data: undefined, error: undefined });
+    }
+    return userService.getUserById(id);
+  }, [id]);
+  return useApi<User>(query, [id]);
+}
+
 export function useRegister() {
   return useApiMutation<User, UserInput>((userData) => userService.register(userData));
 }

@@ -17,7 +17,9 @@ import {
   Layers,
   ParkingCircle,
   Eye,
-  BarChart3
+  BarChart3,
+  FileImage,
+  Receipt,
 } from 'lucide-react';
 import { useProperty, useUnits, useLeases, usePayments, useTenants } from '../../hooks';
 import {
@@ -35,6 +37,7 @@ import {
   PropertyStatusChart
 } from '../../components/ui/charts';
 import { AppLayout } from '../../components/layout/AppLayout';
+import { getErrorMessage } from '../../types/api';
 
 export const PropertyDashboardPageEnhanced: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -198,7 +201,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           <Card className="border-red-200 dark:border-red-800">
             <CardHeader>
               <CardTitle className="text-red-600 dark:text-red-400">Error</CardTitle>
-              <CardDescription>{propertyError || 'Property not found'}</CardDescription>
+              <CardDescription>{getErrorMessage(propertyError) || 'Property not found'}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button onClick={() => navigate('/properties')}>
@@ -245,11 +248,19 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button variant="default" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
+              <Receipt className="w-4 h-4 mr-2" />
+              Rent Collection
+            </Button>
             <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
               <Edit className="w-4 h-4 mr-2" />
               Edit Property
             </Button>
-            <Button onClick={() => navigate(`/units/create`)}>
+            <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
+              <FileImage className="w-4 h-4 mr-2" />
+              Templates
+            </Button>
+            <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Unit
             </Button>
@@ -414,7 +425,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                   {metrics.totalUnits} total units • {metrics.occupiedUnits} occupied
                 </p>
               </div>
-              <Button size="sm" onClick={() => navigate(`/units/create`)}>
+              <Button size="sm" onClick={() => navigate(`/units/create?propertyId=${id}`)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Unit
               </Button>
@@ -427,7 +438,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                     <Home className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No units yet</h3>
                     <p className="text-muted-foreground mb-4">Add units to this property to get started.</p>
-                    <Button onClick={() => navigate(`/units/create`)}>
+                    <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
                       <Plus className="w-4 h-4 mr-2" />
                       Add First Unit
                     </Button>
@@ -454,11 +465,11 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                     <CardContent className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Monthly Rent</span>
-                        <span className="font-semibold">{formatCurrency(unit.rent)}</span>
+                        <span className="font-semibold">{formatCurrency(unit.monthlyRent)}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Carpet Area</span>
-                        <span className="font-semibold">{unit.carpetArea?.toLocaleString() || 'N/A'} sq ft</span>
+                        <span className="text-sm text-muted-foreground">Area</span>
+                        <span className="font-semibold">{unit.area?.toLocaleString() || 'N/A'} sq ft</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Bedrooms</span>

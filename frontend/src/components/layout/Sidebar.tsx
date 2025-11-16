@@ -1,34 +1,14 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  Home,
-  FileText,
-  CreditCard,
   ChevronLeft,
   ChevronRight,
   LogOut,
   User,
+  Building2,
 } from 'lucide-react';
 import { useAuthContext } from '../../contexts';
-
-interface NavItem {
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  path: string;
-  badge?: number;
-}
-
-const navItems: NavItem[] = [
-  { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-  { name: 'Properties', icon: Building2, path: '/properties' },
-  { name: 'Tenants', icon: Users, path: '/tenants' },
-  { name: 'Units', icon: Home, path: '/units' },
-  { name: 'Leases', icon: FileText, path: '/leases' },
-  { name: 'Payments', icon: CreditCard, path: '/payments' },
-];
+import { useNavigationConfig } from '../../hooks';
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -39,6 +19,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggle })
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthContext();
+  const { getEnabledItems } = useNavigationConfig();
+
+  const navItems = getEnabledItems();
 
   const handleLogout = async () => {
     await logout();

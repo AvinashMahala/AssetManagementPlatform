@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useNotifications } from './NotificationContext';
 import type {
   User,
   UserRegistrationInput,
@@ -21,14 +22,14 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (credentials: UserCredentials) => Promise<boolean>;
+  login: (credentials: UserCredentials) => Promise<{ success: boolean; error?: string }>;
   register: (userData: UserRegistrationInput) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   verifyEmail: (token: string) => Promise<boolean>;
   resendVerification: (email: string) => Promise<boolean>;
   requestPhoneVerification: (phone: string) => Promise<boolean>;
-  verifyPhone: (phone: string, code: string) => Promise<boolean>;
+  verifyPhone: (code: string) => Promise<boolean>;
   getPasswordResetOptions: () => Promise<PasswordResetOptions>;
   enableResetMethod: (methodType: string) => Promise<boolean>;
   disableResetMethod: (methodType: string) => Promise<boolean>;
@@ -44,7 +45,34 @@ interface AuthContextType {
   devModeLogin: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  isAuthenticated: false,
+  loading: true,
+  login: async () => ({ success: false, error: 'AuthProvider not initialized' }),
+  register: async () => false,
+  logout: async () => {},
+  checkAuth: async () => {},
+  verifyEmail: async () => false,
+  resendVerification: async () => false,
+  requestPhoneVerification: async () => false,
+  verifyPhone: async () => false,
+  getPasswordResetOptions: async () => ({ availableMethods: [], enabledMethods: [], hasSecurityQuestions: false, recoveryCodesCount: 0 }),
+  enableResetMethod: async () => false,
+  disableResetMethod: async () => false,
+  setupSecurityQuestions: async () => false,
+  generateRecoveryCodes: async () => [],
+  resetPasswordViaSecurityQuestions: async () => false,
+  resetPasswordViaRecoveryCode: async () => false,
+  adminResetPassword: async () => '',
+  googleAuth: async () => false,
+  refreshToken: async () => false,
+  updateProfile: async () => false,
+  linkGoogle: async () => false,
+  devModeLogin: () => {},
+};
+
+const AuthContext = createContext<AuthContextType>(defaultAuthContext);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -54,9 +82,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { showError } = useNotifications();
 
   useEffect(() => {
-    checkAuth();
+    // Initialize token from localStorage on app start
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      apiClient.setAuthToken(storedToken);
+    }
+    
+    // Check if we should bypass auth in development
+    const disableAuth = import.meta.env.VITE_DISABLE_AUTH === 'true';
+    if (disableAuth) {
+      // Automatically authenticate with dev user
+      const devUser: User = {
+        id: 1,
+        username: 'dev_user',
+        email: 'dev@example.com',
+        name: 'Development User',
+        role: 'admin',
+        isEmailVerified: true,
+        isPhoneVerified: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setUser(devUser);
+      setIsAuthenticated(true);
+      apiClient.setAuthToken('dev-mode-token');
+      setLoading(false);
+    } else {
+      checkAuth();
+    }
   }, []);
 
   const checkAuth = async () => {
@@ -78,7 +134,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (credentials: UserCredentials): Promise<boolean> => {
+  const login = async (credentials: UserCredentials): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
     try {
       const authResponse = await authService.login(credentials);
       setUser(authResponse.user);
@@ -86,9 +143,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       apiClient.setAuthToken(authResponse.tokens.accessToken);
       // Store refresh token in localStorage or secure storage
       localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
-      return true;
-    } catch (_error) {
-      return false;
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Login failed';
+      showError('Login Failed', errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,9 +205,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const verifyPhone = async (phone: string, code: string): Promise<boolean> => {
+  const verifyPhone = async (code: string): Promise<boolean> => {
     try {
-      await authService.verifyPhone(phone, code);
+      await authService.verifyPhone(code);
       // Refresh user data after verification
       await checkAuth();
       return true;
@@ -328,7 +389,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuthContext = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuthContext must be used within an AuthProvider');
   }
   return context;

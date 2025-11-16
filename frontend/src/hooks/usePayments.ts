@@ -33,3 +33,9 @@ export function useUpdatePayment() {
 export function useDeletePayment() {
   return useApiMutation<void, string>((id) => paymentService.delete(id));
 }
+
+export function useBulkDeletePayments() {
+  return useApiMutation<{ deleted: number; failed: string[] }, string[]>(
+    (ids) => paymentService.deleteBulk(ids)
+  );
+}

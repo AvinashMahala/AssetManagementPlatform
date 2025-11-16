@@ -157,7 +157,7 @@ export class PasswordResetService {
     const codeHash = await PasswordUtils.hashPassword(recoveryCode);
     const codeRecord = await this.recoveryCodeRepo.findByCodeHash(codeHash);
 
-    if (!codeRecord || codeRecord.userId !== userId || codeRecord.isUsed) {
+    if (!codeRecord || codeRecord.userId !== userId || codeRecord.used) {
       throw new Error('Invalid or used recovery code');
     }
 

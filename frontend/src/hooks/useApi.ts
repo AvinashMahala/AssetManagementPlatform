@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { ApiResponse, AsyncState } from '../types/api';
+import type { ApiResponse, AsyncState, ApiError } from '../types/api';
+import { getErrorMessage } from '../types/api';
 
 export function useApi<T>(
   apiCall: () => Promise<ApiResponse<T>>,
   dependencies: unknown[] = []
-): AsyncState<T> & { refetch: () => void } {
+): AsyncState<T> & { refetch: () => void; displayError: string } {
   const [state, setState] = useState<AsyncState<T>>({
     data: null,
     loading: true,
@@ -31,7 +32,7 @@ export function useApi<T>(
         setState({
           data: null,
           loading: false,
-          error: response.error?.message || 'An error occurred',
+          error: response.error || { code: 'UNKNOWN_ERROR', message: 'An error occurred' },
         });
       }
     } catch (error) {
@@ -39,7 +40,7 @@ export function useApi<T>(
       setState({
         data: null,
         loading: false,
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        error: { code: 'NETWORK_ERROR', message: error instanceof Error ? error.message : 'An unexpected error occurred' },
       });
     }
   }, [apiCall, ...dependencies]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -51,6 +52,7 @@ export function useApi<T>(
   return {
     ...state,
     refetch: execute,
+    displayError: getErrorMessage(state.error),
   };
 }
 
@@ -59,11 +61,12 @@ export function useApiMutation<TData, TVariables>(
 ): {
   mutate: (variables: TVariables) => Promise<ApiResponse<TData>>;
   loading: boolean;
-  error: string | null;
+  error: ApiError | null;
   reset: () => void;
+  displayError: string;
 } {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   const mutate = useCallback(async (variables: TVariables): Promise<ApiResponse<TData>> => {
     setLoading(true);
@@ -72,12 +75,12 @@ export function useApiMutation<TData, TVariables>(
     try {
       const response = await apiCall(variables);
       if (!response.success) {
-        setError(response.error?.message || 'Mutation failed');
+        setError(response.error || { code: 'UNKNOWN_ERROR', message: 'Mutation failed' });
       }
       return response;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setError(errorMessage);
+      const errorObj: ApiError = { code: 'NETWORK_ERROR', message: err instanceof Error ? err.message : 'An unexpected error occurred' };
+      setError(errorObj);
       throw err;
     } finally {
       setLoading(false);
@@ -93,5 +96,6 @@ export function useApiMutation<TData, TVariables>(
     loading,
     error,
     reset,
+    displayError: getErrorMessage(error),
   };
 }

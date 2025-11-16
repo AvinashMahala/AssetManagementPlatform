@@ -77,9 +77,6 @@ export const validateRequest = {
 
   // Phone verification confirm validation
   verifyPhone: [
-    body('phone')
-      .matches(/^\+?[1-9]\d{1,14}$/)
-      .withMessage('Please provide a valid phone number'),
     body('code')
       .isLength({ min: 6, max: 6 })
       .withMessage('Verification code must be 6 digits')

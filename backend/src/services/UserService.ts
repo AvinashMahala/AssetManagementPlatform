@@ -16,31 +16,66 @@ import { ValidationUtils } from '../utils/validation.js';
 import { PasswordUtils } from '../utils/password.js';
 import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IUserService } from '../interfaces/services/IUserService.js';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import * as crypto from 'crypto';
+import { createModuleLogger } from '../utils/logger.js';
+
+const logger = createModuleLogger('UserService');
 
 export class UserService implements IUserService {
   private repository: IUserRepository;
   private jwtSecret: string;
   private jwtRefreshSecret: string;
+  private accessTokenExpiry: string;
+  private refreshTokenExpiry: string;
+  private accessTokenExpiryRemember: string;
+  private refreshTokenExpiryRemember: string;
 
   constructor(repository: IUserRepository) {
     this.repository = repository;
     this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
     this.jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key';
+    
+    // Token expiration times (in JWT format: '15m', '1h', '7d', etc.)
+    this.accessTokenExpiry = process.env.JWT_ACCESS_TOKEN_EXPIRY || '15m';
+    this.refreshTokenExpiry = process.env.JWT_REFRESH_TOKEN_EXPIRY || '7d';
+    this.accessTokenExpiryRemember = process.env.JWT_ACCESS_TOKEN_EXPIRY_REMEMBER || '1h';
+    this.refreshTokenExpiryRemember = process.env.JWT_REFRESH_TOKEN_EXPIRY_REMEMBER || '30d';
   }
 
   // Basic CRUD operations
   async getAllUsers(): Promise<User[]> {
-    return await this.repository.findAll();
+    try {
+      logger.debug('Fetching all users');
+      const users = await this.repository.findAll();
+      logger.info('Successfully fetched all users', { count: users.length });
+      return users;
+    } catch (error) {
+      logger.error('Failed to fetch all users', error);
+      throw error;
+    }
   }
 
   async getUserById(id: string): Promise<User | null> {
-    const idValidation = ValidationUtils.validateUUID(id);
-    if (!idValidation.isValid) {
-      throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
+    try {
+      const idValidation = ValidationUtils.validateUUID(id);
+      if (!idValidation.isValid) {
+        logger.warn('Invalid user ID provided', { userId: id, validationError: idValidation.message });
+        throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
+      }
+
+      logger.debug('Fetching user by ID', { userId: id });
+      const user = await this.repository.findById(id);
+      if (user) {
+        logger.info('Successfully fetched user', { userId: id, email: user.email });
+      } else {
+        logger.warn('User not found', { userId: id });
+      }
+      return user;
+    } catch (error) {
+      logger.error('Failed to fetch user by ID', error, { userId: id });
+      throw error;
     }
-    return await this.repository.findById(id);
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
@@ -52,55 +87,70 @@ export class UserService implements IUserService {
   }
 
   async createUser(userData: UserInput): Promise<User> {
-    // Validate input
-    const usernameValidation = ValidationUtils.validateUsername(userData.username);
-    if (!usernameValidation.isValid) {
-      throw new Error(usernameValidation.message);
-    }
+    try {
+      logger.debug('Creating new user', { email: userData.email, username: userData.username });
 
-    const emailValidation = ValidationUtils.validateEmail(userData.email);
-    if (!emailValidation.isValid) {
-      throw new Error(emailValidation.message);
-    }
-
-    const passwordValidation = PasswordUtils.validatePasswordStrength(userData.password);
-    if (!passwordValidation.isValid) {
-      throw new Error(passwordValidation.message);
-    }
-
-    if (userData.role) {
-      const roleValidation = ValidationUtils.validateUserRole(userData.role);
-      if (!roleValidation.isValid) {
-        throw new Error(roleValidation.message);
+      // Validate input
+      const usernameValidation = ValidationUtils.validateUsername(userData.username);
+      if (!usernameValidation.isValid) {
+        logger.warn('Invalid username during user creation', { username: userData.username, error: usernameValidation.message });
+        throw new Error(usernameValidation.message);
       }
+
+      const emailValidation = ValidationUtils.validateEmail(userData.email);
+      if (!emailValidation.isValid) {
+        logger.warn('Invalid email during user creation', { email: userData.email, error: emailValidation.message });
+        throw new Error(emailValidation.message);
+      }
+
+      const passwordValidation = PasswordUtils.validatePasswordStrength(userData.password);
+      if (!passwordValidation.isValid) {
+        logger.warn('Weak password during user creation', { error: passwordValidation.message });
+        throw new Error(passwordValidation.message);
+      }
+
+      if (userData.role) {
+        const roleValidation = ValidationUtils.validateUserRole(userData.role);
+        if (!roleValidation.isValid) {
+          logger.warn('Invalid role during user creation', { role: userData.role, error: roleValidation.message });
+          throw new Error(roleValidation.message);
+        }
+      }
+
+      // Check uniqueness
+      const existingUser = await this.repository.findByUsername(userData.username);
+      if (existingUser) {
+        logger.warn('Username already exists during user creation', { username: userData.username });
+        throw new Error(ERROR_MESSAGES.USER.USERNAME_EXISTS);
+      }
+
+      const existingEmail = await this.repository.findByEmail(userData.email);
+      if (existingEmail) {
+        logger.warn('Email already exists during user creation', { email: userData.email });
+        throw new Error(ERROR_MESSAGES.USER.EMAIL_EXISTS);
+      }
+
+      // Hash password
+      const hashedPassword = await PasswordUtils.hashPassword(userData.password);
+
+      const userWithHashedPassword = {
+        ...userData,
+        password: hashedPassword,
+        isEmailVerified: false,
+        isPhoneVerified: false,
+      };
+
+      const user = await this.repository.create(userWithHashedPassword);
+      logger.info('Successfully created user', { userId: user.id, email: user.email, username: user.username });
+      return user;
+    } catch (error) {
+      logger.error('Failed to create user', error, { email: userData.email, username: userData.username });
+      throw error;
     }
-
-    // Check uniqueness
-    const existingUser = await this.repository.findByUsername(userData.username);
-    if (existingUser) {
-      throw new Error(ERROR_MESSAGES.USER.USERNAME_EXISTS);
-    }
-
-    const existingEmail = await this.repository.findByEmail(userData.email);
-    if (existingEmail) {
-      throw new Error(ERROR_MESSAGES.USER.EMAIL_EXISTS);
-    }
-
-    // Hash password
-    const hashedPassword = await PasswordUtils.hashPassword(userData.password);
-
-    const userWithHashedPassword = {
-      ...userData,
-      password: hashedPassword,
-      isEmailVerified: false,
-      isPhoneVerified: false,
-    };
-
-    return await this.repository.create(userWithHashedPassword);
   }
 
   async updateUser(id: string, userData: Partial<UserInput>): Promise<User | null> {
-    const idValidation = ValidationUtils.validateId(id);
+    const idValidation = ValidationUtils.validateUUID(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
     }
@@ -152,7 +202,7 @@ export class UserService implements IUserService {
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    const idValidation = ValidationUtils.validateId(id);
+    const idValidation = ValidationUtils.validateUUID(id);
     if (!idValidation.isValid) {
       throw new Error(idValidation.message || ERROR_MESSAGES.USER.INVALID_ID);
     }
@@ -165,15 +215,26 @@ export class UserService implements IUserService {
       throw new Error('Email and password are required');
     }
 
+    console.log('🔍 Authenticating user:', credentials.email);
     const user = await this.repository.findByEmail(credentials.email);
     if (!user) {
+      console.log('❌ User not found:', credentials.email);
       return null;
     }
 
+    console.log('✅ User found:', user.id, user.email);
+    
     const isValidPassword = await PasswordUtils.verifyPassword(credentials.password, user.password || '');
+    console.log('🔓 Password valid:', isValidPassword);
+    
     if (!isValidPassword) {
       return null;
     }
+
+    console.log('🔍 User object keys:', Object.keys(user));
+    console.log('🔍 User id type:', typeof user.id);
+    console.log('🔍 User email type:', typeof user.email);
+    console.log('🔍 User createdAt type:', typeof user.createdAt);
 
     return user;
   }
@@ -234,16 +295,33 @@ export class UserService implements IUserService {
   }
 
   async loginUser(credentials: UserCredentials): Promise<AuthResponse | null> {
-    const user = await this.authenticateUser(credentials);
-    if (!user) {
-      return null;
+    try {
+      logger.debug('Login attempt', { email: credentials.email, rememberMe: credentials.rememberMe });
+
+      const user = await this.authenticateUser(credentials);
+      if (!user) {
+        logger.warn('Login failed - invalid credentials', { email: credentials.email });
+        return null;
+      }
+
+      logger.debug('User authenticated, updating last login', { userId: user.id });
+
+      // Update last login
+      try {
+        await this.updateLastLogin(user.id);
+      } catch (error) {
+        logger.warn('Failed to update last login (non-critical)', { userId: user.id, error: (error as Error).message });
+        // Don't fail the login if this fails
+      }
+
+      // Generate tokens
+      const authResponse = await this.generateAuthTokens(user, credentials.rememberMe);
+      logger.info('Login successful', { userId: user.id, email: credentials.email });
+      return authResponse;
+    } catch (error) {
+      logger.error('Login failed with error', error, { email: credentials.email });
+      throw error;
     }
-
-    // Update last login
-    await this.updateLastLogin(user.id);
-
-    // Generate tokens
-    return await this.generateAuthTokens(user);
   }
 
   async logoutUser(userId: string): Promise<boolean> {
@@ -303,7 +381,13 @@ export class UserService implements IUserService {
   }
 
   // Phone verification methods
-  async requestPhoneVerification(phone: string): Promise<string> {
+  async requestPhoneVerification(userId: string, phone: string): Promise<string> {
+    // Verify user exists
+    const user = await this.repository.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
     const phoneValidation = ValidationUtils.validatePhone(phone);
     if (!phoneValidation.isValid) {
       throw new Error(phoneValidation.message);
@@ -313,19 +397,16 @@ export class UserService implements IUserService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await this.repository.storePhoneVerificationCode(phone, code, expiresAt);
+    await this.repository.storePhoneVerificationCode(userId, phone, code, expiresAt);
 
     return code; // In production, this would be sent via SMS
   }
 
-  async verifyPhone(phone: string, code: string): Promise<boolean> {
-    const isValid = await this.repository.verifyPhoneCode(phone, code);
+  async verifyPhone(userId: string, code: string): Promise<boolean> {
+    const isValid = await this.repository.verifyPhoneCode(userId, code);
     if (isValid) {
       // Update user phone verification status
-      const user = await this.repository.findByPhone(phone);
-      if (user) {
-        await this.repository.verifyPhone(user.id);
-      }
+      await this.repository.verifyPhone(userId);
     }
     return isValid;
   }
@@ -369,27 +450,58 @@ export class UserService implements IUserService {
   }
 
   // Token management
-  async generateAuthTokens(user: User): Promise<AuthResponse> {
-    const accessToken = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      this.jwtSecret,
-      { expiresIn: '15m' }
-    );
+  async generateAuthTokens(user: User, rememberMe: boolean = false): Promise<AuthResponse> {
+    console.log('🎟️ generateAuthTokens called for user:', user.id, user.email, 'rememberMe:', rememberMe);
+    console.log('🔍 User object has required fields:', {
+      hasId: !!user.id,
+      hasEmail: !!user.email,
+      hasUsername: !!user.username,
+      hasRole: !!user.role
+    });
+    
+    try {
+      // Set token expiration based on rememberMe preference
+      const accessTokenExpiry = rememberMe ? this.accessTokenExpiryRemember : this.accessTokenExpiry;
+      const refreshTokenExpiry = rememberMe ? this.refreshTokenExpiryRemember : this.refreshTokenExpiry;
+      
+      console.log('⏰ Token expirations - Access:', accessTokenExpiry, 'Refresh:', refreshTokenExpiry);
+      
+      const accessToken = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        this.jwtSecret,
+        { expiresIn: accessTokenExpiry } as SignOptions
+      );
 
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      this.jwtRefreshSecret,
-      { expiresIn: '7d' }
-    );
+      const refreshToken = jwt.sign(
+        { userId: user.id },
+        this.jwtRefreshSecret,
+        { expiresIn: refreshTokenExpiry } as SignOptions
+      );
 
-    return {
-      user,
-      tokens: {
-        accessToken,
-        refreshToken,
-        expiresIn: 15 * 60, // 15 minutes in seconds
-      },
-    };
+      // Calculate expiresIn in seconds from the JWT expiry string
+      const expiresIn = this.parseJwtExpiryToSeconds(accessTokenExpiry);
+
+      // Return minimal user info
+      const safeUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      };
+
+      console.log('✅ Tokens generated, returning auth response');
+      return {
+        user: safeUser as User,
+        tokens: {
+          accessToken,
+          refreshToken,
+          expiresIn,
+        },
+      };
+    } catch (error) {
+      console.error('❌ Error generating tokens:', error);
+      throw error;
+    }
   }
 
   async refreshAuthTokens(refreshToken: string): Promise<AuthResponse | null> {
@@ -427,5 +539,24 @@ export class UserService implements IUserService {
 
   async updateLastLogin(userId: string): Promise<boolean> {
     return await this.repository.updateLastLogin(userId);
+  }
+
+  // Helper method to parse JWT expiry string to seconds
+  private parseJwtExpiryToSeconds(expiry: string): number {
+    const match = expiry.match(/^(\d+)([smhd])$/);
+    if (!match) {
+      throw new Error(`Invalid JWT expiry format: ${expiry}`);
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    switch (unit) {
+      case 's': return value; // seconds
+      case 'm': return value * 60; // minutes
+      case 'h': return value * 60 * 60; // hours
+      case 'd': return value * 24 * 60 * 60; // days
+      default: throw new Error(`Unknown time unit: ${unit}`);
+    }
   }
 }

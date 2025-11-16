@@ -44,7 +44,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               "flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
               startIcon && "pl-10",
               (endIcon || hasError || hasSuccess || isLoading) && "pr-10",
-              hasError && "border-destructive focus-visible:ring-destructive",
+              hasError && "border-red-500 dark:border-red-400 focus-visible:ring-red-500 dark:focus-visible:ring-red-400",
               hasSuccess && "border-green-500 focus-visible:ring-green-500",
               isLoading && "pr-10",
               className
@@ -81,8 +81,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         {(error || helperText) && (
           <p className={cn(
-            "text-sm",
-            hasError && "text-destructive",
+            "text-sm font-medium",
+            hasError && "text-red-600 dark:text-red-400",
             !hasError && "text-muted-foreground"
           )}>
             {error || helperText}

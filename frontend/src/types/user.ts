@@ -1,8 +1,20 @@
 // User-related type definitions
 export interface User {
-  id: number;
+  id: string;
   username: string;
+  name?: string; // Full display name (for Google OAuth users)
   email: string;
+  phone?: string;
+  role: 'admin' | 'user';
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
+  profilePicture?: string;
+  googleId?: string; // Google OAuth ID
+  emailVerificationToken?: string;
+  emailVerificationExpires?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: string;
+  lastLogin?: string;
   createdAt: string;
   updatedAt: string;
 }

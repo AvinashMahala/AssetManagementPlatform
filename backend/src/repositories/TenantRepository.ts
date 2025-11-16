@@ -14,8 +14,8 @@ export class TenantRepository implements ITenantRepository {
     try {
       const result = await this.pool.query(`SELECT * FROM ${TABLES.TENANTS}`);
       return result.rows.map(row => this.mapRowToTenant(row));
-    } catch (error) {
-      throw new Error('Failed to fetch tenants');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenants: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -26,8 +26,8 @@ export class TenantRepository implements ITenantRepository {
         [id]
       );
       return result.rows[0] ? this.mapRowToTenant(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to fetch tenant');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -38,8 +38,8 @@ export class TenantRepository implements ITenantRepository {
         [email]
       );
       return result.rows[0] ? this.mapRowToTenant(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to fetch tenant by email');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant by email: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -50,8 +50,8 @@ export class TenantRepository implements ITenantRepository {
         [phone]
       );
       return result.rows[0] ? this.mapRowToTenant(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to fetch tenant by phone');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant by phone: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -250,8 +250,10 @@ export class TenantRepository implements ITenantRepository {
         [id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to delete tenant');
+    } catch (error: any) {
+      // Log the actual database error for debugging
+      console.error('Database error during tenant deletion:', error);
+      throw new Error(`Failed to delete tenant: ${error.message || 'Database constraint violation'}`);
     }
   }
 
@@ -262,8 +264,8 @@ export class TenantRepository implements ITenantRepository {
         [status, new Date(), id]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to update tenant status');
+    } catch (error: any) {
+      throw new Error(`Failed to update tenant status: ${error.message || 'Database update failed'}`);
     }
   }
 
@@ -275,18 +277,22 @@ export class TenantRepository implements ITenantRepository {
         `INSERT INTO ${TABLES.TENANT_DOCUMENTS} (
           ${COLUMNS.TENANT_DOCUMENTS.TENANT_ID},
           ${COLUMNS.TENANT_DOCUMENTS.DOCUMENT_TYPE},
+          ${COLUMNS.TENANT_DOCUMENTS.DOCUMENT_NAME},
           ${COLUMNS.TENANT_DOCUMENTS.DOCUMENT_NUMBER},
           ${COLUMNS.TENANT_DOCUMENTS.FILE_URL},
+          ${COLUMNS.TENANT_DOCUMENTS.FILE_SIZE},
           ${COLUMNS.TENANT_DOCUMENTS.VERIFIED},
           ${COLUMNS.TENANT_DOCUMENTS.VERIFIED_AT},
           ${COLUMNS.TENANT_DOCUMENTS.VERIFIED_BY},
           ${COLUMNS.TENANT_DOCUMENTS.UPLOADED_AT}
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
         [
           tenantId,
           document.documentType,
+          document.documentName,
           document.documentNumber,
           document.fileUrl,
+          document.fileSize,
           document.verified || false,
           document.verifiedAt,
           document.verifiedBy,
@@ -294,8 +300,8 @@ export class TenantRepository implements ITenantRepository {
         ]
       );
       return this.mapRowToTenantDocument(result.rows[0]);
-    } catch (error) {
-      throw new Error('Failed to add tenant document');
+    } catch (error: any) {
+      throw new Error(`Failed to add tenant document: ${error.message || 'Database insert failed'}`);
     }
   }
 
@@ -306,8 +312,8 @@ export class TenantRepository implements ITenantRepository {
         [tenantId]
       );
       return result.rows.map(row => this.mapRowToTenantDocument(row));
-    } catch (error) {
-      throw new Error('Failed to fetch tenant documents');
+    } catch (error: any) {
+      throw new Error(`Failed to fetch tenant documents: ${error.message || 'Database query failed'}`);
     }
   }
 
@@ -321,6 +327,10 @@ export class TenantRepository implements ITenantRepository {
         fields.push(`${COLUMNS.TENANT_DOCUMENTS.DOCUMENT_TYPE} = $${paramIndex++}`);
         values.push(data.documentType);
       }
+      if (data.documentName !== undefined) {
+        fields.push(`${COLUMNS.TENANT_DOCUMENTS.DOCUMENT_NAME} = $${paramIndex++}`);
+        values.push(data.documentName);
+      }
       if (data.documentNumber !== undefined) {
         fields.push(`${COLUMNS.TENANT_DOCUMENTS.DOCUMENT_NUMBER} = $${paramIndex++}`);
         values.push(data.documentNumber);
@@ -328,6 +338,10 @@ export class TenantRepository implements ITenantRepository {
       if (data.fileUrl !== undefined) {
         fields.push(`${COLUMNS.TENANT_DOCUMENTS.FILE_URL} = $${paramIndex++}`);
         values.push(data.fileUrl);
+      }
+      if (data.fileSize !== undefined) {
+        fields.push(`${COLUMNS.TENANT_DOCUMENTS.FILE_SIZE} = $${paramIndex++}`);
+        values.push(data.fileSize);
       }
       if (data.verified !== undefined) {
         fields.push(`${COLUMNS.TENANT_DOCUMENTS.VERIFIED} = $${paramIndex++}`);
@@ -356,8 +370,8 @@ export class TenantRepository implements ITenantRepository {
 
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToTenantDocument(result.rows[0]) : null;
-    } catch (error) {
-      throw new Error('Failed to update tenant document');
+    } catch (error: any) {
+      throw new Error(`Failed to update tenant document: ${error.message || 'Database update failed'}`);
     }
   }
 
@@ -368,8 +382,8 @@ export class TenantRepository implements ITenantRepository {
         [documentId]
       );
       return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      throw new Error('Failed to delete tenant document');
+    } catch (error: any) {
+      throw new Error(`Failed to delete tenant document: ${error.message || 'Database delete failed'}`);
     }
   }
 
@@ -417,8 +431,10 @@ export class TenantRepository implements ITenantRepository {
       id: row.id,
       tenantId: row.tenant_id,
       documentType: row.document_type,
+      documentName: row.document_name,
       documentNumber: row.document_number,
       fileUrl: row.file_url,
+      fileSize: row.file_size,
       verified: row.verified,
       verifiedAt: row.verified_at ? new Date(row.verified_at) : undefined,
       verifiedBy: row.verified_by,

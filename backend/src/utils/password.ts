@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { DEFAULTS } from '../constants/database';
 
 export class PasswordUtils {

@@ -1,6 +1,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePayment, useDeletePayment, useLease, useTenant } from '../../hooks';
+import { ReceiptGenerator } from '../../components/receipts/ReceiptGenerator';
+import { getErrorMessage } from '../../types/api';
 
 export const PaymentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +32,7 @@ export const PaymentDetailPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error || 'Payment not found'}</p>
+          <p className="text-red-800">{getErrorMessage(error) || 'Payment not found'}</p>
         </div>
       </div>
     );
@@ -142,6 +144,21 @@ export const PaymentDetailPage: React.FC = () => {
           <div className="p-6 border-b">
             <h2 className="text-xl font-semibold mb-4">Notes</h2>
             <p className="text-gray-700 whitespace-pre-wrap">{payment.notes}</p>
+          </div>
+        )}
+
+        {/* Receipt Generator - only show for paid payments */}
+        {payment.status === 'paid' && tenant && (
+          <div className="p-6 border-b">
+            <ReceiptGenerator
+              paymentId={payment.id}
+              tenantName={`${tenant.firstName} ${tenant.lastName}`}
+              amount={payment.amount}
+              onReceiptGenerated={(receipt) => {
+                console.log('Receipt generated:', receipt);
+                // Could navigate to receipt detail page or show success message
+              }}
+            />
           </div>
         )}
 

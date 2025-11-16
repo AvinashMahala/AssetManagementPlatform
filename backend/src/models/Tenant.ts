@@ -21,8 +21,10 @@ export interface TenantDocument {
   id: string; // UUID
   tenantId: string; // UUID
   documentType: DocumentType;
+  documentName?: string;
   documentNumber?: string;
   fileUrl: string;
+  fileSize?: number;
   verified: boolean;
   verifiedAt?: Date;
   verifiedBy?: string; // UUID reference to users

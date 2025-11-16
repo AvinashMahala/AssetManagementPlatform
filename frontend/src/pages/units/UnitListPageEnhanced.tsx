@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Edit, Building2 } from 'lucide-react';
+import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { useUnits } from '../../hooks/useUnits';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
+import { Pagination } from '../../components/ui/pagination';
+import { useUnits, useDeleteUnit } from '../../hooks/useUnits';
 import { useProperties } from '../../hooks/useProperties';
 import { AppLayout } from '../../components/layout';
 
@@ -15,8 +24,16 @@ const UnitListPageEnhanced: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [propertyFilter, setPropertyFilter] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [unitToDelete, setUnitToDelete] = useState<{id: string, name: string} | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const { units, loading } = useUnits();
+  const { mutate: deleteUnit, loading: deleteLoading } = useDeleteUnit();
   const { properties } = useProperties();
 
   const filteredUnits = Array.isArray(units) ? units.filter(u => {
@@ -25,6 +42,13 @@ const UnitListPageEnhanced: React.FC = () => {
     const matchesProperty = propertyFilter === 'all' || u.propertyId === propertyFilter;
     return matchesSearch && matchesStatus && matchesProperty;
   }) : [];
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUnits.length / itemsPerPage);
+  const paginatedUnits = filteredUnits.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const availableCount = Array.isArray(units) ? units.filter(u => u.status === 'available').length : 0;
   const occupiedCount = Array.isArray(units) ? units.filter(u => u.status === 'occupied').length : 0;
@@ -42,6 +66,13 @@ const UnitListPageEnhanced: React.FC = () => {
     { value: 'available', label: 'Available' },
     { value: 'occupied', label: 'Occupied' },
     { value: 'under_maintenance', label: 'Under Maintenance' },
+  ];
+
+  const itemsPerPageOptions = [
+    { value: 10, label: '10 per page' },
+    { value: 25, label: '25 per page' },
+    { value: 50, label: '50 per page' },
+    { value: 100, label: '100 per page' },
   ];
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -67,18 +98,168 @@ const UnitListPageEnhanced: React.FC = () => {
     return property?.name || 'Unknown Property';
   };
 
+  // Bulk selection handlers
+  const handleSelectUnit = (unitId: string, checked: boolean) => {
+    const newSelected = new Set(selectedUnits);
+    if (checked) {
+      newSelected.add(unitId);
+    } else {
+      newSelected.delete(unitId);
+    }
+    setSelectedUnits(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(filteredUnits.map(u => u.id));
+      setSelectedUnits(allIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedUnits(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const handleBulkMaintenance = async () => {
+    if (selectedUnits.size === 0) return;
+
+    setBulkActionLoading(true);
+    try {
+      // TODO: Implement bulk maintenance API call
+      // For now, simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('Marking units as under maintenance:', Array.from(selectedUnits));
+
+      // Clear selection after successful operation
+      setSelectedUnits(new Set());
+      setShowBulkActions(false);
+    } catch (error) {
+      console.error('Failed to mark units as maintenance:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedUnits.size === 0) return;
+
+    const confirmMessage = `Are you sure you want to delete ${selectedUnits.size} unit${selectedUnits.size !== 1 ? 's' : ''}? This action cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) return;
+
+    setBulkActionLoading(true);
+    try {
+      // Delete units one by one
+      const deletePromises = Array.from(selectedUnits).map(id => deleteUnit(id));
+      await Promise.all(deletePromises);
+
+      console.log('Deleted units:', Array.from(selectedUnits));
+
+      // Clear selection after successful operation
+      setSelectedUnits(new Set());
+      setShowBulkActions(false);
+      // TODO: Show success toast
+    } catch (error) {
+      console.error('Failed to delete units:', error);
+      // TODO: Show error toast
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedData = filteredUnits.filter(u => selectedUnits.has(u.id));
+
+    if (selectedData.length === 0) return;
+
+    // Create CSV content
+    const headers = ['Unit Number', 'Unit Type', 'Property', 'Monthly Rent', 'Area', 'Bedrooms', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...selectedData.map(unit => [
+        `"${unit.unitNumber}"`,
+        `"${unit.unitType}"`,
+        `"${getPropertyName(unit.propertyId)}"`,
+        unit.monthlyRent || '',
+        unit.area || '',
+        unit.bedrooms || '',
+        `"${unit.status}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `units_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clear selection after export
+    setSelectedUnits(new Set());
+    setShowBulkActions(false);
+  };
+
+  const handleDeleteClick = (id: string, name: string) => {
+    setUnitToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!unitToDelete) return;
+
+    try {
+      await deleteUnit(unitToDelete.id);
+      setDeleteDialogOpen(false);
+      setUnitToDelete(null);
+      // TODO: Show success toast
+    } catch (error) {
+      console.error('Failed to delete unit:', error);
+      // TODO: Show error toast
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedUnits(new Set());
+    setShowBulkActions(false);
+  };
+
   return (
     <AppLayout title="Units">
-      <div className="space-y-6">
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg text-muted-foreground">Loading units...</p>
+            <p className="text-sm text-muted-foreground">Please wait while we fetch your unit data</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Unit Management</h1>
-            <p className="text-muted-foreground">Manage and monitor all your property units</p>
+                        <h1 className="text-3xl font-bold tracking-tight">Manage Property Units</h1>
+            <p className="text-muted-foreground">Organize and track individual rental units</p>
           </div>
-          <Button onClick={() => navigate('/units/create')} size="lg">
-            <Plus className="mr-2 h-4 w-4" /> Add Unit
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
+              <FileImage className="mr-2 h-4 w-4" /> Templates
+            </Button>
+            <Button
+              onClick={() => navigate('/units/create-tabbed')}
+              size="lg"
+              title="Step through a comprehensive unit creation process"
+            >
+              <Plus className="mr-2 h-4 w-4" /> Add Unit
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -108,7 +289,10 @@ const UnitListPageEnhanced: React.FC = () => {
                 <Input 
                   placeholder="Search by unit number, type..." 
                   value={search} 
-                  onChange={(e) => setSearch(e.target.value)} 
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }} 
                   className="pl-9"
                 />
               </div>
@@ -117,7 +301,10 @@ const UnitListPageEnhanced: React.FC = () => {
               <div className="flex gap-2 flex-wrap">
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {statusOptions.map(option => (
@@ -127,12 +314,29 @@ const UnitListPageEnhanced: React.FC = () => {
 
                 <select
                   value={propertyFilter}
-                  onChange={(e) => setPropertyFilter(e.target.value)}
+                  onChange={(e) => {
+                    setPropertyFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="all">All Properties</option>
                   {properties.map(property => (
                     <option key={property.id} value={property.id}>{property.name}</option>
+                  ))}
+                </select>
+
+                {/* Items per page */}
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {itemsPerPageOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
 
@@ -158,7 +362,72 @@ const UnitListPageEnhanced: React.FC = () => {
               </div>
             </div>
           </CardHeader>
+
+          {/* Bulk Actions Toolbar */}
+          {showBulkActions && selectedUnits.size > 0 && (
+            <div className="border-t bg-muted/50 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm font-medium">
+                    {selectedUnits.size} unit{selectedUnits.size !== 1 ? 's' : ''} selected
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Clear Selection
+                  </Button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleBulkMaintenance}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    ) : (
+                      <Wrench className="h-4 w-4 mr-2" />
+                    )}
+                    Mark as Maintenance
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Delete Selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Selected
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <CardContent>
+            {/* Results Summary */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {paginatedUnits.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredUnits.length)} of {filteredUnits.length} units
+              </div>
+            </div>
+
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -169,29 +438,45 @@ const UnitListPageEnhanced: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedUnits.size === paginatedUnits.length && paginatedUnits.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300"
+                        />
+                      </TableHead>
                       <TableHead>Unit Number</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Property</TableHead>
-                      <TableHead>Rent</TableHead>
-                      <TableHead>Area (sq ft)</TableHead>
+                      <TableHead>Monthly Rent</TableHead>
+                      <TableHead>Area</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUnits.length === 0 ? (
+                    {paginatedUnits.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                          {search ? 'No units found matching your search.' : 'No units found. Click "Add Unit" to create one.'}
+                        <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                          {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found. Click "Add Unit" to create one.'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredUnits.map((unit) => (
+                      paginatedUnits.map((unit) => (
                         <TableRow 
                           key={unit.id} 
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/units/${unit.id}`)}
                         >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedUnits.has(unit.id)}
+                              onChange={(e) => handleSelectUnit(unit.id, e.target.checked)}
+                              className="rounded border-gray-300"
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">{unit.unitNumber}</TableCell>
                           <TableCell>{unit.unitType}</TableCell>
                           <TableCell>
@@ -200,8 +485,8 @@ const UnitListPageEnhanced: React.FC = () => {
                               {getPropertyName(unit.propertyId)}
                             </div>
                           </TableCell>
-                          <TableCell>₹{unit.rent?.toLocaleString() || 'N/A'}</TableCell>
-                          <TableCell>{unit.carpetArea || 'N/A'}</TableCell>
+                          <TableCell>₹{unit.monthlyRent?.toLocaleString() || 'N/A'}</TableCell>
+                          <TableCell>{unit.area || 'N/A'}</TableCell>
                           <TableCell>
                             <Badge variant={getStatusVariant(unit.status)}>
                               {unit.status.replace('_', ' ').charAt(0).toUpperCase() + unit.status.replace('_', ' ').slice(1)}
@@ -224,10 +509,20 @@ const UnitListPageEnhanced: React.FC = () => {
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate(`/units/${unit.id}/edit`);
+                                  navigate(`/units/${unit.id}/dashboard`);
                                 }}
                               >
-                                <Edit className="h-4 w-4" />
+                                📊
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(unit.id, unit.unitNumber);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
                               </Button>
                             </div>
                           </TableCell>
@@ -240,12 +535,12 @@ const UnitListPageEnhanced: React.FC = () => {
             ) : (
               /* Grid View */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredUnits.length === 0 ? (
+                {paginatedUnits.length === 0 ? (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
-                    {search ? 'No units found matching your search.' : 'No units found. Click "Add Unit" to create one.'}
+                    {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found. Click "Add Unit" to create one.'}
                   </div>
                 ) : (
-                  filteredUnits.map((unit) => (
+                  paginatedUnits.map((unit) => (
                     <Card 
                       key={unit.id} 
                       className="hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group"
@@ -289,11 +584,11 @@ const UnitListPageEnhanced: React.FC = () => {
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-muted-foreground">Rent</span>
-                            <span className="font-bold text-primary">₹{unit.rent?.toLocaleString() || 'N/A'}/mo</span>
+                            <span className="font-bold text-primary">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}/mo</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Carpet Area</span>
-                            <span className="font-medium">{unit.carpetArea || 'N/A'} sq ft</span>
+                            <span className="text-muted-foreground">Area</span>
+                            <span className="font-medium">{unit.area || 'N/A'} sq ft</span>
                           </div>
                           {unit.bedrooms && (
                             <div className="flex items-center justify-between">
@@ -321,11 +616,10 @@ const UnitListPageEnhanced: React.FC = () => {
                             className="flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/units/${unit.id}/edit`);
+                              navigate(`/units/${unit.id}/dashboard`);
                             }}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
+                            📊 Dashboard
                           </Button>
                         </div>
                       </CardContent>
@@ -336,7 +630,47 @@ const UnitListPageEnhanced: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Unit</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete unit "{unitToDelete?.name}"? This action cannot be undone and will also delete all associated leases and payment records.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

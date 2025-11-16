@@ -18,6 +18,23 @@ export enum UnitStatus {
   VACANT = 'vacant'
 }
 
+// Utility billing methods
+export enum UtilityBillingMethod {
+  FIXED = 'fixed',
+  METER_BASED = 'meter_based'
+}
+
+// Utility types
+export enum UtilityType {
+  ELECTRICITY = 'electricity',
+  WATER = 'water',
+  GAS = 'gas',
+  INTERNET = 'internet',
+  MAINTENANCE = 'maintenance',
+  PARKING = 'parking',
+  OTHER = 'other'
+}
+
 export interface Unit {
   id: string; // UUID
   propertyId: string; // UUID reference to properties table
@@ -44,6 +61,9 @@ export interface Unit {
   monthlyRent: number;
   securityDeposit: number;
   maintenanceCharges?: number;
+
+  // Utility configurations
+  utilities?: UnitUtility[];
 
   // Metadata
   createdAt: Date;
@@ -108,4 +128,50 @@ export interface UnitTenantInput {
   monthlyRentShare: number;
   securityDepositShare: number;
   status?: 'active' | 'inactive' | 'evicted';
+}
+
+// Unit Utility Configuration
+export interface UnitUtility {
+  id: string; // UUID
+  unitId: string; // UUID reference to units table
+  propertyId: string; // UUID reference to properties table
+
+  // Utility configuration
+  utilityType: UtilityType;
+  utilityName: string;
+  isEnabled: boolean;
+
+  // Billing method
+  billingMethod: UtilityBillingMethod;
+
+  // Fixed charge configuration
+  fixedAmount?: number;
+
+  // Meter-based configuration
+  meterId?: string; // UUID reference to meters table
+  multiplier?: number;
+
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UnitUtilityInput {
+  unitId: string;
+  propertyId: string;
+
+  // Utility configuration
+  utilityType: UtilityType;
+  utilityName: string;
+  isEnabled?: boolean;
+
+  // Billing method
+  billingMethod: UtilityBillingMethod;
+
+  // Fixed charge configuration
+  fixedAmount?: number;
+
+  // Meter-based configuration
+  meterId?: string;
+  multiplier?: number;
 }

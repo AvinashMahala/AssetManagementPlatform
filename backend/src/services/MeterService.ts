@@ -3,6 +3,7 @@ import { Meter, MeterInput, MeterType } from '../models/Meter.js';
 import { ValidationUtils } from '../utils/validation.js';
 import { ERROR_MESSAGES } from '../constants/validation.js';
 import { IMeterService } from '../interfaces/services/IMeterService.js';
+import { PaginationOptions, PaginationResult, MeterFilters } from '../types/pagination.js';
 
 export class MeterService implements IMeterService {
   private repository: IMeterRepository;
@@ -13,6 +14,18 @@ export class MeterService implements IMeterService {
 
   async getAllMeters(): Promise<Meter[]> {
     return await this.repository.findAll();
+  }
+
+  async getMetersPaginated(options: PaginationOptions, filters?: MeterFilters): Promise<PaginationResult<Meter>> {
+    // Validate pagination options
+    if (options.page < 1) {
+      throw new Error('Page must be greater than 0');
+    }
+    if (options.limit < 1 || options.limit > 100) {
+      throw new Error('Limit must be between 1 and 100');
+    }
+
+    return await this.repository.findPaginated(options, filters);
   }
 
   async getMeterById(id: string): Promise<Meter | null> {
@@ -89,6 +102,8 @@ export class MeterService implements IMeterService {
     // Ensure isActive has a default value
     const meterDataToCreate = {
       ...meterData,
+      multiplier: meterData.multiplier !== undefined ? meterData.multiplier : 1.0,
+      status: meterData.status !== undefined ? meterData.status : 'active',
       isActive: meterData.isActive !== undefined ? meterData.isActive : true
     };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProperty, useUpdateProperty } from '../../hooks';
-import PropertyFormModern from '../../components/forms/PropertyFormModern';
+import PropertyFormTabbed from '../../components/forms/PropertyFormTabbed';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { Card, CardContent } from '../../components/ui/card';
 import type { PropertyInput } from '../../types';
@@ -10,16 +10,20 @@ const PropertyEditPageEnhanced: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: property, loading: fetchLoading } = useProperty(id!);
-  const { mutate: updateProperty, loading: updateLoading } = useUpdateProperty();
+  const { mutate: updateProperty, loading: updateLoading, error: updateError } = useUpdateProperty();
 
   const handleSubmit = async (data: PropertyInput) => {
-    if (!id) return;
+    if (!id) {
+      return;
+    }
+
     try {
       await updateProperty({ id, data });
-      // Navigate to property dashboard on success
+      alert('Property updated successfully!');
       navigate(`/properties/${id}/dashboard`);
     } catch (error) {
       console.error('Failed to update property:', error);
+      throw error; // Re-throw to let the form handle it
     }
   };
 
@@ -68,12 +72,17 @@ const PropertyEditPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <PropertyFormModern
-        initialData={property}
-        onSubmit={handleSubmit}
-        loading={updateLoading}
-        title="Edit Property"
-      />
+      <div className="py-8">
+        <PropertyFormTabbed
+          initialData={property}
+          onSubmit={handleSubmit}
+          loading={updateLoading}
+          isEdit={true}
+          propertyName={property?.name}
+          propertyId={id}
+          apiError={updateError}
+        />
+      </div>
     </AppLayout>
   );
 };

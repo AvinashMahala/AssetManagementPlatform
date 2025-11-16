@@ -32,8 +32,8 @@ export interface IUserService {
   resendEmailVerification(email: string): Promise<boolean>;
 
   // Phone authentication
-  requestPhoneVerification(phone: string): Promise<string>;
-  verifyPhone(phone: string, code: string): Promise<boolean>;
+  requestPhoneVerification(userId: string, phone: string): Promise<string>;
+  verifyPhone(userId: string, code: string): Promise<boolean>;
 
   // Google OAuth
   findOrCreateGoogleUser(profile: GoogleUserProfile): Promise<User>;

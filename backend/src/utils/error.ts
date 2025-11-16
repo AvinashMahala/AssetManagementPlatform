@@ -22,11 +22,11 @@ export class ErrorUtils {
 
     // Handle connection errors
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      return ResponseUtils.error(res, 'Database connection failed', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      return ResponseUtils.error(res, 'Database connection failed', HTTP_STATUS.INTERNAL_SERVER_ERROR, error);
     }
 
     // Default database error
-    return ResponseUtils.error(res, 'Database operation failed', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    return ResponseUtils.error(res, 'Database operation failed', HTTP_STATUS.INTERNAL_SERVER_ERROR, error);
   }
 
   /**
@@ -48,7 +48,7 @@ export class ErrorUtils {
    */
   static handleGenericError(res: Response, error: any, defaultMessage: string = 'An error occurred'): void {
     console.error('Unhandled error:', error);
-    ResponseUtils.error(res, defaultMessage, HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    ResponseUtils.error(res, defaultMessage, HTTP_STATUS.INTERNAL_SERVER_ERROR, error);
   }
 
   /**

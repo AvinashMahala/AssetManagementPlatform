@@ -14,7 +14,8 @@ import {
   Moon,
   Sun,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
@@ -34,13 +35,15 @@ export const LoginPage: React.FC = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('signin');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState<string>('');
   const [formData, setFormData] = useState({
-    email: 'demo@assetplatform.com',
-    password: 'demo123',
+    email: 'admin@assetplatform.com',
+    password: 'admin123',
     firstName: '',
     lastName: '',
     company: '',
-    resetEmail: ''
+    resetEmail: '',
+    rememberMe: false
   });
 
   // Demo credentials for quick testing
@@ -58,12 +61,18 @@ export const LoginPage: React.FC = () => {
     }
   }, []);
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
   // Handle successful authentication - redirect to dashboard
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
+    if (isAuthenticated && !showSuccess) {
+      setShowSuccess(true);
+      // Show success animation for 1.5 seconds before navigating
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, showSuccess, navigate]);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -77,17 +86,26 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleDemoLogin = async () => {
-    const success = await login(demoCredentials);
-    if (success) {
-      // Navigation will be handled by the useEffect above
+    setLoginError(''); // Clear any previous errors
+    const result = await login({ ...demoCredentials, rememberMe: false });
+    if (!result.success) {
+      setLoginError(result.error || 'Login failed');
     }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(''); // Clear any previous errors
 
     if (currentView === 'login') {
-      await login({ email: formData.email, password: formData.password });
+      const result = await login({ 
+        email: formData.email, 
+        password: formData.password,
+        rememberMe: formData.rememberMe
+      });
+      if (!result.success) {
+        setLoginError(result.error || 'Login failed');
+      }
       // Navigation will be handled by the useEffect above
     } else if (currentView === 'register') {
       // For now, just switch back to login - registration would need backend implementation
@@ -103,7 +121,7 @@ export const LoginPage: React.FC = () => {
   const features = [
     {
       icon: Building2,
-      title: 'Property Management',
+      title: 'Asset Management',
       description: 'Manage multiple properties with ease'
     },
     {
@@ -150,6 +168,24 @@ export const LoginPage: React.FC = () => {
           <AuthLoading
             message="Signing you in..."
             variant="pulse"
+          />
+        </Card>
+      </div>
+    );
+  }
+
+  // Show success state before navigation
+  if (showSuccess) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center transition-all duration-500 ${isDarkMode ? 'dark' : ''}`}>
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-green-900 dark:via-blue-900 dark:to-purple-900 transition-all duration-500" />
+          <FloatingParticles count={15} />
+        </div>
+        <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border-0 shadow-2xl p-8">
+          <AuthLoading
+            message="Welcome back! Redirecting to dashboard..."
+            variant="success"
           />
         </Card>
       </div>
@@ -286,8 +322,17 @@ export const LoginPage: React.FC = () => {
                     className="w-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800/30 dark:hover:to-purple-800/30"
                     disabled={authLoading}
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Try Demo Account
+                    {authLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Signing In...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Try Demo Account
+                      </>
+                    )}
                   </Button>
 
                   <div className="relative">
@@ -300,6 +345,16 @@ export const LoginPage: React.FC = () => {
                   </div>
 
                   <form onSubmit={handleFormSubmit} className="space-y-4">
+                    {loginError && (
+                      <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
+                          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          {loginError}
+                        </p>
+                      </div>
+                    )}
                     <div>
                       <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
                       <Input
@@ -307,7 +362,10 @@ export const LoginPage: React.FC = () => {
                         type="email"
                         placeholder="Enter your email"
                         value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, email: e.target.value }));
+                          if (loginError) setLoginError(''); // Clear error when user types
+                        }}
                         className="mt-1 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                       />
                     </div>
@@ -320,7 +378,10 @@ export const LoginPage: React.FC = () => {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Enter your password"
                           value={formData.password}
-                          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                          onChange={(e) => {
+                            setFormData(prev => ({ ...prev, password: e.target.value }));
+                            if (loginError) setLoginError(''); // Clear error when user types
+                          }}
                           className="bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 pr-10"
                         />
                         <button
@@ -335,7 +396,12 @@ export const LoginPage: React.FC = () => {
 
                     <div className="flex items-center justify-between">
                       <label className="flex items-center">
-                        <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                        <input 
+                          type="checkbox" 
+                          checked={formData.rememberMe}
+                          onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                        />
                         <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
                       </label>
                       <button
@@ -352,8 +418,17 @@ export const LoginPage: React.FC = () => {
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                       disabled={authLoading}
                     >
-                      Sign In
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                      {authLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Signing In...
+                        </>
+                      ) : (
+                        <>
+                          Sign In
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
                     </Button>
                   </form>
 

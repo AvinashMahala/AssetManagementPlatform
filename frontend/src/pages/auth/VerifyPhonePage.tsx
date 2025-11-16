@@ -1,21 +1,14 @@
 import React from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { VerifyPhoneForm } from '../../components/forms';
 import { Card } from '../../components/common/Card';
 
 export const VerifyPhonePage: React.FC = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const phone = searchParams.get('phone') || '';
-
   const handleSuccess = () => {
-    // Redirect to login page after successful verification
-    navigate('/login?verified=phone');
-  };
-
-  const handleRequestCode = () => {
-    // Handle request code logic if needed
+    // Redirect to profile page after successful verification
+    navigate('/profile');
   };
 
   return (
@@ -23,9 +16,7 @@ export const VerifyPhonePage: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <Card className="p-8">
           <VerifyPhoneForm
-            phone={phone}
             onSuccess={handleSuccess}
-            onRequestCode={handleRequestCode}
           />
         </Card>
       </div>
