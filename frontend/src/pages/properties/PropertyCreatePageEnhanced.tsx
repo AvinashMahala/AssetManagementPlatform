@@ -11,9 +11,13 @@ const PropertyCreatePageEnhanced: React.FC = () => {
 
   const handleSubmit = async (data: PropertyInput) => {
     try {
-      await createProperty(data);
-      // Navigate to properties list on success
-      navigate('/properties');
+      const result = await createProperty(data);
+      // Navigate to edit mode on success
+      if (result.success && result.data?.id) {
+        navigate(`/properties/${result.data.id}/edit`);
+      } else {
+        navigate('/properties');
+      }
     } catch (error) {
       console.error('Failed to create property:', error);
       throw error; // Re-throw to let the form handle it
