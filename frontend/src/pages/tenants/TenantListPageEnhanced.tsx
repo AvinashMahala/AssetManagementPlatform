@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Users, UserCheck, UserX, Eye, Edit, FileImage, Download, X, XCircle, Mail, Phone, Briefcase, Trash2 } from 'lucide-react';
+import { Plus, Search, Users, UserCheck, UserX, Eye, Edit, FileImage, Download, X, XCircle, Mail, Phone, Briefcase, Trash2, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -487,6 +487,16 @@ const TenantListPageEnhanced: React.FC = () => {
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  navigate(`/tenants/${tenant.id}/dashboard`);
+                                }}
+                              >
+                                <BarChart3 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   navigate(`/tenants/${tenant.id}`);
                                 }}
                               >
@@ -568,6 +578,18 @@ const TenantListPageEnhanced: React.FC = () => {
                           )}
                         </div>
                         <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/tenants/${tenant.id}/dashboard`);
+                            }}
+                          >
+                            <BarChart3 className="h-4 w-4 mr-1" />
+                            Dashboard
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Users, UserCheck, UserX } from 'lucide-react';
+import { Plus, Search, Users, UserCheck, UserX, BarChart3, Eye } from 'lucide-react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -164,6 +164,7 @@ const TenantListPage: React.FC = () => {
                                   onClick={() => navigate(`/tenants/${tenant.id}/dashboard`)}
                                   className="h-8 px-3 text-xs"
                                 >
+                                  <BarChart3 className="h-3 w-3 mr-1" />
                                   Dashboard
                                 </Button>
                                 <Button
@@ -172,6 +173,7 @@ const TenantListPage: React.FC = () => {
                                   onClick={() => navigate(`/tenants/${tenant.id}`)}
                                   className="h-8 px-3 text-xs"
                                 >
+                                  <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
                               </div>

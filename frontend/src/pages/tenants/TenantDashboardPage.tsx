@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
@@ -7,12 +7,10 @@ import {
   FileText,
   DollarSign,
   TrendingUp,
-  Calendar,
   Home,
   Edit,
   Eye,
   BarChart3,
-  Receipt,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -141,16 +139,6 @@ export const TenantDashboardPage: React.FC = () => {
       case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
-  };
-
-  const getPropertyName = (propertyId: string) => {
-    const property = properties.find(p => p.id === propertyId);
-    return property ? property.name : 'Unknown Property';
-  };
-
-  const getUnitNumber = (unitId: string) => {
-    const unit = units.find(u => u.id === unitId);
-    return unit ? `Unit ${unit.unitNumber}` : 'Unknown Unit';
   };
 
   if (tenantLoading) {
