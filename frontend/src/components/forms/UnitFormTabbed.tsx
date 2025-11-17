@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Settings, DollarSign, Star, CheckCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
+import { Home, DollarSign, Star, CheckCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { useProperties } from '../../hooks';
+import { useProperties, useProperty } from '../../hooks';
 import type { UnitInput } from '../../types/unit';
 import { UnitStatus, UnitType } from '../../types/unit';
 
@@ -26,8 +26,7 @@ const COMMON_AMENITIES = [
 ];
 
 const TABS = [
-  { id: 'basic', label: 'Basic Info', icon: Home, description: 'Property and unit identification' },
-  { id: 'physical', label: 'Physical Specs', icon: Settings, description: 'Area, rooms, and layout' },
+  { id: 'basic', label: 'Basic & Specs', icon: Home, description: 'Property, unit details, and specifications' },
   { id: 'financial', label: 'Financial Details', icon: DollarSign, description: 'Rent, deposits, and charges' },
   { id: 'amenities', label: 'Amenities', icon: Star, description: 'Features and description' }
 ];
@@ -41,6 +40,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
 }) => {
   const navigate = useNavigate();
   const { properties: availableProperties, loading: propertiesLoading } = useProperties();
+  const { data: selectedProperty } = useProperty(initialData?.propertyId || '');
 
   const [currentTab, setCurrentTab] = useState('basic');
   const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
@@ -48,6 +48,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   const [formData, setFormData] = useState<UnitInput>({
     propertyId: initialData?.propertyId || '',
     unitNumber: initialData?.unitNumber || '',
+    unitName: initialData?.unitName || '',
     floor: initialData?.floor || 0,
     unitType: initialData?.unitType || UnitType.APARTMENT,
     status: initialData?.status || UnitStatus.AVAILABLE,
@@ -65,6 +66,55 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Auto-generate unit name when relevant fields change
+  useEffect(() => {
+    if (formData.unitNumber && formData.unitType && !initialData?.unitName) {
+      const parts = [];
+
+      // Add bedroom info for residential units
+      if ((formData.unitType === UnitType.APARTMENT || formData.unitType === UnitType.HOUSE || formData.unitType === UnitType.VILLA || formData.unitType === UnitType.STUDIO) && formData.bedrooms) {
+        if (formData.unitType === UnitType.STUDIO) {
+          parts.push('Studio');
+        } else {
+          parts.push(`${formData.bedrooms}BHK`);
+        }
+      }
+
+      // Add unit type
+      const unitTypeLabel = formData.unitType.charAt(0).toUpperCase() + formData.unitType.slice(1);
+      parts.push(unitTypeLabel);
+
+      // Add floor info if not ground floor
+      if (formData.floor && formData.floor > 0) {
+        parts.push(`Floor ${formData.floor}`);
+      }
+
+      // Add furnished status
+      if (formData.furnished) {
+        parts.push('(Furnished)');
+      }
+
+      // Add property context if available
+      if (selectedProperty?.name) {
+        parts.push(`in ${selectedProperty.name}`);
+      }
+
+      const generatedName = parts.join(' ');
+      // Only update if the generated name is different and not empty
+      if (generatedName && generatedName !== formData.unitName) {
+        setFormData(prev => ({ ...prev, unitName: generatedName }));
+      }
+    }
+  }, [
+    formData.unitNumber,
+    formData.unitType,
+    formData.bedrooms,
+    formData.floor,
+    formData.furnished,
+    selectedProperty?.name,
+    initialData?.unitName
+  ]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -85,8 +135,6 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
       case 'basic':
         if (!formData.propertyId && !initialData?.propertyId) newErrors.propertyId = 'Property is required';
         if (!formData.unitNumber.trim()) newErrors.unitNumber = 'Unit number is required';
-        break;
-      case 'physical':
         if (formData.area <= 0) newErrors.area = 'Area must be greater than 0';
         if (formData.bedrooms && formData.bedrooms < 0) newErrors.bedrooms = 'Bedrooms cannot be negative';
         if (formData.bathrooms && formData.bathrooms < 0) newErrors.bathrooms = 'Bathrooms cannot be negative';
@@ -107,9 +155,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   const hasTabData = (tabId: string): boolean => {
     switch (tabId) {
       case 'basic':
-        return !!(formData.propertyId || formData.unitNumber || formData.floor || formData.unitType || formData.status);
-      case 'physical':
-        return !!(formData.area || formData.bedrooms || formData.bathrooms || formData.balconies);
+        return !!(formData.propertyId || formData.unitNumber || formData.floor || formData.unitType || formData.status || formData.area || formData.bedrooms || formData.bathrooms || formData.balconies);
       case 'financial':
         return !!(formData.monthlyRent || formData.securityDeposit || formData.maintenanceCharges);
       case 'amenities':
@@ -240,7 +286,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
 
       <form onSubmit={handleSubmit}>
         <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isCompleted = completedTabs.has(tab.id);
@@ -260,13 +306,13 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
             })}
           </TabsList>
 
-          {/* Basic Info Tab */}
+          {/* Basic & Specs Tab */}
           <TabsContent value="basic" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Home className="w-5 h-5" />
-                  <span>Basic Information</span>
+                  <span>Basic Information & Specifications</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -275,26 +321,34 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Property <span className="text-red-500">*</span>
                     </label>
-                    <Select
-                      value={formData.propertyId}
-                      onValueChange={(value) => handleChange('propertyId', value)}
-                      disabled={propertiesLoading || !!initialData?.propertyId}
-                    >
-                      <SelectTrigger error={errors.propertyId} className="h-10">
-                        <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableProperties?.map((property) => (
-                          <SelectItem key={property.id} value={property.id}>
-                            {property.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {initialData?.propertyId && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Property is pre-selected from the current context
-                      </p>
+                    {initialData?.propertyId ? (
+                      <div className="space-y-2">
+                        <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
+                          <span className="text-sm text-gray-900">
+                            {selectedProperty?.name || (initialData?.propertyId ? `Loading property ${initialData.propertyId}...` : 'No property selected')}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Property is pre-selected from the current context
+                        </p>
+                      </div>
+                    ) : (
+                      <Select
+                        value={formData.propertyId}
+                        onValueChange={(value) => handleChange('propertyId', value)}
+                        disabled={propertiesLoading}
+                      >
+                        <SelectTrigger error={errors.propertyId} className="h-10">
+                          <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableProperties?.map((property) => (
+                            <SelectItem key={property.id} value={property.id}>
+                              {property.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
                   </div>
 
@@ -309,6 +363,21 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                       placeholder="e.g., 101, A-201"
                       className="h-10"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Unit Name
+                    </label>
+                    <Input
+                      value={formData.unitName}
+                      onChange={(e) => handleChange('unitName', e.target.value)}
+                      placeholder="e.g., 2BHK Apartment Floor 5 (Furnished)"
+                      className="h-10"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Auto-generated based on your selections, but you can edit it
+                    </p>
                   </div>
 
                   <div>
@@ -368,34 +437,6 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                     </Select>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="furnished"
-                      checked={formData.furnished}
-                      onChange={(e) => handleChange('furnished', e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    <label htmlFor="furnished" className="text-sm font-medium">
-                      This unit is furnished
-                    </label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Physical Specs Tab */}
-          <TabsContent value="physical" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5" />
-                  <span>Physical Specifications</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Area (sq ft) <span className="text-red-500">*</span>
@@ -449,6 +490,19 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                       min="0"
                       className="h-10"
                     />
+                  </div>
+
+                  <div className="flex items-center space-x-2 md:col-span-2">
+                    <input
+                      type="checkbox"
+                      id="furnished"
+                      checked={formData.furnished}
+                      onChange={(e) => handleChange('furnished', e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <label htmlFor="furnished" className="text-sm font-medium">
+                      This unit is furnished
+                    </label>
                   </div>
                 </div>
               </CardContent>

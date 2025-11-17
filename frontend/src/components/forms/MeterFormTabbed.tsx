@@ -7,7 +7,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { useProperties, useUnits } from '../../hooks';
+import { useProperties, useUnits, useProperty, useUnit } from '../../hooks';
 import { MeterType } from '../../types/meter';
 import type { MeterInput } from '../../types/meter';
 import { generateMeterName } from '../../utils/helpers';
@@ -34,6 +34,8 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
   const navigate = useNavigate();
   const { properties: availableProperties, loading: propertiesLoading } = useProperties();
   const { units: allUnits, loading: unitsLoading } = useUnits();
+  const { data: selectedProperty } = useProperty(initialData?.propertyId || '');
+  const { data: selectedUnit } = useUnit(initialData?.unitId || '');
 
   const [currentTab, setCurrentTab] = useState('basic');
   const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
@@ -277,26 +279,34 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Property <span className="text-red-500">*</span>
                     </label>
-                    <Select
-                      value={formData.propertyId}
-                      onValueChange={(value) => handleChange('propertyId', value)}
-                      disabled={propertiesLoading || !!initialData?.propertyId}
-                    >
-                      <SelectTrigger error={errors.propertyId} className="h-10">
-                        <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableProperties?.map((property) => (
-                          <SelectItem key={property.id} value={property.id}>
-                            {property.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {initialData?.propertyId && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Property is pre-selected from the current context
-                      </p>
+                    {initialData?.propertyId ? (
+                      <div className="space-y-2">
+                        <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
+                          <span className="text-sm text-gray-900">
+                            {selectedProperty?.name || (initialData?.propertyId ? `Loading property ${initialData.propertyId}...` : 'No property selected')}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Property is pre-selected from the current context
+                        </p>
+                      </div>
+                    ) : (
+                      <Select
+                        value={formData.propertyId}
+                        onValueChange={(value) => handleChange('propertyId', value)}
+                        disabled={propertiesLoading}
+                      >
+                        <SelectTrigger error={errors.propertyId} className="h-10">
+                          <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableProperties?.map((property) => (
+                            <SelectItem key={property.id} value={property.id}>
+                              {property.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
                   </div>
 
@@ -304,38 +314,44 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Unit <span className="text-red-500">*</span>
                     </label>
-                    <Select
-                      value={formData.unitId}
-                      onValueChange={(value) => handleChange('unitId', value)}
-                      disabled={!formData.propertyId || unitsLoading || !!initialData?.unitId}
-                    >
-                      <SelectTrigger error={errors.unitId} className="h-10">
-                        <SelectValue
-                          placeholder={
-                            !formData.propertyId
-                              ? "Select a property first"
-                              : unitsLoading
-                              ? "Loading units..."
-                              : "Select a unit"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableUnits.map((unit) => (
-                          <SelectItem key={unit.id} value={unit.id}>
-                            {unit.unitNumber} - {unit.unitName || 'Unnamed Unit'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {initialData?.unitId && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Unit is pre-selected from the current context
-                      </p>
+                    {initialData?.unitId ? (
+                      <div className="space-y-2">
+                        <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
+                          <span className="text-sm text-gray-900">
+                            {selectedUnit ? `${selectedUnit.unitNumber} - ${selectedUnit.unitName || 'Unnamed Unit'}` : (initialData?.unitId ? `Loading unit ${initialData.unitId}...` : 'No unit selected')}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Unit is pre-selected from the current context
+                        </p>
+                      </div>
+                    ) : (
+                      <Select
+                        value={formData.unitId}
+                        onValueChange={(value) => handleChange('unitId', value)}
+                        disabled={!formData.propertyId || unitsLoading}
+                      >
+                        <SelectTrigger error={errors.unitId} className="h-10">
+                          <SelectValue
+                            placeholder={
+                              !formData.propertyId
+                                ? "Select a property first"
+                                : unitsLoading
+                                ? "Loading units..."
+                                : "Select a unit"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableUnits.map((unit) => (
+                            <SelectItem key={unit.id} value={unit.id}>
+                              {unit.unitNumber} - {unit.unitName || 'Unnamed Unit'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
-                  </div>
-
-                  <div>
+                  </div>                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Meter Type <span className="text-red-500">*</span>
                     </label>

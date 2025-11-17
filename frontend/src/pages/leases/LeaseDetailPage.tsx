@@ -46,7 +46,7 @@ export const LeaseDetailPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'draft': return 'bg-yellow-100 text-yellow-800';
       case 'expired': return 'bg-gray-100 text-gray-800';
       case 'terminated': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -84,8 +84,8 @@ export const LeaseDetailPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Lease Agreement</h1>
           <p className="mt-2 text-gray-600">ID: {lease.id}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(lease.status)}`}>
-          {lease.status.toUpperCase()}
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(lease.status || 'draft')}`}>
+          {(lease.status || 'draft').toUpperCase()}
         </span>
       </div>
 
@@ -97,15 +97,15 @@ export const LeaseDetailPage: React.FC = () => {
             <div>
               <p className="text-sm text-gray-500">Unit</p>
               <p className="font-medium">
-                {unit ? `Unit ${unit.unitNumber} - ${unit.unitType.toUpperCase()}` : 'Loading...'}
+                {unit ? `Unit ${unit.unitNumber || 'Unknown'} - ${(unit.unitType || 'Unknown').toUpperCase()}` : 'Loading...'}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Tenant</p>
               <p className="font-medium">
-                {tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Loading...'}
+                {tenant ? `${tenant.firstName || ''} ${tenant.lastName || ''}`.trim() || 'Unknown Tenant' : 'Loading...'}
               </p>
-              {tenant && <p className="text-sm text-gray-600">{tenant.email}</p>}
+              {tenant && tenant.email && <p className="text-sm text-gray-600">{tenant.email}</p>}
             </div>
           </div>
         </div>
@@ -150,7 +150,7 @@ export const LeaseDetailPage: React.FC = () => {
           </div>
           <div className="mt-4">
             <p className="text-sm text-gray-500">Rent Due Day</p>
-            <p className="font-medium">{lease.rentDueDay} of every month</p>
+            <p className="font-medium">{lease.rentDueDay || 'Not specified'} of every month</p>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-export const LeaseStatus = { ACTIVE: 'active', EXPIRED: 'expired', TERMINATED: 'terminated', PENDING: 'pending' } as const;
+export const LeaseStatus = { DRAFT: 'draft', ACTIVE: 'active', EXPIRED: 'expired', TERMINATED: 'terminated' } as const;
 export type LeaseStatusValue = typeof LeaseStatus[keyof typeof LeaseStatus];
 
 export interface Lease {

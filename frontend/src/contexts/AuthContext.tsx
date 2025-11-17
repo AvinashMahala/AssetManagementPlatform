@@ -13,7 +13,7 @@ import type {
   PasswordResetViaRecoveryCode,
   AdminPasswordReset
 } from '../services/authService';
-import { authService } from '../services/authService';
+import { authService, ApiException } from '../services/authService';
 import { apiClient } from '../services/apiClient';
 
 /* eslint-disable react-refresh/only-export-components */
@@ -125,10 +125,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
       }
-    } catch (_error) {
-      setIsAuthenticated(false);
-      setUser(null);
-      apiClient.setAuthToken(null);
+    } catch (error) {
+      // Only logout on authentication errors (401, 403), not on network/server errors
+      if (error instanceof ApiException && error.isAuthError()) {
+        setIsAuthenticated(false);
+        setUser(null);
+        apiClient.setAuthToken(null);
+      } else {
+        // For network/server errors, keep user logged in but show error
+        console.warn('Auth check failed (keeping user logged in):', error);
+        // Optionally show a toast notification to user about connectivity issues
+        showError('Connection Issue', 'Unable to verify authentication status. You may experience issues with some features.');
+      }
     } finally {
       setLoading(false);
     }

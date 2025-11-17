@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, DollarSign, Settings } from 'lucide-react';
+import { Home, DollarSign } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Badge } from '../../components/ui/badge';
 import { BaseForm, FormColumn, FormField } from '../../componentDesignLibrary';
-import { useProperties } from '../../hooks';
+import { useProperties, useProperty } from '../../hooks';
 import type { UnitInput } from '../../types/unit';
 import { UnitStatus, UnitType } from '../../types/unit';
 
@@ -28,9 +28,11 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
 }) => {
   const navigate = useNavigate();
   const { properties: availableProperties, loading: propertiesLoading } = useProperties();
+  const { data: selectedProperty } = useProperty(initialData?.propertyId || '');
   const [formData, setFormData] = useState<UnitInput>({
     propertyId: initialData?.propertyId || '',
     unitNumber: initialData?.unitNumber || '',
+    unitName: initialData?.unitName || '',
     floor: initialData?.floor || 0,
     unitType: initialData?.unitType || UnitType.APARTMENT,
     status: initialData?.status || UnitStatus.AVAILABLE,
@@ -48,6 +50,55 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Auto-generate unit name when relevant fields change
+  useEffect(() => {
+    if (formData.unitNumber && formData.unitType && !initialData?.unitName) {
+      const parts = [];
+
+      // Add bedroom info for residential units
+      if ((formData.unitType === UnitType.APARTMENT || formData.unitType === UnitType.HOUSE || formData.unitType === UnitType.VILLA || formData.unitType === UnitType.STUDIO) && formData.bedrooms) {
+        if (formData.unitType === UnitType.STUDIO) {
+          parts.push('Studio');
+        } else {
+          parts.push(`${formData.bedrooms}BHK`);
+        }
+      }
+
+      // Add unit type
+      const unitTypeLabel = formData.unitType.charAt(0).toUpperCase() + formData.unitType.slice(1);
+      parts.push(unitTypeLabel);
+
+      // Add floor info if not ground floor
+      if (formData.floor && formData.floor > 0) {
+        parts.push(`Floor ${formData.floor}`);
+      }
+
+      // Add furnished status
+      if (formData.furnished) {
+        parts.push('(Furnished)');
+      }
+
+      // Add property context if available
+      if (selectedProperty?.name) {
+        parts.push(`in ${selectedProperty.name}`);
+      }
+
+      const generatedName = parts.join(' ');
+      // Only update if the generated name is different and not empty
+      if (generatedName && generatedName !== formData.unitName) {
+        setFormData(prev => ({ ...prev, unitName: generatedName }));
+      }
+    }
+  }, [
+    formData.unitNumber,
+    formData.unitType,
+    formData.bedrooms,
+    formData.floor,
+    formData.furnished,
+    selectedProperty?.name,
+    initialData?.unitName
+  ]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -99,31 +150,39 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
       submitLabel="Create Unit"
     >
       <FormColumn
-        title="Basic Information"
-        description="Unit identification and type"
+        title="Basic Information & Specifications"
+        description="Unit identification, type, and physical specifications"
         icon={<Home className="h-5 w-5" />}
       >
         <FormField label="Property" required>
-          <Select
-            value={formData.propertyId}
-            onValueChange={(value) => handleChange('propertyId', value)}
-            disabled={propertiesLoading || !!initialData?.propertyId}
-          >
-            <SelectTrigger error={errors.propertyId} className="h-10">
-              <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
-            </SelectTrigger>
-            <SelectContent>
-              {availableProperties?.map((property) => (
-                <SelectItem key={property.id} value={property.id}>
-                  {property.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {initialData?.propertyId && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Property is pre-selected from the current context
-            </p>
+          {initialData?.propertyId ? (
+            <div className="space-y-2">
+              <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
+                <span className="text-sm text-gray-900">
+                  {selectedProperty?.name || (initialData?.propertyId ? `Loading property ${initialData.propertyId}...` : 'No property selected')}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Property is pre-selected from the current context
+              </p>
+            </div>
+          ) : (
+            <Select
+              value={formData.propertyId}
+              onValueChange={(value) => handleChange('propertyId', value)}
+              disabled={propertiesLoading}
+            >
+              <SelectTrigger error={errors.propertyId} className="h-10">
+                <SelectValue placeholder={propertiesLoading ? "Loading properties..." : "Select a property"} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableProperties?.map((property) => (
+                  <SelectItem key={property.id} value={property.id}>
+                    {property.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         </FormField>
 
@@ -135,6 +194,18 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
             placeholder="e.g., 101, A-201"
             className="h-10"
           />
+        </FormField>
+
+        <FormField label="Unit Name">
+          <Input
+            value={formData.unitName}
+            onChange={(e) => handleChange('unitName', e.target.value)}
+            placeholder="Auto-generated or enter custom name"
+            className="h-10"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Name is auto-generated based on your selections but can be customized
+          </p>
         </FormField>
 
         <FormField label="Floor">
@@ -199,13 +270,7 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
             </label>
           </div>
         </FormField>
-      </FormColumn>
 
-      <FormColumn
-        title="Area & Rooms"
-        description="Physical specifications"
-        icon={<Settings className="h-5 w-5" />}
-      >
         <FormField label="Area (sq ft)" required>
           <Input
             type="number"

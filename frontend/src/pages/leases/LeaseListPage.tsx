@@ -20,13 +20,13 @@ const LeaseListPage: React.FC = () => {
 
   const activeCount = leases.filter(l => l.status === 'active').length;
   const expiredCount = leases.filter(l => l.status === 'expired').length;
-  const pendingCount = leases.filter(l => l.status === 'pending').length;
+  const draftCount = leases.filter(l => l.status === 'draft').length;
 
   const stats = [
     { label: 'Total Leases', value: leases.length.toString(), icon: FileText, color: 'text-blue-600' },
     { label: 'Active', value: activeCount.toString(), icon: CheckCircle2, color: 'text-green-600' },
     { label: 'Expired', value: expiredCount.toString(), icon: XCircle, color: 'text-red-600' },
-    { label: 'Pending', value: pendingCount.toString(), icon: Clock, color: 'text-orange-600' },
+    { label: 'Draft', value: draftCount.toString(), icon: Clock, color: 'text-orange-600' },
   ];
 
   return (

@@ -164,7 +164,7 @@ function App() {
               <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPage /></ProtectedRoute>} />
               
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />
-              <Route path="/units/create" element={<Navigate to="/units/create-tabbed" replace />} />
+              <Route path="/units/create" element={<ProtectedRoute><UnitCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/units/create-tabbed" element={<ProtectedRoute><UnitCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/units/:id" element={<ProtectedRoute><AppLayout><UnitDetailPage /></AppLayout></ProtectedRoute>} />
               <Route path="/units/:id/dashboard" element={<ProtectedRoute><AppLayout><UnitDashboardPage /></AppLayout></ProtectedRoute>} />
@@ -191,7 +191,7 @@ function App() {
               <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
 
               <Route path="/meters" element={<ProtectedRoute><MeterListPage /></ProtectedRoute>} />
-              <Route path="/meters/create" element={<Navigate to="/meters/create-tabbed" replace />} />
+              <Route path="/meters/create" element={<ProtectedRoute><MeterCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/meters/create-tabbed" element={<ProtectedRoute><MeterCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/meters/:id" element={<ProtectedRoute><MeterDetailPage /></ProtectedRoute>} />
               <Route path="/meters/:id/edit" element={<ProtectedRoute><MeterEditPage /></ProtectedRoute>} />

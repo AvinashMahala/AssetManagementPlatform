@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient';
+import type { ApiError } from '../types/api';
 
 export interface User {
   id: number;
@@ -120,7 +121,7 @@ class AuthService {
   async register(userData: UserRegistrationInput): Promise<{ user: User; message: string }> {
     const response = await apiClient.post<{ user: User; message: string }>('/api/auth/register', userData);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Registration failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Registration failed' });
     }
     return response.data;
   }
@@ -129,7 +130,7 @@ class AuthService {
   async login(credentials: UserCredentials): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>('/api/auth/login', credentials);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Login failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Login failed' });
     }
     return response.data;
   }
@@ -138,7 +139,7 @@ class AuthService {
   async verifyEmail(token: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/verify-email', { token });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Email verification failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Email verification failed' });
     }
     return response.data;
   }
@@ -146,7 +147,7 @@ class AuthService {
   async resendVerification(email: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/resend-verification', { email });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Resend verification failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Resend verification failed' });
     }
     return response.data;
   }
@@ -155,7 +156,7 @@ class AuthService {
   async requestPhoneVerification(phone: string): Promise<{ message: string; code?: string }> {
     const response = await apiClient.post<{ message: string; code?: string }>('/api/auth/request-phone-verification', { phone });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Phone verification request failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Phone verification request failed' });
     }
     return response.data;
   }
@@ -163,7 +164,7 @@ class AuthService {
   async verifyPhone(code: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/verify-phone', { code });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Phone verification failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Phone verification failed' });
     }
     return response.data;
   }
@@ -172,7 +173,7 @@ class AuthService {
   async getPasswordResetOptions(): Promise<PasswordResetOptions> {
     const response = await apiClient.get<PasswordResetOptions>('/api/auth/password-reset-options');
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Get password reset options failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get password reset options failed' });
     }
     return response.data;
   }
@@ -180,7 +181,7 @@ class AuthService {
   async enableResetMethod(methodType: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/password-reset-methods/enable', { methodType });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Enable reset method failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Enable reset method failed' });
     }
     return response.data;
   }
@@ -188,7 +189,7 @@ class AuthService {
   async disableResetMethod(methodType: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/password-reset-methods/disable', { methodType });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Disable reset method failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Disable reset method failed' });
     }
     return response.data;
   }
@@ -196,7 +197,7 @@ class AuthService {
   async setupSecurityQuestions(questions: SecurityQuestionSetup): Promise<{ questions: { question: string }[]; message: string }> {
     const response = await apiClient.post<{ questions: { question: string }[]; message: string }>('/api/auth/security-questions', questions);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Setup security questions failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Setup security questions failed' });
     }
     return response.data;
   }
@@ -204,7 +205,7 @@ class AuthService {
   async generateRecoveryCodes(count?: number): Promise<{ codes: string[]; message: string }> {
     const response = await apiClient.post<{ codes: string[]; message: string }>('/api/auth/recovery-codes/generate', { count: count || 10 });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Generate recovery codes failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Generate recovery codes failed' });
     }
     return response.data;
   }
@@ -212,7 +213,7 @@ class AuthService {
   async resetPasswordViaSecurityQuestions(data: PasswordResetViaSecurityQuestions): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/reset-password/security-questions', data);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Password reset via security questions failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Password reset via security questions failed' });
     }
     return response.data;
   }
@@ -220,7 +221,7 @@ class AuthService {
   async resetPasswordViaRecoveryCode(data: PasswordResetViaRecoveryCode): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/reset-password/recovery-code', data);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Password reset via recovery code failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Password reset via recovery code failed' });
     }
     return response.data;
   }
@@ -228,19 +229,19 @@ class AuthService {
   async adminResetPassword(data: AdminPasswordReset): Promise<{ tempPassword: string; message: string }> {
     const response = await apiClient.post<{ tempPassword: string; message: string }>('/api/auth/admin/reset-password', data);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Admin password reset failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Admin password reset failed' });
     }
     return response.data;
   }
 
-  // Google OAuth
+    // Google OAuth
   async googleAuth(profile: GoogleUserProfile): Promise<AuthResponse> {
     console.log('[authService.googleAuth] Calling API with profile:', profile);
     const response = await apiClient.post<AuthResponse>('/api/auth/google-auth', profile);
     console.log('[authService.googleAuth] API response:', response);
     if (!response.success || !response.data) {
       console.error('[authService.googleAuth] Failed:', response.error);
-      throw new Error(response.error?.message || 'Google authentication failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Google authentication failed' });
     }
     console.log('[authService.googleAuth] Success! Returning:', response.data);
     return response.data;
@@ -250,16 +251,7 @@ class AuthService {
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>('/api/auth/refresh-token', { refreshToken });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Token refresh failed');
-    }
-    return response.data;
-  }
-
-  // Profile management
-  async getProfile(): Promise<User> {
-    const response = await apiClient.get<User>('/api/auth/profile');
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Get profile failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Token refresh failed' });
     }
     return response.data;
   }
@@ -267,7 +259,7 @@ class AuthService {
   async updateProfile(profileData: UpdateProfileRequest): Promise<User> {
     const response = await apiClient.put<User>('/api/auth/profile', profileData);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Update profile failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Update profile failed' });
     }
     return response.data;
   }
@@ -276,7 +268,7 @@ class AuthService {
   async logout(): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/logout');
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Logout failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Logout failed' });
     }
     return response.data;
   }
@@ -285,16 +277,23 @@ class AuthService {
   async linkGoogle(googleId: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/auth/link-google', { googleId });
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Link Google account failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Link Google account failed' });
     }
     return response.data;
   }
 
-  // Admin functions
+  // Profile management
+  async getProfile(): Promise<User> {
+    const response = await apiClient.get<User>('/api/auth/profile');
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get profile failed' });
+    }
+    return response.data;
+  }
   async getAllUsers(): Promise<{ users: User[] }> {
     const response = await apiClient.get<{ users: User[] }>('/api/auth');
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Get all users failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get all users failed' });
     }
     return response.data;
   }
@@ -302,7 +301,7 @@ class AuthService {
   async getUserById(id: number): Promise<User> {
     const response = await apiClient.get<User>(`/api/auth/${id}`);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Get user failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get user failed' });
     }
     return response.data;
   }
@@ -310,7 +309,7 @@ class AuthService {
   async updateUser(id: number, userData: Partial<User>): Promise<User> {
     const response = await apiClient.put<User>(`/api/auth/${id}`, userData);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Update user failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Update user failed' });
     }
     return response.data;
   }
@@ -318,9 +317,32 @@ class AuthService {
   async deleteUser(id: number): Promise<{ message: string }> {
     const response = await apiClient.delete<{ message: string }>(`/api/auth/${id}`);
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Delete user failed');
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Delete user failed' });
     }
     return response.data;
+  }
+}
+
+// Custom error class that preserves API error information
+export class ApiException extends Error {
+  public readonly code: string;
+  public readonly details?: Record<string, unknown>;
+
+  constructor(error: ApiError) {
+    super(error.message);
+    this.name = 'ApiException';
+    this.code = error.code;
+    this.details = error.details;
+  }
+
+  // Check if this is an authentication error (401, 403)
+  isAuthError(): boolean {
+    return this.code === 'HTTP_401' || this.code === 'HTTP_403';
+  }
+
+  // Check if this is a network error
+  isNetworkError(): boolean {
+    return this.code === 'NETWORK_ERROR' || this.code === 'TIMEOUT_ERROR';
   }
 }
 

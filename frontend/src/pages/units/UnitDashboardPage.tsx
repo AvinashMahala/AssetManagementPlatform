@@ -261,12 +261,20 @@ export const UnitDashboardPage: React.FC = () => {
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Utility Consumption</h2>
-          <Button
-            onClick={() => navigate(`/meters/create?propertyId=${unit.propertyId}&unitId=${id}`)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Add Meter
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate(`/leases/create-tabbed?propertyId=${unit.propertyId}&unitId=${id}`)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Create Lease
+            </Button>
+            <Button
+              onClick={() => navigate(`/meters/create?propertyId=${unit.propertyId}&unitId=${id}`)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Add Meter
+            </Button>
+          </div>
         </div>
         
         {utilityAnalytics.hasMeters ? (

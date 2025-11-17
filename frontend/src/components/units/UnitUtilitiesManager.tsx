@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { UnitUtility, UtilityTypeValue, UtilityBillingMethodValue } from '../../types/unit';
 import { UtilityType, UtilityBillingMethod } from '../../types/unit';
-import { useUnitUtilities, useCreateUnitUtility, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility } from '../../hooks';
+import { useUnitUtilities, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility } from '../../hooks';
 import { useLastMeterReadings } from '../../hooks/useRentTransactions';
 import { getErrorMessage } from '../../types/api';
 
@@ -11,9 +12,9 @@ interface UnitUtilitiesManagerProps {
 }
 
 export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unitId, propertyId }) => {
+  const navigate = useNavigate();
   const { utilities, loading, error, refetch } = useUnitUtilities(unitId);
   const { loading: readingsLoading } = useLastMeterReadings(unitId);
-  const { mutate: createUtility, loading: creating } = useCreateUnitUtility();
   const { mutate: updateUtility, loading: updating } = useUpdateUnitUtility();
   const { mutate: deleteUtility, loading: deleting } = useDeleteUnitUtility();
   const { mutate: toggleUtility, loading: toggling } = useToggleUnitUtility();
@@ -76,20 +77,8 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
   };
 
   const handleCreate = () => {
-    setEditingUtility(null);
-    // Start with electricity (metered) as default
-    const defaultType = UtilityType.ELECTRICITY;
-    const isMeteredType = METERED_UTILITY_TYPES.includes(defaultType);
-    
-    setFormData({
-      unitId,
-      propertyId,
-      utilityType: defaultType,
-      utilityName: '',
-      billingMethod: isMeteredType ? UtilityBillingMethod.METER_BASED : UtilityBillingMethod.FIXED,
-      isEnabled: true,
-    });
-    setShowForm(true);
+    // Navigate to meter creation page with pre-filled unit and property IDs
+    navigate(`/meters/create?propertyId=${propertyId}&unitId=${unitId}`);
   };
 
   const handleEdit = (utility: UnitUtility) => {
@@ -108,16 +97,15 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
         propertyId,
       } as any;
 
+      // Only handle editing since creation is now done via navigation
       if (editingUtility) {
         await updateUtility({ id: editingUtility.id, data });
-      } else {
-        await createUtility(data);
       }
 
       resetForm();
       refetch();
     } catch (err) {
-      console.error('Failed to save utility:', err);
+      console.error('Failed to update utility:', err);
     }
   };
 
@@ -174,7 +162,7 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
           onClick={handleCreate}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
         >
-          Add Utility
+          Add Meter
         </button>
       </div>
 
@@ -245,7 +233,7 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {editingUtility ? 'Edit Utility' : 'Add Utility'}
+              Edit Utility
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -392,10 +380,10 @@ export const UnitUtilitiesManager: React.FC<UnitUtilitiesManagerProps> = ({ unit
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={creating || updating}
+                  disabled={updating}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
                 >
-                  {creating || updating ? 'Saving...' : (editingUtility ? 'Update' : 'Create')}
+                  {updating ? 'Updating...' : 'Update'}
                 </button>
                 <button
                   type="button"

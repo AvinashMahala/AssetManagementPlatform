@@ -335,12 +335,13 @@ const LeaseListPageEnhanced: React.FC = () => {
 
   const activeCount = Array.isArray(leases) ? leases.filter(l => l.status === 'active').length : 0;
   const expiredCount = Array.isArray(leases) ? leases.filter(l => l.status === 'expired').length : 0;
+  const draftCount = Array.isArray(leases) ? leases.filter(l => l.status === 'draft').length : 0;
   const expiringCount = Array.isArray(leases) ? leases.filter(l => l.status === 'active' && isExpiringSoon(l.endDate)).length : 0;
 
   const stats = [
     { label: 'Total Leases', value: (Array.isArray(leases) ? leases.length : 0).toString(), icon: FileText, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Active', value: activeCount.toString(), icon: CheckCircle2, color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-900/20' },
-    { label: 'Expiring Soon', value: expiringCount.toString(), icon: AlertTriangle, color: 'text-orange-600', bgColor: 'bg-orange-50 dark:bg-orange-900/20' },
+    { label: 'Draft', value: draftCount.toString(), icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-50 dark:bg-orange-900/20' },
     { label: 'Expired', value: expiredCount.toString(), icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-50 dark:bg-red-900/20' },
   ];
 
@@ -348,7 +349,7 @@ const LeaseListPageEnhanced: React.FC = () => {
     { value: 'all', label: 'All Status' },
     { value: 'active', label: 'Active' },
     { value: 'expired', label: 'Expired' },
-    { value: 'pending', label: 'Pending' },
+    { value: 'draft', label: 'Draft' },
     { value: 'terminated', label: 'Terminated' },
   ];
 
@@ -380,7 +381,7 @@ const LeaseListPageEnhanced: React.FC = () => {
     switch (status) {
       case 'active': return 'default';
       case 'expired': return 'destructive';
-      case 'pending': return 'secondary';
+      case 'draft': return 'secondary';
       case 'terminated': return 'outline';
       default: return 'outline';
     }
@@ -393,7 +394,7 @@ const LeaseListPageEnhanced: React.FC = () => {
     switch (lease.status) {
       case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'expired': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-      case 'pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'draft': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'terminated': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
       default: return 'bg-gray-100 text-gray-800';
     }
