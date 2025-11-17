@@ -15,8 +15,13 @@ export function useUnits(propertyId?: string) {
   };
 }
 
-export function useUnit(id: string) {
-  const query = useCallback(() => unitService.getById(id), [id]);
+export function useUnit(id: string | undefined | null) {
+  const query = useCallback(() => {
+    if (!id || id.trim() === '' || id === '__SKIP__') {
+      return Promise.resolve({ success: true, data: undefined as Unit | undefined });
+    }
+    return unitService.getById(id);
+  }, [id]);
   return useApi<Unit>(query, [id]);
 }
 

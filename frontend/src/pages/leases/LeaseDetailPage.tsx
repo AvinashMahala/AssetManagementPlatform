@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/card';
-import { useLease, useDeleteLease, useUnit, useTenant } from '../../hooks';
+import { useLease, useDeleteLease, useUnit, useTenant, useProperty } from '../../hooks';
 import { getErrorMessage } from '../../types/api';
 
 export const LeaseDetailPage: React.FC = () => {
@@ -10,9 +10,14 @@ export const LeaseDetailPage: React.FC = () => {
   const { data: lease, loading, error } = useLease(id!);
   const { mutate: deleteLease, loading: deleting } = useDeleteLease();
   
-  // Get unit and tenant details
-  const { data: unit } = useUnit(lease?.unitId || '');
-  const { data: tenant } = useTenant(lease?.tenantId || '');
+  // Get unit, tenant, and property details - only when lease data is available and IDs are valid
+  const hasValidUnitId = lease?.unitId && lease.unitId.trim().length > 0;
+  const hasValidTenantId = lease?.tenantId && lease.tenantId.trim().length > 0;
+  const hasValidPropertyId = lease?.propertyId && lease.propertyId.trim().length > 0;
+
+  const { data: unit } = useUnit(hasValidUnitId ? lease.unitId : undefined);
+  const { data: tenant } = useTenant(hasValidTenantId ? lease.tenantId : undefined);
+  const { data: property } = useProperty(hasValidPropertyId ? lease.propertyId : undefined);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this lease?')) {
@@ -53,12 +58,18 @@ export const LeaseDetailPage: React.FC = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
+    // Helper function to format address
+  const formatAddress = (address: any) => {
+    if (!address) return '';
+    const parts = [
+      address.street,
+      address.landmark,
+      address.city,
+      address.state,
+      address.pincode,
+      address.country
+    ].filter(Boolean);
+    return parts.join(', ');
   };
 
   const formatDate = (dateString: string) => {
@@ -67,6 +78,14 @@ export const LeaseDetailPage: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+    }).format(amount);
   };
 
   const calculateDuration = () => {
@@ -95,12 +114,19 @@ export const LeaseDetailPage: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Lease Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              <p className="text-sm text-gray-500">Property</p>
+              <p className="font-medium">
+                {property ? property.name || 'Unknown Property' : 'Loading...'}
+              </p>
+              {property && property.address && <p className="text-sm text-gray-600">{formatAddress(property.address)}</p>}
+            </div>
+            <div>
               <p className="text-sm text-gray-500">Unit</p>
               <p className="font-medium">
                 {unit ? `Unit ${unit.unitNumber || 'Unknown'} - ${(unit.unitType || 'Unknown').toUpperCase()}` : 'Loading...'}
               </p>
             </div>
-            <div>
+            <div className="md:col-span-2">
               <p className="text-sm text-gray-500">Tenant</p>
               <p className="font-medium">
                 {tenant ? `${tenant.firstName || ''} ${tenant.lastName || ''}`.trim() || 'Unknown Tenant' : 'Loading...'}

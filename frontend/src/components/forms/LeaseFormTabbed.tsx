@@ -7,7 +7,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { useUnits, useTenants, useUnit, useProperty } from '../../hooks';
+import { useUnits, useTenants, useUnit, useProperty, useProperties } from '../../hooks';
 import type { LeaseInput } from '../../types/lease';
 
 interface LeaseFormTabbedProps {
@@ -33,14 +33,19 @@ const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
   const [searchParams] = useSearchParams();
   const { units } = useUnits();
   const { tenants } = useTenants();
+  const { properties } = useProperties();
   
   // Get contextual data from URL params
   const contextualPropertyId = searchParams.get('propertyId');
   const contextualUnitId = searchParams.get('unitId');
   
   // Fetch unit and property data for contextual creation
-  const { data: selectedUnit } = useUnit(contextualUnitId || '');
-  const { data: selectedProperty } = useProperty(contextualPropertyId || '');
+  const { data: selectedUnit } = useUnit(contextualUnitId || undefined);
+  const { data: selectedProperty } = useProperty(contextualPropertyId || undefined);
+  
+  // Fetch property and unit data for edit mode
+  const { data: editProperty } = useProperty(initialData?.propertyId || undefined);
+  const { data: editUnit } = useUnit(initialData?.unitId || undefined);
 
   const [currentTab, setCurrentTab] = useState('parties');
   const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
@@ -53,14 +58,25 @@ const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
     return { startDate, endDate };
   };
 
+  // Format dates for HTML date inputs (YYYY-MM-DD)
+  const formatDateForInput = (dateString: string | undefined): string => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
+
   const { startDate: defaultStartDate, endDate: defaultEndDate } = getDefaultDates();
 
   const [formData, setFormData] = useState<LeaseInput>({
     propertyId: initialData?.propertyId || contextualPropertyId || '',
     unitId: initialData?.unitId || contextualUnitId || '',
     tenantId: initialData?.tenantId || '',
-    startDate: initialData?.startDate || defaultStartDate,
-    endDate: initialData?.endDate || defaultEndDate,
+    startDate: formatDateForInput(initialData?.startDate) || defaultStartDate,
+    endDate: formatDateForInput(initialData?.endDate) || defaultEndDate,
     monthlyRent: initialData?.monthlyRent || selectedUnit?.monthlyRent || 0,
     securityDeposit: initialData?.securityDeposit || selectedUnit?.securityDeposit || 0,
     maintenanceCharges: initialData?.maintenanceCharges || selectedUnit?.maintenanceCharges || 0,
@@ -81,6 +97,7 @@ const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
         monthlyRent: prev.monthlyRent || selectedUnit.monthlyRent || 0,
         securityDeposit: prev.securityDeposit || selectedUnit.securityDeposit || 0,
         maintenanceCharges: prev.maintenanceCharges || selectedUnit.maintenanceCharges || 0,
+        // Don't override dates if they were set from initialData
       }));
     }
   }, [selectedUnit, contextualUnitId]);
@@ -406,6 +423,17 @@ const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
                           Property is pre-selected from the current context
                         </p>
                       </div>
+                    ) : isEdit ? (
+                      <div className="space-y-2">
+                        <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
+                          <span className="text-sm text-gray-900">
+                            {editProperty?.name || `Property ${initialData?.propertyId}`}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Property cannot be changed when editing a lease
+                        </p>
+                      </div>
                     ) : (
                       <Select
                         value={formData.propertyId}
@@ -416,7 +444,11 @@ const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
                           <SelectValue placeholder="Select a property" />
                         </SelectTrigger>
                         <SelectContent>
-                          {/* Properties would be fetched here - for now keeping empty */}
+                          {properties.map(property => (
+                            <SelectItem key={property.id} value={property.id}>
+                              {property.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -436,6 +468,17 @@ const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
                         </div>
                         <p className="text-sm text-muted-foreground">
                           Unit is pre-selected from the current context
+                        </p>
+                      </div>
+                    ) : isEdit ? (
+                      <div className="space-y-2">
+                        <div className="h-10 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
+                          <span className="text-sm text-gray-900">
+                            Unit {editUnit?.unitNumber || initialData?.unitId} - {editUnit?.unitType?.toUpperCase() || 'Loading...'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Unit cannot be changed when editing a lease
                         </p>
                       </div>
                     ) : (

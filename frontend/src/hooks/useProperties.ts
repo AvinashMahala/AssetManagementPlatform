@@ -48,8 +48,13 @@ export function useProperties(filters?: PropertyFilters) {
   };
 }
 
-export function useProperty(id: string) {
-  const query = useCallback(() => propertyService.getById(id), [id]);
+export function useProperty(id: string | undefined | null) {
+  const query = useCallback(() => {
+    if (!id || id.trim() === '' || id === '__SKIP__') {
+      return Promise.resolve({ success: true, data: undefined as Property | undefined });
+    }
+    return propertyService.getById(id);
+  }, [id]);
   return useApi<Property>(query, [id]);
 }
 

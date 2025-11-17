@@ -15,8 +15,13 @@ export function useTenants() {
   };
 }
 
-export function useTenant(id: string) {
-  const query = useCallback(() => tenantService.getById(id), [id]);
+export function useTenant(id: string | undefined | null) {
+  const query = useCallback(() => {
+    if (!id || id.trim() === '' || id === '__SKIP__') {
+      return Promise.resolve({ success: true, data: undefined as Tenant | undefined });
+    }
+    return tenantService.getById(id);
+  }, [id]);
   return useApi<Tenant>(query, [id]);
 }
 
