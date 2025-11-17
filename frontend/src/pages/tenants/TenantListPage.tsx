@@ -157,14 +157,24 @@ const TenantListPage: React.FC = () => {
                               </Badge>
                             </TableCell>
                             <TableCell className="px-6 py-3">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/tenants/${tenant.id}`)}
-                                className="h-8 px-3 text-xs"
-                              >
-                                View
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/tenants/${tenant.id}/dashboard`)}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  Dashboard
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/tenants/${tenant.id}`)}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  View
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );

@@ -7,6 +7,7 @@ import { LoginPage, VerifyEmailPage, VerifyPhonePage, ProfilePage } from './page
 import { PropertyListPageEnhanced, PropertyCreatePageEnhanced, PropertyCreatePageTabbed, PropertyEditPageEnhanced, PropertyDetailPage, PropertyDashboardPageEnhanced } from './pages/properties';
 import { TenantCreatePageTabbedEnhanced, TenantDetailPage, TenantEditPage } from './pages/tenants';
 import TenantListPageEnhanced from './pages/tenants/TenantListPageEnhanced';
+import { TenantDashboardPage } from './pages/tenants/TenantDashboardPage';
 import { UnitCreatePageTabbedEnhanced, UnitDetailPage, UnitDashboardPage, UnitEditPage } from './pages/units';
 import UnitListPageEnhanced from './pages/units/UnitListPageEnhanced';
 import { LeaseCreatePageTabbedEnhanced, LeaseDetailPage, LeaseEditPage } from './pages/leases';
@@ -161,6 +162,7 @@ function App() {
               <Route path="/tenants/create" element={<Navigate to="/tenants/create-tabbed" replace />} />
               <Route path="/tenants/create-tabbed" element={<ProtectedRoute><TenantCreatePageTabbedEnhanced /></ProtectedRoute>} />
               <Route path="/tenants/:id" element={<ProtectedRoute><AppLayout><TenantDetailPage /></AppLayout></ProtectedRoute>} />
+              <Route path="/tenants/:id/dashboard" element={<ProtectedRoute><TenantDashboardPage /></ProtectedRoute>} />
               <Route path="/tenants/:id/edit" element={<ProtectedRoute><TenantEditPage /></ProtectedRoute>} />
               
               <Route path="/units" element={<ProtectedRoute><UnitListPageEnhanced /></ProtectedRoute>} />

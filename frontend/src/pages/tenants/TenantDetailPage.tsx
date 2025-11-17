@@ -62,6 +62,7 @@ const TenantDetailPage: React.FC = () => {
           <Button variant="secondary" onClick={() => navigate('/tenants')}>
             Back to List
           </Button>
+          <Button onClick={() => navigate(`/tenants/${id}/dashboard`)}>View Dashboard</Button>
           <Button onClick={() => navigate(`/tenants/${id}/edit`)}>Edit</Button>
           <Button variant="danger" onClick={handleDelete} loading={deleteLoading}>
             Delete
