@@ -64,7 +64,14 @@ setTimeout(() => {
   openTerminal(frontendCommand, frontendDir, 'Frontend');
 }, 1000); // Small delay to prevent overwhelming the system
 
+// Open Docker databases terminal
+const dockerCommand = 'docker-compose up';
+setTimeout(() => {
+  openTerminal(dockerCommand, projectRoot, 'Docker DB');
+}, 2000); // Longer delay for Docker
+
 console.log('\n✅ Terminals opened successfully!');
 console.log('📊 Backend terminal: cd backend && npm run dev (port 5000)');
 console.log('🌐 Frontend terminal: cd frontend && npm run dev (port 5173)');
+console.log('🐳 Docker terminal: docker-compose up (PostgreSQL databases)');
 console.log('\n💡 If terminals don\'t open, run the commands manually in separate terminals.\n');
