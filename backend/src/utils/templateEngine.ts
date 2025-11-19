@@ -13,6 +13,8 @@ export interface InvoiceTemplateData {
   invoiceNumber: string;
   invoiceDate: string;
   billingPeriod: string;
+  generationDate: string;
+  generationTime?: string;
 
   // Tenant
   tenantName: string;
@@ -20,16 +22,37 @@ export interface InvoiceTemplateData {
   tenantPhone: string;
   tenantAddress: string;
 
-  // Landlord
+  // Unit/Room Details
+  unitNumber: string;
+  unitType?: string;
+
+  // Landlord/Owner
   landlordName: string;
   landlordEmail: string;
   landlordPhone: string;
+  ownerName: string;
 
   // Charges
   charges: Array<{
     description: string;
     amount: number;
   }>;
+
+  // Electricity Details
+  meterNumber?: string;
+  ratePerUnit?: string;
+  previousReading?: string;
+  currentReading?: string;
+  unitsConsumed?: string;
+  electricityCharges?: string;
+
+  // Payment Breakdown
+  rentAmount: string;
+  previousBalance?: string;
+  additionalExpense?: string;
+  subtotal?: string;
+  lateFee?: string;
+  discount?: string;
 
   // Totals
   totalAmount: string;
@@ -39,6 +62,15 @@ export interface InvoiceTemplateData {
   // Payment
   paymentMethod: string;
   paymentDate: string;
+  transactionId?: string;
+  referenceNumber?: string;
+  processedBy?: string;
+  
+  // Balance Status
+  remainingBalance?: string;
+  balanceStatusText?: string;
+  nextDueDate?: string;
+  outstandingAmount?: string;
 
   // Receipt Template Settings
   bankDetails?: {
@@ -47,6 +79,10 @@ export interface InvoiceTemplateData {
     ifscCode?: string;
     accountHolderName?: string;
   };
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
   upiWallets?: Array<{
     type: string;
     number: string;
@@ -67,11 +103,27 @@ export interface InvoiceTemplateData {
 
 export class TemplateEngine {
   /**
-   * Load HTML template from file
+   * Load HTML template from file with inlined CSS
    */
   static async loadTemplate(templateName: string): Promise<string> {
     const templatePath = join(process.cwd(), 'templates', `${templateName}.html`);
-    return await readFile(templatePath, 'utf-8');
+    const cssPath = join(process.cwd(), 'templates', `${templateName}.css`);
+    
+    let html = await readFile(templatePath, 'utf-8');
+    
+    // Try to load and inline CSS
+    try {
+      const css = await readFile(cssPath, 'utf-8');
+      // Replace the <link> tag with inline <style>
+      html = html.replace(
+        /<link\s+rel=["']stylesheet["']\s+href=["'][^"']+\.css["']\s*\/?>/gi,
+        `<style>${css}</style>`
+      );
+    } catch (error) {
+      console.warn(`CSS file not found for template ${templateName}, skipping inline styles`);
+    }
+    
+    return html;
   }
 
   /**
@@ -81,39 +133,77 @@ export class TemplateEngine {
     let html = template;
 
     // Simple placeholder replacement
+    // Property details
     html = html.replace(/{{propertyName}}/g, this.escapeHtml(data.propertyName));
     html = html.replace(/{{propertyAddress}}/g, this.escapeHtml(data.propertyAddress));
     html = html.replace(/{{propertyPhone}}/g, this.escapeHtml(data.propertyPhone));
     html = html.replace(/{{propertyEmail}}/g, this.escapeHtml(data.propertyEmail));
 
+    // Invoice details
     html = html.replace(/{{invoiceNumber}}/g, this.escapeHtml(data.invoiceNumber));
     html = html.replace(/{{invoiceDate}}/g, this.escapeHtml(data.invoiceDate));
     html = html.replace(/{{billingPeriod}}/g, this.escapeHtml(data.billingPeriod));
+    html = html.replace(/{{generationDate}}/g, this.escapeHtml(data.generationDate));
+    html = html.replace(/{{generationTime}}/g, this.escapeHtml(data.generationTime || ''));
 
+    // Tenant details
     html = html.replace(/{{tenantName}}/g, this.escapeHtml(data.tenantName));
     html = html.replace(/{{tenantEmail}}/g, this.escapeHtml(data.tenantEmail));
     html = html.replace(/{{tenantPhone}}/g, this.escapeHtml(data.tenantPhone));
     html = html.replace(/{{tenantAddress}}/g, this.escapeHtml(data.tenantAddress));
 
+    // Unit details
+    html = html.replace(/{{unitNumber}}/g, this.escapeHtml(data.unitNumber));
+    html = html.replace(/{{unitType}}/g, this.escapeHtml(data.unitType || ''));
+
+    // Owner details
     html = html.replace(/{{landlordName}}/g, this.escapeHtml(data.landlordName));
     html = html.replace(/{{landlordEmail}}/g, this.escapeHtml(data.landlordEmail));
     html = html.replace(/{{landlordPhone}}/g, this.escapeHtml(data.landlordPhone));
+    html = html.replace(/{{ownerName}}/g, this.escapeHtml(data.ownerName));
 
+    // Electricity details
+    html = html.replace(/{{meterNumber}}/g, this.escapeHtml(data.meterNumber || 'N/A'));
+    html = html.replace(/{{ratePerUnit}}/g, this.escapeHtml(data.ratePerUnit || '0'));
+    html = html.replace(/{{previousReading}}/g, this.escapeHtml(data.previousReading || '0'));
+    html = html.replace(/{{currentReading}}/g, this.escapeHtml(data.currentReading || '0'));
+    html = html.replace(/{{unitsConsumed}}/g, this.escapeHtml(data.unitsConsumed || '0'));
+    html = html.replace(/{{electricityCharges}}/g, this.escapeHtml(data.electricityCharges || '0'));
+
+    // Payment breakdown
+    html = html.replace(/{{rentAmount}}/g, data.rentAmount);
+    html = html.replace(/{{previousBalance}}/g, data.previousBalance || '0');
+    html = html.replace(/{{additionalExpense}}/g, data.additionalExpense || '0');
+    html = html.replace(/{{subtotal}}/g, data.subtotal || data.totalAmount);
+    html = html.replace(/{{lateFee}}/g, data.lateFee || '0');
+    html = html.replace(/{{discount}}/g, data.discount || '0');
+
+    // Totals and payment
     html = html.replace(/{{totalAmount}}/g, data.totalAmount);
     html = html.replace(/{{amountPaid}}/g, data.amountPaid);
-
     html = html.replace(/{{paymentMethod}}/g, this.escapeHtml(data.paymentMethod));
     html = html.replace(/{{paymentDate}}/g, this.escapeHtml(data.paymentDate));
+    html = html.replace(/{{transactionId}}/g, this.escapeHtml(data.transactionId || 'N/A'));
+    html = html.replace(/{{referenceNumber}}/g, this.escapeHtml(data.referenceNumber || 'N/A'));
+    html = html.replace(/{{processedBy}}/g, this.escapeHtml(data.processedBy || 'System'));
 
-    // Receipt template settings
-    const bankName = data.bankDetails?.bankName || data.landlordName;
-    const accountNumber = data.bankDetails?.accountNumber ? this.maskAccountNumber(data.bankDetails.accountNumber) : 'XXXX1234';
-    const ifscCode = data.bankDetails?.ifscCode || 'ABCD1234';
+    // Balance status
+    html = html.replace(/{{remainingBalance}}/g, data.remainingBalance || '0');
+    html = html.replace(/{{balanceStatusText}}/g, this.escapeHtml(data.balanceStatusText || 'PAID'));
+    html = html.replace(/{{nextDueDate}}/g, this.escapeHtml(data.nextDueDate || 'N/A'));
+    html = html.replace(/{{outstandingAmount}}/g, data.outstandingAmount || '0');
+
+    // Receipt template settings (bank details)
+    const bankName = data.bankName || data.bankDetails?.bankName || data.landlordName;
+    const accountNumber = data.accountNumber || data.bankDetails?.accountNumber || 'XXXX1234';
+    const ifscCode = data.ifscCode || data.bankDetails?.ifscCode || 'ABCD1234';
+    const accountHolderName = data.accountHolderName || data.bankDetails?.accountHolderName || data.landlordName;
     const upiId = data.upiId || data.landlordEmail;
 
     html = html.replace(/{{bankName}}/g, this.escapeHtml(bankName));
     html = html.replace(/{{accountNumber}}/g, this.escapeHtml(accountNumber));
     html = html.replace(/{{ifscCode}}/g, this.escapeHtml(ifscCode));
+    html = html.replace(/{{accountHolderName}}/g, this.escapeHtml(accountHolderName));
     html = html.replace(/{{upiId}}/g, this.escapeHtml(upiId));
 
     html = html.replace(/{{termsAndConditions}}/g, this.escapeHtml(data.termsAndConditions));
@@ -126,48 +216,7 @@ export class TemplateEngine {
       html = html.replace(/{{isInvoice}}/g, data.isInvoice ? 'true' : 'false');
     }
 
-    // Build charges row for the payment table
-    // Table has: Rent (Period) | Electricity | Old Balance | Expense Added | Total Due Amount
-    let rentAmount = 0;
-    let electricityAmount = 0;
-    let expenseAmount = 0;
-    let oldBalance = 0;
-
-    data.charges.forEach(charge => {
-      const desc = charge.description.toLowerCase();
-      if (desc.includes('rent') || desc.includes('rental')) {
-        rentAmount += charge.amount;
-      } else if (desc.includes('electric') || desc.includes('utility')) {
-        electricityAmount += charge.amount;
-      } else if (desc.includes('balance') || desc.includes('previous')) {
-        oldBalance += charge.amount;
-      } else {
-        expenseAmount += charge.amount;
-      }
-    });
-
-    const currencySymbol = this.getCurrencySymbol(data.propertyCurrency);
-
-    const chargesRows = `
-      <td class="amount-col">${currencySymbol}${this.formatCurrency(rentAmount, data.propertyCurrency)}</td>
-      <td class="amount-col">${currencySymbol}${this.formatCurrency(electricityAmount, data.propertyCurrency)}</td>
-      <td class="amount-col">${currencySymbol}${this.formatCurrency(oldBalance, data.propertyCurrency)}</td>
-      <td class="amount-col">${currencySymbol}${this.formatCurrency(expenseAmount, data.propertyCurrency)}</td>
-      <td class="amount-col">${currencySymbol}${this.formatCurrency(parseFloat(data.totalAmount), data.propertyCurrency)}</td>
-    `;
-    html = html.replace(/{{chargesRows}}/g, chargesRows);
-
-    // Build balance row (if there's a balance due)
-    let balanceRow = '';
-    if (data.balance !== 0) {
-      balanceRow = `
-        <div class="balance-due-box">
-          <div class="balance-due-label">BALANCE DUE</div>
-          <div class="balance-due-amount">${currencySymbol}${this.formatCurrency(Math.abs(data.balance), data.propertyCurrency)}</div>
-        </div>
-      `;
-    }
-    html = html.replace(/{{balanceRow}}/g, balanceRow);
+    // Note: New template uses individual field replacements instead of dynamic table generation
 
     return html;
   }
@@ -207,16 +256,6 @@ export class TemplateEngine {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
-  }
-
-  /**
-   * Mask account number for security (show only last 4 digits)
-   */
-  private static maskAccountNumber(accountNumber: string): string {
-    if (accountNumber.length <= 4) {
-      return accountNumber;
-    }
-    return `XXXX${accountNumber.slice(-4)}`;
   }
 
   /**
