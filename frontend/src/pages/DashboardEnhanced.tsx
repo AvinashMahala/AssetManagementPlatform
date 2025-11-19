@@ -28,6 +28,7 @@ import {
   PropertyStatusChart,
 } from '../components/ui';
 import { AppLayout } from '../components/layout';
+import './DashboardEnhanced.scss';
 
 interface StatCardProps {
   title: string;
@@ -51,12 +52,12 @@ const StatCard: React.FC<StatCardProps> = ({
   actionLabel = 'View Details',
 }) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
+    <Card className="hover:shadow-lg transition-shadow duration-200 stat-card">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className="h-4 w-4 text-muted-foreground stat-icon" />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
@@ -250,8 +251,8 @@ const DashboardEnhanced: React.FC = () => {
   if (isLoading) {
     return (
       <AppLayout title="Dashboard">
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center py-20 loading-container">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary loading-spinner"></div>
         </div>
       </AppLayout>
     );
@@ -259,33 +260,33 @@ const DashboardEnhanced: React.FC = () => {
 
   return (
     <AppLayout title="Dashboard">
-      <div className="space-y-6">
+      <div className="space-y-6 dashboard-enhanced">
         {/* Quick Actions */}
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={() => navigate('/properties/create')} className="flex items-center space-x-2">
+        <div className="flex flex-wrap gap-3 quick-actions">
+          <Button onClick={() => navigate('/properties/create')} className="flex items-center space-x-2 quick-action-btn">
             <Plus className="h-4 w-4" />
             <span>Add Property</span>
           </Button>
-          <Button onClick={() => navigate('/tenants/create')} variant="secondary" className="flex items-center space-x-2">
+          <Button onClick={() => navigate('/tenants/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
             <Plus className="h-4 w-4" />
             <span>Add Tenant</span>
           </Button>
-          <Button onClick={() => navigate('/units/create')} variant="secondary" className="flex items-center space-x-2">
+          <Button onClick={() => navigate('/units/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
             <Plus className="h-4 w-4" />
             <span>Add Unit</span>
           </Button>
-          <Button onClick={() => navigate('/leases/create')} variant="secondary" className="flex items-center space-x-2">
+          <Button onClick={() => navigate('/leases/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
             <Plus className="h-4 w-4" />
             <span>Create Lease</span>
           </Button>
-          <Button onClick={() => navigate('/payments/create')} variant="secondary" className="flex items-center space-x-2">
+          <Button onClick={() => navigate('/payments/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
             <Plus className="h-4 w-4" />
             <span>Record Payment</span>
           </Button>
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 stats-grid">
           <StatCard
             title="Total Properties"
             value={stats.totalProperties}
@@ -331,41 +332,39 @@ const DashboardEnhanced: React.FC = () => {
 
         {/* Alerts and Notifications */}
         {(stats.expiringLeases > 0 || stats.overduePayments > 0) && (
-          <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-amber-600" />
-                <CardTitle className="text-amber-900 dark:text-amber-300">
-                  Attention Required
-                </CardTitle>
-              </div>
+          <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 alert-card">
+            <CardHeader className="flex flex-row items-center space-x-2 alert-header">
+              <AlertCircle className="h-5 w-5 text-amber-600 alert-icon" />
+              <CardTitle className="text-amber-900 dark:text-amber-300 alert-title">
+                Attention Required
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 alert-content">
               {stats.expiringLeases > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-amber-800 dark:text-amber-200">
+                <div className="flex items-center justify-between alert-item">
+                  <span className="text-sm text-amber-800 dark:text-amber-200 alert-text">
                     {stats.expiringLeases} lease(s) expiring within 30 days
                   </span>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => navigate('/leases')}
-                    className="border-amber-300 hover:bg-amber-100"
+                    className="border-amber-300 hover:bg-amber-100 alert-action-btn"
                   >
                     Review
                   </Button>
                 </div>
               )}
               {stats.overduePayments > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-amber-800 dark:text-amber-200">
+                <div className="flex items-center justify-between alert-item">
+                  <span className="text-sm text-amber-800 dark:text-amber-200 alert-text">
                     {stats.overduePayments} overdue payment(s)
                   </span>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => navigate('/payments')}
-                    className="border-amber-300 hover:bg-amber-100"
+                    className="border-amber-300 hover:bg-amber-100 alert-action-btn"
                   >
                     Review
                   </Button>
@@ -376,82 +375,82 @@ const DashboardEnhanced: React.FC = () => {
         )}
 
         {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue Trend</CardTitle>
-              <CardDescription>Monthly revenue over the last 6 months</CardDescription>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 charts-row-1">
+          <Card className="chart-container">
+            <CardHeader className="chart-header">
+              <CardTitle className="chart-title">Revenue Trend</CardTitle>
+              <CardDescription className="chart-description">Monthly revenue over the last 6 months</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="chart-content">
               <RevenueTrendChart data={revenueData} height={300} />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Occupancy Rate</CardTitle>
-              <CardDescription>Unit occupancy trend over time</CardDescription>
+          <Card className="chart-container">
+            <CardHeader className="chart-header">
+              <CardTitle className="chart-title">Occupancy Rate</CardTitle>
+              <CardDescription className="chart-description">Unit occupancy trend over time</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="chart-content">
               <OccupancyRateChart data={occupancyData} height={300} />
             </CardContent>
           </Card>
         </div>
 
         {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Collection</CardTitle>
-              <CardDescription>Collected vs pending payments (in thousands)</CardDescription>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 charts-row-2">
+          <Card className="chart-container">
+            <CardHeader className="chart-header">
+              <CardTitle className="chart-title">Payment Collection</CardTitle>
+              <CardDescription className="chart-description">Collected vs pending payments (in thousands)</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="chart-content">
               <PaymentCollectionChart data={collectionData} height={300} />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Property Status Distribution</CardTitle>
-              <CardDescription>Properties by current status</CardDescription>
+          <Card className="chart-container">
+            <CardHeader className="chart-header">
+              <CardTitle className="chart-title">Property Status Distribution</CardTitle>
+              <CardDescription className="chart-description">Properties by current status</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="chart-content">
               <PropertyStatusChart data={propertyStatusData} height={300} />
             </CardContent>
           </Card>
         </div>
 
         {/* Recent Activities */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 activities-section">
+          <Card className="activity-card">
+            <CardHeader className="activity-header">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Active Leases</CardTitle>
-                  <CardDescription>{stats.activeLeases} active lease agreements</CardDescription>
+                  <CardTitle className="activity-title">Active Leases</CardTitle>
+                  <CardDescription className="activity-description">{stats.activeLeases} active lease agreements</CardDescription>
                 </div>
-                <FileText className="h-5 w-5 text-muted-foreground" />
+                <FileText className="h-5 w-5 text-muted-foreground activity-icon" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="activity-content">
+              <div className="space-y-3 activity-list">
                 {Array.isArray(leases) && leases.filter((l) => l.status === 'active').slice(0, 5).map((lease) => (
                   <div
                     key={lease.id}
-                    className="flex items-center justify-between py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-2 rounded transition-colors"
+                    className="flex items-center justify-between py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-2 rounded transition-colors activity-item"
                     onClick={() => navigate(`/leases/${lease.id}`)}
                   >
-                    <div>
-                      <p className="text-sm font-medium">Lease #{lease.id.slice(0, 8)}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="activity-item-content">
+                      <p className="text-sm font-medium activity-item-title">Lease #{lease.id.slice(0, 8)}</p>
+                      <p className="text-xs text-muted-foreground activity-item-subtitle">
                         {new Date(lease.startDate).toLocaleDateString()} - {new Date(lease.endDate).toLocaleDateString()}
                       </p>
                     </div>
-                    <Badge variant="default">Active</Badge>
+                    <Badge variant="default" className="activity-badge">Active</Badge>
                   </div>
                 ))}
                 {(!leases || leases.length === 0) && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
+                  <p className="text-sm text-muted-foreground text-center py-4 activity-empty">
                     No active leases
                   </p>
                 )}
@@ -459,40 +458,40 @@ const DashboardEnhanced: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
+          <Card className="activity-card">
+            <CardHeader className="activity-header">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Pending Payments</CardTitle>
-                  <CardDescription>₹{(stats.pendingPayments / 1000).toFixed(1)}K pending</CardDescription>
+                  <CardTitle className="activity-title">Pending Payments</CardTitle>
+                  <CardDescription className="activity-description">₹{(stats.pendingPayments / 1000).toFixed(1)}K pending</CardDescription>
                 </div>
-                <CreditCard className="h-5 w-5 text-muted-foreground" />
+                <CreditCard className="h-5 w-5 text-muted-foreground activity-icon" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="activity-content">
+              <div className="space-y-3 activity-list">
                 {Array.isArray(payments) && payments.filter((p) => p.status === 'pending').slice(0, 5).map((payment) => {
                   const isOverdue = new Date(payment.dueDate) < new Date();
                   return (
                     <div
                       key={payment.id}
-                      className="flex items-center justify-between py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-2 rounded transition-colors"
+                      className="flex items-center justify-between py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-2 rounded transition-colors activity-item"
                       onClick={() => navigate(`/payments/${payment.id}`)}
                     >
-                      <div>
-                        <p className="text-sm font-medium">₹{payment.amount.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="activity-item-content">
+                        <p className="text-sm font-medium activity-item-title">₹{payment.amount.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground activity-item-subtitle">
                           Due: {new Date(payment.dueDate).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge variant={isOverdue ? 'destructive' : 'secondary'}>
+                      <Badge variant={isOverdue ? 'destructive' : 'secondary'} className="activity-badge">
                         {isOverdue ? 'Overdue' : 'Pending'}
                       </Badge>
                     </div>
                   );
                 })}
                 {(!Array.isArray(payments) || payments.filter((p) => p.status === 'pending').length === 0) && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
+                  <p className="text-sm text-muted-foreground text-center py-4 activity-empty">
                     No pending payments
                   </p>
                 )}
