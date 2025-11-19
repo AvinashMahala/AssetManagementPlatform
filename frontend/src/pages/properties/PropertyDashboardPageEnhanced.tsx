@@ -39,6 +39,7 @@ import {
 } from '../../components/ui/charts';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { getErrorMessage } from '../../types/api';
+import './PropertyDashboardPageEnhanced.scss';
 
 export const PropertyDashboardPageEnhanced: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -50,8 +51,33 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
   const { payments } = usePayments();
   const { tenants } = useTenants();
 
-  // State for refreshing file gallery when files are deleted from elsewhere
-  const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0);
+  // State for scroll-triggered animations
+  const [revealedSections, setRevealedSections] = useState<Set<string>>(new Set());
+
+  // Scroll-triggered animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setRevealedSections(prev => new Set([...prev, entry.target.id]));
+        }
+      });
+    }, observerOptions);
+
+    // Observe sections that should animate in on scroll
+    const sections = ['alerts-section', 'charts-section', 'property-tabs'];
+    sections.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Listen for file deletion events from other components (like FilesPage)
   useEffect(() => {
@@ -224,8 +250,8 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
   if (propertyLoading || unitsLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="property-dashboard-enhanced loading-container flex items-center justify-center min-h-[60vh]">
+          <div className="loading-spinner animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       </AppLayout>
     );
@@ -234,10 +260,10 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
   if (propertyError || !property) {
     return (
       <AppLayout>
-        <div className="container mx-auto py-6">
-          <Card className="border-red-200 dark:border-red-800">
+        <div className="property-dashboard-enhanced container mx-auto py-6">
+          <Card className="error-card border-red-200 dark:border-red-800">
             <CardHeader>
-              <CardTitle className="text-red-600 dark:text-red-400">Error</CardTitle>
+              <CardTitle className="error-title text-red-600 dark:text-red-400">Error</CardTitle>
               <CardDescription>{getErrorMessage(propertyError) || 'Property not found'}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -254,27 +280,27 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="container mx-auto py-6 space-y-6">
+      <div className="property-dashboard-enhanced container mx-auto py-6 space-y-6 scroll-reveal revealed">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-start gap-4">
+        <div className="property-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="property-info flex items-start gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/properties')}
-              className="mt-1"
+              className="back-button mt-1"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{property.name}</h1>
-              <div className="flex items-center gap-2 mt-2 text-muted-foreground">
+            <div className="property-details">
+              <h1 className="property-title text-3xl font-bold tracking-tight">{property.name}</h1>
+              <div className="property-address flex items-center gap-2 mt-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 <p>
                   {property.address.street}, {property.address.city}, {property.address.state} {property.address.pincode}
                 </p>
               </div>
-              <div className="flex items-center gap-3 mt-2">
+              <div className="property-badges flex items-center gap-3 mt-2">
                 <Badge className={getUnitStatusColor(property.status)}>
                   {property.status.replace('_', ' ').toUpperCase()}
                 </Badge>
@@ -284,7 +310,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="property-actions flex gap-2">
             <Button variant="default" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
               <Receipt className="w-4 h-4 mr-2" />
               Rent Collection
@@ -305,54 +331,54 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Units</CardTitle>
-              <Home className="h-5 w-5 text-blue-600" />
+        <div className="key-metrics grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.1s' }}>
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Total Units</CardTitle>
+              <Home className="metric-icon h-5 w-5 text-blue-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{metrics.totalUnits}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="metric-content">
+              <div className="metric-value text-3xl font-bold">{metrics.totalUnits}</div>
+              <p className="metric-description text-xs text-muted-foreground mt-1">
                 {metrics.occupiedUnits} occupied • {metrics.availableUnits} available
               </p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Occupancy Rate</CardTitle>
-              <TrendingUp className="h-5 w-5 text-green-600" />
+          <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.2s' }}>
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Occupancy Rate</CardTitle>
+              <TrendingUp className="metric-icon h-5 w-5 text-green-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{metrics.occupancyRate}%</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="metric-content">
+              <div className="metric-value text-3xl font-bold">{metrics.occupancyRate}%</div>
+              <p className="metric-description text-xs text-muted-foreground mt-1">
                 {metrics.activeTenants} active tenants
               </p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Revenue</CardTitle>
-              <DollarSign className="h-5 w-5 text-indigo-600" />
+          <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.3s' }}>
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Monthly Revenue</CardTitle>
+              <DollarSign className="metric-icon h-5 w-5 text-indigo-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{formatCurrency(metrics.totalMonthlyRent)}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="metric-content">
+              <div className="metric-value text-3xl font-bold">{formatCurrency(metrics.totalMonthlyRent)}</div>
+              <p className="metric-description text-xs text-muted-foreground mt-1">
                 From {metrics.activeLeases} active leases
               </p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-              <BarChart3 className="h-5 w-5 text-purple-600" />
+          <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.4s' }}>
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+              <BarChart3 className="metric-icon h-5 w-5 text-purple-600" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{formatCurrency(metrics.totalRevenue)}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="metric-content">
+              <div className="metric-value text-3xl font-bold">{formatCurrency(metrics.totalRevenue)}</div>
+              <p className="metric-description text-xs text-muted-foreground mt-1">
                 {metrics.paidPayments} payments collected
               </p>
             </CardContent>
@@ -361,22 +387,22 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
 
         {/* Alerts */}
         {(metrics.expiringSoonLeases > 0 || metrics.overduePayments > 0) && (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div id="alerts-section" className={`alerts-section grid gap-4 md:grid-cols-2 scroll-reveal ${revealedSections.has('alerts-section') ? 'revealed' : ''}`}>
             {metrics.expiringSoonLeases > 0 && (
-              <Card className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-orange-600" />
-                    <CardTitle className="text-base">Expiring Soon</CardTitle>
+              <Card className="alert-card alert-warning border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950">
+                <CardHeader className="alert-header pb-3">
+                  <div className="alert-header-content flex items-center gap-2">
+                    <AlertCircle className="alert-icon h-5 w-5 text-orange-600" />
+                    <CardTitle className="alert-title text-base">Expiring Soon</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm">
+                <CardContent className="alert-content">
+                  <p className="alert-message text-sm">
                     {metrics.expiringSoonLeases} lease{metrics.expiringSoonLeases !== 1 ? 's' : ''} expiring within 30 days
                   </p>
                   <Button
                     variant="link"
-                    className="px-0 text-orange-700 dark:text-orange-400"
+                    className="alert-action px-0 text-orange-700 dark:text-orange-400"
                     onClick={() => navigate('/leases')}
                   >
                     View Leases →
@@ -385,20 +411,20 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
               </Card>
             )}
             {metrics.overduePayments > 0 && (
-              <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                    <CardTitle className="text-base">Overdue Payments</CardTitle>
+              <Card className="alert-card alert-error border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
+                <CardHeader className="alert-header pb-3">
+                  <div className="alert-header-content flex items-center gap-2">
+                    <AlertCircle className="alert-icon h-5 w-5 text-red-600" />
+                    <CardTitle className="alert-title text-base">Overdue Payments</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm">
+                <CardContent className="alert-content">
+                  <p className="alert-message text-sm">
                     {metrics.overduePayments} payment{metrics.overduePayments !== 1 ? 's' : ''} overdue • {formatCurrency(metrics.overdueAmount)}
                   </p>
                   <Button
                     variant="link"
-                    className="px-0 text-red-700 dark:text-red-400"
+                    className="alert-action px-0 text-red-700 dark:text-red-400"
                     onClick={() => navigate('/payments')}
                   >
                     View Payments →
@@ -410,76 +436,76 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
         )}
 
         {/* Charts */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Revenue Trend</CardTitle>
-              <CardDescription>Last 6 months revenue</CardDescription>
+        <div id="charts-section" className={`charts-section grid gap-4 md:grid-cols-2 scroll-reveal ${revealedSections.has('charts-section') ? 'revealed' : ''}`}>
+          <Card className="chart-card">
+            <CardHeader className="chart-header">
+              <CardTitle className="chart-title text-lg">Revenue Trend</CardTitle>
+              <CardDescription className="chart-description">Last 6 months revenue</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="chart-content">
               <RevenueTrendChart data={metrics.revenueTrend} height={250} />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Unit Distribution</CardTitle>
-              <CardDescription>Current occupancy status</CardDescription>
+          <Card className="chart-card">
+            <CardHeader className="chart-header">
+              <CardTitle className="chart-title text-lg">Unit Distribution</CardTitle>
+              <CardDescription className="chart-description">Current occupancy status</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="chart-content">
               <PropertyStatusChart data={metrics.occupancyTrend} height={250} />
             </CardContent>
           </Card>
         </div>
 
         {/* Tabs for detailed views */}
-        <Tabs defaultValue="units" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="units">
-              <Home className="w-4 h-4 mr-2" />
+        <Tabs id="property-tabs" defaultValue="units" className={`property-tabs space-y-4 scroll-reveal ${revealedSections.has('property-tabs') ? 'revealed' : ''}`}>
+          <TabsList className="tabs-list grid w-full grid-cols-5">
+            <TabsTrigger value="units" className="tab-trigger">
+              <Home className="tab-icon w-4 h-4 mr-2" />
               Units
             </TabsTrigger>
-            <TabsTrigger value="leases">
-              <FileText className="w-4 h-4 mr-2" />
+            <TabsTrigger value="leases" className="tab-trigger">
+              <FileText className="tab-icon w-4 h-4 mr-2" />
               Leases
             </TabsTrigger>
-            <TabsTrigger value="payments">
-              <DollarSign className="w-4 h-4 mr-2" />
+            <TabsTrigger value="payments" className="tab-trigger">
+              <DollarSign className="tab-icon w-4 h-4 mr-2" />
               Payments
             </TabsTrigger>
-            <TabsTrigger value="files">
-              <FileImage className="w-4 h-4 mr-2" />
+            <TabsTrigger value="files" className="tab-trigger">
+              <FileImage className="tab-icon w-4 h-4 mr-2" />
               Files
             </TabsTrigger>
-            <TabsTrigger value="details">
-              <Building2 className="w-4 h-4 mr-2" />
+            <TabsTrigger value="details" className="tab-trigger">
+              <Building2 className="tab-icon w-4 h-4 mr-2" />
               Details
             </TabsTrigger>
           </TabsList>
 
           {/* Units Tab */}
-          <TabsContent value="units" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold">Units in this Property</h3>
-                <p className="text-sm text-muted-foreground">
+          <TabsContent value="units" className="tab-content-units space-y-4">
+            <div className="units-header flex justify-between items-center">
+              <div className="units-info">
+                <h3 className="units-title text-lg font-semibold">Units in this Property</h3>
+                <p className="units-description text-sm text-muted-foreground">
                   {metrics.totalUnits} total units • {metrics.occupiedUnits} occupied
                 </p>
               </div>
-              <Button size="sm" onClick={() => navigate(`/units/create?propertyId=${id}`)}>
+              <Button size="sm" onClick={() => navigate(`/units/create?propertyId=${id}`)} className="add-unit-btn">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Unit
               </Button>
             </div>
 
             {units.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-8">
-                    <Home className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No units yet</h3>
-                    <p className="text-muted-foreground mb-4">Add units to this property to get started.</p>
-                    <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
+              <Card className="empty-state-card">
+                <CardContent className="empty-state-content pt-6">
+                  <div className="empty-state-message text-center py-8">
+                    <Home className="empty-state-icon mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="empty-state-title text-lg font-semibold mb-2">No units yet</h3>
+                    <p className="empty-state-description text-muted-foreground mb-4">Add units to this property to get started.</p>
+                    <Button onClick={() => navigate(`/units/create?propertyId=${id}`)} className="empty-state-action">
                       <Plus className="w-4 h-4 mr-2" />
                       Add First Unit
                     </Button>
@@ -487,39 +513,41 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="units-grid grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {units.map((unit) => (
-                  <Card key={unit.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">Unit {unit.unitNumber}</CardTitle>
-                          <CardDescription className="mt-1">
+                  <Card key={unit.id} className="unit-card hover:shadow-md transition-shadow">
+                    <CardHeader className="unit-header pb-3">
+                      <div className="unit-header-content flex justify-between items-start">
+                        <div className="unit-info">
+                          <CardTitle className="unit-title text-lg">Unit {unit.unitNumber}</CardTitle>
+                          <CardDescription className="unit-type mt-1">
                             {unit.unitType.replace('_', ' ').toUpperCase()}
                           </CardDescription>
                         </div>
-                        <Badge className={getUnitStatusColor(unit.status)}>
+                        <Badge className={`unit-status ${getUnitStatusColor(unit.status)}`}>
                           {unit.status.replace('_', ' ')}
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Monthly Rent</span>
-                        <span className="font-semibold">{formatCurrency(unit.monthlyRent)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Area</span>
-                        <span className="font-semibold">{unit.area?.toLocaleString() || 'N/A'} sq ft</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Bedrooms</span>
-                        <span className="font-semibold">{unit.bedrooms || 'N/A'}</span>
+                    <CardContent className="unit-content space-y-3">
+                      <div className="unit-details grid grid-cols-2 gap-3">
+                        <div className="unit-detail">
+                          <span className="unit-detail-label text-sm text-muted-foreground">Monthly Rent</span>
+                          <span className="unit-detail-value font-semibold">{formatCurrency(unit.monthlyRent)}</span>
+                        </div>
+                        <div className="unit-detail">
+                          <span className="unit-detail-label text-sm text-muted-foreground">Area</span>
+                          <span className="unit-detail-value font-semibold">{unit.area?.toLocaleString() || 'N/A'} sq ft</span>
+                        </div>
+                        <div className="unit-detail">
+                          <span className="unit-detail-label text-sm text-muted-foreground">Bedrooms</span>
+                          <span className="unit-detail-value font-semibold">{unit.bedrooms || 'N/A'}</span>
+                        </div>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full mt-2"
+                        className="unit-action w-full mt-2"
                         onClick={() => navigate(`/units/${unit.id}`)}
                       >
                         <Eye className="w-4 h-4 mr-2" />
@@ -533,75 +561,75 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           </TabsContent>
 
           {/* Leases Tab */}
-          <TabsContent value="leases" className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold">Active Leases</h3>
-              <p className="text-sm text-muted-foreground">
+          <TabsContent value="leases" className="tab-content-leases space-y-4">
+            <div className="leases-info">
+              <h3 className="leases-title text-lg font-semibold">Active Leases</h3>
+              <p className="leases-description text-sm text-muted-foreground">
                 {metrics.activeLeases} active lease agreements
               </p>
             </div>
 
             {propertyLeases.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-8">
-                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No leases</h3>
-                    <p className="text-muted-foreground">No lease agreements for this property yet.</p>
+              <Card className="empty-state-card">
+                <CardContent className="empty-state-content pt-6">
+                  <div className="empty-state-message text-center py-8">
+                    <FileText className="empty-state-icon mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="empty-state-title text-lg font-semibold mb-2">No leases</h3>
+                    <p className="empty-state-description text-muted-foreground">No lease agreements for this property yet.</p>
                   </div>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <div className="leases-list space-y-3">
                 {propertyLeases.map((lease) => {
                   const unit = units.find(u => u.id === lease.unitId);
                   const daysUntilExpiry = Math.ceil((new Date(lease.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                   const isExpiringSoon = daysUntilExpiry > 0 && daysUntilExpiry <= 30;
 
                   return (
-                    <Card key={lease.id} className={`hover:shadow-md transition-shadow ${isExpiringSoon ? 'border-orange-200 dark:border-orange-800' : ''}`}>
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-base">Unit {unit?.unitNumber || 'N/A'}</CardTitle>
-                            <CardDescription className="mt-1">
+                    <Card key={lease.id} className={`lease-card hover:shadow-md transition-shadow ${isExpiringSoon ? 'lease-expiring border-orange-200 dark:border-orange-800' : ''}`}>
+                      <CardHeader className="lease-header pb-3">
+                        <div className="lease-header-content flex justify-between items-start">
+                          <div className="lease-info">
+                            <CardTitle className="lease-title text-base">Unit {unit?.unitNumber || 'N/A'}</CardTitle>
+                            <CardDescription className="lease-tenant mt-1">
                               {getTenantName(lease.tenantId)}
                             </CardDescription>
                           </div>
-                          <Badge className={getLeaseStatusColor(lease.status)}>
+                          <Badge className={`lease-status ${getLeaseStatusColor(lease.status)}`}>
                             {lease.status}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-muted-foreground">Monthly Rent</p>
-                            <p className="font-semibold">{formatCurrency(lease.monthlyRent)}</p>
+                      <CardContent className="lease-content">
+                        <div className="lease-details grid grid-cols-2 gap-3 text-sm">
+                          <div className="lease-detail">
+                            <p className="lease-detail-label text-muted-foreground">Monthly Rent</p>
+                            <p className="lease-detail-value font-semibold">{formatCurrency(lease.monthlyRent)}</p>
                           </div>
-                          <div>
-                            <p className="text-muted-foreground">Security Deposit</p>
-                            <p className="font-semibold">{formatCurrency(lease.securityDeposit)}</p>
+                          <div className="lease-detail">
+                            <p className="lease-detail-label text-muted-foreground">Security Deposit</p>
+                            <p className="lease-detail-value font-semibold">{formatCurrency(lease.securityDeposit)}</p>
                           </div>
-                          <div>
-                            <p className="text-muted-foreground">Start Date</p>
-                            <p className="font-medium">{format(new Date(lease.startDate), 'MMM dd, yyyy')}</p>
+                          <div className="lease-detail">
+                            <p className="lease-detail-label text-muted-foreground">Start Date</p>
+                            <p className="lease-detail-value font-medium">{format(new Date(lease.startDate), 'MMM dd, yyyy')}</p>
                           </div>
-                          <div>
-                            <p className="text-muted-foreground">End Date</p>
-                            <p className="font-medium">{format(new Date(lease.endDate), 'MMM dd, yyyy')}</p>
+                          <div className="lease-detail">
+                            <p className="lease-detail-label text-muted-foreground">End Date</p>
+                            <p className="lease-detail-value font-medium">{format(new Date(lease.endDate), 'MMM dd, yyyy')}</p>
                           </div>
                         </div>
                         {isExpiringSoon && (
-                          <div className="mt-3 flex items-center gap-2 text-orange-600 dark:text-orange-400">
-                            <AlertCircle className="h-4 w-4" />
-                            <span className="text-sm">Expires in {daysUntilExpiry} days</span>
+                          <div className="lease-expiry-notice mt-3 flex items-center gap-2 text-orange-600 dark:text-orange-400">
+                            <AlertCircle className="lease-expiry-icon h-4 w-4" />
+                            <span className="lease-expiry-text text-sm">Expires in {daysUntilExpiry} days</span>
                           </div>
                         )}
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full mt-3"
+                          className="lease-action w-full mt-3"
                           onClick={() => navigate(`/leases/${lease.id}`)}
                         >
                           <Eye className="w-4 h-4 mr-2" />
@@ -616,119 +644,120 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           </TabsContent>
 
           {/* Payments Tab */}
-          <TabsContent value="payments" className="space-y-4">
+          <TabsContent value="payments" className="tab-content-payments space-y-4">
             {/* Payment Summary */}
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Collected</CardTitle>
+            <div className="payment-summary grid gap-4 md:grid-cols-4">
+              <Card className="payment-summary-card">
+                <CardHeader className="payment-summary-header pb-2">
+                  <CardTitle className="payment-summary-title text-sm font-medium text-muted-foreground">Collected</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <div className="text-2xl font-bold text-green-600">{formatCurrency(metrics.totalRevenue)}</div>
+                <CardContent className="payment-summary-content">
+                  <div className="payment-summary-value flex items-center gap-2">
+                    <CheckCircle className="payment-summary-icon h-4 w-4 text-green-600" />
+                    <div className="payment-summary-amount text-2xl font-bold text-green-600">{formatCurrency(metrics.totalRevenue)}</div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{metrics.paidPayments} payments</p>
+                  <p className="payment-summary-description text-xs text-muted-foreground mt-1">{metrics.paidPayments} payments</p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
+              <Card className="payment-summary-card">
+                <CardHeader className="payment-summary-header pb-2">
+                  <CardTitle className="payment-summary-title text-sm font-medium text-muted-foreground">Pending</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-yellow-600" />
-                    <div className="text-2xl font-bold text-yellow-600">{formatCurrency(metrics.pendingAmount)}</div>
+                <CardContent className="payment-summary-content">
+                  <div className="payment-summary-value flex items-center gap-2">
+                    <Clock className="payment-summary-icon h-4 w-4 text-yellow-600" />
+                    <div className="payment-summary-amount text-2xl font-bold text-yellow-600">{formatCurrency(metrics.pendingAmount)}</div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{metrics.pendingPayments} payments</p>
+                  <p className="payment-summary-description text-xs text-muted-foreground mt-1">{metrics.pendingPayments} payments</p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Overdue</CardTitle>
+              <Card className="payment-summary-card">
+                <CardHeader className="payment-summary-header pb-2">
+                  <CardTitle className="payment-summary-title text-sm font-medium text-muted-foreground">Overdue</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
-                    <div className="text-2xl font-bold text-red-600">{formatCurrency(metrics.overdueAmount)}</div>
+                <CardContent className="payment-summary-content">
+                  <div className="payment-summary-value flex items-center gap-2">
+                    <AlertCircle className="payment-summary-icon h-4 w-4 text-red-600" />
+                    <div className="payment-summary-amount text-2xl font-bold text-red-600">{formatCurrency(metrics.overdueAmount)}</div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{metrics.overduePayments} payments</p>
+                  <p className="payment-summary-description text-xs text-muted-foreground mt-1">{metrics.overduePayments} payments</p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">Collection Rate</CardTitle>
+              <Card className="payment-summary-card">
+                <CardHeader className="payment-summary-header pb-2">
+                  <CardTitle className="payment-summary-title text-sm font-medium text-muted-foreground">Collection Rate</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-blue-600" />
-                    <div className="text-2xl font-bold">{metrics.collectionRate}%</div>
+                <CardContent className="payment-summary-content">
+                  <div className="payment-summary-value flex items-center gap-2">
+                    <TrendingUp className="payment-summary-icon h-4 w-4 text-blue-600" />
+                    <div className="payment-summary-amount text-2xl font-bold">{metrics.collectionRate}%</div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">of total payments</p>
+                  <p className="payment-summary-description text-xs text-muted-foreground mt-1">of total payments</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Recent Payments */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Recent Payments</h3>
+            <div className="recent-payments">
+              <h3 className="recent-payments-title text-lg font-semibold mb-3">Recent Payments</h3>
               {propertyPayments.length === 0 ? (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center py-8">
-                      <DollarSign className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No payments</h3>
-                      <p className="text-muted-foreground">No payment records for this property yet.</p>
+                <Card className="empty-state-card">
+                  <CardContent className="empty-state-content pt-6">
+                    <div className="empty-state-message text-center py-8">
+                      <DollarSign className="empty-state-icon mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="empty-state-title text-lg font-semibold mb-2">No payments</h3>
+                      <p className="empty-state-description text-muted-foreground">No payment records for this property yet.</p>
                     </div>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-3">
+                <div className="payments-list space-y-3">
                   {propertyPayments.slice(0, 10).map((payment) => {
                     const lease = propertyLeases.find(l => l.id === payment.leaseId);
                     const isOverdue = new Date(payment.dueDate) < new Date() && payment.status !== 'paid';
 
                     return (
-                      <Card key={payment.id} className={`hover:shadow-md transition-shadow ${isOverdue ? 'border-red-200 dark:border-red-800' : ''}`}>
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-2">
-                              <div>
-                                <p className="font-semibold">Unit {getUnitNumber(lease?.unitId || '')}</p>
-                                <p className="text-sm text-muted-foreground">
+                      <Card key={payment.id} className={`payment-card hover:shadow-md transition-shadow ${isOverdue ? 'payment-overdue border-red-200 dark:border-red-800' : ''}`}>
+                        <CardContent className="payment-content pt-6">
+                          <div className="payment-header flex justify-between items-start">
+                            <div className="payment-info space-y-2">
+                              <div className="payment-tenant">
+                                <p className="payment-unit font-semibold">Unit {getUnitNumber(lease?.unitId || '')}</p>
+                                <p className="payment-tenant-name text-sm text-muted-foreground">
                                   {lease ? getTenantName(lease.tenantId) : 'Unknown'}
                                 </p>
                               </div>
-                              <div className="flex items-center gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Amount: </span>
-                                  <span className="font-semibold">{formatCurrency(payment.amount)}</span>
+                              <div className="payment-details flex items-center gap-4 text-sm">
+                                <div className="payment-amount">
+                                  <span className="payment-amount-label text-muted-foreground">Amount: </span>
+                                  <span className="payment-amount-value font-semibold">{formatCurrency(payment.amount)}</span>
                                 </div>
-                                <div>
-                                  <span className="text-muted-foreground">Due: </span>
-                                  <span>{format(new Date(payment.dueDate), 'MMM dd, yyyy')}</span>
+                                <div className="payment-due-date">
+                                  <span className="payment-due-label text-muted-foreground">Due: </span>
+                                  <span className="payment-due-value">{format(new Date(payment.dueDate), 'MMM dd, yyyy')}</span>
                                 </div>
                                 {payment.paidDate && (
-                                  <div>
-                                    <span className="text-muted-foreground">Paid: </span>
-                                    <span>{format(new Date(payment.paidDate), 'MMM dd, yyyy')}</span>
+                                  <div className="payment-paid-date">
+                                    <span className="payment-paid-label text-muted-foreground">Paid: </span>
+                                    <span className="payment-paid-value">{format(new Date(payment.paidDate), 'MMM dd, yyyy')}</span>
                                   </div>
                                 )}
                               </div>
                               {isOverdue && (
-                                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                                  <AlertCircle className="h-4 w-4" />
-                                  <span className="text-sm">Overdue</span>
+                                <div className="payment-overdue-notice flex items-center gap-2 text-red-600 dark:text-red-400">
+                                  <AlertCircle className="payment-overdue-icon h-4 w-4" />
+                                  <span className="payment-overdue-text text-sm">Overdue</span>
                                 </div>
                               )}
                             </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <Badge className={getPaymentStatusColor(payment.status)}>
+                            <div className="payment-actions flex flex-col items-end gap-2">
+                              <Badge className={`payment-status ${getPaymentStatusColor(payment.status)}`}>
                                 {payment.status}
                               </Badge>
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                className="payment-view-btn"
                                 onClick={() => navigate(`/payments/${payment.id}`)}
                               >
                                 <Eye className="w-4 h-4 mr-1" />
@@ -746,18 +775,18 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           </TabsContent>
 
           {/* Files Tab */}
-          <TabsContent value="files" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileImage className="h-5 w-5" />
+          <TabsContent value="files" className="tab-content-files space-y-4">
+            <Card className="files-card">
+              <CardHeader className="files-header">
+                <CardTitle className="files-title flex items-center gap-2">
+                  <FileImage className="files-icon h-5 w-5" />
                   Property Files & Documents
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="files-description">
                   Upload and manage photos and documents for this property
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="files-content">
                 <PropertyFileGallery
                   propertyId={id!}
                   refreshTrigger={fileRefreshTrigger}
@@ -770,47 +799,47 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           </TabsContent>
 
           {/* Details Tab */}
-          <TabsContent value="details" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+          <TabsContent value="details" className="tab-content-details space-y-4">
+            <div className="property-details-grid grid gap-4 md:grid-cols-2">
               {/* Property Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
+              <Card className="property-info-card">
+                <CardHeader className="property-info-header">
+                  <CardTitle className="property-info-title text-lg flex items-center gap-2">
+                    <Building2 className="property-info-icon h-5 w-5" />
                     Property Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Property Type</p>
-                      <p className="font-medium">{property.propertyType.replace('_', ' ').toUpperCase()}</p>
+                <CardContent className="property-info-content space-y-4">
+                  <div className="property-info-grid grid grid-cols-2 gap-4">
+                    <div className="property-info-item">
+                      <p className="property-info-label text-sm text-muted-foreground">Property Type</p>
+                      <p className="property-info-value font-medium">{property.propertyType.replace('_', ' ').toUpperCase()}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Status</p>
-                      <Badge className={getUnitStatusColor(property.status)}>
+                    <div className="property-info-item">
+                      <p className="property-info-label text-sm text-muted-foreground">Status</p>
+                      <Badge className={`property-status ${getUnitStatusColor(property.status)}`}>
                         {property.status}
                       </Badge>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Year Built</p>
-                      <p className="font-medium">{property.yearBuilt || 'N/A'}</p>
+                    <div className="property-info-item">
+                      <p className="property-info-label text-sm text-muted-foreground">Year Built</p>
+                      <p className="property-info-value font-medium">{property.yearBuilt || 'N/A'}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Floors</p>
-                      <p className="font-medium flex items-center gap-1">
-                        <Layers className="h-4 w-4" />
+                    <div className="property-info-item">
+                      <p className="property-info-label text-sm text-muted-foreground">Total Floors</p>
+                      <p className="property-info-value font-medium flex items-center gap-1">
+                        <Layers className="property-info-icon-small h-4 w-4" />
                         {property.totalFloors || 'N/A'}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Area</p>
-                      <p className="font-medium">{property.totalArea?.toLocaleString() || 'N/A'} sq ft</p>
+                    <div className="property-info-item">
+                      <p className="property-info-label text-sm text-muted-foreground">Total Area</p>
+                      <p className="property-info-value font-medium">{property.totalArea?.toLocaleString() || 'N/A'} sq ft</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Parking Spaces</p>
-                      <p className="font-medium flex items-center gap-1">
-                        <ParkingCircle className="h-4 w-4" />
+                    <div className="property-info-item">
+                      <p className="property-info-label text-sm text-muted-foreground">Parking Spaces</p>
+                      <p className="property-info-value font-medium flex items-center gap-1">
+                        <ParkingCircle className="property-info-icon-small h-4 w-4" />
                         {property.parkingSpaces || 'N/A'}
                       </p>
                     </div>
@@ -819,55 +848,55 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
               </Card>
 
               {/* Financial Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
+              <Card className="financial-summary-card">
+                <CardHeader className="financial-summary-header">
+                  <CardTitle className="financial-summary-title text-lg flex items-center gap-2">
+                    <BarChart3 className="financial-summary-icon h-5 w-5" />
                     Financial Summary
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Monthly Income</p>
-                    <p className="text-2xl font-bold text-green-600">{formatCurrency(metrics.totalMonthlyRent)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">From active leases</p>
+                <CardContent className="financial-summary-content space-y-4">
+                  <div className="financial-metric">
+                    <p className="financial-metric-label text-sm text-muted-foreground">Monthly Income</p>
+                    <p className="financial-metric-value text-2xl font-bold text-green-600">{formatCurrency(metrics.totalMonthlyRent)}</p>
+                    <p className="financial-metric-description text-xs text-muted-foreground mt-1">From active leases</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Revenue</p>
-                    <p className="text-xl font-semibold">{formatCurrency(metrics.totalRevenue)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">All-time collections</p>
+                  <div className="financial-metric">
+                    <p className="financial-metric-label text-sm text-muted-foreground">Total Revenue</p>
+                    <p className="financial-metric-value text-xl font-semibold">{formatCurrency(metrics.totalRevenue)}</p>
+                    <p className="financial-metric-description text-xs text-muted-foreground mt-1">All-time collections</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Pending Collections</p>
-                    <p className="text-xl font-semibold text-yellow-600">{formatCurrency(metrics.pendingAmount)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Outstanding payments</p>
+                  <div className="financial-metric">
+                    <p className="financial-metric-label text-sm text-muted-foreground">Pending Collections</p>
+                    <p className="financial-metric-value text-xl font-semibold text-yellow-600">{formatCurrency(metrics.pendingAmount)}</p>
+                    <p className="financial-metric-description text-xs text-muted-foreground mt-1">Outstanding payments</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Average Rent per Unit</p>
-                    <p className="text-xl font-semibold">
+                  <div className="financial-metric">
+                    <p className="financial-metric-label text-sm text-muted-foreground">Average Rent per Unit</p>
+                    <p className="financial-metric-value text-xl font-semibold">
                       {metrics.totalUnits > 0 ? formatCurrency(metrics.totalMonthlyRent / metrics.totalUnits) : formatCurrency(0)}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">Per occupied unit</p>
+                    <p className="financial-metric-description text-xs text-muted-foreground mt-1">Per occupied unit</p>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Address */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
+              <Card className="address-card md:col-span-2">
+                <CardHeader className="address-header">
+                  <CardTitle className="address-title text-lg flex items-center gap-2">
+                    <MapPin className="address-icon h-5 w-5" />
                     Address
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="font-medium">{property.address.street}</p>
-                    <p className="text-muted-foreground">
+                <CardContent className="address-content">
+                  <div className="address-details space-y-2">
+                    <p className="address-street font-medium">{property.address.street}</p>
+                    <p className="address-city-state text-muted-foreground">
                       {property.address.city}, {property.address.state} {property.address.pincode}
                     </p>
                     {property.address.landmark && (
-                      <p className="text-sm text-muted-foreground">Landmark: {property.address.landmark}</p>
+                      <p className="address-landmark text-sm text-muted-foreground">Landmark: {property.address.landmark}</p>
                     )}
                   </div>
                 </CardContent>

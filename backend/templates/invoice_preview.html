@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent Receipt Preview</title>
+    <link rel="stylesheet" href="invoice.css">
+    <style>
+        .preview-actions {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-print {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        @media print {
+            .preview-actions {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="preview-actions no-print">
+        <button class="btn btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="invoice-wrapper">
+        <!-- Security Watermark -->
+        <div class="security-watermark">OFFICIAL RECEIPT</div>
+
+        <!-- Header Section -->
+        <header class="invoice-header">
+            <div class="header-content">
+                <div class="company-section">
+                    <div class="logo-section">
+                        <div class="logo-icon">🏢</div>
+                    </div>
+                    <div class="company-info-wrapper">
+                        <h1 class="company-name">Adarsa Nibasa</h1>
+                        <div class="company-details">
+                            <p><strong>Address:</strong> Jaipur Road</p>
+                            <p><strong>Mobile:</strong> 9337739150 | <strong>Email:</strong> avinash.mahala.am@gmail.com
+                            </p>
+                            <p><strong>Owner:</strong> Kanchan Mani Mahala</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Body Content -->
+        <div class="invoice-body">
+            <!-- Bill Header -->
+            <div class="bill-header">
+                <div class="bill-info">
+                    <div class="bill-number">Bill No: 385</div>
+                    <div class="bill-month">OCTOBER, 2025</div>
+                </div>
+                <div class="bill-title">RENT DUE REMINDER</div>
+                <div class="generated-date">Generated on<br>1 Nov, 2025</div>
+            </div>
+
+            <!-- Room & Tenant Info -->
+            <div class="info-bar">
+                <div class="info-item">Room: F-101</div>
+                <div class="info-divider"></div>
+                <div class="info-item">Tenant: Mr. Rana Choudhury</div>
+            </div>
+
+            <!-- Electricity Details -->
+            <div class="section-box electricity-section">
+                <div class="section-title">Electricity Details | Meter No: 101 | Per Unit Cost: 7.0 ₹</div>
+                <div class="electricity-grid">
+                    <div class="elec-item">Old: 12208</div>
+                    <div class="elec-item">New: 12394</div>
+                    <div class="elec-item">Units: 186</div>
+                    <div class="elec-item">Cost: ₹1,302</div>
+                </div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="section-box payment-section">
+                <div class="section-title">Payment Details</div>
+                <div class="payment-table">
+                    <div class="payment-row">
+                        <div class="payment-cell">Rent [1 Oct - 31 Oct]<br><span class="amount">+ ₹13,000</span></div>
+                        <div class="payment-cell">Electricity<br><span class="amount">+ ₹1,302</span></div>
+                        <div class="payment-cell">Old Balance<br><span class="amount">+ ₹0</span></div>
+                        <div class="payment-cell">Expense Added<br><span class="amount">₹0</span></div>
+                        <div class="payment-cell total-cell">Total Due Amount<br><span
+                                class="total-amount">₹14,302</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Due Date Banner -->
+            <div class="due-banner">
+                Due For Payment By: 31 Oct, 25
+            </div>
+
+            <!-- Divider Line -->
+            <div class="divider-line"></div>
+
+
+            <!-- End Body Content -->
+        </div>
+        <!-- Footer -->
+        <footer class="invoice-footer">
+                        <!-- Payment Options -->
+            <div class="payment-options">
+                <h3 class="section-title">Payment Options</h3>
+
+                <div class="payment-methods-grid">
+                    <div class="payment-method">
+                        <div class="method-badge">NET Banking</div>
+                        <div class="method-details">
+                            <strong>Bank:</strong> Punjab National Bank, Jaipur Road<br>
+                            <strong>Acc No:</strong> 1705010071725<br>
+                            <strong>IFSC:</strong> PUNB0170520<br>
+                            <strong>Name:</strong> Kanchan Mani Mahala
+                        </div>
+                    </div>
+
+                    <div class="payment-method">
+                        <div class="method-badge upi-badge">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E"
+                                alt="UPI" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;">
+                            UPI
+                        </div>
+                        <div class="method-details">
+                            <strong>+919337739150</strong><br>
+                            Kanchan Mani Mahala
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-content">
+                <p class="footer-text">This is a computer-generated receipt and does not require a signature.</p>
+                <p class="footer-note">For any queries, please contact: 9337739150 | avinash.mahala.am@gmail.com</p>
+                <p class="footer-date">Generated on: 1 Nov, 2025 | 10:30 AM</p>
+            </div>
+        </footer>
+</body>
+
+</html>

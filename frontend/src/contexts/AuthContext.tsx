@@ -25,7 +25,7 @@ interface AuthContextType {
   login: (credentials: UserCredentials) => Promise<{ success: boolean; error?: string }>;
   register: (userData: UserRegistrationInput) => Promise<boolean>;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
+  checkAuth: (silent?: boolean) => Promise<void>;
   verifyEmail: (token: string) => Promise<boolean>;
   resendVerification: (email: string) => Promise<boolean>;
   requestPhoneVerification: (phone: string) => Promise<boolean>;
@@ -85,10 +85,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { showError } = useNotifications();
 
   useEffect(() => {
-    // Initialize token from localStorage on app start
-    const storedToken = localStorage.getItem('token');
+    // Initialize token and user data from sessionStorage on app start
+    const storedToken = sessionStorage.getItem('token');
+    const storedUser = sessionStorage.getItem('user');
+    
     if (storedToken) {
       apiClient.setAuthToken(storedToken);
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          setIsAuthenticated(true);
+          setLoading(false);
+          // Verify token in background without blocking UI
+          checkAuth(true).catch(console.error);
+          return;
+        } catch (e) {
+          console.warn('Invalid stored user data, falling back to auth check');
+        }
+      }
     }
     
     // Check if we should bypass auth in development
@@ -109,33 +124,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(devUser);
       setIsAuthenticated(true);
       apiClient.setAuthToken('dev-mode-token');
+      sessionStorage.setItem('user', JSON.stringify(devUser));
       setLoading(false);
     } else {
       checkAuth();
     }
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuth = async (silent: boolean = false) => {
     try {
       if (apiClient.isAuthenticated()) {
         const userData = await authService.getProfile();
         setUser(userData);
         setIsAuthenticated(true);
+        // Update stored user data
+        sessionStorage.setItem('user', JSON.stringify(userData));
       } else {
         setIsAuthenticated(false);
         setUser(null);
+        sessionStorage.removeItem('user');
       }
     } catch (error) {
       // Only logout on authentication errors (401, 403), not on network/server errors
       if (error instanceof ApiException && error.isAuthError()) {
-        setIsAuthenticated(false);
-        setUser(null);
-        apiClient.setAuthToken(null);
+        // Try to refresh the token before logging out
+        const refreshSuccess = await refreshToken();
+        if (refreshSuccess) {
+          try {
+            // Try getProfile again with the refreshed token
+            const userData = await authService.getProfile();
+            setUser(userData);
+            setIsAuthenticated(true);
+            // Update stored user data
+            sessionStorage.setItem('user', JSON.stringify(userData));
+          } catch (retryError) {
+            // If retry also fails, logout
+            setIsAuthenticated(false);
+            setUser(null);
+            apiClient.setAuthToken(null);
+            sessionStorage.removeItem('user');
+          }
+        } else {
+          // Refresh failed, logout
+          setIsAuthenticated(false);
+          setUser(null);
+          apiClient.setAuthToken(null);
+          sessionStorage.removeItem('user');
+        }
       } else {
-        // For network/server errors, keep user logged in but show error
+        // For network/server errors, keep user logged in but show error (unless silent)
         console.warn('Auth check failed (keeping user logged in):', error);
-        // Optionally show a toast notification to user about connectivity issues
-        showError('Connection Issue', 'Unable to verify authentication status. You may experience issues with some features.');
+        if (!silent) {
+          // Only show error popup if not in silent mode
+          showError('Connection Issue', 'Unable to verify authentication status. You may experience issues with some features.');
+        }
       }
     } finally {
       setLoading(false);
@@ -149,8 +191,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(authResponse.user);
       setIsAuthenticated(true);
       apiClient.setAuthToken(authResponse.tokens.accessToken);
-      // Store refresh token in localStorage or secure storage
-      localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      // Store tokens and user data in sessionStorage
+      sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      sessionStorage.setItem('user', JSON.stringify(authResponse.user));
       return { success: true };
     } catch (error: any) {
       const errorMessage = error?.message || 'Login failed';
@@ -180,7 +223,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
       apiClient.setAuthToken(null);
-      localStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('user');
     }
   };
 
@@ -291,7 +335,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(authResponse.user);
       setIsAuthenticated(true);
       apiClient.setAuthToken(authResponse.tokens.accessToken);
-      localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      sessionStorage.setItem('user', JSON.stringify(authResponse.user));
       console.log('[AuthContext.googleAuth] Success! User:', authResponse.user);
       return true;
     } catch (error) {
@@ -302,18 +347,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const refreshTokenValue = localStorage.getItem('refreshToken');
+      const refreshTokenValue = sessionStorage.getItem('refreshToken');
       if (!refreshTokenValue) {
         return false;
       }
 
       const authResponse = await authService.refreshToken(refreshTokenValue);
       apiClient.setAuthToken(authResponse.tokens.accessToken);
-      localStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
       return true;
     } catch (_error) {
-      // Token refresh failed, logout user
-      await logout();
+      // Token refresh failed, return false (don't logout here, let caller handle it)
       return false;
     }
   };
@@ -322,6 +366,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const updatedUser = await authService.updateProfile(profileData);
       setUser(updatedUser);
+      // Update stored user data
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
       return true;
     } catch (_error) {
       return false;
@@ -358,6 +404,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       // Set a mock token for API calls
       apiClient.setAuthToken('dev-mode-token');
+      // Store mock user data
+      sessionStorage.setItem('user', JSON.stringify(mockUser));
     }
   };
 

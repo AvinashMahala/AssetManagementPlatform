@@ -9,7 +9,7 @@ class ApiClient {
   }
 
   private getAuthToken(): string | null {
-    return localStorage.getItem('token');
+    return sessionStorage.getItem('token');
   }
 
   private getHeaders(additionalHeaders?: Record<string, string>, skipContentType?: boolean): Record<string, string> {
@@ -355,9 +355,9 @@ class ApiClient {
   // Utility method to set auth token
   setAuthToken(token: string | null): void {
     if (token) {
-      localStorage.setItem('token', token);
+      sessionStorage.setItem('token', token);
     } else {
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
     }
   }
 
