@@ -33,6 +33,7 @@ import { Pagination } from '../../components/ui/pagination';
 import type { PropertyFilters } from '../../types/property';
 import { PropertyType, PropertyStatus } from '../../types/property';
 import { AppLayout } from '../../components/layout/AppLayout';
+import './PropertyListPageEnhanced.scss';
 
 const PropertyListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
@@ -265,13 +266,13 @@ const PropertyListPageEnhanced: React.FC = () => {
     return (
       <AppLayout>
         <div className="container mx-auto py-6">
-          <Card className="border-red-200 dark:border-red-800">
+          <Card className="error-state border-red-200 dark:border-red-800">
             <CardHeader>
               <CardTitle className="text-red-600 dark:text-red-400">Error Loading Properties</CardTitle>
               <CardDescription>{displayError}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => updateFilters({})}>Try Again</Button>
+              <Button className="retry-button" onClick={() => updateFilters({})}>Try Again</Button>
             </CardContent>
           </Card>
         </div>
@@ -281,87 +282,87 @@ const PropertyListPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      {loading ? (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-lg text-muted-foreground">Loading properties...</p>
-            <p className="text-sm text-muted-foreground">Please wait while we fetch your property data</p>
+      <div className="property-list-page-enhanced">
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading properties...</p>
+            <p className="loading-subtext">Please wait while we fetch your property data</p>
           </div>
-        </div>
-      ) : (
-        <div className="container mx-auto py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Properties</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your property portfolio
-            </p>
+        ) : (
+          <div className="container mx-auto py-6 space-y-6">
+          {/* Header */}
+          <div className="property-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="header-title">Properties</h1>
+              <p className="header-description">
+                Manage your property portfolio
+              </p>
+            </div>
+            <div className="header-actions flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/templates')}>
+                <FileImage className="mr-2 h-4 w-4" />
+                Templates
+              </Button>
+              <Button
+                className="action-button"
+                onClick={() => navigate('/properties/create-tabbed')}
+                title="Step-by-step guided form with progress tracking"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Property
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/templates')}>
-              <FileImage className="mr-2 h-4 w-4" />
-              Templates
-            </Button>
-            <Button
-              onClick={() => navigate('/properties/create-tabbed')}
-              title="Step-by-step guided form with progress tracking"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Property
-            </Button>
-          </div>
-        </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-md transition-shadow">
+        <div className="stats-section grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="stats-card hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Properties</CardTitle>
-              <Building2 className="h-5 w-5 text-blue-600" />
+              <Building2 className="stats-icon h-5 w-5 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.total}</div>
+              <div className="stats-value text-3xl font-bold">{stats.total}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Across all locations
               </p>
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-md transition-shadow">
+          <Card className="stats-card hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Available</CardTitle>
-              <div className="h-4 w-4 rounded-full bg-green-500" />
+              <div className="stats-icon h-4 w-4 rounded-full bg-green-500"></div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.available}</div>
+              <div className="stats-value text-3xl font-bold">{stats.available}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Ready for tenants
               </p>
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-md transition-shadow">
+          <Card className="stats-card hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Occupied</CardTitle>
-              <div className="h-4 w-4 rounded-full bg-blue-500" />
+              <div className="stats-icon h-4 w-4 rounded-full bg-blue-500"></div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.occupied}</div>
+              <div className="stats-value text-3xl font-bold">{stats.occupied}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Currently rented
               </p>
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-md transition-shadow">
+          <Card className="stats-card hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Maintenance</CardTitle>
-              <div className="h-4 w-4 rounded-full bg-orange-500" />
+              <div className="stats-icon h-4 w-4 rounded-full bg-orange-500"></div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.maintenance}</div>
+              <div className="stats-value text-3xl font-bold">{stats.maintenance}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Under repair
               </p>
@@ -370,23 +371,23 @@ const PropertyListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Filters and View Toggle */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="filters-section flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="search-icon absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              className="search-input pl-10"
               placeholder="Search properties by name or location..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
             />
           </div>
           <select
+            className="filter-select h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="all">All Status</option>
             <option value={PropertyStatus.AVAILABLE}>Available</option>
@@ -395,12 +396,12 @@ const PropertyListPageEnhanced: React.FC = () => {
             <option value={PropertyStatus.VACANT}>Vacant</option>
           </select>
           <select
+            className="filter-select h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={typeFilter}
             onChange={(e) => {
               setTypeFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="all">All Types</option>
             <option value={PropertyType.APARTMENT}>Apartment</option>
@@ -415,21 +416,22 @@ const PropertyListPageEnhanced: React.FC = () => {
           </select>
           {/* Items per page */}
           <select
+            className="filter-select h-10 w-[140px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={itemsPerPage}
             onChange={(e) => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="h-10 w-[140px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {itemsPerPageOptions.map(option => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
-          <div className="flex gap-2">
+          <div className="view-toggle flex gap-2">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="icon"
+              className="toggle-button"
               onClick={() => setViewMode('grid')}
             >
               <Grid3x3 className="h-4 w-4" />
@@ -437,6 +439,7 @@ const PropertyListPageEnhanced: React.FC = () => {
             <Button
               variant={viewMode === 'table' ? 'default' : 'outline'}
               size="icon"
+              className="toggle-button"
               onClick={() => setViewMode('table')}
             >
               <List className="h-4 w-4" />
@@ -446,7 +449,7 @@ const PropertyListPageEnhanced: React.FC = () => {
 
         {/* Bulk Actions Toolbar */}
         {showBulkActions && selectedProperties.size > 0 && (
-          <div className="border bg-muted/50 px-4 py-3 rounded-md">
+          <div className="bulk-actions-toolbar border bg-muted/50 px-4 py-3 rounded-md">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium">
@@ -461,10 +464,11 @@ const PropertyListPageEnhanced: React.FC = () => {
                   Clear Selection
                 </Button>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="bulk-action-buttons flex items-center space-x-2">
                 <Button
                   variant="secondary"
                   size="sm"
+                  className="bulk-action-button bulk-maintenance"
                   onClick={handleBulkMaintenance}
                   disabled={bulkActionLoading}
                 >
@@ -478,6 +482,7 @@ const PropertyListPageEnhanced: React.FC = () => {
                 <Button
                   variant="destructive"
                   size="sm"
+                  className="bulk-action-button bulk-delete"
                   onClick={handleBulkDelete}
                   disabled={bulkActionLoading}
                 >
@@ -503,18 +508,18 @@ const PropertyListPageEnhanced: React.FC = () => {
 
         {/* Empty State */}
         {!loading && filteredProperties.length === 0 && (
-          <Card>
+          <Card className="empty-state">
             <CardContent className="pt-6">
               <div className="text-center py-12">
-                <Building2 className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No properties found</h3>
-                <p className="text-muted-foreground mb-6">
+                <Building2 className="empty-icon mx-auto h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="empty-title text-xl font-semibold mb-2">No properties found</h3>
+                <p className="empty-description text-muted-foreground mb-6">
                   {searchQuery || statusFilter !== 'all' || typeFilter !== 'all'
                     ? 'Try adjusting your filters'
                     : 'Get started by creating your first property'}
                 </p>
                 {!searchQuery && statusFilter === 'all' && typeFilter === 'all' && (
-                  <Button onClick={() => navigate('/properties/create')}>
+                  <Button className="empty-action-button" onClick={() => navigate('/properties/create')}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Property
                   </Button>
@@ -535,56 +540,56 @@ const PropertyListPageEnhanced: React.FC = () => {
 
         {/* Grid View */}
         {!loading && viewMode === 'grid' && filteredProperties.length > 0 && (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {paginatedProperties.map((property) => (
-              <Card key={property.id} className="hover:shadow-lg transition-shadow group">
-                <div className={`h-2 rounded-t-lg ${getStatusColor(property.status).split(' ')[0]}`} />
-                <CardHeader className="pb-3">
+          <div className="property-grid">
+            {paginatedProperties.map((property, index) => (
+              <Card key={property.id} className="property-card" style={{ '--unit-index': index } as React.CSSProperties}>
+                <div className={`property-status-bar ${getStatusColor(property.status).split(' ')[0]}`}></div>
+                <div className="property-header">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-2 mb-2">
                       <input
                         type="checkbox"
+                        className="property-checkbox rounded border-gray-300"
                         checked={selectedProperties.has(property.id)}
                         onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
-                        className="rounded border-gray-300"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-2">{property.name}</CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
+                      <CardTitle className="property-title">{property.name}</CardTitle>
+                      <div className="property-location flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="location-icon h-4 w-4" />
                         <span>{property.address.city}, {property.address.state}</span>
                       </div>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-xs">
+                </div>
+                <div className="property-content">
+                  <div className="property-meta flex items-center justify-between">
+                    <Badge variant="outline" className="property-type-badge text-xs">
                       {getTypeLabel(property.propertyType)}
                     </Badge>
-                    <Badge className={getStatusColor(property.status)}>
+                    <Badge className={`property-status-badge ${getStatusColor(property.status)}`}>
                       {property.status.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Total Area</p>
-                      <p className="font-semibold">
+                  <div className="property-details grid grid-cols-2 gap-3 text-sm">
+                    <div className="detail-item">
+                      <p className="detail-label">Total Area</p>
+                      <p className="detail-value font-semibold">
                         {property.totalArea ? `${property.totalArea.toLocaleString()} sq ft` : 'N/A'}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Floors</p>
-                      <p className="font-semibold">{property.totalFloors || 'N/A'}</p>
+                    <div className="detail-item">
+                      <p className="detail-label">Floors</p>
+                      <p className="detail-value font-semibold">{property.totalFloors || 'N/A'}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2 pt-2">
+                  <div className="property-actions flex gap-2 pt-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="action-button rent-button flex-1"
                       onClick={() => navigate(`/properties/${property.id}/rent-collection`)}
                     >
                       <Receipt className="h-4 w-4 mr-2" />
@@ -593,7 +598,7 @@ const PropertyListPageEnhanced: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="action-button dashboard-button flex-1"
                       onClick={() => navigate(`/properties/${property.id}/dashboard`)}
                     >
                       <BarChart3 className="h-4 w-4 mr-2" />
@@ -602,6 +607,7 @@ const PropertyListPageEnhanced: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="action-button edit-button"
                       onClick={() => navigate(`/properties/${property.id}/edit`)}
                     >
                       <Edit className="h-4 w-4" />
@@ -609,12 +615,13 @@ const PropertyListPageEnhanced: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="action-button delete-button"
                       onClick={() => handleDeleteClick(property.id, property.name)}
                     >
                       <Trash2 className="h-4 w-4 text-red-600" />
                     </Button>
                   </div>
-                </CardContent>
+                </div>
               </Card>
             ))}
           </div>
@@ -622,114 +629,120 @@ const PropertyListPageEnhanced: React.FC = () => {
 
         {/* Table View */}
         {!loading && viewMode === 'table' && filteredProperties.length > 0 && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <input
-                          type="checkbox"
-                          checked={selectedProperties.size === paginatedProperties.length && paginatedProperties.length > 0}
-                          onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="rounded border-gray-300"
-                        />
-                      </TableHead>
-                      <TableHead>Property Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Area (sq ft)</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedProperties.map((property) => (
-                      <TableRow key={property.id}>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+          <div className="property-table-container">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="table-header">
+                        <TableHead className="w-12">
                           <input
                             type="checkbox"
-                            checked={selectedProperties.has(property.id)}
-                            onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
-                            className="rounded border-gray-300"
+                            className="header-checkbox rounded border-gray-300"
+                            checked={selectedProperties.size === paginatedProperties.length && paginatedProperties.length > 0}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
                           />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          <button
-                            onClick={() => navigate(`/properties/${property.id}/dashboard`)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                          >
-                            {property.name}
-                          </button>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {getTypeLabel(property.propertyType)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3 text-muted-foreground" />
-                            {property.address.city}, {property.address.state}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {property.totalArea ? property.totalArea.toLocaleString() : 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(property.status)}>
-                            {property.status.replace('_', ' ')}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => navigate(`/properties/${property.id}/rent-collection`)}
-                              title="Rent Collection"
-                            >
-                              <Receipt className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => navigate(`/properties/${property.id}/dashboard`)}
-                              title="View Dashboard"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => navigate(`/properties/${property.id}/edit`)}
-                              title="Edit Property"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteClick(property.id, property.name)}
-                              title="Delete Property"
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                        </TableHead>
+                        <TableHead>Property Name</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Area (sq ft)</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedProperties.map((property) => (
+                        <TableRow key={property.id} className="table-row">
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              className="row-checkbox rounded border-gray-300"
+                              checked={selectedProperties.has(property.id)}
+                              onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <button
+                              className="property-name-link text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                              onClick={() => navigate(`/properties/${property.id}/dashboard`)}
+                            >
+                              {property.name}
+                            </button>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {getTypeLabel(property.propertyType)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3 text-muted-foreground" />
+                              {property.address.city}, {property.address.state}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {property.totalArea ? property.totalArea.toLocaleString() : 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(property.status)}>
+                              {property.status.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="table-actions flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="table-action-button"
+                                onClick={() => navigate(`/properties/${property.id}/rent-collection`)}
+                                title="Rent Collection"
+                              >
+                                <Receipt className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="table-action-button"
+                                onClick={() => navigate(`/properties/${property.id}/dashboard`)}
+                                title="View Dashboard"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="table-action-button"
+                                onClick={() => navigate(`/properties/${property.id}/edit`)}
+                                title="Edit Property"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="table-action-button"
+                                onClick={() => handleDeleteClick(property.id, property.name)}
+                                title="Delete Property"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center">
+        <div className="pagination-container flex justify-center">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -737,21 +750,25 @@ const PropertyListPageEnhanced: React.FC = () => {
           />
         </div>
       )}
+
       </div>
       )}
 
+      </div>
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="delete-dialog">
           <DialogHeader>
-            <DialogTitle>Delete Property</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="dialog-title">Delete Property</DialogTitle>
+            <DialogDescription className="dialog-description">
               Are you sure you want to delete "{propertyToDelete?.name}"? This action cannot be undone and will also delete all associated units, leases, and payment records.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="dialog-actions">
             <Button
               variant="outline"
+              className="cancel-button"
               onClick={() => setDeleteDialogOpen(false)}
               disabled={deleteLoading}
             >
@@ -759,6 +776,7 @@ const PropertyListPageEnhanced: React.FC = () => {
             </Button>
             <Button
               variant="destructive"
+              className="delete-button"
               onClick={confirmDelete}
               disabled={deleteLoading}
             >

@@ -1,4 +1,4 @@
-export { MeterListPage } from './MeterListPage';
+export { MeterListPageEnhanced } from './MeterListPageEnhanced';
 export { MeterCreatePage } from './MeterCreatePage';
 export { default as MeterCreatePageTabbedEnhanced } from './MeterCreatePageTabbedEnhanced';
 export { MeterEditPage } from './MeterEditPage';

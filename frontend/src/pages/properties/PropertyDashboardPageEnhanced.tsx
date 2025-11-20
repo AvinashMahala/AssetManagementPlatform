@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
@@ -53,6 +53,14 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
 
   // State for scroll-triggered animations
   const [revealedSections, setRevealedSections] = useState<Set<string>>(new Set());
+  const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0);
+
+  // Refs for scroll-triggered animations
+  const headerRef = useRef<HTMLDivElement>(null);
+  const metricsRef = useRef<HTMLDivElement>(null);
+  const alertsRef = useRef<HTMLDivElement>(null);
+  const chartsRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   // Scroll-triggered animations
   useEffect(() => {
@@ -64,16 +72,20 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          setRevealedSections(prev => new Set([...prev, entry.target.id]));
+          const sectionId = entry.target.getAttribute('data-section');
+          if (sectionId) {
+            setRevealedSections(prev => new Set([...prev, sectionId]));
+          }
         }
       });
     }, observerOptions);
 
     // Observe sections that should animate in on scroll
-    const sections = ['alerts-section', 'charts-section', 'property-tabs'];
-    sections.forEach(sectionId => {
-      const element = document.getElementById(sectionId);
-      if (element) observer.observe(element);
+    const sections = [headerRef, metricsRef, alertsRef, chartsRef, tabsRef];
+    sections.forEach(ref => {
+      if (ref.current) {
+        observer.observe(ref.current);
+      }
     });
 
     return () => observer.disconnect();
@@ -282,7 +294,11 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
     <AppLayout>
       <div className="property-dashboard-enhanced container mx-auto py-6 space-y-6 scroll-reveal revealed">
         {/* Header */}
-        <div className="property-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div
+          ref={headerRef}
+          data-section="header"
+          className="property-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        >
           <div className="property-info flex items-start gap-4">
             <Button
               variant="ghost"
@@ -331,7 +347,11 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
         </div>
 
         {/* Key Metrics */}
-        <div className="key-metrics grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div
+          ref={metricsRef}
+          data-section="metrics"
+          className="key-metrics grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+        >
           <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.1s' }}>
             <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Total Units</CardTitle>
@@ -387,7 +407,11 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
 
         {/* Alerts */}
         {(metrics.expiringSoonLeases > 0 || metrics.overduePayments > 0) && (
-          <div id="alerts-section" className={`alerts-section grid gap-4 md:grid-cols-2 scroll-reveal ${revealedSections.has('alerts-section') ? 'revealed' : ''}`}>
+          <div
+            ref={alertsRef}
+            data-section="alerts"
+            className={`alerts-section grid gap-4 md:grid-cols-2 scroll-reveal ${revealedSections.has('alerts') ? 'revealed' : ''}`}
+          >
             {metrics.expiringSoonLeases > 0 && (
               <Card className="alert-card alert-warning border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950">
                 <CardHeader className="alert-header pb-3">
@@ -436,7 +460,11 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
         )}
 
         {/* Charts */}
-        <div id="charts-section" className={`charts-section grid gap-4 md:grid-cols-2 scroll-reveal ${revealedSections.has('charts-section') ? 'revealed' : ''}`}>
+        <div
+          ref={chartsRef}
+          data-section="charts"
+          className={`charts-section grid gap-4 md:grid-cols-2 scroll-reveal ${revealedSections.has('charts') ? 'revealed' : ''}`}
+        >
           <Card className="chart-card">
             <CardHeader className="chart-header">
               <CardTitle className="chart-title text-lg">Revenue Trend</CardTitle>
@@ -459,7 +487,12 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
         </div>
 
         {/* Tabs for detailed views */}
-        <Tabs id="property-tabs" defaultValue="units" className={`property-tabs space-y-4 scroll-reveal ${revealedSections.has('property-tabs') ? 'revealed' : ''}`}>
+        <Tabs
+          ref={tabsRef}
+          data-section="tabs"
+          defaultValue="units"
+          className={`property-tabs space-y-4 scroll-reveal ${revealedSections.has('tabs') ? 'revealed' : ''}`}
+        >
           <TabsList className="tabs-list grid w-full grid-cols-5">
             <TabsTrigger value="units" className="tab-trigger">
               <Home className="tab-icon w-4 h-4 mr-2" />

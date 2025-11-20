@@ -4,6 +4,6 @@ export { UnitCreatePage } from './UnitCreatePage';
 export { default as UnitCreatePageEnhanced } from './UnitCreatePageEnhanced';
 export { default as UnitCreatePageTabbedEnhanced } from './UnitCreatePageTabbedEnhanced';
 export { UnitDetailPage } from './UnitDetailPage';
-export { UnitDashboardPage } from './UnitDashboardPage';
+export { UnitDashboardPageEnhanced as UnitDashboardPage } from './UnitDashboardPageEnhanced';
 export { UnitEditPage } from './UnitEditPage';
 export { default as UnitEditPageEnhanced } from './UnitEditPageEnhanced';

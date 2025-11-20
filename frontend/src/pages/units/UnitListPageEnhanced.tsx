@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
@@ -18,6 +18,7 @@ import { Pagination } from '../../components/ui/pagination';
 import { useUnits, useDeleteUnit } from '../../hooks/useUnits';
 import { useProperties } from '../../hooks/useProperties';
 import { AppLayout } from '../../components/layout';
+import './UnitListPageEnhanced.scss';
 
 const UnitListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
@@ -35,6 +36,34 @@ const UnitListPageEnhanced: React.FC = () => {
   const { units, loading } = useUnits();
   const { mutate: deleteUnit, loading: deleteLoading } = useDeleteUnit();
   const { properties } = useProperties();
+
+  // State for scroll-triggered animations
+  const [revealedSections, setRevealedSections] = useState<Set<string>>(new Set());
+
+  // Scroll-triggered animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setRevealedSections(prev => new Set([...prev, entry.target.id]));
+        }
+      });
+    }, observerOptions);
+
+    // Observe sections that should animate in on scroll
+    const sections = ['stats-section', 'filters-section', 'units-grid', 'units-table'];
+    sections.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const filteredUnits = Array.isArray(units) ? units.filter(u => {
     const matchesSearch = `${u.unitNumber} ${u.unitType}`.toLowerCase().includes(search.toLowerCase());
@@ -233,22 +262,20 @@ const UnitListPageEnhanced: React.FC = () => {
   return (
     <AppLayout title="Units">
       {loading ? (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-lg text-muted-foreground">Loading units...</p>
-            <p className="text-sm text-muted-foreground">Please wait while we fetch your unit data</p>
-          </div>
+        <div className="unit-list-page-enhanced loading-container flex items-center justify-center min-h-[60vh]">
+          <div className="loading-spinner animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-lg text-muted-foreground">Loading units...</p>
+          <p className="text-sm text-muted-foreground">Please wait while we fetch your unit data</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="unit-list-page-enhanced space-y-6 scroll-reveal revealed">
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="header-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Manage Property Units</h1>
-            <p className="text-muted-foreground">Organize and track individual rental units</p>
+                        <h1 className="header-title text-3xl font-bold tracking-tight">Manage Property Units</h1>
+            <p className="header-description text-muted-foreground">Organize and track individual rental units</p>
           </div>
-          <div className="flex gap-2">
+          <div className="header-actions flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
@@ -263,24 +290,24 @@ const UnitListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="hover:shadow-lg transition-shadow duration-200">
+        <div id="stats-section" className={`stats-section grid gap-4 md:grid-cols-4 scroll-reveal ${revealedSections.has('stats-section') ? 'revealed' : ''}`}>
+          {stats.map((stat, index) => (
+            <Card key={stat.label} className="stat-card hover:shadow-md transition-shadow" style={{ animationDelay: `${(index + 1) * 0.1}s` }}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <CardTitle className="stat-label text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+                <div className="stat-icon-container p-2 rounded-lg">
+                  <stat.icon className="stat-icon h-5 w-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
+                <div className="stat-value text-3xl font-bold">{stat.value}</div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Filters and Search */}
-        <Card>
+        <Card id="filters-section" className={`filters-section scroll-reveal ${revealedSections.has('filters-section') ? 'revealed' : ''}`}>
           <CardHeader>
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
@@ -365,7 +392,7 @@ const UnitListPageEnhanced: React.FC = () => {
 
           {/* Bulk Actions Toolbar */}
           {showBulkActions && selectedUnits.size > 0 && (
-            <div className="border-t bg-muted/50 px-4 py-3">
+            <div className="bulk-actions-toolbar border-t bg-muted/50 px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <span className="text-sm font-medium">
@@ -434,7 +461,7 @@ const UnitListPageEnhanced: React.FC = () => {
               </div>
             ) : viewMode === 'table' ? (
               /* Table View */
-              <div className="rounded-md border">
+              <div id="units-table" className={`table-view rounded-md border scroll-reveal ${revealedSections.has('units-table') ? 'revealed' : ''}`}>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -466,7 +493,7 @@ const UnitListPageEnhanced: React.FC = () => {
                       paginatedUnits.map((unit) => (
                         <TableRow 
                           key={unit.id} 
-                          className="cursor-pointer hover:bg-muted/50"
+                          className="table-row cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/units/${unit.id}`)}
                         >
                           <TableCell onClick={(e) => e.stopPropagation()}>
@@ -534,74 +561,73 @@ const UnitListPageEnhanced: React.FC = () => {
               </div>
             ) : (
               /* Grid View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div id="units-grid" className={`grid-view grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 scroll-reveal ${revealedSections.has('units-grid') ? 'revealed' : ''}`}>
                 {paginatedUnits.length === 0 ? (
-                  <div className="col-span-full text-center py-12 text-muted-foreground">
+                  <div className="col-span-full empty-state text-center py-12 text-muted-foreground">
                     {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found. Click "Add Unit" to create one.'}
                   </div>
                 ) : (
-                  paginatedUnits.map((unit) => (
+                  paginatedUnits.map((unit, index) => (
                     <Card 
                       key={unit.id} 
-                      className="hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden group"
+                      className="unit-card cursor-pointer overflow-hidden group"
                       onClick={() => navigate(`/units/${unit.id}`)}
+                      style={{ '--unit-index': index } as React.CSSProperties}
                     >
                       {/* Status Banner */}
-                      <div className={`h-2 ${
-                        unit.status === 'available' ? 'bg-green-500' :
-                        unit.status === 'occupied' ? 'bg-orange-500' :
-                        'bg-gray-500'
-                      }`} />
+                      <div className="status-banner h-2 bg-gradient-to-r from-green-500 to-emerald-600" style={{
+                        background: unit.status === 'available' 
+                          ? 'linear-gradient(90deg, #10b981, #059669)' 
+                          : unit.status === 'occupied' 
+                          ? 'linear-gradient(90deg, #f59e0b, #d97706)' 
+                          : 'linear-gradient(90deg, #6b7280, #4b5563)'
+                      }} />
                       
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-3">
-                            <div className={`h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-lg ${
-                              unit.status === 'available' ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
-                              unit.status === 'occupied' ? 'bg-gradient-to-br from-orange-500 to-red-600' :
-                              'bg-gradient-to-br from-gray-500 to-slate-600'
-                            }`}>
+                            <div className="unit-number-badge h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-lg">
                               {unit.unitNumber}
                             </div>
                             <div>
-                              <CardTitle className="text-lg">{unit.unitType}</CardTitle>
-                              <p className="text-xs text-muted-foreground">ID: {unit.id.slice(0, 8)}</p>
+                              <CardTitle className="unit-title text-lg">{unit.unitType}</CardTitle>
+                              <p className="unit-type text-xs text-muted-foreground">ID: {unit.id.slice(0, 8)}</p>
                             </div>
                           </div>
-                          <Badge variant={getStatusVariant(unit.status)} className={getStatusColor(unit.status)}>
+                          <Badge variant={getStatusVariant(unit.status)} className={`unit-status-badge ${getStatusColor(unit.status)}`}>
                             {unit.status === 'available' ? 'Available' : unit.status === 'occupied' ? 'Occupied' : 'Maintenance'}
                           </Badge>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        <div className="space-y-2 text-sm">
+                        <div className="unit-details space-y-2 text-sm">
                           <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Property</span>
-                            <span className="font-medium flex items-center">
+                            <span className="unit-detail-label text-muted-foreground">Property</span>
+                            <span className="unit-detail-value font-medium flex items-center">
                               <Building2 className="h-3 w-3 mr-1" />
                               {getPropertyName(unit.propertyId).slice(0, 15)}...
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Rent</span>
-                            <span className="font-bold text-primary">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}/mo</span>
+                            <span className="unit-detail-label text-muted-foreground">Rent</span>
+                            <span className="unit-detail-value font-bold text-primary">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}/mo</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Area</span>
-                            <span className="font-medium">{unit.area || 'N/A'} sq ft</span>
+                            <span className="unit-detail-label text-muted-foreground">Area</span>
+                            <span className="unit-detail-value font-medium">{unit.area || 'N/A'} sq ft</span>
                           </div>
                           {unit.bedrooms && (
                             <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">Bedrooms</span>
-                              <span className="font-medium">{unit.bedrooms} BHK</span>
+                              <span className="unit-detail-label text-muted-foreground">Bedrooms</span>
+                              <span className="unit-detail-value font-medium">{unit.bedrooms} BHK</span>
                             </div>
                           )}
                         </div>
-                        <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                        <div className="unit-actions flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1"
+                            className="unit-action-btn flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/units/${unit.id}`);
@@ -613,7 +639,7 @@ const UnitListPageEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1"
+                            className="unit-action-btn flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/units/${unit.id}/dashboard`);
@@ -633,7 +659,7 @@ const UnitListPageEnhanced: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center">
+          <div className="pagination-section flex justify-center">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -646,7 +672,7 @@ const UnitListPageEnhanced: React.FC = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="dialog-content">
           <DialogHeader>
             <DialogTitle>Delete Unit</DialogTitle>
             <DialogDescription>

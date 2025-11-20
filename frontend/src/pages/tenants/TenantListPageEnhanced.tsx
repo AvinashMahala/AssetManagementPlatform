@@ -18,6 +18,7 @@ import { Pagination } from '../../components/ui/pagination';
 import { useTenants, useDeleteTenant } from '../../hooks/useTenants';
 import { useNotifications } from '../../contexts';
 import { AppLayout } from '../../components/layout';
+import './TenantListPageEnhanced.scss';
 
 const TenantListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
@@ -52,9 +53,9 @@ const TenantListPageEnhanced: React.FC = () => {
   const inactiveCount = Array.isArray(tenants) ? tenants.filter(t => t.status === 'inactive').length : 0;
 
   const stats = [
-    { label: 'Total Tenants', value: (Array.isArray(tenants) ? tenants.length : 0).toString(), icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
-    { label: 'Active', value: activeCount.toString(), icon: UserCheck, color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-900/20' },
-    { label: 'Inactive', value: inactiveCount.toString(), icon: UserX, color: 'text-red-600', bgColor: 'bg-red-50 dark:bg-red-900/20' },
+    { label: 'Total Tenants', value: (Array.isArray(tenants) ? tenants.length : 0).toString(), icon: Users },
+    { label: 'Active', value: activeCount.toString(), icon: UserCheck },
+    { label: 'Inactive', value: inactiveCount.toString(), icon: UserX },
   ];
 
   const statusOptions = [
@@ -220,14 +221,14 @@ const TenantListPageEnhanced: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="tenant-list-page-enhanced space-y-6 scroll-reveal revealed">
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="header-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Manage & Monitor Tenants</h1>
-            <p className="text-muted-foreground">Oversee tenant information and relationships</p>
+            <h1 className="header-title text-3xl font-bold tracking-tight">Manage & Monitor Tenants</h1>
+            <p className="header-description text-muted-foreground">Oversee tenant information and relationships</p>
           </div>
-          <div className="flex gap-2">
+          <div className="header-actions flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
@@ -243,24 +244,24 @@ const TenantListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="hover:shadow-lg transition-shadow duration-200">
+        <div id="stats-section" className="stats-section grid gap-4 md:grid-cols-3 scroll-reveal revealed">
+          {stats.map((stat, index) => (
+            <Card key={stat.label} className="stat-card hover:shadow-md transition-shadow" style={{ animationDelay: `${(index + 1) * 0.1}s` }}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <CardTitle className="stat-label text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+                <div className="stat-icon-container p-2 rounded-lg">
+                  <stat.icon className="stat-icon h-5 w-5 text-white" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
+                <div className="stat-value text-3xl font-bold">{stat.value}</div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Filters and Search */}
-        <Card>
+        <Card id="filters-section" className="filters-section scroll-reveal revealed">
           <CardHeader>
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
@@ -334,7 +335,7 @@ const TenantListPageEnhanced: React.FC = () => {
 
           {/* Bulk Actions Toolbar */}
           {showBulkActions && selectedTenants.size > 0 && (
-            <div className="border-t bg-muted/50 px-4 py-3">
+            <div className="bulk-actions-toolbar border-t bg-muted/50 px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <span className="text-sm font-medium">
@@ -403,7 +404,7 @@ const TenantListPageEnhanced: React.FC = () => {
               </div>
             ) : viewMode === 'table' ? (
               /* Table View */
-              <div className="rounded-md border">
+              <div id="tenants-table" className="table-view rounded-md border scroll-reveal revealed">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -433,7 +434,7 @@ const TenantListPageEnhanced: React.FC = () => {
                       paginatedTenants.map((tenant) => (
                         <TableRow 
                           key={tenant.id} 
-                          className="cursor-pointer hover:bg-muted/50"
+                          className="table-row cursor-pointer"
                           onClick={() => navigate(`/tenants/${tenant.id}`)}
                         >
                           <TableCell onClick={(e) => e.stopPropagation()}>
@@ -532,56 +533,66 @@ const TenantListPageEnhanced: React.FC = () => {
               </div>
             ) : (
               /* Grid View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div id="tenants-grid" className="grid-view grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 scroll-reveal revealed">
                 {paginatedTenants.length === 0 ? (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
                     {filteredTenants.length === 0 && tenants.length > 0 ? 'No tenants match your filters.' : 'No tenants found. Click "Add Tenant" to create one.'}
                   </div>
                 ) : (
-                  paginatedTenants.map((tenant) => (
+                  paginatedTenants.map((tenant, index) => (
                     <Card 
                       key={tenant.id} 
-                      className="hover:shadow-lg transition-all duration-200 cursor-pointer"
+                      className="tenant-card cursor-pointer overflow-hidden group"
                       onClick={() => navigate(`/tenants/${tenant.id}`)}
+                      style={{ '--tenant-index': index } as React.CSSProperties}
                     >
-                      <CardHeader>
+                      {/* Status Banner */}
+                      <div className="status-banner h-2 bg-gradient-to-r from-green-500 to-emerald-600" style={{
+                        background: tenant.status === 'active' 
+                          ? 'linear-gradient(90deg, #10b981, #059669)' 
+                          : tenant.status === 'inactive' 
+                          ? 'linear-gradient(90deg, #f59e0b, #d97706)' 
+                          : 'linear-gradient(90deg, #6b7280, #4b5563)'
+                      }} />
+                      
+                      <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-3">
-                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
+                            <div className="tenant-avatar h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
                               {tenant.firstName[0]}{tenant.lastName[0]}
                             </div>
                             <div>
-                              <CardTitle className="text-lg">{tenant.firstName} {tenant.lastName}</CardTitle>
-                              <p className="text-xs text-muted-foreground">ID: {tenant.id.slice(0, 8)}</p>
+                              <CardTitle className="tenant-name text-lg">{tenant.firstName} {tenant.lastName}</CardTitle>
+                              <p className="tenant-contact text-xs text-muted-foreground">ID: {tenant.id.slice(0, 8)}</p>
                             </div>
                           </div>
-                          <Badge variant={getStatusVariant(tenant.status)}>
-                            {tenant.status}
+                          <Badge variant={getStatusVariant(tenant.status)} className="tenant-status-badge">
+                            {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
                           </Badge>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center text-muted-foreground">
-                            <Mail className="h-4 w-4 mr-2" />
-                            <span className="truncate">{tenant.email}</span>
+                        <div className="tenant-details space-y-2 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="tenant-detail-label text-muted-foreground">Email</span>
+                            <span className="tenant-detail-value font-medium truncate ml-2">{tenant.email}</span>
                           </div>
-                          <div className="flex items-center text-muted-foreground">
-                            <Phone className="h-4 w-4 mr-2" />
-                            <span>{tenant.phone}</span>
+                          <div className="flex items-center justify-between">
+                            <span className="tenant-detail-label text-muted-foreground">Phone</span>
+                            <span className="tenant-detail-value font-medium">{tenant.phone}</span>
                           </div>
                           {tenant.occupation && (
-                            <div className="flex items-center text-muted-foreground">
-                              <Briefcase className="h-4 w-4 mr-2" />
-                              <span>{tenant.occupation}</span>
+                            <div className="flex items-center justify-between">
+                              <span className="tenant-detail-label text-muted-foreground">Occupation</span>
+                              <span className="tenant-detail-value font-medium">{tenant.occupation}</span>
                             </div>
                           )}
                         </div>
-                        <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                        <div className="tenant-actions flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1"
+                            className="tenant-action-btn flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/tenants/${tenant.id}/dashboard`);
@@ -593,7 +604,7 @@ const TenantListPageEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1"
+                            className="tenant-action-btn flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/tenants/${tenant.id}`);
@@ -605,7 +616,7 @@ const TenantListPageEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1"
+                            className="tenant-action-btn flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/tenants/${tenant.id}/edit`);
@@ -626,7 +637,7 @@ const TenantListPageEnhanced: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center">
+          <div className="pagination-section flex justify-center">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -639,7 +650,7 @@ const TenantListPageEnhanced: React.FC = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="dialog-content">
           <DialogHeader>
             <DialogTitle>Delete Tenant</DialogTitle>
             <DialogDescription>
