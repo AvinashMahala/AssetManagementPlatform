@@ -16,6 +16,7 @@ import type { Tenant } from '../../types/tenant';
 import type { Lease } from '../../types/lease';
 import type { Unit } from '../../types/unit';
 import type { RentPayment } from '../../types/payment';
+import './PaymentListPageEnhanced.scss';
 
 const PaymentListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
@@ -494,14 +495,14 @@ const PaymentListPageEnhanced: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="payment-list-page-enhanced space-y-6 scroll-reveal revealed">
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Track Rent & Payments</h1>
-            <p className="text-muted-foreground">Monitor rental payments and financial records</p>
+        <div className="header-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="header-content">
+            <h1 className="header-title text-3xl font-bold tracking-tight">Track Rent & Payments</h1>
+            <p className="header-description text-muted-foreground">Monitor rental payments and financial records</p>
           </div>
-          <div className="flex gap-2">
+          <div className="header-actions flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
@@ -517,18 +518,18 @@ const PaymentListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="hover:shadow-lg transition-shadow duration-200">
+        <div className="stats-section grid gap-4 md:grid-cols-4">
+          {stats.map((stat, index) => (
+            <Card key={stat.label} className={`stat-card hover:shadow-lg transition-shadow duration-200`} style={{ animationDelay: `${index * 0.1}s` }}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <div className={`stat-icon-container ${stat.bgColor} p-2 rounded-lg`}>
+                  <stat.icon className={`stat-icon h-5 w-5 ${stat.color}`} />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">{stat.subtext}</p>
+                <div className="stat-value text-3xl font-bold">{stat.value}</div>
+                <p className="stat-subtext text-xs text-muted-foreground mt-1">{stat.subtext}</p>
               </CardContent>
             </Card>
           ))}
@@ -536,7 +537,7 @@ const PaymentListPageEnhanced: React.FC = () => {
 
         {/* Overdue Alert */}
         {overdueCount > 0 && (
-          <Card className="bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800">
+          <Card className="alert-card overdue-alert bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <AlertCircle className="h-5 w-5 text-red-600" />
@@ -552,7 +553,7 @@ const PaymentListPageEnhanced: React.FC = () => {
         )}
 
         {/* Filters and Search */}
-        <Card>
+        <Card className="filters-section">
           <CardHeader>
             <div className="flex flex-col space-y-4">
               {/* Active Filters */}
@@ -743,7 +744,7 @@ const PaymentListPageEnhanced: React.FC = () => {
 
           {/* Bulk Actions Toolbar */}
           {showBulkActions && selectedPayments.size > 0 && (
-            <div className="border-t bg-muted/50 px-4 py-3">
+            <div className="bulk-actions-toolbar border-t bg-muted/50 px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <span className="text-sm font-medium">
@@ -811,7 +812,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
               </div>
             ) : (
-              <div className="rounded-md border">
+              <div className="table-view rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -848,7 +849,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                         return (
                           <TableRow 
                             key={payment.id} 
-                            className="cursor-pointer hover:bg-muted/50"
+                            className="table-row cursor-pointer hover:bg-muted/50"
                             onClick={() => navigate(`/payments/${payment.id}`)}
                           >
                             <TableCell onClick={(e) => e.stopPropagation()}>
@@ -871,7 +872,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                                 <span>{unitNumber}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="font-bold text-primary">
+                            <TableCell className="amount-cell font-bold text-primary">
                               ₹{payment.amount?.toLocaleString() || 'N/A'}
                             </TableCell>
                             <TableCell>
@@ -890,12 +891,12 @@ const PaymentListPageEnhanced: React.FC = () => {
                             <TableCell className="capitalize">
                               {payment.paymentMethod?.replace('_', ' ') || 'N/A'}
                             </TableCell>
-                            <TableCell>
-                              <Badge variant={getStatusVariant(payment)} className={getStatusColor(payment)}>
+                            <TableCell className="status-cell">
+                              <Badge variant={getStatusVariant(payment)} className={`status-badge ${getStatusColor(payment)}`}>
                                 {getStatusLabel(payment)}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="actions-cell text-right">
                               <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                                 <Button
                                   variant="ghost"
@@ -904,6 +905,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                                     e.stopPropagation();
                                     navigate(`/payments/${payment.id}`);
                                   }}
+                                  className="action-btn"
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
@@ -914,6 +916,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                                     e.stopPropagation();
                                     navigate(`/payments/${payment.id}/edit`);
                                   }}
+                                  className="action-btn"
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
@@ -925,7 +928,7 @@ const PaymentListPageEnhanced: React.FC = () => {
                                       e.stopPropagation();
                                       handleSingleDelete(payment);
                                     }}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    className="action-btn delete-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -945,7 +948,7 @@ const PaymentListPageEnhanced: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center">
+          <div className="pagination-container flex justify-center">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -956,32 +959,32 @@ const PaymentListPageEnhanced: React.FC = () => {
 
         {/* Monthly Summary */}
         {Object.keys(paymentsByMonth).length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Summary</CardTitle>
-              <CardDescription>Payment breakdown by month</CardDescription>
+          <Card className="monthly-summary">
+            <CardHeader className="summary-header">
+              <CardTitle className="summary-title">Monthly Summary</CardTitle>
+              <CardDescription className="summary-description">Payment breakdown by month</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="summary-content">
               <div className="space-y-4">
                 {Object.entries(paymentsByMonth).slice(0, 3).map(([month, monthPayments]) => {
                   const monthTotal = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'paid' ? p.amount : 0), 0);
                   const monthPending = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'pending' ? p.amount : 0), 0);
                   
                   return (
-                    <div key={month} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center space-x-4">
-                        <div className="bg-primary/10 p-3 rounded-lg">
-                          <Calendar className="h-5 w-5 text-primary" />
+                    <div key={month} className="month-card flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="month-info flex items-center space-x-4">
+                        <div className="month-icon-container bg-primary/10 p-3 rounded-lg">
+                          <Calendar className="month-icon h-5 w-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="font-semibold">{month}</p>
-                          <p className="text-sm text-muted-foreground">{monthPayments.length} payments</p>
+                        <div className="month-details">
+                          <p className="month-name font-semibold">{month}</p>
+                          <p className="month-count text-sm text-muted-foreground">{monthPayments.length} payments</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600">₹{monthTotal.toLocaleString()}</p>
+                      <div className="month-amounts text-right">
+                        <p className="collected-amount font-bold text-green-600">₹{monthTotal.toLocaleString()}</p>
                         {monthPending > 0 && (
-                          <p className="text-sm text-orange-600">₹{monthPending.toLocaleString()} pending</p>
+                          <p className="pending-amount text-sm text-orange-600">₹{monthPending.toLocaleString()} pending</p>
                         )}
                       </div>
                     </div>

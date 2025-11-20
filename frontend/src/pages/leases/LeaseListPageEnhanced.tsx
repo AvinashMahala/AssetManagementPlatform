@@ -23,6 +23,7 @@ import { format, isWithinInterval } from 'date-fns';
 import type { Lease } from '../../types/lease';
 import type { Tenant } from '../../types/tenant';
 import type { Unit } from '../../types/unit';
+import './LeaseListPageEnhanced.scss';
 
 const LeaseListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
@@ -411,14 +412,14 @@ const LeaseListPageEnhanced: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="lease-list-page-enhanced space-y-6 scroll-reveal revealed">
         {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Manage Agreements & Renewals</h1>
-            <p className="text-muted-foreground">Track lease agreements and monitor renewals</p>
+        <div className="header-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="header-content">
+            <h1 className="header-title text-3xl font-bold tracking-tight">Manage Agreements & Renewals</h1>
+            <p className="header-description text-muted-foreground">Track lease agreements and monitor renewals</p>
           </div>
-          <div className="flex gap-2">
+          <div className="header-actions flex gap-2">
             <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
@@ -434,17 +435,17 @@ const LeaseListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.label} className="hover:shadow-lg transition-shadow duration-200">
+        <div className="stats-section grid gap-4 md:grid-cols-4">
+          {stats.map((stat, index) => (
+            <Card key={stat.label} className={`stat-card hover:shadow-lg transition-shadow duration-200`} style={{ animationDelay: `${index * 0.1}s` }}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <div className={`stat-icon-container ${stat.bgColor} p-2 rounded-lg`}>
+                  <stat.icon className={`stat-icon h-5 w-5 ${stat.color}`} />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
+                <div className="stat-value text-3xl font-bold">{stat.value}</div>
               </CardContent>
             </Card>
           ))}
@@ -468,7 +469,7 @@ const LeaseListPageEnhanced: React.FC = () => {
         )}
 
         {/* Filters and Search */}
-        <Card>
+        <Card className="filters-section">
           <CardHeader>
             <div className="flex flex-col space-y-4">
               {/* Active Filters */}
@@ -669,7 +670,7 @@ const LeaseListPageEnhanced: React.FC = () => {
 
           {/* Bulk Actions Toolbar */}
           {showBulkActions && selectedLeases.size > 0 && (
-            <div className="border-t bg-muted/50 px-4 py-3">
+            <div className="bulk-actions-toolbar border-t bg-muted/50 px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <span className="text-sm font-medium">
@@ -738,7 +739,7 @@ const LeaseListPageEnhanced: React.FC = () => {
               </div>
             ) : viewMode === 'table' ? (
               /* Table View */
-              <div className="rounded-md border">
+              <div className="table-view rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -773,7 +774,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                         return (
                           <TableRow 
                             key={lease.id} 
-                            className="cursor-pointer hover:bg-muted/50"
+                            className="table-row cursor-pointer hover:bg-muted/50"
                             onClick={() => navigate(`/leases/${lease.id}`)}
                           >
                             <TableCell onClick={(e) => e.stopPropagation()}>
@@ -877,11 +878,11 @@ const LeaseListPageEnhanced: React.FC = () => {
                         )}
                         
                         <Card 
-                          className="hover:shadow-lg transition-all duration-200 cursor-pointer relative"
+                          className="lease-card hover:shadow-lg transition-all duration-200 cursor-pointer relative"
                           onClick={() => navigate(`/leases/${lease.id}`)}
                         >
                           {/* Timeline dot */}
-                          <div className={`absolute left-0 top-6 w-12 flex items-center justify-center`}>
+                          <div className={`timeline-dot absolute left-0 top-6 w-12 flex items-center justify-center`}>
                             <div className={`h-4 w-4 rounded-full border-2 border-white ${
                               lease.status === 'active' && expiringSoon ? 'bg-orange-500' :
                               lease.status === 'active' ? 'bg-green-500' :
@@ -890,7 +891,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                             }`} />
                           </div>
                           
-                          <CardHeader className="pl-16">
+                          <CardHeader className="lease-header pl-16">
                             <div className="flex items-start justify-between">
                               <div className="space-y-1">
                                 <CardTitle className="text-lg flex items-center gap-2">
@@ -910,7 +911,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                               </Badge>
                             </div>
                           </CardHeader>
-                          <CardContent className="pl-16">
+                          <CardContent className="lease-content pl-16">
                             <div className="flex flex-wrap items-center gap-6 text-sm">
                               <div>
                                 <span className="text-muted-foreground">Monthly Rent:</span>
@@ -953,7 +954,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                               </div>
                             )}
                             
-                            <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
+                            <div className="lease-actions flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="outline"
                                 size="sm"
