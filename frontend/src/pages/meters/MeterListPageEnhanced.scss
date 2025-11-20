@@ -1,42 +1,6 @@
 // MeterListPageEnhanced.scss
 // Advanced glass morphism effects, animations, and micro-interactions for meters page
 
-// CSS Custom Properties for theming
-:root {
-  --meter-primary: #059669;
-  --meter-secondary: #0d9488;
-  --meter-accent: #0891b2;
-  --meter-success: #16a34a;
-  --meter-warning: #ca8a04;
-  --meter-error: #dc2626;
-  --meter-info: #2563eb;
-
-  --meter-glass-bg: rgba(255, 255, 255, 0.8);
-  --meter-glass-border: rgba(255, 255, 255, 0.2);
-  --meter-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.1);
-  --meter-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.15);
-
-  --meter-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --meter-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --meter-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
-  // High contrast mode variables
-  --meter-high-contrast-bg: #ffffff;
-  --meter-high-contrast-border: #000000;
-  --meter-high-contrast-text: #000000;
-  --meter-high-contrast-hover: #f0f0f0;
-  --meter-high-contrast-skeleton: #cccccc;
-  --meter-high-contrast-error-bg: #ffcccc;
-  --meter-high-contrast-error-border: #cc0000;
-}
-
-[data-theme="dark"] {
-  --meter-glass-bg: rgba(17, 24, 39, 0.8);
-  --meter-glass-border: rgba(55, 65, 81, 0.3);
-  --meter-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
-  --meter-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
-}
-
 // Mixins for advanced effects
 @mixin glass-morphism-enhanced {
   background: var(--meter-glass-bg);
@@ -92,6 +56,40 @@
 }
 
 .meter-list-page-enhanced {
+  // CSS Custom Properties for theming
+  --meter-primary: #059669;
+  --meter-secondary: #0d9488;
+  --meter-accent: #0891b2;
+  --meter-success: #16a34a;
+  --meter-warning: #ca8a04;
+  --meter-error: #dc2626;
+  --meter-info: #2563eb;
+
+  --meter-glass-bg: rgba(255, 255, 255, 0.8);
+  --meter-glass-border: rgba(255, 255, 255, 0.2);
+  --meter-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --meter-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  --meter-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --meter-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --meter-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // High contrast mode variables
+  --meter-high-contrast-bg: #ffffff;
+  --meter-high-contrast-border: #000000;
+  --meter-high-contrast-text: #000000;
+  --meter-high-contrast-hover: #f0f0f0;
+  --meter-high-contrast-skeleton: #cccccc;
+  --meter-high-contrast-error-bg: #ffcccc;
+  --meter-high-contrast-error-border: #cc0000;
+
+  &[data-theme="dark"] {
+    --meter-glass-bg: rgba(17, 24, 39, 0.8);
+    --meter-glass-border: rgba(55, 65, 81, 0.3);
+    --meter-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --meter-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
+
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;

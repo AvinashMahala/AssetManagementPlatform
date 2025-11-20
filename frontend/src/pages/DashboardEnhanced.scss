@@ -3,7 +3,7 @@
 // Tailwind classes remain in the TSX file, customizations here
 
 // CSS Custom Properties for theming
-:root {
+.dashboard-enhanced {
   --dashboard-primary: #3b82f6;
   --dashboard-secondary: #8b5cf6;
   --dashboard-accent: #ec4899;
@@ -19,16 +19,13 @@
   --dashboard-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --dashboard-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --dashboard-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-[data-theme="dark"] {
-  --dashboard-glass-bg: rgba(17, 24, 39, 0.8);
-  --dashboard-glass-border: rgba(55, 65, 81, 0.3);
-  --dashboard-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
-  --dashboard-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
-}
-
-.dashboard-enhanced {
+  &[data-theme="dark"] {
+    --dashboard-glass-bg: rgba(17, 24, 39, 0.8);
+    --dashboard-glass-border: rgba(55, 65, 81, 0.3);
+    --dashboard-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --dashboard-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
   // Performance optimizations
   will-change: transform;
   backface-visibility: hidden;

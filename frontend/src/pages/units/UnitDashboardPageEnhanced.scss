@@ -2,27 +2,6 @@
 /* Custom styles for UnitDashboardPageEnhanced page */
 /* Tailwind classes remain in the TSX file, customizations here */
 
-// CSS Custom Properties for theming
-:root {
-  --unit-primary: #667eea;
-  --unit-secondary: #764ba2;
-  --unit-accent: #f093fb;
-  --unit-success: #10b981;
-  --unit-warning: #f59e0b;
-  --unit-error: #ef4444;
-  --unit-info: #3b82f6;
-
-  --unit-glass-bg: rgba(255, 255, 255, 0.1);
-  --unit-glass-border: rgba(255, 255, 255, 0.2);
-  --unit-shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --unit-shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --unit-shadow-heavy: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-
-  --unit-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --unit-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --unit-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 // Mixins
 @mixin glass-morphism {
   background: var(--unit-glass-bg);
@@ -40,6 +19,24 @@
 }
 
 .unit-dashboard-enhanced {
+  // CSS Custom Properties for theming
+  --unit-primary: #667eea;
+  --unit-secondary: #764ba2;
+  --unit-accent: #f093fb;
+  --unit-success: #10b981;
+  --unit-warning: #f59e0b;
+  --unit-error: #ef4444;
+  --unit-info: #3b82f6;
+
+  --unit-glass-bg: rgba(255, 255, 255, 0.1);
+  --unit-glass-border: rgba(255, 255, 255, 0.2);
+  --unit-shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --unit-shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --unit-shadow-heavy: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  --unit-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --unit-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --unit-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
   .dashboard-header {
     @include glass-morphism;

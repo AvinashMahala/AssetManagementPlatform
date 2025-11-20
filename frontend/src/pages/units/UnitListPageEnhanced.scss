@@ -2,8 +2,8 @@
 // Custom styles for UnitListPageEnhanced page
 // Tailwind classes remain in the TSX file, customizations here
 
-// CSS Custom Properties for theming
-:root {
+.unit-list-page-enhanced {
+  // CSS Custom Properties for theming
   --unit-primary: #059669;
   --unit-secondary: #0d9488;
   --unit-accent: #0891b2;
@@ -29,16 +29,14 @@
   --unit-high-contrast-skeleton: #cccccc;
   --unit-high-contrast-error-bg: #ffcccc;
   --unit-high-contrast-error-border: #cc0000;
-}
 
-[data-theme="dark"] {
-  --unit-glass-bg: rgba(17, 24, 39, 0.8);
-  --unit-glass-border: rgba(55, 65, 81, 0.3);
-  --unit-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
-  --unit-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
-}
+  &[data-theme="dark"] {
+    --unit-glass-bg: rgba(17, 24, 39, 0.8);
+    --unit-glass-border: rgba(55, 65, 81, 0.3);
+    --unit-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --unit-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
 
-.unit-list-page-enhanced {
   // Performance optimizations
   will-change: transform;
   backface-visibility: hidden;
