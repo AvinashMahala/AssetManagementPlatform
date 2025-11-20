@@ -25,7 +25,7 @@ import TemplateGallery from './pages/TemplateGallery';
 import PropertyTemplateCustomization from './pages/PropertyTemplateCustomization';
 import { PropertyRentCollectionPage, UnitRentCollectionPage, MonthlySummaryDashboard, RentCollectionWorkflowDashboard } from './pages/rentCollection';
 import { MeterListPageEnhanced, MeterCreatePageTabbedEnhanced, MeterEditPage, MeterDetailPage, MeterReadingCreatePage } from './pages/meters';
-import FilesPage from './pages/FilesPage';
+import FilesPageEnhanced from './pages/FilesPageEnhanced';
 import { RentTransactionInvoicePage, RentTransactionRecordPaymentPage, RentTransactionReceiptPage } from './pages/rentTransactions';
 import { BulkOperationsDashboard } from './pages/bulkOperations/BulkOperationsDashboard';
 import { AppLayout } from './components/layout/AppLayout';
@@ -190,7 +190,7 @@ function App() {
               <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetailPage /></ProtectedRoute>} />
               <Route path="/expenses/:id/edit" element={<ProtectedRoute><ExpenseEditPage /></ProtectedRoute>} />
 
-              <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
+              <Route path="/files" element={<ProtectedRoute><FilesPageEnhanced /></ProtectedRoute>} />
 
               <Route path="/meters" element={<ProtectedRoute><MeterListPageEnhanced /></ProtectedRoute>} />
               <Route path="/meters/create" element={<ProtectedRoute><MeterCreatePageTabbedEnhanced /></ProtectedRoute>} />
