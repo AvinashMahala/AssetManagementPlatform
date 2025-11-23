@@ -275,7 +275,7 @@ const UnitListPageEnhanced: React.FC = () => {
           <p className="text-sm text-muted-foreground">Please wait while we fetch your unit data</p>
         </div>
       ) : (
-        <div className="unit-list-page-enhanced py-2 space-y-3 scroll-reveal revealed">
+        <div className="unit-list-page-enhanced py-2 space-y-2 scroll-reveal revealed">
         {/* Header Actions */}
         <div className="unit-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
           <div>
@@ -302,9 +302,9 @@ const UnitListPageEnhanced: React.FC = () => {
           {stats.map((stat, index) => (
             <Card key={stat.label} className="stat-card hover:shadow-md transition-shadow" style={{ animationDelay: `${(index + 1) * 0.1}s` }}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-                <CardTitle className="stat-label text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+                <CardTitle className="stat-label text-xs font-medium text-muted-foreground">{stat.label}</CardTitle>
                 <div className="stat-icon-container p-1.5 rounded-lg">
-                  <stat.icon className="stat-icon h-3 w-3 text-white" />
+                  <stat.icon className="stat-icon h-4 w-4 text-white" />
                 </div>
               </CardHeader>
               <CardContent className="px-4 pb-3">

@@ -159,7 +159,7 @@
   cursor: pointer;
   animation-delay: calc(var(--index, 0) * 0.1s + 0.2s);
   border-radius: var(--expense-border-radius);
-  padding: 1.5rem;
+  // Removed padding to let Tailwind control it
 
   &:hover {
     transform: translateY(-4px);
@@ -168,47 +168,29 @@
   }
 
   .stat-icon-container {
-    @include icon-glow;
-    background: linear-gradient(135deg, var(--expense-primary), #10b981);
-    box-shadow: 0 0 20px rgba(5, 150, 105, 0.3);
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
+    // Removed fixed width/height and margin to let Tailwind control sizing
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
   }
 
   .stat-icon {
-    color: white;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-    width: 1.5rem;
-    height: 1.5rem;
+    // Removed fixed width/height to let Tailwind control sizing
   }
 
   .stat-value {
-    font-size: 2.25rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--expense-primary), #10b981);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    // Removed font-size, gradient, and margin to let Tailwind control it
   }
 
   .stat-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: hsl(var(--muted-foreground));
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    // Removed all styling to let Tailwind control it
   }
 
   .stat-subtext {
-    font-size: 0.75rem;
-    color: hsl(var(--muted-foreground));
-    margin-top: 0.25rem;
+    // Removed all styling to let Tailwind control it
   }
 }
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Pagination } from '../../components/ui/pagination';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
@@ -495,21 +496,21 @@ const PaymentListPageEnhanced: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="payment-list-page-enhanced space-y-6 scroll-reveal revealed">
+        <div className="payment-list-page-enhanced space-y-2 scroll-reveal revealed">
         {/* Header Actions */}
-        <div className="header-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="header-content">
-            <h1 className="header-title text-3xl font-bold tracking-tight">Track Rent & Payments</h1>
-            <p className="header-description text-muted-foreground">Monitor rental payments and financial records</p>
+        <div className="header-section flex justify-between items-center gap-2">
+          <div className="header-content flex items-baseline gap-2">
+            <h1 className="header-title text-3xl font-bold tracking-tight">Payments</h1>
+            <span className="text-muted-foreground text-sm">(Track rent & payments)</span>
           </div>
           <div className="header-actions flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
+            <Button variant="outline" onClick={() => navigate('/templates')} className="bg-blue-600 hover:bg-blue-700 text-white">
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
             <Button
               onClick={() => navigate('/payments/create-tabbed')}
               title="Step-by-step guided form with progress tracking"
-              size="lg"
+              className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="mr-2 h-4 w-4" />
               Record Payment
@@ -518,17 +519,17 @@ const PaymentListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="stats-section grid gap-4 md:grid-cols-4">
+        <div className="stats-section grid gap-2 md:grid-cols-4">
           {stats.map((stat, index) => (
             <Card key={stat.label} className={`stat-card hover:shadow-lg transition-shadow duration-200`} style={{ animationDelay: `${index * 0.1}s` }}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className={`stat-icon-container ${stat.bgColor} p-2 rounded-lg`}>
-                  <stat.icon className={`stat-icon h-5 w-5 ${stat.color}`} />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+                <CardTitle className="text-xs font-medium text-muted-foreground">{stat.label}</CardTitle>
+                <div className={`stat-icon-container ${stat.bgColor} p-1.5 rounded-lg`}>
+                  <stat.icon className={`stat-icon h-4 w-4 ${stat.color}`} />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="stat-value text-3xl font-bold">{stat.value}</div>
+              <CardContent className="px-4 pb-3">
+                <div className="stat-value text-2xl font-bold">{stat.value}</div>
                 <p className="stat-subtext text-xs text-muted-foreground mt-1">{stat.subtext}</p>
               </CardContent>
             </Card>
@@ -594,57 +595,67 @@ const PaymentListPageEnhanced: React.FC = () => {
 
                 {/* Basic Filters */}
                 <div className="flex gap-2 flex-wrap">
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {statusOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                  <select
-                    value={paymentMethodFilter}
-                    onChange={(e) => setPaymentMethodFilter(e.target.value)}
-                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {paymentMethodOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                  <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethodOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   {/* Sort */}
-                  <select
+                  <Select 
                     value={`${sortBy}-${sortOrder}`}
-                    onChange={(e) => {
-                      const [field, order] = e.target.value.split('-');
+                    onValueChange={(value) => {
+                      const [field, order] = value.split('-');
                       setSortBy(field as typeof sortBy);
                       setSortOrder(order as typeof sortOrder);
                     }}
-                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {sortOptions.map(option => (
-                      <>
-                        <option key={`${option.value}-asc`} value={`${option.value}-asc`}>{option.label} ↑</option>
-                        <option key={`${option.value}-desc`} value={`${option.value}-desc`}>{option.label} ↓</option>
-                      </>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map(option => (
+                        <React.Fragment key={option.value}>
+                          <SelectItem value={`${option.value}-asc`}>{option.label} ↑</SelectItem>
+                          <SelectItem value={`${option.value}-desc`}>{option.label} ↓</SelectItem>
+                        </React.Fragment>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   {/* Items per page */}
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
+                  <Select 
+                    value={String(itemsPerPage)}
+                    onValueChange={(value) => {
+                      setItemsPerPage(Number(value));
                       setCurrentPage(1);
                     }}
-                    className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {itemsPerPageOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {itemsPerPageOptions.map(option => (
+                        <SelectItem key={option.value} value={String(option.value)}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   <Button 
                     variant="outline" 
@@ -712,29 +723,31 @@ const PaymentListPageEnhanced: React.FC = () => {
                     {/* Unit Filter */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Unit</label>
-                      <select
-                        value={selectedUnit}
-                        onChange={(e) => setSelectedUnit(e.target.value)}
-                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {unitOptions.map(option => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
+                      <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {unitOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Tenant Filter */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Tenant</label>
-                      <select
-                        value={selectedTenant}
-                        onChange={(e) => setSelectedTenant(e.target.value)}
-                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {tenantOptions.map(option => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
+                      <Select value={selectedTenant} onValueChange={setSelectedTenant}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select tenant" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tenantOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -815,8 +828,8 @@ const PaymentListPageEnhanced: React.FC = () => {
               <div className="table-view rounded-md border">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
+                    <TableRow className="bg-blue-50 dark:bg-blue-950 hover:bg-blue-50 dark:hover:bg-blue-950">
+                      <TableHead className="w-12 px-2 py-1 text-xs">
                         <input
                           type="checkbox"
                           checked={selectedPayments.size === paginatedPayments.length && paginatedPayments.length > 0}
@@ -824,13 +837,13 @@ const PaymentListPageEnhanced: React.FC = () => {
                           className="rounded border-gray-300"
                         />
                       </TableHead>
-                      <TableHead>Tenant</TableHead>
-                      <TableHead>Unit</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="px-2 py-1 text-xs">Tenant</TableHead>
+                      <TableHead className="px-2 py-1 text-xs">Unit</TableHead>
+                      <TableHead className="px-2 py-1 text-xs">Amount</TableHead>
+                      <TableHead className="px-2 py-1 text-xs">Due Date</TableHead>
+                      <TableHead className="px-2 py-1 text-xs">Payment Method</TableHead>
+                      <TableHead className="px-2 py-1 text-xs">Status</TableHead>
+                      <TableHead className="px-2 py-1 text-xs text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -849,10 +862,10 @@ const PaymentListPageEnhanced: React.FC = () => {
                         return (
                           <TableRow 
                             key={payment.id} 
-                            className="table-row cursor-pointer hover:bg-muted/50"
+                            className="cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-950/20"
                             onClick={() => navigate(`/payments/${payment.id}`)}
                           >
-                            <TableCell onClick={(e) => e.stopPropagation()}>
+                            <TableCell className="px-2 py-1" onClick={(e) => e.stopPropagation()}>
                               <input
                                 type="checkbox"
                                 checked={selectedPayments.has(payment.id)}
@@ -860,22 +873,22 @@ const PaymentListPageEnhanced: React.FC = () => {
                                 className="rounded border-gray-300"
                               />
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="px-2 py-1 text-xs">
                               <div className="flex items-center space-x-2">
                                 <User className="h-4 w-4 text-muted-foreground" />
                                 <span className="font-medium">{tenantName}</span>
                               </div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="px-2 py-1 text-xs">
                               <div className="flex items-center space-x-2">
                                 <Home className="h-4 w-4 text-muted-foreground" />
                                 <span>{unitNumber}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="amount-cell font-bold text-primary">
+                            <TableCell className="px-2 py-1 text-xs amount-cell font-bold text-primary">
                               ₹{payment.amount?.toLocaleString() || 'N/A'}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="px-2 py-1 text-xs">
                               <div className="space-y-1">
                                 <div className="flex items-center text-sm">
                                   <Calendar className="h-3 w-3 mr-1" />
@@ -888,49 +901,52 @@ const PaymentListPageEnhanced: React.FC = () => {
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="capitalize">
+                            <TableCell className="px-2 py-1 text-xs capitalize">
                               {payment.paymentMethod?.replace('_', ' ') || 'N/A'}
                             </TableCell>
-                            <TableCell className="status-cell">
+                            <TableCell className="px-2 py-1 text-xs status-cell">
                               <Badge variant={getStatusVariant(payment)} className={`status-badge ${getStatusColor(payment)}`}>
                                 {getStatusLabel(payment)}
                               </Badge>
                             </TableCell>
-                            <TableCell className="actions-cell text-right">
-                              <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                            <TableCell className="px-2 py-1 text-xs actions-cell text-right">
+                              <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                 <Button
                                   variant="ghost"
-                                  size="sm"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  title="View Details"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/payments/${payment.id}`);
                                   }}
-                                  className="action-btn"
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-3 w-3" />
                                 </Button>
                                 <Button
                                   variant="ghost"
-                                  size="sm"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  title="Edit Payment"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/payments/${payment.id}/edit`);
                                   }}
-                                  className="action-btn"
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Edit className="h-3 w-3" />
                                 </Button>
                                 {payment.status === 'pending' && (
                                   <Button
                                     variant="ghost"
-                                    size="sm"
+                                    size="icon"
+                                    className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    title="Delete Payment"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleSingleDelete(payment);
                                     }}
-                                    className="action-btn delete-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-3 w-3" />
                                   </Button>
                                 )}
                               </div>

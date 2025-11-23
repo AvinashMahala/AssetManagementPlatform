@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Pagination } from '../../components/ui/pagination';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
@@ -418,56 +419,65 @@ const ExpenseListPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="expense-list-page-enhanced">
+      <div className="expense-list-page-enhanced space-y-2">
         {/* Header */}
-        <div className="header-section">
-          <div className="header-content">
-            <div>
-              <h1 className="header-title">Property Expenses</h1>
-              <p className="header-description">
-                Manage and track all property-related expenses with advanced filtering and bulk operations
-              </p>
-            </div>
-            <div className="header-actions">
-              <Button
-                onClick={() => navigate('/expenses/create-tabbed')}
-                size="lg"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Expense
-              </Button>
-            </div>
+        <div className="header-section flex justify-between items-center gap-2">
+          <div>
+            <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
+              Expenses <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Track property expenses)</span>
+            </h1>
+          </div>
+          <div className="header-actions">
+            <Button
+              onClick={() => navigate('/expenses/create-tabbed')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Expense
+            </Button>
           </div>
         </div>
 
         {/* Statistics Cards */}
-        <div className="stats-section">
-          <div className="stat-card" style={{ '--index': 0 } as React.CSSProperties}>
-            <div className="stat-icon-container">
-              <DollarSign className="stat-icon" />
-            </div>
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total Expenses</div>
-            <div className="stat-subtext">{stats.active} active</div>
-          </div>
+        <div className="stats-section grid gap-2 md:grid-cols-3">
+          <Card className="stat-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total Expenses</CardTitle>
+              <div className="stat-icon-container bg-blue-50 dark:bg-blue-900/20 p-1.5 rounded-lg">
+                <DollarSign className="stat-icon h-4 w-4 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3">
+              <div className="stat-value text-2xl font-bold">{stats.total}</div>
+              <p className="stat-subtext text-xs text-muted-foreground mt-1">{stats.active} active</p>
+            </CardContent>
+          </Card>
 
-          <div className="stat-card" style={{ '--index': 1 } as React.CSSProperties}>
-            <div className="stat-icon-container">
-              <TrendingUp className="stat-icon" />
-            </div>
-            <div className="stat-value">₹{stats.totalAmount.toLocaleString()}</div>
-            <div className="stat-label">Total Amount</div>
-            <div className="stat-subtext">Across all expenses</div>
-          </div>
+          <Card className="stat-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total Amount</CardTitle>
+              <div className="stat-icon-container bg-green-50 dark:bg-green-900/20 p-1.5 rounded-lg">
+                <TrendingUp className="stat-icon h-4 w-4 text-green-600" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3">
+              <div className="stat-value text-2xl font-bold">₹{stats.totalAmount.toLocaleString()}</div>
+              <p className="stat-subtext text-xs text-muted-foreground mt-1">Across all expenses</p>
+            </CardContent>
+          </Card>
 
-          <div className="stat-card" style={{ '--index': 2 } as React.CSSProperties}>
-            <div className="stat-icon-container">
-              <CheckCircle className="stat-icon" />
-            </div>
-            <div className="stat-value">{stats.active}</div>
-            <div className="stat-label">Active Expenses</div>
-            <div className="stat-subtext">Currently active</div>
-          </div>
+          <Card className="stat-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Active Expenses</CardTitle>
+              <div className="stat-icon-container bg-orange-50 dark:bg-orange-900/20 p-1.5 rounded-lg">
+                <CheckCircle className="stat-icon h-4 w-4 text-orange-600" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3">
+              <div className="stat-value text-2xl font-bold">{stats.active}</div>
+              <p className="stat-subtext text-xs text-muted-foreground mt-1">Currently active</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters */}
@@ -500,74 +510,79 @@ const ExpenseListPageEnhanced: React.FC = () => {
                 />
               </div>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="archived">Archived</option>
-              </select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
 
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Types</option>
-                <option value="wifi_internet">WiFi/Internet</option>
-                <option value="water_bill">Water Bill</option>
-                <option value="cleaning">Cleaning</option>
-                <option value="electrical_work">Electrical Work</option>
-                <option value="plumbing">Plumbing</option>
-                <option value="ac_repair">AC Repair</option>
-                <option value="other">Other</option>
-              </select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="wifi_internet">WiFi/Internet</SelectItem>
+                  <SelectItem value="water_bill">Water Bill</SelectItem>
+                  <SelectItem value="cleaning">Cleaning</SelectItem>
+                  <SelectItem value="electrical_work">Electrical Work</SelectItem>
+                  <SelectItem value="plumbing">Plumbing</SelectItem>
+                  <SelectItem value="ac_repair">AC Repair</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
 
-              <select
-                value={frequencyFilter}
-                onChange={(e) => setFrequencyFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Frequencies</option>
-                <option value="one_time">One-time</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
+              <Select value={frequencyFilter} onValueChange={setFrequencyFilter}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Frequencies</SelectItem>
+                  <SelectItem value="one_time">One-time</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Advanced Filters */}
             {showAdvancedFilters && (
               <div className="advanced-filters">
                 <div className="filter-group">
-                  <select
-                    value={selectedProperty}
-                    onChange={(e) => setSelectedProperty(e.target.value)}
-                    className="filter-input"
-                  >
-                    <option value="all">All Properties</option>
-                    {properties.map((property: Property) => (
-                      <option key={property.id} value={property.id}>
-                        {property.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Properties</SelectItem>
+                      {properties.map((property: Property) => (
+                        <SelectItem key={property.id} value={property.id}>
+                          {property.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                  <select
-                    value={selectedUnit}
-                    onChange={(e) => setSelectedUnit(e.target.value)}
-                    className="filter-input"
-                  >
-                    <option value="all">All Units</option>
-                    {units.map((unit: Unit) => (
-                      <option key={unit.id} value={unit.id}>
-                        {unit.unitName || `Unit ${unit.unitNumber}`}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Units</SelectItem>
+                      {units.map((unit: Unit) => (
+                        <SelectItem key={unit.id} value={unit.id}>
+                          {unit.unitName || `Unit ${unit.unitNumber}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   <Input
                     type="date"
@@ -657,11 +672,11 @@ const ExpenseListPageEnhanced: React.FC = () => {
         )}
 
         {/* Expenses Table */}
-        <div className="table-view">
+        <div className="table-view rounded-md border">
           <Table>
-            <TableHeader className="table-header">
-              <TableRow>
-                <TableHead className="w-12">
+            <TableHeader>
+              <TableRow className="bg-blue-50 dark:bg-blue-950 hover:bg-blue-50 dark:hover:bg-blue-950">
+                <TableHead className="w-12 px-2 py-1 text-xs">
                   <input
                     type="checkbox"
                     checked={paginatedExpenses.length > 0 && selectedExpenses.size === paginatedExpenses.length}
@@ -670,7 +685,7 @@ const ExpenseListPageEnhanced: React.FC = () => {
                   />
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="px-2 py-1 text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900"
                   onClick={() => handleSort('type')}
                 >
                   <div className="flex items-center gap-2">
@@ -680,11 +695,11 @@ const ExpenseListPageEnhanced: React.FC = () => {
                     )}
                   </div>
                 </TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Property</TableHead>
-                <TableHead>Unit</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Description</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Property</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Unit</TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="px-2 py-1 text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center gap-2">
@@ -694,10 +709,10 @@ const ExpenseListPageEnhanced: React.FC = () => {
                     )}
                   </div>
                 </TableHead>
-                <TableHead>Frequency</TableHead>
-                <TableHead>Distribution</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Frequency</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Distribution</TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="px-2 py-1 text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900"
                   onClick={() => handleSort('startDate')}
                 >
                   <div className="flex items-center gap-2">
@@ -708,7 +723,7 @@ const ExpenseListPageEnhanced: React.FC = () => {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="px-2 py-1 text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900"
                   onClick={() => handleSort('status')}
                 >
                   <div className="flex items-center gap-2">
@@ -718,13 +733,13 @@ const ExpenseListPageEnhanced: React.FC = () => {
                     )}
                   </div>
                 </TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="px-2 py-1 text-xs text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedExpenses.map((expense: ExpenseWithDetails) => (
-                <TableRow key={expense.id} className="table-row">
-                  <TableCell>
+                <TableRow key={expense.id} className="hover:bg-orange-50 dark:hover:bg-orange-950/20">
+                  <TableCell className="px-2 py-1">
                     <input
                       type="checkbox"
                       checked={selectedExpenses.has(expense.id)}
@@ -732,17 +747,17 @@ const ExpenseListPageEnhanced: React.FC = () => {
                       className="rounded border-gray-300"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2 py-1 text-xs">
                     <Badge variant="outline">
                       {getExpenseTypeLabel(expense.type)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-xs">
+                  <TableCell className="px-2 py-1 text-xs max-w-xs">
                     <div className="truncate" title={expense.description}>
                       {expense.description}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2 py-1 text-xs">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       <span className="truncate max-w-32" title={getPropertyName(expense.propertyId)}>
@@ -750,7 +765,7 @@ const ExpenseListPageEnhanced: React.FC = () => {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2 py-1 text-xs">
                     {getUnitInfo(expense.unitId) ? (
                       <div className="flex items-center gap-2">
                         <Home className="h-4 w-4 text-muted-foreground" />
@@ -760,50 +775,53 @@ const ExpenseListPageEnhanced: React.FC = () => {
                       <span className="text-muted-foreground">Property-wide</span>
                     )}
                   </TableCell>
-                  <TableCell className="amount-cell">
+                  <TableCell className="px-2 py-1 text-xs amount-cell font-bold text-primary">
                     ₹{expense.amount.toLocaleString()}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2 py-1 text-xs">
                     <Badge variant="secondary">
                       {getFrequencyLabel(expense.frequency)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2 py-1 text-xs">
                     <Badge variant="outline">
                       {getDistributionLabel(expense.distribution)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2 py-1 text-xs">
                     {format(new Date(expense.startDate), 'MMM dd, yyyy')}
                   </TableCell>
-                  <TableCell className="status-cell">
+                  <TableCell className="px-2 py-1 text-xs status-cell">
                     {getStatusBadge(expense.status, expense.isActive)}
                   </TableCell>
-                  <TableCell className="text-right actions-cell">
-                    <div className="flex items-center justify-end gap-2">
+                  <TableCell className="px-2 py-1 text-xs text-right actions-cell">
+                    <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
+                        className="h-7 w-7"
+                        title="View Details"
                         onClick={() => navigate(`/expenses/${expense.id}`)}
-                        className="action-btn"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
+                        className="h-7 w-7"
+                        title="Edit Expense"
                         onClick={() => navigate(`/expenses/${expense.id}/edit`)}
-                        className="action-btn"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
+                        className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Delete Expense"
                         onClick={() => handleDeleteClick(expense)}
-                        className="action-btn delete-btn"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   </TableCell>

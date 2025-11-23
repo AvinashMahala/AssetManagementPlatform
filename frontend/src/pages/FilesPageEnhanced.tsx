@@ -369,62 +369,75 @@ const FilesPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="files-page-enhanced">
+      <div className="files-page-enhanced space-y-2">
         {/* Header */}
-        <div className="header-section">
-          <div className="header-content">
-            <div>
-              <h1 className="header-title">File Management</h1>
-              <p className="header-description">
-                Centralized file management system for all documents, images, and media across your properties
-              </p>
-            </div>
-            <div className="header-actions">
-              <Button onClick={() => setShowUploadDialog(true)} className="btn">
-                <Plus className="mr-2 h-4 w-4" />
-                Upload Files
-              </Button>
-            </div>
+        <div className="header-section flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+          <div>
+            <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
+              File Management <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Centralized document system)</span>
+            </h1>
+          </div>
+          <div className="header-actions flex gap-2">
+            <Button onClick={() => setShowUploadDialog(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300">
+              <Plus className="mr-2 h-4 w-4" />
+              Upload Files
+            </Button>
           </div>
         </div>
 
         {/* Statistics Cards */}
-        <div className="stats-section">
-          <div className="stat-card" style={{ '--index': 0 } as React.CSSProperties}>
-            <div className="stat-icon-container">
-              <HardDrive className="stat-icon" />
-            </div>
-            <div className="stat-value">{stats.total}</div>
-            <div className="stat-label">Total Files</div>
-            <div className="stat-subtext">{formatFileSize(stats.totalSize)} total</div>
-          </div>
+        <div className="stats-section grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="stat-card hover:shadow-md transition-shadow" style={{ '--index': 0 } as React.CSSProperties}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total Files</CardTitle>
+              <div className="stat-icon-container bg-indigo-50 dark:bg-indigo-900/20 p-1.5 rounded-lg">
+                <HardDrive className="stat-icon h-4 w-4 text-indigo-600" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3">
+              <div className="stat-value text-2xl font-bold">{stats.total}</div>
+              <p className="stat-subtext text-xs text-muted-foreground mt-1">{formatFileSize(stats.totalSize)} total</p>
+            </CardContent>
+          </Card>
 
-          <div className="stat-card" style={{ '--index': 1 } as React.CSSProperties}>
-            <div className="stat-icon-container">
-              <FileImage className="stat-icon" />
-            </div>
-            <div className="stat-value">{stats.images}</div>
-            <div className="stat-label">Images</div>
-            <div className="stat-subtext">Photo files</div>
-          </div>
+          <Card className="stat-card hover:shadow-md transition-shadow" style={{ '--index': 1 } as React.CSSProperties}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Images</CardTitle>
+              <div className="stat-icon-container bg-purple-50 dark:bg-purple-900/20 p-1.5 rounded-lg">
+                <FileImage className="stat-icon h-4 w-4 text-purple-600" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3">
+              <div className="stat-value text-2xl font-bold">{stats.images}</div>
+              <p className="stat-subtext text-xs text-muted-foreground mt-1">Photo files</p>
+            </CardContent>
+          </Card>
 
-          <div className="stat-card" style={{ '--index': 2 } as React.CSSProperties}>
-            <div className="stat-icon-container">
-              <FileText className="stat-icon" />
-            </div>
-            <div className="stat-value">{stats.documents}</div>
-            <div className="stat-label">Documents</div>
-            <div className="stat-subtext">PDF & docs</div>
-          </div>
+          <Card className="stat-card hover:shadow-md transition-shadow" style={{ '--index': 2 } as React.CSSProperties}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Documents</CardTitle>
+              <div className="stat-icon-container bg-blue-50 dark:bg-blue-900/20 p-1.5 rounded-lg">
+                <FileText className="stat-icon h-4 w-4 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3">
+              <div className="stat-value text-2xl font-bold">{stats.documents}</div>
+              <p className="stat-subtext text-xs text-muted-foreground mt-1">PDF & docs</p>
+            </CardContent>
+          </Card>
 
-          <div className="stat-card" style={{ '--index': 3 } as React.CSSProperties}>
-            <div className="stat-icon-container">
-              <FolderOpen className="stat-icon" />
-            </div>
-            <div className="stat-value">{selectedFiles.size}</div>
-            <div className="stat-label">Selected</div>
-            <div className="stat-subtext">For bulk actions</div>
-          </div>
+          <Card className="stat-card hover:shadow-md transition-shadow" style={{ '--index': 3 } as React.CSSProperties}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Selected</CardTitle>
+              <div className="stat-icon-container bg-green-50 dark:bg-green-900/20 p-1.5 rounded-lg">
+                <FolderOpen className="stat-icon h-4 w-4 text-green-600" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-3">
+              <div className="stat-value text-2xl font-bold">{selectedFiles.size}</div>
+              <p className="stat-subtext text-xs text-muted-foreground mt-1">For bulk actions</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters */}
@@ -525,9 +538,9 @@ const FilesPageEnhanced: React.FC = () => {
         {/* File Table */}
         <div className="table-view">
           <Table>
-            <TableHeader className="table-header">
+            <TableHeader className="table-header bg-blue-50 dark:bg-blue-950">
               <TableRow>
-                <TableHead className="w-12">
+                <TableHead className="w-12 px-2 py-1 text-xs">
                   <button
                     onClick={() => handleSelectAll(selectedFiles.size !== files.length)}
                     className="flex items-center justify-center w-5 h-5 hover:bg-gray-100 rounded"
@@ -540,19 +553,19 @@ const FilesPageEnhanced: React.FC = () => {
                     )}
                   </button>
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Entity</TableHead>
-                <TableHead>Uploaded</TableHead>
-                <TableHead className="w-24">Actions</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Name</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Type</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Size</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Category</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Entity</TableHead>
+                <TableHead className="px-2 py-1 text-xs">Uploaded</TableHead>
+                <TableHead className="w-24 px-2 py-1 text-xs">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {files.map((file) => (
-                <TableRow key={file.id} className="table-row">
-                  <TableCell>
+                <TableRow key={file.id} className="table-row hover:bg-orange-50 dark:hover:bg-orange-950/20">
+                  <TableCell className="px-2 py-1">
                     <button
                       onClick={() => handleFileSelection(file.id, !selectedFiles.has(file.id))}
                       className="flex items-center justify-center w-5 h-5 hover:bg-gray-100 rounded"
@@ -564,7 +577,7 @@ const FilesPageEnhanced: React.FC = () => {
                       )}
                     </button>
                   </TableCell>
-                  <TableCell className="file-name-cell">
+                  <TableCell className="file-name-cell px-2 py-1 text-xs">
                     <div className="file-info">
                       <div className="file-icon-container">
                         {getFileIcon(file)}
@@ -579,46 +592,46 @@ const FilesPageEnhanced: React.FC = () => {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="file-type-cell">
+                  <TableCell className="file-type-cell px-2 py-1 text-xs">
                     <span className="file-type-badge">
                       {file.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
                     </span>
                   </TableCell>
-                  <TableCell className="file-size-cell">
+                  <TableCell className="file-size-cell px-2 py-1 text-xs">
                     {formatFileSize(file.fileSize)}
                   </TableCell>
-                  <TableCell className="category-cell">
+                  <TableCell className="category-cell px-2 py-1 text-xs">
                     <span className="category-badge">
                       {getCategoryLabel(file.category)}
                     </span>
                   </TableCell>
-                  <TableCell className="entity-cell">
+                  <TableCell className="entity-cell px-2 py-1 text-xs">
                     <span className="entity-badge">
                       {getEntityTypeLabel(file.entityType)}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-2 py-1 text-xs">
                     {format(new Date(file.uploadedAt), 'MMM dd, yyyy')}
                   </TableCell>
-                  <TableCell className="actions-cell">
+                  <TableCell className="actions-cell px-2 py-1 text-xs">
                     <div className="flex space-x-1">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
-                        className="action-btn h-8 w-8 p-0"
+                        className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900"
                         title="Download"
                       >
                         <Download className="h-3 w-3" />
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => setDeletingFileId(file.id)}
-                        className="action-btn delete-btn h-8 w-8 p-0"
+                        className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900"
                         title="Delete"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3 w-3 text-red-600" />
                       </Button>
                     </div>
                   </TableCell>

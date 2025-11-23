@@ -297,7 +297,7 @@ const PropertyListPageEnhanced: React.FC = () => {
             <p className="loading-subtext">Please wait while we fetch your property data</p>
           </div>
         ) : (
-          <div className="py-2 space-y-3">
+          <div className="py-2 space-y-2">
           {/* Header */}
           <div className="property-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
             <div>

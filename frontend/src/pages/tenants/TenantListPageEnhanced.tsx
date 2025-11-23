@@ -222,7 +222,7 @@ const TenantListPageEnhanced: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="tenant-list-page-enhanced py-2 space-y-3 scroll-reveal revealed">
+        <div className="tenant-list-page-enhanced py-2 space-y-2 scroll-reveal revealed">
         {/* Header Actions */}
         <div className="header-section flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
           <div>
@@ -249,13 +249,13 @@ const TenantListPageEnhanced: React.FC = () => {
         <div id="stats-section" className="stats-section grid gap-2 md:grid-cols-3 scroll-reveal revealed">
           {stats.map((stat, index) => (
             <Card key={stat.label} className="stat-card hover:shadow-md transition-shadow" style={{ animationDelay: `${(index + 1) * 0.1}s` }}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 py-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
                 <CardTitle className="stat-label text-xs font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className="stat-icon-container p-2 rounded-lg">
+                <div className="stat-icon-container p-1.5 rounded-lg">
                   <stat.icon className="stat-icon h-4 w-4 text-white" />
                 </div>
               </CardHeader>
-              <CardContent className="py-2">
+              <CardContent className="px-4 pb-3">
                 <div className="stat-value text-2xl font-bold">{stat.value}</div>
               </CardContent>
             </Card>

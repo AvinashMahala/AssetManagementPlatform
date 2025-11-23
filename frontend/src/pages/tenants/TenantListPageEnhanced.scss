@@ -127,12 +127,10 @@
 
       .stat-icon-container {
         transition: transform var(--tenant-transition-normal);
-
-        &:hover {
-          transform: scale(1.1) rotate(5deg);
-        }
+        // Removed padding and sizing to let Tailwind control it
       }
 
+      .stat-value,
       .stats-value {
         font-weight: 700;
         letter-spacing: -0.025em;

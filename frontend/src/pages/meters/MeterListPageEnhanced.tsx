@@ -207,7 +207,7 @@ export const MeterListPageEnhanced: React.FC = () => {
             <p className="loading-subtext">Please wait while we fetch your meter data</p>
           </div>
         ) : (
-          <div className="py-2 space-y-3">
+          <div className="py-2 space-y-2">
             {/* Header */}
             <div
               ref={headerRef}
@@ -246,11 +246,11 @@ export const MeterListPageEnhanced: React.FC = () => {
               className="stats-section grid gap-2 md:grid-cols-2 lg:grid-cols-4"
             >
               <Card className="stats-card" style={{ animationDelay: '0.1s' }}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 py-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
                   <CardTitle className="text-xs font-medium text-muted-foreground">Total Meters</CardTitle>
                   <Activity className="stats-icon h-4 w-4 text-blue-600" />
                 </CardHeader>
-                <CardContent className="py-2">
+                <CardContent className="px-4 pb-3">
                   <div className="stats-value text-2xl font-bold">{paginationInfo?.total || 0}</div>
                   <p className="text-xs text-muted-foreground">
                     Across all properties
@@ -259,11 +259,11 @@ export const MeterListPageEnhanced: React.FC = () => {
               </Card>
 
               <Card className="stats-card" style={{ animationDelay: '0.2s' }}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 py-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
                   <CardTitle className="text-xs font-medium text-muted-foreground">Active Meters</CardTitle>
                   <div className="stats-icon h-3 w-3 rounded-full bg-green-500"></div>
                 </CardHeader>
-                <CardContent className="py-2">
+                <CardContent className="px-4 pb-3">
                   <div className="stats-value text-2xl font-bold text-green-600">
                     {metersArray.filter((m: any) => m.isActive).length || 0}
                   </div>
@@ -274,11 +274,11 @@ export const MeterListPageEnhanced: React.FC = () => {
               </Card>
 
               <Card className="stats-card" style={{ animationDelay: '0.3s' }}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 py-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
                   <CardTitle className="text-xs font-medium text-muted-foreground">Electricity</CardTitle>
                   <Zap className="stats-icon h-4 w-4 text-yellow-600" />
                 </CardHeader>
-                <CardContent className="py-2">
+                <CardContent className="px-4 pb-3">
                   <div className="stats-value text-2xl font-bold text-yellow-600">
                     {metersArray.filter((m: any) => m.meterType === MeterType.ELECTRICITY).length || 0}
                   </div>
@@ -289,11 +289,11 @@ export const MeterListPageEnhanced: React.FC = () => {
               </Card>
 
               <Card className="stats-card" style={{ animationDelay: '0.4s' }}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 py-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
                   <CardTitle className="text-xs font-medium text-muted-foreground">Water</CardTitle>
                   <Droplets className="stats-icon h-4 w-4 text-blue-600" />
                 </CardHeader>
-                <CardContent className="py-2">
+                <CardContent className="px-4 pb-3">
                   <div className="stats-value text-2xl font-bold text-blue-600">
                     {metersArray.filter((m: any) => m.meterType === MeterType.WATER).length || 0}
                   </div>
