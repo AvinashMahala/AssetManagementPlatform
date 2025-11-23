@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench, Trash2 } from 'lucide-react';
+import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench, Trash2, Edit, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import {
   Dialog,
@@ -268,21 +275,22 @@ const UnitListPageEnhanced: React.FC = () => {
           <p className="text-sm text-muted-foreground">Please wait while we fetch your unit data</p>
         </div>
       ) : (
-        <div className="unit-list-page-enhanced space-y-6 scroll-reveal revealed">
+        <div className="unit-list-page-enhanced py-2 space-y-3 scroll-reveal revealed">
         {/* Header Actions */}
-        <div className="header-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="unit-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
           <div>
-                        <h1 className="header-title text-3xl font-bold tracking-tight">Manage Property Units</h1>
-            <p className="header-description text-muted-foreground">Organize and track individual rental units</p>
+            <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
+              Units <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Manage rental units)</span>
+            </h1>
           </div>
           <div className="header-actions flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/templates')} size="lg">
+            <Button variant="outline" onClick={() => navigate('/templates')}>
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
             <Button
+              className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
               onClick={() => navigate('/units/create-tabbed')}
-              size="lg"
-              title="Step through a comprehensive unit creation process"
+              title="Step-by-step guided form with progress tracking"
             >
               <Plus className="mr-2 h-4 w-4" /> Add Unit
             </Button>
@@ -290,196 +298,196 @@ const UnitListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div id="stats-section" className={`stats-section grid gap-4 md:grid-cols-4 scroll-reveal ${revealedSections.has('stats-section') ? 'revealed' : ''}`}>
+        <div className="stats-section grid gap-2 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, index) => (
             <Card key={stat.label} className="stat-card hover:shadow-md transition-shadow" style={{ animationDelay: `${(index + 1) * 0.1}s` }}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
                 <CardTitle className="stat-label text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className="stat-icon-container p-2 rounded-lg">
-                  <stat.icon className="stat-icon h-5 w-5 text-white" />
+                <div className="stat-icon-container p-1.5 rounded-lg">
+                  <stat.icon className="stat-icon h-3 w-3 text-white" />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="stat-value text-3xl font-bold">{stat.value}</div>
+              <CardContent className="px-4 pb-3">
+                <div className="stats-value text-2xl font-bold">{stat.value}</div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Filters and Search */}
-        <Card id="filters-section" className={`filters-section scroll-reveal ${revealedSections.has('filters-section') ? 'revealed' : ''}`}>
-          <CardHeader>
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search by unit number, type..." 
-                  value={search} 
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setCurrentPage(1);
-                  }} 
-                  className="pl-9"
-                />
+        <div className="filters-section flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="search-icon absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
+              className="search-input pl-9 h-9 text-sm"
+              placeholder="Search by unit number, type..." 
+              value={search} 
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }} 
+            />
+          </div>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value);
+              setCurrentPage(1);
+            }}
+          >
+            <SelectTrigger className="filter-select h-9 w-[140px] text-sm">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent className="filter-dropdown">
+              {statusOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={propertyFilter}
+            onValueChange={(value) => {
+              setPropertyFilter(value);
+              setCurrentPage(1);
+            }}
+          >
+            <SelectTrigger className="filter-select h-9 w-[160px] text-sm">
+              <SelectValue placeholder="All Properties" />
+            </SelectTrigger>
+            <SelectContent className="filter-dropdown">
+              <SelectItem value="all">All Properties</SelectItem>
+              {properties.map(property => (
+                <SelectItem key={property.id} value={property.id}>{property.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(value) => {
+              setItemsPerPage(Number(value));
+              setCurrentPage(1);
+            }}
+          >
+            <SelectTrigger className="filter-select h-9 w-[120px] text-sm">
+              <SelectValue placeholder="Per page" />
+            </SelectTrigger>
+            <SelectContent className="filter-dropdown">
+              {itemsPerPageOptions.map(option => (
+                <SelectItem key={option.value} value={option.value.toString()}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="view-toggle flex gap-1">
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'outline'}
+              size="sm"
+              className="toggle-button h-9 w-9 p-0"
+              onClick={() => setViewMode('table')}
+              title="Table View"
+            >
+              <Home className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              className="toggle-button h-9 w-9 p-0"
+              onClick={() => setViewMode('grid')}
+              title="Grid View"
+            >
+              <Square className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Bulk Actions Toolbar */}
+        {showBulkActions && selectedUnits.size > 0 && (
+          <div className="bulk-actions-toolbar border bg-muted/50 px-4 py-3 rounded-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium">
+                  {selectedUnits.size} unit{selectedUnits.size !== 1 ? 's' : ''} selected
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearSelection}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Selection
+                </Button>
               </div>
-
-              {/* Filters */}
-              <div className="flex gap-2 flex-wrap">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleBulkMaintenance}
+                  disabled={bulkActionLoading}
                 >
-                  {statusOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={propertyFilter}
-                  onChange={(e) => {
-                    setPropertyFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  {bulkActionLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                  ) : (
+                    <Wrench className="h-4 w-4 mr-2" />
+                  )}
+                  Mark as Maintenance
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={bulkActionLoading}
                 >
-                  <option value="all">All Properties</option>
-                  {properties.map(property => (
-                    <option key={property.id} value={property.id}>{property.name}</option>
-                  ))}
-                </select>
-
-                {/* Items per page */}
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  {bulkActionLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-2" />
+                  )}
+                  Delete Selected
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkExport}
                 >
-                  {itemsPerPageOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-
-                {/* View Toggle */}
-                <div className="flex border rounded-md">
-                  <Button
-                    variant={viewMode === 'table' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('table')}
-                    className="rounded-r-none"
-                  >
-                    Table
-                  </Button>
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-l-none"
-                  >
-                    Grid
-                  </Button>
-                </div>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Selected
+                </Button>
               </div>
             </div>
-          </CardHeader>
+          </div>
+        )}
 
-          {/* Bulk Actions Toolbar */}
-          {showBulkActions && selectedUnits.size > 0 && (
-            <div className="bulk-actions-toolbar border-t bg-muted/50 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm font-medium">
-                    {selectedUnits.size} unit{selectedUnits.size !== 1 ? 's' : ''} selected
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearSelection}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Clear Selection
-                  </Button>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleBulkMaintenance}
-                    disabled={bulkActionLoading}
-                  >
-                    {bulkActionLoading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                    ) : (
-                      <Wrench className="h-4 w-4 mr-2" />
-                    )}
-                    Mark as Maintenance
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleBulkDelete}
-                    disabled={bulkActionLoading}
-                  >
-                    {bulkActionLoading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    ) : (
-                      <Trash2 className="h-4 w-4 mr-2" />
-                    )}
-                    Delete Selected
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleBulkExport}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Selected
-                  </Button>
-                </div>
-              </div>
+        {/* Results Summary */}
+        {!loading && filteredUnits.length > 0 && (
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {paginatedUnits.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredUnits.length)} of {filteredUnits.length} units
             </div>
-          )}
+          </div>
+        )}
 
-          <CardContent>
-            {/* Results Summary */}
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-sm text-muted-foreground">
-                Showing {paginatedUnits.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredUnits.length)} of {filteredUnits.length} units
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              </div>
-            ) : viewMode === 'table' ? (
-              /* Table View */
-              <div id="units-table" className={`table-view rounded-md border scroll-reveal ${revealedSections.has('units-table') ? 'revealed' : ''}`}>
+        {/* Table View */}
+        {!loading && viewMode === 'table' && filteredUnits.length > 0 && (
+          <div className="unit-table-container">
+            <Card>
+              <CardContent className="p-0">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
+                    <TableRow className="table-header">
+                      <TableHead className="w-12 py-2 px-3">
                         <input
                           type="checkbox"
                           checked={selectedUnits.size === paginatedUnits.length && paginatedUnits.length > 0}
                           onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="rounded border-gray-300"
+                          className="header-checkbox rounded border-gray-300"
                         />
                       </TableHead>
-                      <TableHead>Unit Number</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Property</TableHead>
-                      <TableHead>Monthly Rent</TableHead>
-                      <TableHead>Area</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Unit Number</TableHead>
+                      <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Type</TableHead>
+                      <TableHead className="w-[20%] min-w-[150px] py-2 px-3">Property</TableHead>
+                      <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Monthly Rent</TableHead>
+                      <TableHead className="w-[10%] min-w-[80px] py-2 px-3">Area</TableHead>
+                      <TableHead className="w-[10%] min-w-[100px] py-2 px-3">Status</TableHead>
+                      <TableHead className="w-[15%] min-w-[140px] py-2 px-3 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -493,63 +501,85 @@ const UnitListPageEnhanced: React.FC = () => {
                       paginatedUnits.map((unit) => (
                         <TableRow 
                           key={unit.id} 
-                          className="table-row cursor-pointer hover:bg-muted/50"
+                          className={`table-row cursor-pointer ${
+                            unit.status === 'available' 
+                              ? 'bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/30' 
+                              : ''
+                          }`}
                           onClick={() => navigate(`/units/${unit.id}`)}
                         >
-                          <TableCell onClick={(e) => e.stopPropagation()}>
+                          <TableCell className="py-2 px-3" onClick={(e) => e.stopPropagation()}>
                             <input
                               type="checkbox"
                               checked={selectedUnits.has(unit.id)}
                               onChange={(e) => handleSelectUnit(unit.id, e.target.checked)}
-                              className="rounded border-gray-300"
+                              className="row-checkbox rounded border-gray-300"
                             />
                           </TableCell>
-                          <TableCell className="font-medium">{unit.unitNumber}</TableCell>
-                          <TableCell>{unit.unitType}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
-                              {getPropertyName(unit.propertyId)}
+                          <TableCell className="font-medium break-words py-2 px-3 text-sm">{unit.unitNumber}</TableCell>
+                          <TableCell className="break-words py-2 px-3 text-sm">{unit.unitType}</TableCell>
+                          <TableCell className="break-words py-2 px-3">
+                            <div className="flex items-start gap-1">
+                              <Building2 className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
+                              <span className="break-words text-sm">{getPropertyName(unit.propertyId)}</span>
                             </div>
                           </TableCell>
-                          <TableCell>₹{unit.monthlyRent?.toLocaleString() || 'N/A'}</TableCell>
-                          <TableCell>{unit.area || 'N/A'}</TableCell>
-                          <TableCell>
-                            <Badge variant={getStatusVariant(unit.status)}>
+                          <TableCell className="break-words py-2 px-3 text-sm">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}</TableCell>
+                          <TableCell className="break-words py-2 px-3 text-sm">{unit.area || 'N/A'}</TableCell>
+                          <TableCell className="break-words py-2 px-3">
+                            <Badge variant={getStatusVariant(unit.status)} className="text-xs whitespace-normal">
                               {unit.status.replace('_', ' ').charAt(0).toUpperCase() + unit.status.replace('_', ' ').slice(1)}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <TableCell className="text-right py-2 px-3">
+                            <div className="table-actions flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon"
+                                className="table-action-button h-7 w-7"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate(`/units/${unit.id}`);
                                 }}
+                                title="View Details"
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-3.5 w-3.5" />
                               </Button>
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon"
+                                className="table-action-button h-7 w-7"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate(`/units/${unit.id}/dashboard`);
                                 }}
+                                title="Dashboard"
                               >
-                                📊
+                                <BarChart3 className="h-3.5 w-3.5" />
                               </Button>
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon"
+                                className="table-action-button h-7 w-7"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/units/${unit.id}/edit`);
+                                }}
+                                title="Edit"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="table-action-button h-7 w-7"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteClick(unit.id, unit.unitNumber);
                                 }}
+                                title="Delete"
                               >
-                                <Trash2 className="h-4 w-4 text-red-600" />
+                                <Trash2 className="h-3.5 w-3.5 text-red-600" />
                               </Button>
                             </div>
                           </TableCell>
@@ -558,104 +588,134 @@ const UnitListPageEnhanced: React.FC = () => {
                     )}
                   </TableBody>
                 </Table>
-              </div>
-            ) : (
-              /* Grid View */
-              <div id="units-grid" className={`grid-view grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 scroll-reveal ${revealedSections.has('units-grid') ? 'revealed' : ''}`}>
-                {paginatedUnits.length === 0 ? (
-                  <div className="col-span-full empty-state text-center py-12 text-muted-foreground">
-                    {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found. Click "Add Unit" to create one.'}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Grid View */}
+        {!loading && viewMode === 'grid' && filteredUnits.length > 0 && (
+          <div className="unit-grid grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {paginatedUnits.map((unit, index) => (
+              <Card 
+                key={unit.id} 
+                className={`unit-card hover:shadow-lg transition-all duration-300 relative flex flex-col cursor-pointer ${
+                  unit.status === 'available' ? 'bg-green-50 dark:bg-green-950/20' : ''
+                }`}
+                onClick={() => navigate(`/units/${unit.id}`)}
+                style={{ '--unit-index': index } as React.CSSProperties}
+              >
+                {/* Status Bar */}
+                <div className="unit-status-bar h-1" style={{
+                  background: unit.status === 'available' 
+                    ? 'linear-gradient(90deg, #10b981, #059669)' 
+                    : unit.status === 'occupied' 
+                    ? 'linear-gradient(90deg, #f59e0b, #d97706)' 
+                    : 'linear-gradient(90deg, #6b7280, #4b5563)'
+                }} />
+                
+                {/* Checkbox - Top Right */}
+                <div className="absolute top-3 right-3 z-10" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    className="unit-checkbox rounded border-gray-300 w-4 h-4 cursor-pointer"
+                    checked={selectedUnits.has(unit.id)}
+                    onChange={(e) => handleSelectUnit(unit.id, e.target.checked)}
+                  />
+                </div>
+
+                <div className="unit-content px-3 py-2.5 space-y-2 pr-10 flex-1 flex flex-col">
+                  {/* Row 1: Unit Number & Type */}
+                  <div>
+                    <h3 className="unit-title text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">{unit.unitNumber}</h3>
+                    <div className="unit-type text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">{unit.unitType}</div>
                   </div>
-                ) : (
-                  paginatedUnits.map((unit, index) => (
-                    <Card 
-                      key={unit.id} 
-                      className="unit-card cursor-pointer overflow-hidden group"
-                      onClick={() => navigate(`/units/${unit.id}`)}
-                      style={{ '--unit-index': index } as React.CSSProperties}
+
+                  {/* Row 2: Property & Status */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <Building2 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{getPropertyName(unit.propertyId)}</span>
+                    </div>
+                    <Badge className={`text-xs px-2 py-0.5 flex-shrink-0 ${getStatusColor(unit.status)}`}>
+                      {unit.status === 'available' ? 'Avail' : unit.status === 'occupied' ? 'Occup' : 'Maint'}
+                    </Badge>
+                  </div>
+
+                  {/* Row 3: Rent & Area */}
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      <span className="font-medium text-gray-900 dark:text-white">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}</span>/mo
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      <span className="font-medium text-gray-900 dark:text-white">{unit.area || 'N/A'}</span> sf
+                    </span>
+                  </div>
+
+                  {/* Row 4: Bedrooms (Conditional) */}
+                  {unit.bedrooms && (
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      <span className="font-medium text-gray-900 dark:text-white">{unit.bedrooms}</span> BHK
+                    </div>
+                  )}
+
+                  {/* Row 5: Action Buttons */}
+                  <div className="unit-actions flex items-center gap-1 pt-1 mt-auto" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="action-button h-7 px-2 flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/units/${unit.id}`);
+                      }}
+                      title="View Details"
                     >
-                      {/* Status Banner */}
-                      <div className="status-banner h-2 bg-gradient-to-r from-green-500 to-emerald-600" style={{
-                        background: unit.status === 'available' 
-                          ? 'linear-gradient(90deg, #10b981, #059669)' 
-                          : unit.status === 'occupied' 
-                          ? 'linear-gradient(90deg, #f59e0b, #d97706)' 
-                          : 'linear-gradient(90deg, #6b7280, #4b5563)'
-                      }} />
-                      
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="unit-number-badge h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                              {unit.unitNumber}
-                            </div>
-                            <div>
-                              <CardTitle className="unit-title text-lg">{unit.unitType}</CardTitle>
-                              <p className="unit-type text-xs text-muted-foreground">ID: {unit.id.slice(0, 8)}</p>
-                            </div>
-                          </div>
-                          <Badge variant={getStatusVariant(unit.status)} className={`unit-status-badge ${getStatusColor(unit.status)}`}>
-                            {unit.status === 'available' ? 'Available' : unit.status === 'occupied' ? 'Occupied' : 'Maintenance'}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="unit-details space-y-2 text-sm">
-                          <div className="flex items-center justify-between">
-                            <span className="unit-detail-label text-muted-foreground">Property</span>
-                            <span className="unit-detail-value font-medium flex items-center">
-                              <Building2 className="h-3 w-3 mr-1" />
-                              {getPropertyName(unit.propertyId).slice(0, 15)}...
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="unit-detail-label text-muted-foreground">Rent</span>
-                            <span className="unit-detail-value font-bold text-primary">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}/mo</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="unit-detail-label text-muted-foreground">Area</span>
-                            <span className="unit-detail-value font-medium">{unit.area || 'N/A'} sq ft</span>
-                          </div>
-                          {unit.bedrooms && (
-                            <div className="flex items-center justify-between">
-                              <span className="unit-detail-label text-muted-foreground">Bedrooms</span>
-                              <span className="unit-detail-value font-medium">{unit.bedrooms} BHK</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="unit-actions flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="unit-action-btn flex-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/units/${unit.id}`);
-                            }}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="unit-action-btn flex-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/units/${unit.id}/dashboard`);
-                            }}
-                          >
-                            📊 Dashboard
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="action-button h-7 px-2 flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/units/${unit.id}/dashboard`);
+                      }}
+                      title="Dashboard"
+                    >
+                      <BarChart3 className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="action-button h-7 px-2 flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/units/${unit.id}/edit`);
+                      }}
+                      title="Edit"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="action-button h-7 px-2 text-red-600 flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(unit.id, unit.unitNumber);
+                      }}
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
