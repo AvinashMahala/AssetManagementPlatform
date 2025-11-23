@@ -421,16 +421,17 @@ const ExpenseListPageEnhanced: React.FC = () => {
     <AppLayout>
       <div className="expense-list-page-enhanced space-y-2">
         {/* Header */}
-        <div className="header-section flex justify-between items-center gap-2">
+        <div className="expense-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
           <div>
             <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
               Expenses <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Track property expenses)</span>
             </h1>
           </div>
-          <div className="header-actions">
+          <div className="header-actions flex gap-2">
             <Button
               onClick={() => navigate('/expenses/create-tabbed')}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+              title="Add a new expense record"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Expense

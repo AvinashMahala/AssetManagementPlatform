@@ -371,14 +371,18 @@ const FilesPageEnhanced: React.FC = () => {
     <AppLayout>
       <div className="files-page-enhanced space-y-2">
         {/* Header */}
-        <div className="header-section flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+        <div className="files-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
           <div>
             <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
               File Management <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Centralized document system)</span>
             </h1>
           </div>
           <div className="header-actions flex gap-2">
-            <Button onClick={() => setShowUploadDialog(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300">
+            <Button 
+              onClick={() => setShowUploadDialog(true)} 
+              className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+              title="Upload new files"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Upload Files
             </Button>
@@ -442,21 +446,21 @@ const FilesPageEnhanced: React.FC = () => {
 
         {/* Filters */}
         <Card className="filters-section">
-          <CardHeader className="filters-header">
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
+          <CardHeader className="filters-header pb-2 pt-3 px-4">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <Filter className="h-4 w-4" />
               <span>Filters</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="filters-content">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardContent className="filters-content px-4 pb-3 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
               <div className="search-container">
-                <Search className="search-icon" />
+                <Search className="search-icon h-3.5 w-3.5" />
                 <Input
                   placeholder="Search files..."
                   value={filters.search || ''}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
-                  className="search-input"
+                  className="search-input h-9 text-sm"
                 />
               </div>
 
@@ -464,7 +468,7 @@ const FilesPageEnhanced: React.FC = () => {
                 value={filters.entityType || ''}
                 onValueChange={(value) => handleFilterChange('entityType', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-gray-900 border shadow-lg">
@@ -479,7 +483,7 @@ const FilesPageEnhanced: React.FC = () => {
                 value={filters.category || ''}
                 onValueChange={(value) => handleFilterChange('category', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -495,7 +499,7 @@ const FilesPageEnhanced: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  className="w-full"
+                  className="w-full h-9 text-sm"
                 >
                   Clear Filters
                 </Button>
@@ -553,13 +557,13 @@ const FilesPageEnhanced: React.FC = () => {
                     )}
                   </button>
                 </TableHead>
-                <TableHead className="px-2 py-1 text-xs">Name</TableHead>
-                <TableHead className="px-2 py-1 text-xs">Type</TableHead>
-                <TableHead className="px-2 py-1 text-xs">Size</TableHead>
-                <TableHead className="px-2 py-1 text-xs">Category</TableHead>
-                <TableHead className="px-2 py-1 text-xs">Entity</TableHead>
-                <TableHead className="px-2 py-1 text-xs">Uploaded</TableHead>
-                <TableHead className="w-24 px-2 py-1 text-xs">Actions</TableHead>
+                <TableHead className="w-[30%] min-w-[200px] px-2 py-1 text-xs">Name</TableHead>
+                <TableHead className="w-[10%] min-w-[80px] px-2 py-1 text-xs">Type</TableHead>
+                <TableHead className="w-[10%] min-w-[80px] px-2 py-1 text-xs">Size</TableHead>
+                <TableHead className="w-[12%] min-w-[100px] px-2 py-1 text-xs">Category</TableHead>
+                <TableHead className="w-[12%] min-w-[100px] px-2 py-1 text-xs">Entity</TableHead>
+                <TableHead className="w-[13%] min-w-[100px] px-2 py-1 text-xs">Uploaded</TableHead>
+                <TableHead className="w-[13%] min-w-[120px] px-2 py-1 text-xs">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -577,40 +581,40 @@ const FilesPageEnhanced: React.FC = () => {
                       )}
                     </button>
                   </TableCell>
-                  <TableCell className="file-name-cell px-2 py-1 text-xs">
+                  <TableCell className="file-name-cell px-2 py-1 text-xs break-words whitespace-normal">
                     <div className="file-info">
                       <div className="file-icon-container">
                         {getFileIcon(file)}
                       </div>
                       <div className="file-details">
-                        <div className="file-name" title={file.originalName}>
+                        <div className="file-name break-words" title={file.originalName}>
                           {file.originalName}
                         </div>
-                        <div className="file-meta" title={file.filename}>
+                        <div className="file-meta break-words" title={file.filename}>
                           {file.filename}
                         </div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="file-type-cell px-2 py-1 text-xs">
-                    <span className="file-type-badge">
+                  <TableCell className="file-type-cell px-2 py-1 text-xs break-words whitespace-normal">
+                    <span className="file-type-badge whitespace-normal">
                       {file.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
                     </span>
                   </TableCell>
-                  <TableCell className="file-size-cell px-2 py-1 text-xs">
+                  <TableCell className="file-size-cell px-2 py-1 text-xs break-words">
                     {formatFileSize(file.fileSize)}
                   </TableCell>
-                  <TableCell className="category-cell px-2 py-1 text-xs">
-                    <span className="category-badge">
+                  <TableCell className="category-cell px-2 py-1 text-xs break-words whitespace-normal">
+                    <span className="category-badge whitespace-normal">
                       {getCategoryLabel(file.category)}
                     </span>
                   </TableCell>
-                  <TableCell className="entity-cell px-2 py-1 text-xs">
-                    <span className="entity-badge">
+                  <TableCell className="entity-cell px-2 py-1 text-xs break-words whitespace-normal">
+                    <span className="entity-badge whitespace-normal">
                       {getEntityTypeLabel(file.entityType)}
                     </span>
                   </TableCell>
-                  <TableCell className="px-2 py-1 text-xs">
+                  <TableCell className="px-2 py-1 text-xs break-words">
                     {format(new Date(file.uploadedAt), 'MMM dd, yyyy')}
                   </TableCell>
                   <TableCell className="actions-cell px-2 py-1 text-xs">
@@ -893,20 +897,23 @@ const FilesPageEnhanced: React.FC = () => {
       </div>
 
       {/* Sidebar */}
-      <div className="sidebar-section">
-        <div className="sidebar-header">
-          <h3 className="sidebar-title">Recent Files</h3>
-          <p className="sidebar-description">Quick access to recently uploaded files</p>
+      {/* Recent Files Section */}
+      <div className="recent-files-section">
+        <div className="flex items-center gap-2 mb-3">
+          <FolderOpen className="h-5 w-5 text-indigo-600" />
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Files</h2>
         </div>
-        <div className="sidebar-content">
-          <RecentFilesWidget
-            limit={5}
-            onFileClick={(file) => {
-              // Open file in new tab for viewing
-              window.open(fileService.getDownloadUrl(file.id), '_blank');
-            }}
-          />
-        </div>
+        <Card>
+          <CardContent className="p-4">
+            <RecentFilesWidget
+              limit={5}
+              onFileClick={(file) => {
+                // Open file in new tab for viewing
+                window.open(fileService.getDownloadUrl(file.id), '_blank');
+              }}
+            />
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );

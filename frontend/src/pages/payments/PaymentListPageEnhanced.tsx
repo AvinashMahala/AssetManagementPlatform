@@ -498,19 +498,24 @@ const PaymentListPageEnhanced: React.FC = () => {
       ) : (
         <div className="payment-list-page-enhanced space-y-2 scroll-reveal revealed">
         {/* Header Actions */}
-        <div className="header-section flex justify-between items-center gap-2">
-          <div className="header-content flex items-baseline gap-2">
-            <h1 className="header-title text-3xl font-bold tracking-tight">Payments</h1>
-            <span className="text-muted-foreground text-sm">(Track rent & payments)</span>
+        <div className="payment-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+          <div>
+            <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
+              Payments <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Track rent & payments)</span>
+            </h1>
           </div>
           <div className="header-actions flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/templates')} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/templates')}
+              title="Access payment templates"
+            >
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
             <Button
               onClick={() => navigate('/payments/create-tabbed')}
+              className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
               title="Step-by-step guided form with progress tracking"
-              className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="mr-2 h-4 w-4" />
               Record Payment

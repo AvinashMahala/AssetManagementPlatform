@@ -82,7 +82,61 @@
     color: var(--files-primary);
   }
 
-  /* Header section */
+  /* Enhanced Header Section */
+  .files-list-header {
+    animation: fadeInUp 0.6s ease-out;
+    position: relative;
+
+    .header-title {
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.025em;
+      position: relative;
+      animation: slideInFromLeft 0.6s ease-out;
+
+      .header-subtitle {
+        display: inline-block;
+        animation: fadeIn 0.8s ease-out 0.4s both;
+        opacity: 0.8;
+        font-weight: 400;
+      }
+    }
+
+    .header-description {
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      animation: fadeIn 0.8s ease-out 0.2s both;
+    }
+
+    .header-actions {
+      animation: slideInFromRight 0.6s ease-out 0.3s both;
+
+      .action-button {
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          transition: width 0.5s, height 0.5s;
+          transform: translate(-50%, -50%);
+        }
+
+        &:hover::before {
+          width: 200px;
+          height: 200px;
+        }
+      }
+    }
+  }
+
+  /* Legacy header section - for backwards compatibility */
   .header-section {
     @include files-glass-morphism;
     @include files-slide-in-from-top;
@@ -207,9 +261,14 @@
     overflow: hidden;
 
     .filters-header {
-      padding: 1.5rem;
+      padding: 0.75rem 1rem;
       border-bottom: 1px solid hsl(var(--border));
       background: linear-gradient(135deg, var(--files-glass-bg), rgba(99, 102, 241, 0.02));
+      
+      .card-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
     }
 
     .active-filters {
@@ -238,7 +297,7 @@
     }
 
     .filters-content {
-      padding: 1.5rem;
+      padding: 0.75rem 1rem;
 
       .search-container {
         position: relative;
@@ -246,17 +305,18 @@
 
         .search-icon {
           position: absolute;
-          left: 0.75rem;
+          left: 0.625rem;
           top: 50%;
           transform: translateY(-50%);
           color: hsl(var(--muted-foreground));
         }
 
         .search-input {
-          padding-left: 2.5rem;
+          padding-left: 2rem;
           border-radius: 0.5rem;
           border: 1px solid hsl(var(--border));
           transition: all 0.2s ease;
+          font-size: 0.875rem;
 
           &:focus {
             border-color: var(--files-primary);
@@ -269,6 +329,8 @@
         border-radius: 0.5rem;
         border: 1px solid hsl(var(--border));
         transition: all 0.2s ease;
+        height: 2.25rem;
+        font-size: 0.875rem;
 
         &:focus {
           border-color: var(--files-primary);
@@ -310,23 +372,56 @@
     border: 1px solid hsl(var(--border));
     background: hsl(var(--background));
 
+    // Compact table styling with fixed layout and word wrapping
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    // Enable word wrapping for all cells
+    td, th {
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+
     .table-header {
-      background: linear-gradient(135deg, var(--files-glass-bg), rgba(99, 102, 241, 0.02));
-      border-bottom: 1px solid hsl(var(--border));
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(37, 99, 235, 0.08));
+      border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+
+      th {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.75rem;
+        color: rgb(30, 64, 175);
+        padding: 0.5rem 0.75rem;
+        vertical-align: middle;
+
+        [data-theme="dark"] & {
+          color: rgb(147, 197, 253);
+        }
+      }
     }
 
     .table-row {
-      transition: all 0.2s ease;
-      border-bottom: 1px solid hsl(var(--border));
-
-      &:hover {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.02), rgba(99, 102, 241, 0.01));
-        transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-      }
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      min-height: 40px;
 
       &:last-child {
         border-bottom: none;
+      }
+
+      &:hover {
+        background: rgba(249, 115, 22, 0.08);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+        [data-theme="dark"] & {
+          background: rgba(249, 115, 22, 0.12);
+        }
       }
 
       .table-cell {
@@ -478,7 +573,18 @@
     }
   }
 
-  /* Sidebar */
+  /* Recent Files Section */
+  .recent-files-section {
+    animation: slideInFromTop 0.5s ease-out 0.8s both;
+    
+    h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+  }
+
+  /* Legacy Sidebar section - for backwards compatibility */
   .sidebar-section {
     @include files-slide-in-from-top;
     animation-delay: 0.8s;
@@ -574,7 +680,110 @@
     }
   }
 
-/* Animations */
+/* Keyframe Animations - Enhanced suite matching Properties page */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Legacy Animations - for backwards compatibility */
 @keyframes files-fadeIn {
   from {
     opacity: 0;
