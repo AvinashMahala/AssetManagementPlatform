@@ -47,8 +47,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, showBread
         />
         
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {showBreadcrumbs && <Breadcrumbs className="mb-6" items={[]} />}
+          <div className="px-4 lg:px-6 py-3">
+            {showBreadcrumbs && <Breadcrumbs className="mb-2" items={[]} />}
             {children}
           </div>
         </main>

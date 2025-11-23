@@ -14,6 +14,13 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -290,14 +297,13 @@ const PropertyListPageEnhanced: React.FC = () => {
             <p className="loading-subtext">Please wait while we fetch your property data</p>
           </div>
         ) : (
-          <div className="container mx-auto py-6 space-y-6">
+          <div className="py-2 space-y-3">
           {/* Header */}
-          <div className="property-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="property-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
             <div>
-              <h1 className="header-title">Properties</h1>
-              <p className="header-description">
-                Manage your property portfolio
-              </p>
+              <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
+                Properties <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Manage your property portfolio)</span>
+              </h1>
             </div>
             <div className="header-actions flex gap-2">
               <Button variant="outline" onClick={() => navigate('/templates')}>
@@ -305,7 +311,7 @@ const PropertyListPageEnhanced: React.FC = () => {
                 Templates
               </Button>
               <Button
-                className="action-button"
+                className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
                 onClick={() => navigate('/properties/create-tabbed')}
                 title="Step-by-step guided form with progress tracking"
               >
@@ -316,54 +322,54 @@ const PropertyListPageEnhanced: React.FC = () => {
           </div>
 
         {/* Stats Cards */}
-        <div className="stats-section grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="stats-section grid gap-2 md:grid-cols-2 lg:grid-cols-4">
           <Card className="stats-card hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Properties</CardTitle>
-              <Building2 className="stats-icon h-5 w-5 text-blue-600" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Total Properties</CardTitle>
+              <Building2 className="stats-icon h-4 w-4 text-blue-600" />
             </CardHeader>
-            <CardContent>
-              <div className="stats-value text-3xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="px-4 pb-3">
+              <div className="stats-value text-2xl font-bold">{stats.total}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Across all locations
               </p>
             </CardContent>
           </Card>
           
           <Card className="stats-card hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Available</CardTitle>
-              <div className="stats-icon h-4 w-4 rounded-full bg-green-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Available</CardTitle>
+              <div className="stats-icon h-3 w-3 rounded-full bg-green-500"></div>
             </CardHeader>
-            <CardContent>
-              <div className="stats-value text-3xl font-bold">{stats.available}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="px-4 pb-3">
+              <div className="stats-value text-2xl font-bold">{stats.available}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Ready for tenants
               </p>
             </CardContent>
           </Card>
           
           <Card className="stats-card hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Occupied</CardTitle>
-              <div className="stats-icon h-4 w-4 rounded-full bg-blue-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Occupied</CardTitle>
+              <div className="stats-icon h-3 w-3 rounded-full bg-blue-500"></div>
             </CardHeader>
-            <CardContent>
-              <div className="stats-value text-3xl font-bold">{stats.occupied}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="px-4 pb-3">
+              <div className="stats-value text-2xl font-bold">{stats.occupied}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Currently rented
               </p>
             </CardContent>
           </Card>
           
           <Card className="stats-card hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Maintenance</CardTitle>
-              <div className="stats-icon h-4 w-4 rounded-full bg-orange-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+              <CardTitle className="text-xs font-medium text-gray-600 dark:text-gray-400">Maintenance</CardTitle>
+              <div className="stats-icon h-3 w-3 rounded-full bg-orange-500"></div>
             </CardHeader>
-            <CardContent>
-              <div className="stats-value text-3xl font-bold">{stats.maintenance}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="px-4 pb-3">
+              <div className="stats-value text-2xl font-bold">{stats.maintenance}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Under repair
               </p>
             </CardContent>
@@ -371,76 +377,90 @@ const PropertyListPageEnhanced: React.FC = () => {
         </div>
 
         {/* Filters and View Toggle */}
-        <div className="filters-section flex flex-col sm:flex-row gap-4">
+        <div className="filters-section flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
-            <Search className="search-icon absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="search-icon absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              className="search-input pl-10"
+              className="search-input pl-9 h-9 text-sm"
               placeholder="Search properties by name or location..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
-          <select
-            className="filter-select h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          <Select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
+            onValueChange={(value) => {
+              setStatusFilter(value);
               setCurrentPage(1);
             }}
           >
-            <option value="all">All Status</option>
-            <option value={PropertyStatus.AVAILABLE}>Available</option>
-            <option value={PropertyStatus.OCCUPIED}>Occupied</option>
-            <option value={PropertyStatus.UNDER_MAINTENANCE}>Maintenance</option>
-            <option value={PropertyStatus.VACANT}>Vacant</option>
-          </select>
-          <select
-            className="filter-select h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            <SelectTrigger className="filter-select h-9 w-[140px] text-sm">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent className="filter-dropdown">
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value={PropertyStatus.AVAILABLE}>Available</SelectItem>
+              <SelectItem value={PropertyStatus.OCCUPIED}>Occupied</SelectItem>
+              <SelectItem value={PropertyStatus.UNDER_MAINTENANCE}>Maintenance</SelectItem>
+              <SelectItem value={PropertyStatus.VACANT}>Vacant</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
             value={typeFilter}
-            onChange={(e) => {
-              setTypeFilter(e.target.value);
+            onValueChange={(value) => {
+              setTypeFilter(value);
               setCurrentPage(1);
             }}
           >
-            <option value="all">All Types</option>
-            <option value={PropertyType.APARTMENT}>Apartment</option>
-            <option value={PropertyType.HOUSE}>House</option>
-            <option value={PropertyType.VILLA}>Villa</option>
-            <option value={PropertyType.COMMERCIAL}>Commercial</option>
-            <option value={PropertyType.PG_HOSTEL}>PG/Hostel</option>
-            <option value={PropertyType.CO_LIVING}>Co-Living</option>
-            <option value={PropertyType.OFFICE}>Office</option>
-            <option value={PropertyType.SHOP}>Shop</option>
-            <option value={PropertyType.WAREHOUSE}>Warehouse</option>
-          </select>
+            <SelectTrigger className="filter-select h-9 w-[140px] text-sm">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent className="filter-dropdown">
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value={PropertyType.APARTMENT}>Apartment</SelectItem>
+              <SelectItem value={PropertyType.HOUSE}>House</SelectItem>
+              <SelectItem value={PropertyType.VILLA}>Villa</SelectItem>
+              <SelectItem value={PropertyType.COMMERCIAL}>Commercial</SelectItem>
+              <SelectItem value={PropertyType.PG_HOSTEL}>PG/Hostel</SelectItem>
+              <SelectItem value={PropertyType.CO_LIVING}>Co-Living</SelectItem>
+              <SelectItem value={PropertyType.OFFICE}>Office</SelectItem>
+              <SelectItem value={PropertyType.SHOP}>Shop</SelectItem>
+              <SelectItem value={PropertyType.WAREHOUSE}>Warehouse</SelectItem>
+            </SelectContent>
+          </Select>
           {/* Items per page */}
-          <select
-            className="filter-select h-10 w-[140px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(value) => {
+              setItemsPerPage(Number(value));
               setCurrentPage(1);
             }}
           >
-            {itemsPerPageOptions.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-          <div className="view-toggle flex gap-2">
+            <SelectTrigger className="filter-select h-9 w-[120px] text-sm">
+              <SelectValue placeholder="Per page" />
+            </SelectTrigger>
+            <SelectContent className="filter-dropdown">
+              {itemsPerPageOptions.map(option => (
+                <SelectItem key={option.value} value={option.value.toString()}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="view-toggle flex gap-1">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
-              size="icon"
-              className="toggle-button"
+              size="sm"
+              className="toggle-button h-9 w-9 p-0"
               onClick={() => setViewMode('grid')}
+              title="Grid View"
             >
               <Grid3x3 className="h-4 w-4" />
             </Button>
             <Button
               variant={viewMode === 'table' ? 'default' : 'outline'}
-              size="icon"
-              className="toggle-button"
+              size="sm"
+              className="toggle-button h-9 w-9 p-0"
               onClick={() => setViewMode('table')}
+              title="Table View"
             >
               <List className="h-4 w-4" />
             </Button>
@@ -540,85 +560,111 @@ const PropertyListPageEnhanced: React.FC = () => {
 
         {/* Grid View */}
         {!loading && viewMode === 'grid' && filteredProperties.length > 0 && (
-          <div className="property-grid">
+          <div className="property-grid grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {paginatedProperties.map((property, index) => (
-              <Card key={property.id} className="property-card" style={{ '--unit-index': index } as React.CSSProperties}>
-                <div className={`property-status-bar ${getStatusColor(property.status).split(' ')[0]}`}></div>
-                <div className="property-header">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <input
-                        type="checkbox"
-                        className="property-checkbox rounded border-gray-300"
-                        checked={selectedProperties.has(property.id)}
-                        onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="property-title">{property.name}</CardTitle>
-                      <div className="property-location flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="location-icon h-4 w-4" />
-                        <span>{property.address.city}, {property.address.state}</span>
-                      </div>
+              <Card key={property.id} className={`property-card hover:shadow-lg transition-all duration-300 relative flex flex-col ${
+                property.status === PropertyStatus.AVAILABLE ? 'bg-green-50 dark:bg-green-950/20' : ''
+              }`} style={{ '--unit-index': index } as React.CSSProperties}>
+                <div className={`property-status-bar h-1 ${getStatusColor(property.status).split(' ')[0]}`}></div>
+                
+                {/* Checkbox - Top Right Corner */}
+                <div className="absolute top-3 right-3 z-10">
+                  <input
+                    type="checkbox"
+                    className="property-checkbox rounded border-gray-300 w-4 h-4 cursor-pointer"
+                    checked={selectedProperties.has(property.id)}
+                    onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+
+                <div className="property-content px-3 py-2.5 space-y-2 pr-10 flex-1 flex flex-col">
+                  {/* Row 1: Name & Address */}
+                  <div>
+                    <h3 className="property-title text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">{property.name}</h3>
+                    <div className="property-location flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      <MapPin className="location-icon h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{property.address.city}, {property.address.state}</span>
                     </div>
                   </div>
-                </div>
-                <div className="property-content">
-                  <div className="property-meta flex items-center justify-between">
-                    <Badge variant="outline" className="property-type-badge text-xs">
+
+                  {/* Row 2: Type & Status */}
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="property-type-badge text-xs px-2 py-0.5 flex-shrink-0">
                       {getTypeLabel(property.propertyType)}
                     </Badge>
-                    <Badge className={`property-status-badge ${getStatusColor(property.status)}`}>
+                    <Badge className={`property-status-badge text-xs px-2 py-0.5 ${getStatusColor(property.status)}`}>
                       {property.status.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <div className="property-details grid grid-cols-2 gap-3 text-sm">
-                    <div className="detail-item">
-                      <p className="detail-label">Total Area</p>
-                      <p className="detail-value font-semibold">
-                        {property.totalArea ? `${property.totalArea.toLocaleString()} sq ft` : 'N/A'}
-                      </p>
-                    </div>
-                    <div className="detail-item">
-                      <p className="detail-label">Floors</p>
-                      <p className="detail-value font-semibold">{property.totalFloors || 'N/A'}</p>
-                    </div>
+
+                  {/* Row 3: Area & Floors (inline) */}
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      <span className="font-medium text-gray-900 dark:text-white">{property.totalArea ? `${property.totalArea.toLocaleString()}` : 'N/A'}</span> sq ft
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      <span className="font-medium text-gray-900 dark:text-white">{property.totalFloors || 'N/A'}</span> floors
+                    </span>
                   </div>
-                  <div className="property-actions flex gap-2 pt-2">
+
+                  {/* Row 4: Owner Name & Email (Same Row, Conditional) */}
+                  {(property.ownerDetails?.name || property.ownerDetails?.emailIds?.[0]) && (
+                    <div className="flex items-center gap-3 text-xs">
+                      {property.ownerDetails?.name && (
+                        <span className="text-gray-900 dark:text-white font-medium truncate flex-1">
+                          {property.ownerDetails.name}
+                        </span>
+                      )}
+                      {property.ownerDetails?.emailIds?.[0] && (
+                        <>
+                          {property.ownerDetails?.name && <span className="text-gray-400">•</span>}
+                          <span className="text-gray-600 dark:text-gray-400 truncate flex-1">
+                            {property.ownerDetails.emailIds[0]}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Row 5: Action Buttons */}
+                  <div className="property-actions flex items-center gap-1 pt-1 mt-auto">
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
-                      className="action-button rent-button flex-1"
+                      className="action-button rent-button h-7 px-2 bg-green-600 hover:bg-green-700 text-white flex-1"
                       onClick={() => navigate(`/properties/${property.id}/rent-collection`)}
+                      title="Rent Collection"
                     >
-                      <Receipt className="h-4 w-4 mr-2" />
-                      Rent
+                      <Receipt className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="action-button dashboard-button h-7 px-2 bg-blue-600 hover:bg-blue-700 text-white flex-1"
+                      onClick={() => navigate(`/properties/${property.id}/dashboard`)}
+                      title="View Dashboard"
+                    >
+                      <BarChart3 className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="action-button dashboard-button flex-1"
-                      onClick={() => navigate(`/properties/${property.id}/dashboard`)}
-                    >
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Dashboard
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="action-button edit-button"
+                      className="action-button edit-button h-7 px-2 hover:bg-gray-100 dark:hover:bg-gray-800 flex-1"
                       onClick={() => navigate(`/properties/${property.id}/edit`)}
+                      title="Edit Property"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="action-button delete-button"
+                      variant="outline"
+                      size="sm"
+                      className="action-button delete-button h-7 px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 border-red-300 flex-1"
                       onClick={() => handleDeleteClick(property.id, property.name)}
+                      title="Delete Property"
                     >
-                      <Trash2 className="h-4 w-4 text-red-600" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -631,12 +677,11 @@ const PropertyListPageEnhanced: React.FC = () => {
         {!loading && viewMode === 'table' && filteredProperties.length > 0 && (
           <div className="property-table-container">
             <Card>
-              <CardContent className="pt-6">
-                <div className="rounded-md border">
+              <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow className="table-header">
-                        <TableHead className="w-12">
+                        <TableHead className="w-12 py-2 px-3">
                           <input
                             type="checkbox"
                             className="header-checkbox rounded border-gray-300"
@@ -644,18 +689,25 @@ const PropertyListPageEnhanced: React.FC = () => {
                             onChange={(e) => handleSelectAll(e.target.checked)}
                           />
                         </TableHead>
-                        <TableHead>Property Name</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Area (sq ft)</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="w-[25%] min-w-[180px] py-2 px-3">Property Name</TableHead>
+                        <TableHead className="w-[12%] min-w-[100px] py-2 px-3">Type</TableHead>
+                        <TableHead className="w-[20%] min-w-[150px] py-2 px-3">Location</TableHead>
+                        <TableHead className="w-[12%] min-w-[100px] py-2 px-3">Area (sq ft)</TableHead>
+                        <TableHead className="w-[12%] min-w-[100px] py-2 px-3">Status</TableHead>
+                        <TableHead className="w-[19%] min-w-[180px] py-2 px-3 text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedProperties.map((property) => (
-                        <TableRow key={property.id} className="table-row">
-                          <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableRow 
+                          key={property.id} 
+                          className={`table-row ${
+                            property.status === PropertyStatus.AVAILABLE 
+                              ? 'bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/30' 
+                              : ''
+                          }`}
+                        >
+                          <TableCell className="py-2 px-3" onClick={(e) => e.stopPropagation()}>
                             <input
                               type="checkbox"
                               className="row-checkbox rounded border-gray-300"
@@ -663,34 +715,34 @@ const PropertyListPageEnhanced: React.FC = () => {
                               onChange={(e) => handleSelectProperty(property.id, e.target.checked)}
                             />
                           </TableCell>
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium break-words py-2 px-3">
                             <button
-                              className="property-name-link text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                              className="property-name-link text-blue-600 hover:text-blue-800 hover:underline font-medium text-left"
                               onClick={() => navigate(`/properties/${property.id}/dashboard`)}
                             >
                               {property.name}
                             </button>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
+                          <TableCell className="break-words py-2 px-3">
+                            <Badge variant="outline" className="whitespace-normal text-xs">
                               {getTypeLabel(property.propertyType)}
                             </Badge>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3 text-muted-foreground" />
-                              {property.address.city}, {property.address.state}
+                          <TableCell className="break-words py-2 px-3">
+                            <div className="flex items-start gap-1">
+                              <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
+                              <span className="break-words text-sm">{property.address.city}, {property.address.state}</span>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="break-words py-2 px-3 text-sm">
                             {property.totalArea ? property.totalArea.toLocaleString() : 'N/A'}
                           </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(property.status)}>
+                          <TableCell className="break-words py-2 px-3">
+                            <Badge className={`${getStatusColor(property.status)} whitespace-normal text-xs`}>
                               {property.status.replace('_', ' ')}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right py-2 px-3">
                             <div className="table-actions flex justify-end gap-2">
                               <Button
                                 variant="ghost"
@@ -734,7 +786,6 @@ const PropertyListPageEnhanced: React.FC = () => {
                       ))}
                     </TableBody>
                   </Table>
-                </div>
               </CardContent>
             </Card>
           </div>
