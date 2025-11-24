@@ -1951,33 +1951,76 @@
   }
 }
 
-// Print styles
-@media print {
-  .property-dashboard-enhanced {
-    .property-header,
-    .metric-card,
-    .chart-card,
-    .unit-card,
-    .lease-card,
-    .payment-card,
-    .btn {
-      box-shadow: none !important;
-      transform: none !important;
-      background: white !important;
-      border: 1px solid #ccc !important;
+// Main Dashboard Tabs Styles
+.main-dashboard-tabs {
+  .main-tabs-list {
+    @include glass-morphism-enhanced;
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: var(--property-shadow-light);
+    backdrop-filter: blur(15px);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+      pointer-events: none;
+    }
+  }
+
+  .main-tab-trigger {
+    transition: all var(--property-transition-normal);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(5, 150, 105, 0.1);
+      transition: width 0.6s, height 0.6s;
+      transform: translate(-50%, -50%);
     }
 
-    .tabs-list {
-      display: none;
+    &:hover::before {
+      width: 300px;
+      height: 300px;
     }
 
-    .tab-content-units,
-    .tab-content-leases,
-    .tab-content-payments,
-    .tab-content-files,
-    .tab-content-details {
-      display: block !important;
-      page-break-before: always;
+    &[data-state="active"] {
+      background: linear-gradient(135deg, var(--property-primary), var(--property-secondary));
+      color: white;
+      box-shadow:
+        var(--property-shadow-light),
+        0 0 0 1px rgba(5, 150, 105, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+
+      .main-tab-icon {
+        filter: brightness(0) invert(1);
+        transform: scale(1.1);
+      }
     }
+
+    .main-tab-icon {
+      transition: all var(--property-transition-fast);
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+  }
+
+  .main-tab-content {
+    animation: fadeInUp 0.6s ease-out;
   }
 }
