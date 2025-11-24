@@ -45,8 +45,6 @@ const UnitListPageEnhanced: React.FC = () => {
   const { properties } = useProperties();
 
   // State for scroll-triggered animations
-  const [revealedSections, setRevealedSections] = useState<Set<string>>(new Set());
-
   // Scroll-triggered animations
   useEffect(() => {
     const observerOptions = {
@@ -57,7 +55,7 @@ const UnitListPageEnhanced: React.FC = () => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          setRevealedSections(prev => new Set([...prev, entry.target.id]));
+          // Animation logic removed - revealedSections not used
         }
       });
     }, observerOptions);

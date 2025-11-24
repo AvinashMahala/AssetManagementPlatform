@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, CheckCircle, Trash2 } from 'lucide-react';
+import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, CheckCircle, Trash2, Settings, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Pagination } from '../../components/ui/pagination';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { AppLayout } from '../../components/layout';
 import { usePayments, useTenants, useLeases, useUnits, useDeletePayment, useBulkDeletePayments } from '../../hooks';
 import { useNotifications } from '../../contexts';
@@ -17,6 +18,7 @@ import type { Tenant } from '../../types/tenant';
 import type { Lease } from '../../types/lease';
 import type { Unit } from '../../types/unit';
 import type { RentPayment } from '../../types/payment';
+import { RevenueTrendChart, PaymentCollectionChart } from '../../components/ui/charts';
 import './PaymentListPageEnhanced.scss';
 
 const PaymentListPageEnhanced: React.FC = () => {
@@ -28,7 +30,7 @@ const PaymentListPageEnhanced: React.FC = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState<'dueDate' | 'amount' | 'status' | 'tenant'>('dueDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
@@ -497,71 +499,94 @@ const PaymentListPageEnhanced: React.FC = () => {
         </div>
       ) : (
         <div className="payment-list-page-enhanced space-y-2 scroll-reveal revealed">
-        {/* Header Actions */}
-        <div className="payment-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
-          <div>
-            <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
-              Payments <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Track rent & payments)</span>
-            </h1>
-          </div>
-          <div className="header-actions flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/templates')}
-              title="Access payment templates"
-            >
-              <FileImage className="mr-2 h-4 w-4" /> Templates
-            </Button>
-            <Button
-              onClick={() => navigate('/payments/create-tabbed')}
-              className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-              title="Step-by-step guided form with progress tracking"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Record Payment
-            </Button>
-          </div>
-        </div>
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="payments" className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Payments
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Analytics
+              </TabsTrigger>
+              <TabsTrigger value="management" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Management
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Stats Cards */}
-        <div className="stats-section grid gap-2 md:grid-cols-4">
-          {stats.map((stat, index) => (
-            <Card key={stat.label} className={`stat-card hover:shadow-lg transition-shadow duration-200`} style={{ animationDelay: `${index * 0.1}s` }}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-                <CardTitle className="text-xs font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className={`stat-icon-container ${stat.bgColor} p-1.5 rounded-lg`}>
-                  <stat.icon className={`stat-icon h-4 w-4 ${stat.color}`} />
+            <TabsContent value="overview" className="space-y-2">
+              {/* Header Actions */}
+              <div className="payment-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+                <div>
+                  <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
+                    Payments <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Track rent & payments)</span>
+                  </h1>
                 </div>
-              </CardHeader>
-              <CardContent className="px-4 pb-3">
-                <div className="stat-value text-2xl font-bold">{stat.value}</div>
-                <p className="stat-subtext text-xs text-muted-foreground mt-1">{stat.subtext}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Overdue Alert */}
-        {overdueCount > 0 && (
-          <Card className="alert-card overdue-alert bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                <CardTitle className="text-red-900 dark:text-red-300">
-                  {overdueCount} Overdue Payment(s)
-                </CardTitle>
+                <div className="header-actions flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/templates')}
+                    title="Access payment templates"
+                  >
+                    <FileImage className="mr-2 h-4 w-4" /> Templates
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/payments/create-tabbed')}
+                    className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                    title="Step-by-step guided form with progress tracking"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Record Payment
+                  </Button>
+                </div>
               </div>
-              <CardDescription className="text-red-800 dark:text-red-200">
-                Follow up with tenants for overdue payments
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        )}
 
-        {/* Filters and Search */}
-        <Card className="filters-section">
-          <CardHeader>
-            <div className="flex flex-col space-y-4">
+              {/* Stats Cards */}
+              <div className="stats-section grid gap-2 md:grid-cols-4">
+                {stats.map((stat, index) => (
+                  <Card key={stat.label} className={`stat-card hover:shadow-lg transition-shadow duration-200`} style={{ animationDelay: `${index * 0.1}s` }}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+                      <CardTitle className="text-xs font-medium text-muted-foreground">{stat.label}</CardTitle>
+                      <div className={`stat-icon-container ${stat.bgColor} p-1.5 rounded-lg`}>
+                        <stat.icon className={`stat-icon h-4 w-4 ${stat.color}`} />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-3">
+                      <div className="stat-value text-2xl font-bold">{stat.value}</div>
+                      <p className="stat-subtext text-xs text-muted-foreground mt-1">{stat.subtext}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Overdue Alert */}
+              {overdueCount > 0 && (
+                <Card className="alert-card overdue-alert bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800">
+                  <CardHeader>
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                      <CardTitle className="text-red-900 dark:text-red-300">
+                        {overdueCount} Overdue Payment(s)
+                      </CardTitle>
+                    </div>
+                    <CardDescription className="text-red-800 dark:text-red-200">
+                      Follow up with tenants for overdue payments
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="payments" className="space-y-2">
+              {/* Filters and Search */}
+              <Card className="filters-section">
+                <CardHeader>
+                  <div className="flex flex-col space-y-4">
               {/* Active Filters */}
               {getActiveFilters().length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -760,63 +785,6 @@ const PaymentListPageEnhanced: React.FC = () => {
             </div>
           </CardHeader>
 
-          {/* Bulk Actions Toolbar */}
-          {showBulkActions && selectedPayments.size > 0 && (
-            <div className="bulk-actions-toolbar border-t bg-muted/50 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm font-medium">
-                    {selectedPayments.size} payment{selectedPayments.size !== 1 ? 's' : ''} selected
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearSelection}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Clear Selection
-                  </Button>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handleBulkMarkAsPaid}
-                    disabled={bulkActionLoading}
-                  >
-                    {bulkActionLoading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    ) : (
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                    )}
-                    Mark as Paid
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleBulkDelete}
-                    disabled={bulkActionLoading}
-                  >
-                    {bulkActionLoading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    ) : (
-                      <Trash2 className="h-4 w-4 mr-2" />
-                    )}
-                    Delete Selected
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleBulkExport}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Selected
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
           <CardContent>
             {/* Results Summary */}
             <div className="flex justify-between items-center mb-4">
@@ -831,27 +799,35 @@ const PaymentListPageEnhanced: React.FC = () => {
               </div>
             ) : (
               <div className="table-view rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-blue-50 dark:bg-blue-950 hover:bg-blue-50 dark:hover:bg-blue-950">
-                      <TableHead className="w-12 px-2 py-1 text-xs">
-                        <input
-                          type="checkbox"
-                          checked={selectedPayments.size === paginatedPayments.length && paginatedPayments.length > 0}
-                          onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="rounded border-gray-300"
-                        />
-                      </TableHead>
-                      <TableHead className="px-2 py-1 text-xs">Tenant</TableHead>
-                      <TableHead className="px-2 py-1 text-xs">Unit</TableHead>
-                      <TableHead className="px-2 py-1 text-xs">Amount</TableHead>
-                      <TableHead className="px-2 py-1 text-xs">Due Date</TableHead>
-                      <TableHead className="px-2 py-1 text-xs">Payment Method</TableHead>
-                      <TableHead className="px-2 py-1 text-xs">Status</TableHead>
-                      <TableHead className="px-2 py-1 text-xs text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                {/* Fixed Header */}
+                <div className="table-header-fixed">
+                  <Table>
+                    <TableHeader className="table-header">
+                      <TableRow className="bg-blue-50 dark:bg-blue-950 hover:bg-blue-50 dark:hover:bg-blue-950">
+                        <TableHead className="w-12 px-2 py-1 text-xs">
+                          <input
+                            type="checkbox"
+                            checked={selectedPayments.size === paginatedPayments.length && paginatedPayments.length > 0}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            className="rounded border-gray-300"
+                          />
+                        </TableHead>
+                        <TableHead className="px-2 py-1 text-xs">Tenant</TableHead>
+                        <TableHead className="px-2 py-1 text-xs">Unit</TableHead>
+                        <TableHead className="px-2 py-1 text-xs">Amount</TableHead>
+                        <TableHead className="px-2 py-1 text-xs">Due Date</TableHead>
+                        <TableHead className="px-2 py-1 text-xs">Payment Method</TableHead>
+                        <TableHead className="px-2 py-1 text-xs">Status</TableHead>
+                        <TableHead className="px-2 py-1 text-xs text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                  </Table>
+                </div>
+
+                {/* Scrollable Body */}
+                <div className="table-body-scrollable">
+                  <Table>
+                    <TableBody>
                     {paginatedPayments.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
@@ -961,7 +937,8 @@ const PaymentListPageEnhanced: React.FC = () => {
                       })
                     )}
                   </TableBody>
-                </Table>
+                  </Table>
+                </div>
               </div>
             )}
           </CardContent>
@@ -977,45 +954,181 @@ const PaymentListPageEnhanced: React.FC = () => {
             />
           </div>
         )}
+            </TabsContent>
 
-        {/* Monthly Summary */}
-        {Object.keys(paymentsByMonth).length > 0 && (
-          <Card className="monthly-summary">
-            <CardHeader className="summary-header">
-              <CardTitle className="summary-title">Monthly Summary</CardTitle>
-              <CardDescription className="summary-description">Payment breakdown by month</CardDescription>
-            </CardHeader>
-            <CardContent className="summary-content">
-              <div className="space-y-4">
-                {Object.entries(paymentsByMonth).slice(0, 3).map(([month, monthPayments]) => {
-                  const monthTotal = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'paid' ? p.amount : 0), 0);
-                  const monthPending = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'pending' ? p.amount : 0), 0);
-                  
-                  return (
-                    <div key={month} className="month-card flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="month-info flex items-center space-x-4">
-                        <div className="month-icon-container bg-primary/10 p-3 rounded-lg">
-                          <Calendar className="month-icon h-5 w-5 text-primary" />
+            <TabsContent value="analytics" className="space-y-2">
+              {/* Analytics Charts */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Revenue Trend
+                    </CardTitle>
+                    <CardDescription>Monthly revenue collection over time</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <RevenueTrendChart
+                      data={Array.isArray(payments) ? payments.reduce((acc: any[], p) => {
+                        const monthKey = format(new Date(p.dueDate), 'MMM yyyy');
+                        const existing = acc.find(item => item.name === monthKey);
+                        if (existing) {
+                          existing.value += p.status === 'paid' ? p.amount : 0;
+                        } else {
+                          acc.push({
+                            name: monthKey,
+                            value: p.status === 'paid' ? p.amount : 0
+                          });
+                        }
+                        return acc;
+                      }, []) : []}
+                      height={300}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="h-5 w-5" />
+                      Payment Collection
+                    </CardTitle>
+                    <CardDescription>Payment status distribution</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PaymentCollectionChart
+                      data={[{
+                        name: 'Current Month',
+                        collected: totalCollected,
+                        pending: pendingAmount
+                      }]}
+                      height={300}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="management" className="space-y-2">
+              {/* Bulk Actions Management */}
+              <Card className="bulk-actions-section">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    Bulk Operations
+                  </CardTitle>
+                  <CardDescription>
+                    Manage multiple payments at once with bulk operations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Bulk Actions Toolbar */}
+                  {showBulkActions && selectedPayments.size > 0 ? (
+                    <div className="bulk-actions-toolbar border bg-muted/50 px-4 py-3 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <span className="text-sm font-medium">
+                            {selectedPayments.size} payment{selectedPayments.size !== 1 ? 's' : ''} selected
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={clearSelection}
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Clear Selection
+                          </Button>
                         </div>
-                        <div className="month-details">
-                          <p className="month-name font-semibold">{month}</p>
-                          <p className="month-count text-sm text-muted-foreground">{monthPayments.length} payments</p>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={handleBulkMarkAsPaid}
+                            disabled={bulkActionLoading}
+                          >
+                            {bulkActionLoading ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            ) : (
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                            )}
+                            Mark as Paid
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleBulkDelete}
+                            disabled={bulkActionLoading}
+                          >
+                            {bulkActionLoading ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            ) : (
+                              <Trash2 className="h-4 w-4 mr-2" />
+                            )}
+                            Delete Selected
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleBulkExport}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Export Selected
+                          </Button>
                         </div>
-                      </div>
-                      <div className="month-amounts text-right">
-                        <p className="collected-amount font-bold text-green-600">₹{monthTotal.toLocaleString()}</p>
-                        {monthPending > 0 && (
-                          <p className="pending-amount text-sm text-orange-600">₹{monthPending.toLocaleString()} pending</p>
-                        )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium mb-2">Bulk Operations</p>
+                      <p className="text-sm">
+                        Select payments from the Payments tab to perform bulk operations like marking as paid, deleting, or exporting multiple payments at once.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Monthly Summary */}
+              {Object.keys(paymentsByMonth).length > 0 && (
+                <Card className="monthly-summary">
+                  <CardHeader className="summary-header">
+                    <CardTitle className="summary-title">Monthly Summary</CardTitle>
+                    <CardDescription className="summary-description">Payment breakdown by month</CardDescription>
+                  </CardHeader>
+                  <CardContent className="summary-content">
+                    <div className="space-y-4">
+                      {Object.entries(paymentsByMonth).slice(0, 3).map(([month, monthPayments]) => {
+                        const monthTotal = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'paid' ? p.amount : 0), 0);
+                        const monthPending = monthPayments.reduce((sum: number, p: RentPayment) => sum + (p.status === 'pending' ? p.amount : 0), 0);
+                        
+                        return (
+                          <div key={month} className="month-card flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                            <div className="month-info flex items-center space-x-4">
+                              <div className="month-icon-container bg-primary/10 p-3 rounded-lg">
+                                <Calendar className="month-icon h-5 w-5 text-primary" />
+                              </div>
+                              <div className="month-details">
+                                <p className="month-name font-semibold">{month}</p>
+                                <p className="month-count text-sm text-muted-foreground">{monthPayments.length} payments</p>
+                              </div>
+                            </div>
+                            <div className="month-amounts text-right">
+                              <p className="collected-amount font-bold text-green-600">₹{monthTotal.toLocaleString()}</p>
+                              {monthPending > 0 && (
+                                <p className="pending-amount text-sm text-orange-600">₹{monthPending.toLocaleString()} pending</p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       )}
 
       {/* Delete Confirmation Dialog */}
