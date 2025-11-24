@@ -17,8 +17,8 @@ export const FormColumn: React.FC<FormColumnProps> = ({
   className = ''
 }) => {
   return (
-    <div className="lg:col-span-1">
-      <Card className={`h-full ${className}`}>
+    <div className={className}>
+      <Card className="h-full">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             {icon}
@@ -52,7 +52,7 @@ export const FormGrid: React.FC<FormGridProps> = ({
   };
 
   return (
-    <div className={`grid grid-cols-1 lg:grid-cols-3 ${gapClasses[gap]} ${className}`}>
+    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${gapClasses[gap]} ${className}`}>
       {children}
     </div>
   );

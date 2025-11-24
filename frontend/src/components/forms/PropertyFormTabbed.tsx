@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import {
   FormColumn,
+  FormGrid,
   Input,
   Textarea,
   Select,
@@ -491,246 +492,291 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-20">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsContent value="basic" className="p-6">
-            <FormColumn
-              title="Basic Information"
-              description="Essential property details"
-              icon={<Building2 className="h-5 w-5" />}
-            >
-              <FormField label="Property Name" required>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  error={errors.name}
-                  placeholder="Enter property name"
-                  className="h-10"
-                />
-              </FormField>
+            <FormGrid className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" gap="lg">
+              <FormColumn
+                title="Basic Information"
+                description="Essential property details"
+                icon={<Building2 className="h-5 w-5" />}
+                className="xl:col-span-2"
+              >
+                <FormField label="Property Name" required>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    error={errors.name}
+                    placeholder="Enter property name"
+                    className="h-10"
+                  />
+                </FormField>
 
-              <FormField label="Property Type" required>
-                <Select value={formData.propertyType} onValueChange={(value) => handleChange('propertyType', value)}>
-                  <SelectTrigger error={errors.propertyType} className="h-10">
-                    <SelectValue placeholder="Select property type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(PropertyType).map(type => (
-                      <SelectItem key={type} value={type}>
-                        {type.replace('_', ' ').toUpperCase()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
+                <FormField label="Property Type" required>
+                  <Select value={formData.propertyType} onValueChange={(value) => handleChange('propertyType', value)}>
+                    <SelectTrigger error={errors.propertyType} className="h-10">
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(PropertyType).map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type.replace('_', ' ').toUpperCase()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormColumn>
 
-              <FormField label="Status" required>
-                <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(PropertyStatus).map(status => (
-                      <SelectItem key={status} value={status}>
-                        {status.replace('_', ' ').toUpperCase()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
+              <FormColumn
+                title="Property Status"
+                description="Current status and currency"
+                icon={<CheckCircle className="h-5 w-5" />}
+              >
+                <FormField label="Status" required>
+                  <Select value={formData.status} onValueChange={(value) => handleChange('status', value)}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(PropertyStatus).map(status => (
+                        <SelectItem key={status} value={status}>
+                          {status.replace('_', ' ').toUpperCase()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
 
-              <FormField label="Currency" required>
-                <Select value={formData.currency} onValueChange={(value) => handleChange('currency', value)}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getCurrencyOptions().map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
+                <FormField label="Currency" required>
+                  <Select value={formData.currency} onValueChange={(value) => handleChange('currency', value)}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getCurrencyOptions().map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormColumn>
 
-              <FormField label="Owner Name" required>
-                <Select
-                  value={formData.ownerId || ''}
-                  onValueChange={(value) => {
-                    const selectedUser = users?.find(u => u.id === value);
-                    handleChange('ownerId', value);
-                    if (selectedUser) {
-                      handleChange('ownerDetails', {
-                        ...formData.ownerDetails,
-                        name: selectedUser.name || selectedUser.username || ''
-                      });
-                    }
-                  }}
-                  disabled={usersLoading}
-                >
-                  <SelectTrigger error={errors.ownerId} className="h-10">
-                    <SelectValue placeholder={usersLoading ? "Loading owners..." : "Select owner"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users && users.length > 0 && users.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name || user.username || user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
+              <FormColumn
+                title="Ownership & Description"
+                description="Owner and additional details"
+                icon={<User className="h-5 w-5" />}
+                className="xl:col-span-2"
+              >
+                <FormField label="Owner Name" required>
+                  <Select
+                    value={formData.ownerId || ''}
+                    onValueChange={(value) => {
+                      const selectedUser = users?.find(u => u.id === value);
+                      handleChange('ownerId', value);
+                      if (selectedUser) {
+                        handleChange('ownerDetails', {
+                          ...formData.ownerDetails,
+                          name: selectedUser.name || selectedUser.username || ''
+                        });
+                      }
+                    }}
+                    disabled={usersLoading}
+                  >
+                    <SelectTrigger error={errors.ownerId} className="h-10">
+                      <SelectValue placeholder={usersLoading ? "Loading owners..." : "Select owner"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users && users.length > 0 && users.map(user => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name || user.username || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
 
-              <FormField label="Description">
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder="Enter property description"
-                  rows={4}
-                  className="resize-none"
-                />
-              </FormField>
-            </FormColumn>
+                <FormField label="Description">
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleChange('description', e.target.value)}
+                    placeholder="Enter property description"
+                    rows={4}
+                    className="resize-none"
+                  />
+                </FormField>
+              </FormColumn>
+            </FormGrid>
           </TabsContent>
 
           <TabsContent value="address" className="p-6">
-            <FormColumn
-              title="Address Details"
-              description="Complete property location"
-              icon={<MapPin className="h-5 w-5" />}
-            >
-              <FormField label="Street Address" required>
-                <Input
-                  id="street"
-                  value={formData.address.street}
-                  onChange={(e) => handleAddressChange('street', e.target.value)}
-                  error={errors.street}
-                  placeholder="Enter street address"
-                  className="h-10"
-                />
-              </FormField>
+            <FormGrid className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" gap="lg">
+              <FormColumn
+                title="Street & City"
+                description="Primary address details"
+                icon={<MapPin className="h-5 w-5" />}
+              >
+                <FormField label="Street Address" required>
+                  <Input
+                    id="street"
+                    value={formData.address.street}
+                    onChange={(e) => handleAddressChange('street', e.target.value)}
+                    error={errors.street}
+                    placeholder="Enter street address"
+                    className="h-10"
+                  />
+                </FormField>
 
-              <FormField label="City" required>
-                <Input
-                  id="city"
-                  value={formData.address.city}
-                  onChange={(e) => handleAddressChange('city', e.target.value)}
-                  error={errors.city}
-                  placeholder="Enter city"
-                  className="h-10"
-                />
-              </FormField>
+                <FormField label="City" required>
+                  <Input
+                    id="city"
+                    value={formData.address.city}
+                    onChange={(e) => handleAddressChange('city', e.target.value)}
+                    error={errors.city}
+                    placeholder="Enter city"
+                    className="h-10"
+                  />
+                </FormField>
+              </FormColumn>
 
-              <FormField label="State" required>
-                <Input
-                  id="state"
-                  value={formData.address.state}
-                  onChange={(e) => handleAddressChange('state', e.target.value)}
-                  error={errors.state}
-                  placeholder="Enter state"
-                  className="h-10"
-                />
-              </FormField>
+              <FormColumn
+                title="State & Pincode"
+                description="Location identifiers"
+                icon={<MapPin className="h-5 w-5" />}
+              >
+                <FormField label="State" required>
+                  <Input
+                    id="state"
+                    value={formData.address.state}
+                    onChange={(e) => handleAddressChange('state', e.target.value)}
+                    error={errors.state}
+                    placeholder="Enter state"
+                    className="h-10"
+                  />
+                </FormField>
 
-              <FormField label="Pincode" required>
-                <Input
-                  id="pincode"
-                  value={formData.address.pincode}
-                  onChange={(e) => handleAddressChange('pincode', e.target.value)}
-                  error={errors.pincode}
-                  placeholder="Enter pincode"
-                  className="h-10"
-                />
-              </FormField>
+                <FormField label="Pincode" required>
+                  <Input
+                    id="pincode"
+                    value={formData.address.pincode}
+                    onChange={(e) => handleAddressChange('pincode', e.target.value)}
+                    error={errors.pincode}
+                    placeholder="Enter pincode"
+                    className="h-10"
+                  />
+                </FormField>
+              </FormColumn>
 
-              <FormField label="Country">
-                <Input
-                  id="country"
-                  value={formData.address.country}
-                  onChange={(e) => handleAddressChange('country', e.target.value)}
-                  placeholder="Enter country"
-                  className="h-10"
-                />
-              </FormField>
+              <FormColumn
+                title="Country & Landmark"
+                description="Additional location details"
+                icon={<MapPin className="h-5 w-5" />}
+              >
+                <FormField label="Country">
+                  <Input
+                    id="country"
+                    value={formData.address.country}
+                    onChange={(e) => handleAddressChange('country', e.target.value)}
+                    placeholder="Enter country"
+                    className="h-10"
+                  />
+                </FormField>
 
-              <FormField label="Landmark">
-                <Input
-                  id="landmark"
-                  value={formData.address.landmark}
-                  onChange={(e) => handleAddressChange('landmark', e.target.value)}
-                  placeholder="Enter landmark (optional)"
-                  className="h-10"
-                />
-              </FormField>
-            </FormColumn>
+                <FormField label="Landmark">
+                  <Input
+                    id="landmark"
+                    value={formData.address.landmark}
+                    onChange={(e) => handleAddressChange('landmark', e.target.value)}
+                    placeholder="Enter landmark (optional)"
+                    className="h-10"
+                  />
+                </FormField>
+              </FormColumn>
+            </FormGrid>
           </TabsContent>
 
           <TabsContent value="details" className="p-6">
-            <FormColumn
-              title="Property Details"
-              description="Physical property specifications"
-              icon={<Home className="h-5 w-5" />}
-            >
-              <FormField label="Total Area (sq ft)" required>
-                <Input
-                  id="totalArea"
-                  type="number"
-                  value={formData.totalArea || ''}
-                  onChange={(e) => handleChange('totalArea', parseFloat(e.target.value) || 0)}
-                  error={errors.totalArea}
-                  placeholder="Enter total area"
-                  className="h-10"
-                />
-              </FormField>
+            <FormGrid className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" gap="lg">
+              <FormColumn
+                title="Area & Floors"
+                description="Physical property specifications"
+                icon={<Home className="h-5 w-5" />}
+              >
+                <FormField label="Total Area (sq ft)" required>
+                  <Input
+                    id="totalArea"
+                    type="number"
+                    value={formData.totalArea || ''}
+                    onChange={(e) => handleChange('totalArea', parseFloat(e.target.value) || 0)}
+                    error={errors.totalArea}
+                    placeholder="Enter total area"
+                    className="h-10"
+                  />
+                </FormField>
 
-              <FormField label="Total Floors">
-                <Input
-                  id="totalFloors"
-                  type="number"
-                  value={formData.totalFloors || ''}
-                  onChange={(e) => handleChange('totalFloors', parseInt(e.target.value) || undefined)}
-                  placeholder="Enter total floors"
-                  className="h-10"
-                />
-              </FormField>
+                <FormField label="Total Floors">
+                  <Input
+                    id="totalFloors"
+                    type="number"
+                    value={formData.totalFloors || ''}
+                    onChange={(e) => handleChange('totalFloors', parseInt(e.target.value) || undefined)}
+                    placeholder="Enter total floors"
+                    className="h-10"
+                  />
+                </FormField>
+              </FormColumn>
 
-              <FormField label="Year Built">
-                <Input
-                  id="yearBuilt"
-                  type="number"
-                  value={formData.yearBuilt || ''}
-                  onChange={(e) => handleChange('yearBuilt', parseInt(e.target.value) || undefined)}
-                  placeholder="Enter year built"
-                  className="h-10"
-                />
-              </FormField>
+              <FormColumn
+                title="Construction & Parking"
+                description="Building details"
+                icon={<Home className="h-5 w-5" />}
+              >
+                <FormField label="Year Built">
+                  <Input
+                    id="yearBuilt"
+                    type="number"
+                    value={formData.yearBuilt || ''}
+                    onChange={(e) => handleChange('yearBuilt', parseInt(e.target.value) || undefined)}
+                    placeholder="Enter year built"
+                    className="h-10"
+                  />
+                </FormField>
 
-              <FormField label="Parking Spaces">
-                <Input
-                  id="parkingSpaces"
-                  type="number"
-                  value={formData.parkingSpaces || ''}
-                  onChange={(e) => handleChange('parkingSpaces', parseInt(e.target.value) || undefined)}
-                  placeholder="Enter parking spaces"
-                  className="h-10"
-                />
-              </FormField>
+                <FormField label="Parking Spaces">
+                  <Input
+                    id="parkingSpaces"
+                    type="number"
+                    value={formData.parkingSpaces || ''}
+                    onChange={(e) => handleChange('parkingSpaces', parseInt(e.target.value) || undefined)}
+                    placeholder="Enter parking spaces"
+                    className="h-10"
+                  />
+                </FormField>
+              </FormColumn>
 
-              <FormField label="Building Amenities">
-                <div className="grid grid-cols-2 gap-2">
-                  {AMENITIES.map(amenity => (
-                    <Badge
-                      key={amenity}
-                      variant={formData.buildingAmenities?.includes(amenity) ? 'default' : 'outline'}
-                      className="cursor-pointer hover:bg-primary/80 transition-colors justify-center py-2 px-3 text-xs h-auto"
-                      onClick={() => toggleAmenity(amenity)}
-                    >
-                      {amenity}
-                    </Badge>
-                  ))}
-                </div>
-              </FormField>
-            </FormColumn>
+              <FormColumn
+                title="Building Amenities"
+                description="Available facilities"
+                icon={<Home className="h-5 w-5" />}
+                className="xl:col-span-2"
+              >
+                <FormField label="Building Amenities">
+                  <div className="grid grid-cols-2 gap-2">
+                    {AMENITIES.map(amenity => (
+                      <Badge
+                        key={amenity}
+                        variant={formData.buildingAmenities?.includes(amenity) ? 'default' : 'outline'}
+                        className="cursor-pointer hover:bg-primary/80 transition-colors justify-center py-2 px-3 text-xs h-auto"
+                        onClick={() => toggleAmenity(amenity)}
+                      >
+                        {amenity}
+                      </Badge>
+                    ))}
+                  </div>
+                </FormField>
+              </FormColumn>
+            </FormGrid>
           </TabsContent>
 
           <TabsContent value="owner" className="p-6">

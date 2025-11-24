@@ -20,6 +20,8 @@ import {
   BarChart3,
   FileImage,
   Receipt,
+  PieChart,
+  Settings,
 } from 'lucide-react';
 import { useProperty, useUnits, useLeases, usePayments, useTenants } from '../../hooks';
 import {
@@ -297,26 +299,26 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
         <div
           ref={headerRef}
           data-section="header"
-          className="property-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+          className="property-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
         >
-          <div className="property-info flex items-start gap-4">
+          <div className="property-info flex items-start gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/properties')}
               className="back-button mt-1"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="property-details">
-              <h1 className="property-title text-3xl font-bold tracking-tight">{property.name}</h1>
-              <div className="property-address flex items-center gap-2 mt-2 text-muted-foreground">
+              <h1 className="property-title text-2xl font-bold tracking-tight">{property.name}</h1>
+              <div className="property-address flex items-center gap-2 mt-1 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
                 <p>
                   {property.address.street}, {property.address.city}, {property.address.state} {property.address.pincode}
                 </p>
               </div>
-              <div className="property-badges flex items-center gap-3 mt-2">
+              <div className="property-badges flex items-center gap-2 mt-1">
                 <Badge className={getUnitStatusColor(property.status)}>
                   {property.status.replace('_', ' ').toUpperCase()}
                 </Badge>
@@ -350,15 +352,15 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
         <div
           ref={metricsRef}
           data-section="metrics"
-          className="key-metrics grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+          className="key-metrics grid gap-3 md:grid-cols-2 lg:grid-cols-4"
         >
           <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.1s' }}>
-            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Total Units</CardTitle>
-              <Home className="metric-icon h-5 w-5 text-blue-600" />
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="metric-title text-xs font-medium text-muted-foreground">Total Units</CardTitle>
+              <Home className="metric-icon h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent className="metric-content">
-              <div className="metric-value text-3xl font-bold">{metrics.totalUnits}</div>
+              <div className="metric-value text-2xl font-bold">{metrics.totalUnits}</div>
               <p className="metric-description text-xs text-muted-foreground mt-1">
                 {metrics.occupiedUnits} occupied • {metrics.availableUnits} available
               </p>
@@ -366,12 +368,12 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           </Card>
 
           <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.2s' }}>
-            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Occupancy Rate</CardTitle>
-              <TrendingUp className="metric-icon h-5 w-5 text-green-600" />
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="metric-title text-xs font-medium text-muted-foreground">Occupancy Rate</CardTitle>
+              <TrendingUp className="metric-icon h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent className="metric-content">
-              <div className="metric-value text-3xl font-bold">{metrics.occupancyRate}%</div>
+              <div className="metric-value text-2xl font-bold">{metrics.occupancyRate}%</div>
               <p className="metric-description text-xs text-muted-foreground mt-1">
                 {metrics.activeTenants} active tenants
               </p>
@@ -379,12 +381,12 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           </Card>
 
           <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.3s' }}>
-            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Monthly Revenue</CardTitle>
-              <DollarSign className="metric-icon h-5 w-5 text-indigo-600" />
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="metric-title text-xs font-medium text-muted-foreground">Monthly Revenue</CardTitle>
+              <DollarSign className="metric-icon h-4 w-4 text-indigo-600" />
             </CardHeader>
             <CardContent className="metric-content">
-              <div className="metric-value text-3xl font-bold">{formatCurrency(metrics.totalMonthlyRent)}</div>
+              <div className="metric-value text-2xl font-bold">{formatCurrency(metrics.totalMonthlyRent)}</div>
               <p className="metric-description text-xs text-muted-foreground mt-1">
                 From {metrics.activeLeases} active leases
               </p>
@@ -392,12 +394,12 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
           </Card>
 
           <Card className="metric-card hover:shadow-md transition-shadow" style={{ animationDelay: '0.4s' }}>
-            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="metric-title text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-              <BarChart3 className="metric-icon h-5 w-5 text-purple-600" />
+            <CardHeader className="metric-header flex flex-row items-center justify-between space-y-0 pb-1">
+              <CardTitle className="metric-title text-xs font-medium text-muted-foreground">Total Revenue</CardTitle>
+              <BarChart3 className="metric-icon h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent className="metric-content">
-              <div className="metric-value text-3xl font-bold">{formatCurrency(metrics.totalRevenue)}</div>
+              <div className="metric-value text-2xl font-bold">{formatCurrency(metrics.totalRevenue)}</div>
               <p className="metric-description text-xs text-muted-foreground mt-1">
                 {metrics.paidPayments} payments collected
               </p>
