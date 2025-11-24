@@ -468,27 +468,35 @@ const UnitListPageEnhanced: React.FC = () => {
           <div className="unit-table-container">
             <Card>
               <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="table-header">
-                      <TableHead className="w-12 py-2 px-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedUnits.size === paginatedUnits.length && paginatedUnits.length > 0}
-                          onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="header-checkbox rounded border-gray-300"
-                        />
-                      </TableHead>
-                      <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Unit Number</TableHead>
-                      <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Type</TableHead>
-                      <TableHead className="w-[20%] min-w-[150px] py-2 px-3">Property</TableHead>
-                      <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Monthly Rent</TableHead>
-                      <TableHead className="w-[10%] min-w-[80px] py-2 px-3">Area</TableHead>
-                      <TableHead className="w-[10%] min-w-[100px] py-2 px-3">Status</TableHead>
-                      <TableHead className="w-[15%] min-w-[140px] py-2 px-3 text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                {/* Fixed Header */}
+                <div className="table-header-fixed">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="table-header">
+                        <TableHead className="w-12 py-2 px-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedUnits.size === paginatedUnits.length && paginatedUnits.length > 0}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            className="header-checkbox rounded border-gray-300"
+                          />
+                        </TableHead>
+                        <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Unit Number</TableHead>
+                        <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Type</TableHead>
+                        <TableHead className="w-[20%] min-w-[150px] py-2 px-3">Property</TableHead>
+                        <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Monthly Rent</TableHead>
+                        <TableHead className="w-[10%] min-w-[80px] py-2 px-3">Area</TableHead>
+                        <TableHead className="w-[10%] min-w-[100px] py-2 px-3">Status</TableHead>
+                        <TableHead className="w-[15%] min-w-[140px] py-2 px-3 text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                  </Table>
+                </div>
+
+                {/* Scrollable Body */}
+                <div className="table-body-scrollable">
+                  <Table>
+                    <TableBody>
                     {paginatedUnits.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
@@ -506,7 +514,7 @@ const UnitListPageEnhanced: React.FC = () => {
                           }`}
                           onClick={() => navigate(`/units/${unit.id}`)}
                         >
-                          <TableCell className="py-2 px-3" onClick={(e) => e.stopPropagation()}>
+                          <TableCell className="w-12 py-2 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                             <input
                               type="checkbox"
                               checked={selectedUnits.has(unit.id)}
@@ -514,22 +522,22 @@ const UnitListPageEnhanced: React.FC = () => {
                               className="row-checkbox rounded border-gray-300"
                             />
                           </TableCell>
-                          <TableCell className="font-medium break-words py-2 px-3 text-sm">{unit.unitNumber}</TableCell>
-                          <TableCell className="break-words py-2 px-3 text-sm">{unit.unitType}</TableCell>
-                          <TableCell className="break-words py-2 px-3">
+                          <TableCell className="w-[15%] min-w-[120px] font-medium break-words py-2 px-3 text-sm">{unit.unitNumber}</TableCell>
+                          <TableCell className="w-[15%] min-w-[120px] break-words py-2 px-3 text-sm">{unit.unitType}</TableCell>
+                          <TableCell className="w-[20%] min-w-[150px] break-words py-2 px-3">
                             <div className="flex items-start gap-1">
                               <Building2 className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
                               <span className="break-words text-sm">{getPropertyName(unit.propertyId)}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="break-words py-2 px-3 text-sm">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}</TableCell>
-                          <TableCell className="break-words py-2 px-3 text-sm">{unit.area || 'N/A'}</TableCell>
-                          <TableCell className="break-words py-2 px-3">
+                          <TableCell className="w-[15%] min-w-[120px] break-words py-2 px-3 text-sm">₹{unit.monthlyRent?.toLocaleString() || 'N/A'}</TableCell>
+                          <TableCell className="w-[10%] min-w-[80px] break-words py-2 px-3 text-sm">{unit.area || 'N/A'}</TableCell>
+                          <TableCell className="w-[10%] min-w-[100px] break-words py-2 px-3">
                             <Badge variant={getStatusVariant(unit.status)} className="text-xs whitespace-normal">
                               {unit.status.replace('_', ' ').charAt(0).toUpperCase() + unit.status.replace('_', ' ').slice(1)}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right py-2 px-3">
+                          <TableCell className="w-[15%] min-w-[140px] text-right py-2 px-3">
                             <div className="table-actions flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
@@ -585,7 +593,8 @@ const UnitListPageEnhanced: React.FC = () => {
                       ))
                     )}
                   </TableBody>
-                </Table>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </div>

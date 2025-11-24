@@ -417,142 +417,151 @@ const TenantListPageEnhanced: React.FC = () => {
           <div id="tenants-table" className="table-view scroll-reveal revealed">
             <Card className="border">
               <CardContent className="p-0">
-                <Table>
-                      <TableHeader>
-                        <TableRow className="bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-                          <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100" style={{ width: '5%' }}>
-                            <input
-                              type="checkbox"
-                              checked={selectedTenants.size === paginatedTenants.length && paginatedTenants.length > 0}
-                              onChange={(e) => handleSelectAll(e.target.checked)}
-                              className="rounded border-gray-300"
-                            />
-                          </TableHead>
-                          <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100" style={{ width: '25%' }}>Tenant</TableHead>
-                          <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100" style={{ width: '25%' }}>Contact</TableHead>
-                          <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100" style={{ width: '20%' }}>Occupation</TableHead>
-                          <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100" style={{ width: '10%' }}>Status</TableHead>
-                          <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100 text-right" style={{ width: '15%' }}>Actions</TableHead>
+                {/* Fixed Header */}
+                <div className="table-header-fixed">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                        <TableHead className="w-12 py-2 px-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedTenants.size === paginatedTenants.length && paginatedTenants.length > 0}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            className="header-checkbox rounded border-gray-300"
+                          />
+                        </TableHead>
+                        <TableHead className="w-[25%] min-w-[150px] py-2 px-3">Tenant</TableHead>
+                        <TableHead className="w-[25%] min-w-[150px] py-2 px-3">Contact</TableHead>
+                        <TableHead className="w-[20%] min-w-[120px] py-2 px-3">Occupation</TableHead>
+                        <TableHead className="w-[10%] min-w-[80px] py-2 px-3">Status</TableHead>
+                        <TableHead className="w-[15%] min-w-[120px] py-2 px-3 text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                  </Table>
+                </div>
+
+                {/* Scrollable Body */}
+                <div className="table-body-scrollable">
+                  <Table>
+                    <TableBody>
+                      {paginatedTenants.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center h-32 text-xs text-muted-foreground">
+                            {filteredTenants.length === 0 && tenants.length > 0 ? 'No tenants match your filters.' : 'No tenants found. Click "Add Tenant" to create one.'}
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedTenants.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={6} className="text-center h-32 text-xs text-muted-foreground">
-                              {filteredTenants.length === 0 && tenants.length > 0 ? 'No tenants match your filters.' : 'No tenants found. Click "Add Tenant" to create one.'}
+                      ) : (
+                        paginatedTenants.map((tenant) => (
+                          <TableRow 
+                            key={tenant.id} 
+                            className={`hover:bg-orange-50 dark:hover:bg-orange-950/10 transition-colors cursor-pointer ${tenant.status === 'active' ? 'bg-green-50/30 dark:bg-green-950/10' : ''}`}
+                            onClick={() => navigate(`/tenants/${tenant.id}`)}
+                          >
+                            <TableCell className="w-12 py-2 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={selectedTenants.has(tenant.id)}
+                                onChange={(e) => handleSelectTenant(tenant.id, e.target.checked)}
+                                className="row-checkbox rounded border-gray-300"
+                              />
+                            </TableCell>
+                            <TableCell className="w-[25%] min-w-[150px] py-2 px-3">
+                              <div className="flex items-center space-x-2">
+                                <div className="flex-shrink-0">
+                                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs">
+                                    {tenant.firstName[0]}{tenant.lastName[0]}
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="font-medium">{tenant.firstName} {tenant.lastName}</p>
+                                  <p className="text-xs text-muted-foreground">ID: {tenant.id.slice(0, 8)}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="w-[25%] min-w-[150px] py-2 px-3">
+                              <div className="space-y-0.5">
+                                <div className="flex items-center">
+                                  <Mail className="h-3 w-3 mr-1 text-muted-foreground" />
+                                  <span className="truncate max-w-[200px]">{tenant.email}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
+                                  {tenant.phone}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="w-[20%] min-w-[120px] py-2 px-3">
+                              <div className="flex items-center">
+                                <Briefcase className="h-3 w-3 mr-1 text-muted-foreground" />
+                                {tenant.occupation || 'N/A'}
+                              </div>
+                            </TableCell>
+                            <TableCell className="w-[10%] min-w-[80px] py-2 px-3">
+                              <Badge className={`text-xs px-1.5 py-0 ${tenant.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                                {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="w-[15%] min-w-[120px] py-2 px-3 text-right">
+                              <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/tenants/${tenant.id}/dashboard`);
+                                  }}
+                                  title="View dashboard"
+                                >
+                                  <BarChart3 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/tenants/${tenant.id}`);
+                                  }}
+                                  title="View details"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/tenants/${tenant.id}/edit`);
+                                  }}
+                                  title="Edit tenant"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(tenant.id, `${tenant.firstName} ${tenant.lastName}`);
+                                  }}
+                                  title="Delete tenant"
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
-                        ) : (
-                          paginatedTenants.map((tenant) => (
-                            <TableRow 
-                              key={tenant.id} 
-                              className={`hover:bg-orange-50 dark:hover:bg-orange-950/10 transition-colors cursor-pointer ${tenant.status === 'active' ? 'bg-green-50/30 dark:bg-green-950/10' : ''}`}
-                              onClick={() => navigate(`/tenants/${tenant.id}`)}
-                            >
-                              <TableCell className="px-2 py-1" onClick={(e) => e.stopPropagation()}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedTenants.has(tenant.id)}
-                                  onChange={(e) => handleSelectTenant(tenant.id, e.target.checked)}
-                                  className="rounded border-gray-300"
-                                />
-                              </TableCell>
-                              <TableCell className="px-2 py-1 text-xs">
-                                <div className="flex items-center space-x-2">
-                                  <div className="flex-shrink-0">
-                                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs">
-                                      {tenant.firstName[0]}{tenant.lastName[0]}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <p className="font-medium">{tenant.firstName} {tenant.lastName}</p>
-                                    <p className="text-xs text-muted-foreground">ID: {tenant.id.slice(0, 8)}</p>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="px-2 py-1 text-xs">
-                                <div className="space-y-0.5">
-                                  <div className="flex items-center">
-                                    <Mail className="h-3 w-3 mr-1 text-muted-foreground" />
-                                    <span className="truncate max-w-[200px]">{tenant.email}</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
-                                    {tenant.phone}
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="px-2 py-1 text-xs">
-                                <div className="flex items-center">
-                                  <Briefcase className="h-3 w-3 mr-1 text-muted-foreground" />
-                                  {tenant.occupation || 'N/A'}
-                                </div>
-                              </TableCell>
-                              <TableCell className="px-2 py-1 text-xs">
-                                <Badge className={`text-xs px-1.5 py-0 ${tenant.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                                  {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="px-2 py-1 text-xs text-right">
-                                <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/tenants/${tenant.id}/dashboard`);
-                                    }}
-                                    title="View dashboard"
-                                  >
-                                    <BarChart3 className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/tenants/${tenant.id}`);
-                                    }}
-                                    title="View details"
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/tenants/${tenant.id}/edit`);
-                                    }}
-                                    title="Edit tenant"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteClick(tenant.id, `${tenant.firstName} ${tenant.lastName}`);
-                                    }}
-                                    title="Delete tenant"
-                                  >
-                                    <Trash2 className="h-4 w-4 text-red-600" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
             ) : (
               /* Grid View */
               <div id="tenants-grid" className="grid-view grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 scroll-reveal revealed">

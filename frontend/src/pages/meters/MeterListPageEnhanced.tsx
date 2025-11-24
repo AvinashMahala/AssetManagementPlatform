@@ -379,8 +379,10 @@ export const MeterListPageEnhanced: React.FC = () => {
             >
               <Card className="table-card border">
                 <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
+                  {/* Fixed Header */}
+                  <div className="table-header-fixed">
+                    <Table>
+                      <TableHeader>
                         <TableRow className="bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/20">
                           <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100" style={{ width: '15%' }}>Meter Name</TableHead>
                           <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100" style={{ width: '12%' }}>Type</TableHead>
@@ -392,6 +394,12 @@ export const MeterListPageEnhanced: React.FC = () => {
                           <TableHead className="h-8 px-2 text-xs font-semibold text-blue-900 dark:text-blue-100 text-right" style={{ width: '10%' }}>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
+                    </Table>
+                  </div>
+
+                  {/* Scrollable Body */}
+                  <div className="table-body-scrollable">
+                    <Table>
                       <TableBody>
                         {metersArray.length > 0 ? (
                           metersArray.map((meter, index) => (
@@ -498,6 +506,7 @@ export const MeterListPageEnhanced: React.FC = () => {
                         )}
                       </TableBody>
                     </Table>
+                  </div>
 
                   {/* Pagination */}
                   {paginationInfo && paginationInfo.totalPages > 1 && (
