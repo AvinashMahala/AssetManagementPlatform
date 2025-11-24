@@ -74,39 +74,23 @@ const RecentFilesWidget: React.FC<RecentFilesWidgetProps> = ({
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Clock className="h-5 w-5" />
-            <span>Recent Files</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[...Array(limit)].map((_, i) => (
-              <div key={i} className="animate-pulse flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gray-200 rounded"></div>
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            ))}
+      <div className={`space-y-3 ${className}`}>
+        {[...Array(limit)].map((_, i) => (
+          <div key={i} className="animate-pulse flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gray-200 rounded"></div>
+            <div className="flex-1">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
     );
   }
 
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Clock className="h-5 w-5" />
-          <span>Recent Files</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         {recentFiles.length === 0 ? (
           <div className="text-center py-6">
             <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />

@@ -103,8 +103,10 @@ export const UnitDashboardPageEnhanced: React.FC = () => {
         className={`dashboard-header ${revealedSections.has('header') ? 'revealed' : ''}`}
       >
         <div>
-          <h1 className="header-title">Unit {unit.unitNumber} Dashboard</h1>
-          <p className="header-subtitle">{unit.unitName || 'Unit Analytics & Insights'}</p>
+          <h1 className="header-title">
+            Unit {unit.unitNumber} Dashboard
+            <span className="header-subtitle"> ({unit.unitName || 'Unit Analytics & Insights'})</span>
+          </h1>
         </div>
         <div className="header-actions">
           <Button

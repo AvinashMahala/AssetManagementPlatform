@@ -903,17 +903,13 @@ const FilesPageEnhanced: React.FC = () => {
           <FolderOpen className="h-5 w-5 text-indigo-600" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Files</h2>
         </div>
-        <Card>
-          <CardContent className="p-4">
-            <RecentFilesWidget
-              limit={5}
-              onFileClick={(file) => {
-                // Open file in new tab for viewing
-                window.open(fileService.getDownloadUrl(file.id), '_blank');
-              }}
-            />
-          </CardContent>
-        </Card>
+        <RecentFilesWidget
+          limit={5}
+          onFileClick={(file) => {
+            // Open file in new tab for viewing
+            window.open(fileService.getDownloadUrl(file.id), '_blank');
+          }}
+        />
       </div>
     </AppLayout>
   );
