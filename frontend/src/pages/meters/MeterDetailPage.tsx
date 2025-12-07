@@ -8,6 +8,7 @@ import {
   useMeterStatistics,
   useDeleteMeter
 } from '../../hooks';
+import navigateBackOrFallback from '../../utils/navigation';
 import { MeterType } from '../../types/meter';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -43,9 +44,8 @@ export const MeterDetailPage: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this meter? This action cannot be undone and will delete all associated readings.')) {
       try {
         await deleteMeter(id);
-        navigate('/meters', {
-          state: { message: 'Meter deleted successfully!' }
-        });
+        // Use centralized navigation helper; preserve success state when falling back
+        navigateBackOrFallback(navigate, '/meters', { state: { message: 'Meter deleted successfully!' } });
       } catch (err) {
         console.error('Failed to delete meter:', err);
         alert('Failed to delete meter');
@@ -101,7 +101,7 @@ export const MeterDetailPage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Meter Not Found</h2>
             <p className="text-gray-600 mb-4">The meter you're looking for doesn't exist or has been deleted.</p>
-            <Button onClick={() => navigate('/meters')}>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/meters')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Meters
             </Button>
@@ -123,7 +123,7 @@ export const MeterDetailPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              onClick={() => navigate('/meters')}
+              onClick={() => navigateBackOrFallback(navigate, '/meters')}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Meters

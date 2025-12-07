@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { useCreateMeter } from '../../hooks';
 import type { MeterInput } from '../../types/meter';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -19,9 +20,7 @@ export const MeterCreatePage: React.FC = () => {
     try {
       setSubmitError(null);
       await createMeter(data);
-      navigate('/meters', {
-        state: { message: 'Meter created successfully!' }
-      });
+      navigateBackOrFallback(navigate, '/meters', { state: { message: 'Meter created successfully!' } });
     } catch (err) {
       console.error('Failed to create meter:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create meter';

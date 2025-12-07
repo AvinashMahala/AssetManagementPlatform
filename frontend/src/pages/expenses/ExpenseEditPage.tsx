@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useExpense, useUpdateExpense } from '../../hooks';
 import { Button } from '../../components/ui/button';
@@ -18,9 +19,7 @@ export const ExpenseEditPage: React.FC = () => {
 
     try {
       await updateExpense({ id, data });
-      navigate('/expenses', {
-        state: { message: 'Expense updated successfully!' }
-      });
+      navigateBackOrFallback(navigate, '/expenses', { state: { message: 'Expense updated successfully!' } });
     } catch (error) {
       console.error('Failed to update expense:', error);
       throw error; // Re-throw to let the form handle it
@@ -47,7 +46,7 @@ export const ExpenseEditPage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Expense Not Found</h2>
             <p className="text-gray-600 mb-4">The expense you're trying to edit doesn't exist or has been deleted.</p>
-            <Button onClick={() => navigate('/expenses')}>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/expenses')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Expenses
             </Button>
@@ -63,7 +62,7 @@ export const ExpenseEditPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/expenses')}
+            onClick={() => navigateBackOrFallback(navigate, '/expenses')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Expenses

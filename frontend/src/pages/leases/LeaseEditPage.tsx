@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useLease, useUpdateLease } from '../../hooks';
 import { Button } from '../../components/ui/button';
@@ -18,9 +19,7 @@ export const LeaseEditPage: React.FC = () => {
 
     try {
       await updateLease({ id, data });
-      navigate('/leases', {
-        state: { message: 'Lease updated successfully!' }
-      });
+      navigateBackOrFallback(navigate, '/leases', { state: { message: 'Lease updated successfully!' } });
     } catch (error) {
       console.error('Failed to update lease:', error);
       throw error; // Re-throw to let the form handle it
@@ -47,7 +46,7 @@ export const LeaseEditPage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Lease Not Found</h2>
             <p className="text-gray-600 mb-4">The lease you're trying to edit doesn't exist or has been deleted.</p>
-            <Button onClick={() => navigate('/leases')}>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/leases')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Leases
             </Button>
@@ -63,7 +62,7 @@ export const LeaseEditPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/leases')}
+            onClick={() => navigateBackOrFallback(navigate, '/leases')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Leases

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCreateProperty } from '../../hooks';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import PropertyFormModern from '../../components/forms/PropertyFormModern';
 import { AppLayout } from '../../components/layout/AppLayout';
 import type { PropertyInput } from '../../types';
@@ -16,7 +17,7 @@ const PropertyCreatePageEnhanced: React.FC = () => {
       if (result.success && result.data?.id) {
         navigate(`/properties/${result.data.id}/edit`);
       } else {
-        navigate('/properties');
+        navigateBackOrFallback(navigate, '/properties');
       }
     } catch (error) {
       console.error('Failed to create property:', error);

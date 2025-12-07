@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { Zap, Settings, DollarSign } from 'lucide-react';
 import { BaseForm, FormColumn, FormField } from '../../componentDesignLibrary';
 import { Input } from '../../components/ui/input';
@@ -99,7 +100,7 @@ const MeterFormModern: React.FC<MeterFormModernProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/meters');
+    navigateBackOrFallback(navigate, '/meters');
   };
 
   return (
@@ -107,7 +108,7 @@ const MeterFormModern: React.FC<MeterFormModernProps> = ({
       title="Create Meter"
       subtitle="Configure a utility meter for consumption tracking"
       backLabel="Back to Meters"
-      onBack={() => navigate('/meters')}
+      onBack={() => navigateBackOrFallback(navigate, '/meters')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}

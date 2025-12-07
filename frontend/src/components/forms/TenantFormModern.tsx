@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { User, MapPin, Briefcase, Home, AlertCircle, CheckCircle } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import type { TenantInput } from '../../types/tenant';
@@ -357,14 +358,14 @@ const TenantFormModern: React.FC<TenantFormModernProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/tenants');
+    navigateBackOrFallback(navigate, '/tenants');
   };
 
   return (
     <BaseForm
       title={initialData ? "Edit Tenant" : "Create Tenant"}
       backLabel="Back to Tenants"
-      onBack={() => navigate(initialData ? `/tenants/${(initialData as any).id}` : '/tenants')}
+      onBack={() => navigateBackOrFallback(navigate, initialData ? `/tenants/${(initialData as any).id}` : '/tenants')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}

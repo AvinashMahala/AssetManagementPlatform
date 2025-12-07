@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useDeleteUnit } from '../../hooks';
+import navigateBackOrFallback from '../../utils/navigation';
 import { PhotoCarousel } from '../../componentDesignLibrary';
 import { UnitUtilitiesManager } from '../../components/units/UnitUtilitiesManager';
 import { getErrorMessage } from '../../types/api';
@@ -15,7 +16,7 @@ export const UnitDetailPage: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this unit?')) {
       try {
         await deleteUnit(id!);
-        navigate('/units');
+        navigateBackOrFallback(navigate, '/units');
       } catch (err) {
         console.error('Failed to delete unit:', err);
       }
@@ -186,7 +187,7 @@ export const UnitDetailPage: React.FC = () => {
       {/* Actions */}
       <div className="mt-6 flex gap-4">
         <button
-          onClick={() => navigate('/units')}
+          onClick={() => navigateBackOrFallback(navigate, '/units')}
           className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
         >
           Back to Units

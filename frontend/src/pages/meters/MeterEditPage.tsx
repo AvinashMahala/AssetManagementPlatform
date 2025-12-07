@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useMeter, useUpdateMeter } from '../../hooks';
 import { Button } from '../../components/ui/button';
@@ -18,9 +19,7 @@ export const MeterEditPage: React.FC = () => {
 
     try {
       await updateMeter({ id, data });
-      navigate('/meters', {
-        state: { message: 'Meter updated successfully!' }
-      });
+      navigateBackOrFallback(navigate, '/meters', { state: { message: 'Meter updated successfully!' } });
     } catch (error) {
       console.error('Failed to update meter:', error);
       throw error; // Re-throw to let the form handle it
@@ -47,7 +46,7 @@ export const MeterEditPage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Meter Not Found</h2>
             <p className="text-gray-600 mb-4">The meter you're trying to edit doesn't exist or has been deleted.</p>
-            <Button onClick={() => navigate('/meters')}>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/meters')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Meters
             </Button>
@@ -63,7 +62,7 @@ export const MeterEditPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/meters')}
+            onClick={() => navigateBackOrFallback(navigate, '/meters')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Meters

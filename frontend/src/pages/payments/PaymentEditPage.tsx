@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { usePayment, useUpdatePayment } from '../../hooks';
 import { Button } from '../../components/ui/button';
@@ -18,9 +19,7 @@ export const PaymentEditPage: React.FC = () => {
 
     try {
       await updatePayment({ id, data });
-      navigate('/payments', {
-        state: { message: 'Payment updated successfully!' }
-      });
+      navigateBackOrFallback(navigate, '/payments', { state: { message: 'Payment updated successfully!' } });
     } catch (error) {
       console.error('Failed to update payment:', error);
       throw error; // Re-throw to let the form handle it
@@ -47,7 +46,7 @@ export const PaymentEditPage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Not Found</h2>
             <p className="text-gray-600 mb-4">The payment you're trying to edit doesn't exist or has been deleted.</p>
-            <Button onClick={() => navigate('/payments')}>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/payments')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Payments
             </Button>
@@ -63,7 +62,7 @@ export const PaymentEditPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/payments')}
+            onClick={() => navigateBackOrFallback(navigate, '/payments')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Payments

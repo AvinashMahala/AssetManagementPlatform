@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { useCreateMeter } from '../../hooks';
 import type { MeterInput } from '../../types/meter';
 import MeterFormTabbed from '../../components/forms/MeterFormTabbed';
@@ -16,9 +17,7 @@ export const MeterCreatePageTabbed: React.FC = () => {
   const handleSubmit = async (data: MeterInput) => {
     try {
       await createMeter(data);
-      navigate('/meters', {
-        state: { message: 'Meter created successfully!' }
-      });
+      navigateBackOrFallback(navigate, '/meters', { state: { message: 'Meter created successfully!' } });
     } catch (error) {
       console.error('Failed to create meter:', error);
       throw error; // Re-throw to let the form handle the error

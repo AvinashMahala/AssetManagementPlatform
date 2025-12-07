@@ -19,6 +19,7 @@ import {
   Settings
 } from 'lucide-react';
 import { useTenant, useLeases, usePayments, useProperties, useUnits } from '../../hooks';
+import navigateBackOrFallback from '../../utils/navigation';
 import {
   Card,
   CardContent,
@@ -163,7 +164,7 @@ export const TenantDashboardPage: React.FC = () => {
               <CardDescription>{getErrorMessage(tenantError) || 'Tenant not found'}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => navigate('/tenants')}>
+              <Button onClick={() => navigateBackOrFallback(navigate, '/tenants')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Tenants
               </Button>
@@ -202,7 +203,7 @@ export const TenantDashboardPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate('/tenants')}
+                  onClick={() => navigateBackOrFallback(navigate, '/tenants')}
                   className="mt-1"
                 >
                   <ArrowLeft className="h-5 w-5" />

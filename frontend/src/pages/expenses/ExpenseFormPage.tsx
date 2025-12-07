@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -116,7 +117,7 @@ const ExpenseFormPage: React.FC = () => {
       }
 
       showSuccess(`Expense ${isEditing ? 'updated' : 'created'} successfully!`);
-      navigate('/expenses');
+      navigateBackOrFallback(navigate, '/expenses');
     } catch (error) {
       console.error('Error saving expense:', error);
       showError(`Failed to ${isEditing ? 'update' : 'create'} expense. Please try again.`);
@@ -177,7 +178,7 @@ const ExpenseFormPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/expenses')}
+            onClick={() => navigateBackOrFallback(navigate, '/expenses')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -434,7 +435,7 @@ const ExpenseFormPage: React.FC = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/expenses')}
+              onClick={() => navigateBackOrFallback(navigate, '/expenses')}
               disabled={loading}
             >
               Cancel

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProperty, useUpdateProperty } from '../../hooks';
+import navigateBackOrFallback from '../../utils/navigation';
 import PropertyFormTabbed from '../../components/forms/PropertyFormTabbed';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { Card, CardContent } from '../../components/ui/card';
@@ -57,7 +58,7 @@ const PropertyEditPageEnhanced: React.FC = () => {
                   The property you're trying to edit could not be found.
                 </p>
                 <button
-                  onClick={() => navigate('/properties')}
+                  onClick={() => navigateBackOrFallback(navigate, '/properties')}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                 >
                   Back to Properties

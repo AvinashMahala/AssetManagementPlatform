@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft, Edit, Building2, MapPin, Home, Calendar, FileImage, Receipt, FileText } from 'lucide-react';
 import { useProperty } from '../../hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
@@ -30,7 +31,7 @@ const PropertyDetailPage: React.FC = () => {
       <div className="container mx-auto py-6 max-w-6xl">
         <Card className="p-8 text-center">
           <p className="text-destructive mb-4">{displayError || 'Property not found'}</p>
-          <Button onClick={() => navigate('/properties')}>Back to Properties</Button>
+          <Button onClick={() => navigateBackOrFallback(navigate, '/properties')}>Back to Properties</Button>
         </Card>
       </div>
     );
@@ -39,7 +40,7 @@ const PropertyDetailPage: React.FC = () => {
   return (
     <div className="container mx-auto py-6 max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => navigate('/properties')}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
+        <Button variant="ghost" onClick={() => navigateBackOrFallback(navigate, '/properties')}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
             <Receipt className="mr-2 h-4 w-4" />

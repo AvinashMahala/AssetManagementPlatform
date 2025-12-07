@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { FileText, Calendar, DollarSign, CheckCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -309,7 +310,7 @@ const LeaseFormTabbed: React.FC<LeaseFormTabbedProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/leases');
+    navigateBackOrFallback(navigate, '/leases');
   };
 
   const currentTabIndex = TABS.findIndex(tab => tab.id === currentTab);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePayment, useDeletePayment, useLease, useTenant } from '../../hooks';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ReceiptGenerator } from '../../components/receipts/ReceiptGenerator';
 import { getErrorMessage } from '../../types/api';
 
@@ -17,7 +18,7 @@ export const PaymentDetailPage: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this payment record?')) {
       try {
         await deletePayment(id!);
-        navigate('/payments');
+        navigateBackOrFallback(navigate, '/payments');
       } catch (err) {
         console.error('Failed to delete payment:', err);
       }
@@ -177,7 +178,7 @@ export const PaymentDetailPage: React.FC = () => {
       </div>
 
       <div className="mt-6 flex gap-4">
-        <button onClick={() => navigate('/payments')}
+        <button onClick={() => navigateBackOrFallback(navigate, '/payments')}
           className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
           Back to Payments
         </button>

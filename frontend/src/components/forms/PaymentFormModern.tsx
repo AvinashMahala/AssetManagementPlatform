@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { CreditCard, Calendar, DollarSign } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import { useCreatePayment, useLeases, useTenants } from '../../hooks';
@@ -71,21 +72,21 @@ const PaymentFormModern: React.FC<PaymentFormModernProps> = ({
 
     try {
       await createPayment(formData);
-      navigate('/payments');
+      navigateBackOrFallback(navigate, '/payments');
     } catch (err) {
       console.error('Failed to create payment:', err);
     }
   };
 
   const handleCancel = () => {
-    navigate('/payments');
+    navigateBackOrFallback(navigate, '/payments');
   };
 
   return (
     <BaseForm
       title="Record Payment"
       backLabel="Back to Payments"
-      onBack={() => navigate('/payments')}
+      onBack={() => navigateBackOrFallback(navigate, '/payments')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}

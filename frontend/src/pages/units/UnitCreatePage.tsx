@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { useCreateUnit } from '../../hooks';
 import { useNotifications } from '../../contexts';
 import UnitFormModern from '../../components/forms/UnitFormModern';
@@ -17,7 +18,7 @@ export const UnitCreatePage: React.FC = () => {
     try {
       await createUnit(data);
       showSuccess('Unit created successfully!');
-      navigate('/units');
+      navigateBackOrFallback(navigate, '/units');
     } catch (error) {
       console.error('Failed to create unit:', error);
       showError('Failed to create unit. Please try again.');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { User, MapPin, Home, Briefcase, CheckCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -401,9 +402,9 @@ const TenantFormTabbed: React.FC<TenantFormTabbedProps> = ({
 
   const handleCancel = () => {
     if (isEdit && tenantId) {
-      navigate(`/tenants/${tenantId}`);
+      navigateBackOrFallback(navigate, `/tenants/${tenantId}`);
     } else {
-      navigate('/tenants');
+      navigateBackOrFallback(navigate, '/tenants');
     }
   };
 

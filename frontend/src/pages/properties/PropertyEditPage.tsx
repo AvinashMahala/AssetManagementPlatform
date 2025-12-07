@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { useProperty, useUpdateProperty } from '../../hooks';
 import PropertyFormModern from '../../components/forms/PropertyFormModern';
 import { Card } from '../../components/ui/card';
@@ -36,7 +37,7 @@ const PropertyEditPage: React.FC = () => {
           <p className="text-destructive mb-4">
             {fetchDisplayError || 'Property not found'}
           </p>
-          <Button onClick={() => navigate('/properties')}>
+          <Button onClick={() => navigateBackOrFallback(navigate, '/properties')}>
             Back to Properties
           </Button>
         </Card>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { FileText, Calendar, Users, Settings, CheckCircle, ArrowLeft, ArrowRight, Save, Upload } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -252,7 +253,7 @@ const ExpenseFormTabbed: React.FC<ExpenseFormTabbedProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/expenses');
+    navigateBackOrFallback(navigate, '/expenses');
   };
 
   const currentTabIndex = TABS.findIndex(tab => tab.id === currentTab);

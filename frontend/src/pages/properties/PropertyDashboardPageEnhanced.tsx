@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { format } from 'date-fns';
 import {
   ArrowLeft,
@@ -281,7 +282,7 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
               <CardDescription>{getErrorMessage(propertyError) || 'Property not found'}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => navigate('/properties')}>
+              <Button onClick={() => navigateBackOrFallback(navigate, '/properties')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Properties
               </Button>
@@ -321,10 +322,10 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
               className="property-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
             >
               <div className="property-info flex items-start gap-3">
-                <Button
+                  <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate('/properties')}
+                  onClick={() => navigateBackOrFallback(navigate, '/properties')}
                   className="back-button mt-1"
                 >
                   <ArrowLeft className="h-4 w-4" />

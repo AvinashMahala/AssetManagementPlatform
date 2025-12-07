@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { Home, DollarSign } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
@@ -135,14 +136,14 @@ const UnitFormModern: React.FC<UnitFormModernProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/units');
+    navigateBackOrFallback(navigate, '/units');
   };
 
   return (
     <BaseForm
       title="Create Unit"
       backLabel="Back to Units"
-      onBack={() => navigate('/units')}
+      onBack={() => navigateBackOrFallback(navigate, '/units')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}

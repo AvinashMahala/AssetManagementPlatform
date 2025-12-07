@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { Home, DollarSign, Star, CheckCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -221,9 +222,9 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
 
   const handleCancel = () => {
     if (isEdit && unitId) {
-      navigate(`/units/${unitId}`);
+      navigateBackOrFallback(navigate, `/units/${unitId}`);
     } else {
-      navigate('/units');
+      navigateBackOrFallback(navigate, '/units');
     }
   };
 

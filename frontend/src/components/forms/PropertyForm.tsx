@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
 import { Input } from '../../components/ui/input';
@@ -147,7 +148,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
 
     try {
       await onSubmit(formData);
-      navigate('/properties');
+      navigateBackOrFallback(navigate, '/properties');
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'An error occurred');
     }
@@ -451,7 +452,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             <Button
               type="button"
               variant="secondary"
-              onClick={() => navigate('/properties')}
+              onClick={() => navigateBackOrFallback(navigate, '/properties')}
               disabled={loading}
             >
               Cancel

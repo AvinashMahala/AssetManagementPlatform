@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft, Edit, Calendar, DollarSign, Building, MapPin, Users, FileImage, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -40,7 +41,7 @@ const ExpenseDetailPage: React.FC = () => {
               <p className="mt-2">{getErrorMessage(error) || 'Expense not found'}</p>
             </div>
             <Button
-              onClick={() => navigate('/expenses')}
+              onClick={() => navigateBackOrFallback(navigate, '/expenses')}
               className="mt-4"
             >
               Back to Expenses
@@ -113,7 +114,7 @@ const ExpenseDetailPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              onClick={() => navigate('/expenses')}
+              onClick={() => navigateBackOrFallback(navigate, '/expenses')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -128,8 +129,8 @@ const ExpenseDetailPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button
-            onClick={() => navigate(`/expenses/${expense.id}/edit`)}
+            <Button
+              onClick={() => navigate(`/expenses/${expense.id}/edit`)}
             className="flex items-center gap-2"
           >
             <Edit className="h-4 w-4" />

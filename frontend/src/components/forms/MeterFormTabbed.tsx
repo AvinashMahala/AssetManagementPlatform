@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { Zap, DollarSign, Settings, CheckCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -182,7 +183,7 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/meters');
+    navigateBackOrFallback(navigate, '/meters');
   };
 
   const currentTabIndex = TABS.findIndex(tab => tab.id === currentTab);

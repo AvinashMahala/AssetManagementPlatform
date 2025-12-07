@@ -218,6 +218,16 @@ export class UnitRepository implements IUnitRepository {
 
   async delete(id: string): Promise<boolean> {
     try {
+      // Prevent deleting a unit that is referenced by leases
+      const leaseCheck = await this.pool.query(
+        `SELECT COUNT(*) AS count FROM ${TABLES.LEASES} WHERE unit_id = $1`,
+        [id]
+      );
+      const dependentLeases = parseInt(leaseCheck.rows[0]?.count || '0', 10);
+      if (dependentLeases > 0) {
+        throw new Error('Cannot delete unit: existing leases reference this unit');
+      }
+
       const result = await this.pool.query(
         `DELETE FROM ${TABLES.UNITS} WHERE ${COLUMNS.UNITS.ID} = $1`,
         [id]

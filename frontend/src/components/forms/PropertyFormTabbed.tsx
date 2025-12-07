@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import {
   Building2,
   MapPin,
@@ -382,9 +383,9 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
   const handleCancel = () => {
     if (isEdit && propertyId) {
       // In edit mode, go back to property detail/dashboard
-      navigate(`/properties/${propertyId}/dashboard`);
+      navigateBackOrFallback(navigate, `/properties/${propertyId}/dashboard`);
     } else {
-      navigate('/properties');
+      navigateBackOrFallback(navigate, '/properties');
     }
   };
 

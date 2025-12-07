@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { FileText, Calendar, DollarSign } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField } from '../../componentDesignLibrary';
 import { useCreateLease, useUnits, useTenants } from '../../hooks';
@@ -83,7 +84,7 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
     try {
       await createLease(formData);
       showSuccess('Lease created successfully!');
-      navigate('/leases');
+      navigateBackOrFallback(navigate, '/leases');
     } catch (err) {
       console.error('Failed to create lease:', err);
       showError('Failed to create lease. Please try again.');
@@ -91,14 +92,14 @@ const LeaseFormModern: React.FC<LeaseFormModernProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/leases');
+    navigateBackOrFallback(navigate, '/leases');
   };
 
   return (
     <BaseForm
       title="Create Lease"
       backLabel="Back to Leases"
-      onBack={() => navigate('/leases')}
+      onBack={() => navigateBackOrFallback(navigate, '/leases')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { CreditCard, Calendar, DollarSign, CheckCircle, ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -211,7 +212,7 @@ const PaymentFormTabbed: React.FC<PaymentFormTabbedProps> = ({
   };
 
   const handleCancel = () => {
-    navigate('/payments');
+    navigateBackOrFallback(navigate, '/payments');
   };
 
   const currentTabIndex = TABS.findIndex(tab => tab.id === currentTab);

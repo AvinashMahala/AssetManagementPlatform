@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useDeleteTenant } from '../../hooks';
+import navigateBackOrFallback from '../../utils/navigation';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common';
 import { ReceiptList } from '../../components/receipts';
@@ -18,7 +19,8 @@ const TenantDetailPage: React.FC = () => {
       try {
         const response = await deleteTenant(id!);
         if (response.success) {
-          navigate('/tenants');
+          // Navigate back to previous page if available, otherwise fallback to tenants list
+          navigateBackOrFallback(navigate, '/tenants');
         } else {
           alert('Failed to delete tenant: ' + (response.error?.message || 'Unknown error'));
         }
@@ -42,11 +44,11 @@ const TenantDetailPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">Tenant Not Found</h1>
-          <Button onClick={() => navigate('/tenants')}>Back to List</Button>
+          <Button onClick={() => navigateBackOrFallback(navigate, '/tenants')}>Back to List</Button>
         </div>
         <Card className="p-8 text-center">
           <p className="text-red-600 mb-4">{getErrorMessage(error) || 'Tenant not found'}</p>
-          <Button onClick={() => navigate('/tenants')}>Go Back</Button>
+          <Button onClick={() => navigateBackOrFallback(navigate, '/tenants')}>Go Back</Button>
         </Card>
       </div>
     );
@@ -59,7 +61,7 @@ const TenantDetailPage: React.FC = () => {
           {tenant.firstName} {tenant.lastName}
         </h1>
         <div className="flex space-x-3">
-          <Button variant="secondary" onClick={() => navigate('/tenants')}>
+          <Button variant="secondary" onClick={() => navigateBackOrFallback(navigate, '/tenants')}>
             Back to List
           </Button>
           <Button onClick={() => navigate(`/tenants/${id}/dashboard`)}>View Dashboard</Button>

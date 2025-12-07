@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft, FileText, DollarSign, TrendingUp, Home, Receipt } from 'lucide-react';
 import { useProperty, useUnits, useLeases, usePayments } from '../../hooks';
 import {
@@ -94,7 +95,7 @@ export const PropertyDashboardPage: React.FC = () => {
             <CardDescription>{getErrorMessage(propertyError) || 'Property not found'}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/properties')}>Back to Properties</Button>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/properties')}>Back to Properties</Button>
           </CardContent>
         </Card>
       </div>
@@ -106,7 +107,7 @@ export const PropertyDashboardPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/properties')}>
+          <Button variant="ghost" size="icon" onClick={() => navigateBackOrFallback(navigate, '/properties')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

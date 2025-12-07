@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/card';
 import { useLease, useDeleteLease, useUnit, useTenant, useProperty } from '../../hooks';
+import navigateBackOrFallback from '../../utils/navigation';
 import { getErrorMessage } from '../../types/api';
 
 export const LeaseDetailPage: React.FC = () => {
@@ -23,7 +24,7 @@ export const LeaseDetailPage: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this lease?')) {
       try {
         await deleteLease(id!);
-        navigate('/leases');
+        navigateBackOrFallback(navigate, '/leases');
       } catch (err) {
         console.error('Failed to delete lease:', err);
       }
@@ -214,7 +215,7 @@ export const LeaseDetailPage: React.FC = () => {
       {/* Actions */}
       <div className="mt-6 flex gap-4">
         <button
-          onClick={() => navigate('/leases')}
+          onClick={() => navigateBackOrFallback(navigate, '/leases')}
           className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
         >
           Back to Leases

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useMeter, useCreateMeterReading, useLatestMeterReading } from '../../hooks';
 import type { MeterReadingInput } from '../../types/meter';
@@ -125,7 +126,7 @@ export const MeterReadingCreatePage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Meter Not Found</h2>
             <p className="text-gray-600 mb-4">The meter you're trying to add a reading for doesn't exist.</p>
-            <Button onClick={() => navigate('/meters')}>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/meters')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Meters
             </Button>
@@ -141,7 +142,7 @@ export const MeterReadingCreatePage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate(`/meters/${id}`)}
+            onClick={() => navigateBackOrFallback(navigate, `/meters/${id}`)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Meter

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useTenant, useUpdateTenant } from '../../hooks';
 import { Button } from '../../components/ui/button';
@@ -18,9 +19,7 @@ const TenantEditPage: React.FC = () => {
 
     try {
       await updateTenant({ id, data });
-      navigate('/tenants', {
-        state: { message: 'Tenant updated successfully!' }
-      });
+      navigateBackOrFallback(navigate, '/tenants', { state: { message: 'Tenant updated successfully!' } });
     } catch (error) {
       console.error('Failed to update tenant:', error);
       throw error; // Re-throw to let the form handle it
@@ -47,7 +46,7 @@ const TenantEditPage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Tenant Not Found</h2>
             <p className="text-gray-600 mb-4">The tenant you're trying to edit doesn't exist or has been deleted.</p>
-            <Button onClick={() => navigate('/tenants')}>
+            <Button onClick={() => navigateBackOrFallback(navigate, '/tenants')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Tenants
             </Button>
@@ -63,7 +62,7 @@ const TenantEditPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/tenants')}
+            onClick={() => navigateBackOrFallback(navigate, '/tenants')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tenants

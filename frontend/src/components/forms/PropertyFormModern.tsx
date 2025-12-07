@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import navigateBackOrFallback from '../../utils/navigation';
 import { Building2, MapPin, Home, User, Star, Upload, FileText } from 'lucide-react';
 import { BaseForm, FormColumn, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, FormField, Badge } from '../../componentDesignLibrary';
 import type { PropertyInput, PropertyReceiptTemplate, ApiError } from '../../types';
@@ -189,14 +190,14 @@ const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, on
   };
 
   const handleCancel = () => {
-    navigate('/properties');
+    navigateBackOrFallback(navigate, '/properties');
   };
 
   return (
     <BaseForm
       title={isEdit ? `Edit ${propertyName || 'Property'}` : "Create Property"}
       backLabel={isEdit ? "Edit Property" : "Back to Properties"}
-      onBack={() => navigate('/properties')}
+      onBack={() => navigateBackOrFallback(navigate, '/properties')}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       loading={loading}
