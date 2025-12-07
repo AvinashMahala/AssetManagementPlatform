@@ -5,7 +5,7 @@
  * Opens two separate terminals: one for backend, one for frontend
  */
 
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const path = require('path');
 
 const projectRoot = __dirname;
@@ -56,18 +56,81 @@ function openTerminal(command, cwd, name) {
 
 // Open backend terminal
 const backendCommand = 'npm run dev';
-openTerminal(backendCommand, backendDir, 'Backend');
+
+function checkPortAndOpen({ port, command, cwd, name, expectedIndicators = [] }) {
+  exec(`lsof -iTCP:${port} -sTCP:LISTEN -n -P`, (err, stdout, stderr) => {
+    // On macOS `lsof` returns exit code 1 with empty stdout when nothing is listening.
+    const output = (stdout || '').trim();
+    if (!output) {
+      // Port is free
+      openTerminal(command, cwd, name);
+      return;
+    }
+
+    // Parse the first non-header line from lsof output to get PROCESS and PID
+    const lines = output.split(/\r?\n/).filter(Boolean);
+    let procLine = lines.find((l) => !/^COMMAND\s+/i.test(l)) || lines[0];
+    const parts = procLine.trim().split(/\s+/);
+    const foundCommand = parts[0] || 'unknown';
+    const foundPid = parts[1] || 'unknown';
+
+    // Inspect full command line for the PID to see if it's our app
+    exec(`ps -o command= -p ${foundPid}`, (psErr, psOut, psErrOut) => {
+      const cmdline = (psOut || '').trim();
+      const isOurApp = expectedIndicators.some((ind) => ind && cmdline.includes(ind));
+
+      if (isOurApp) {
+        console.log(`✅ ${name} already running (pid ${foundPid}). Skipping open.`);
+        return;
+      }
+
+      console.log(`⚠️ Port ${port} is in use by process ${foundCommand} (pid ${foundPid}).`);
+      if (cmdline) console.log(`   Command line: ${cmdline}`);
+      console.log(`ℹ️ To start this project, stop the process above (for example: \`kill ${foundPid}\`) and re-run this script.`);
+    });
+  });
+}
+
+checkPortAndOpen({
+  port: 5000,
+  command: backendCommand,
+  cwd: backendDir,
+  name: 'Backend',
+  expectedIndicators: [backendDir, 'npm run dev', 'ts-node', 'nodemon', 'server.ts', 'node']
+});
 
 // Open frontend terminal
 const frontendCommand = 'npm run dev';
 setTimeout(() => {
-  openTerminal(frontendCommand, frontendDir, 'Frontend');
+  checkPortAndOpen({
+    port: 5173,
+    command: frontendCommand,
+    cwd: frontendDir,
+    name: 'Frontend',
+    expectedIndicators: [frontendDir, 'vite', 'npm run dev', 'pnpm', 'webpack', 'parcel']
+  });
 }, 1000); // Small delay to prevent overwhelming the system
 
 // Open Docker databases terminal
 const dockerCommand = 'docker-compose up';
 setTimeout(() => {
-  openTerminal(dockerCommand, projectRoot, 'Docker DB');
+  // Check whether any docker-compose services are already running.
+  // If none are running, open a terminal and run `docker-compose up`.
+  exec('docker-compose ps --services --filter "status=running"', { cwd: projectRoot }, (err, stdout, stderr) => {
+    if (err) {
+      console.error('❌ Failed to check Docker services:', err.message);
+      console.log(`💡 Please manually run: cd ${projectRoot} && ${dockerCommand}`);
+      return;
+    }
+
+    const services = stdout.trim().split(/\r?\n/).filter(Boolean);
+    if (services.length > 0) {
+      console.log('🐳 Docker services already running:', services.join(', '));
+      console.log('✅ Skipping `docker-compose up`.');
+    } else {
+      openTerminal(dockerCommand, projectRoot, 'Docker DB');
+    }
+  });
 }, 2000); // Longer delay for Docker
 
 console.log('\n✅ Terminals opened successfully!');

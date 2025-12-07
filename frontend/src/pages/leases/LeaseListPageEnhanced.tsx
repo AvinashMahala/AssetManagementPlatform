@@ -830,6 +830,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                     </div>
                   ) : (
                     /* Timeline View */
+                    <div className="timeline-view-container">
                     <div className="space-y-4">
                       {paginatedLeases.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
@@ -955,6 +956,7 @@ const LeaseListPageEnhanced: React.FC = () => {
                           );
                         })
                       )}
+                    </div>
                     </div>
                   )}
                 </CardContent>

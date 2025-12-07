@@ -37,6 +37,11 @@
     --lease-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
   }
 
+  .timeline-view-container{
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
   // Performance optimizations
   will-change: transform;
   backface-visibility: hidden;
