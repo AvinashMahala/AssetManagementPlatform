@@ -231,7 +231,7 @@ function App() {
 
 ```bash
 # Start dev server
-npm run dev
+yarn dev
 
 # Open browser
 # Look for 🛠️ Dev Tools button (bottom-right)
@@ -242,10 +242,10 @@ npm run dev
 
 ```bash
 # Build for production
-npm run build
+yarn build
 
 # Preview production build
-npm run preview
+yarn preview
 
 # Open browser
 # Wait 2 seconds

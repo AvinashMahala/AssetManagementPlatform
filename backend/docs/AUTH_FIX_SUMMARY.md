@@ -104,7 +104,7 @@ The following routes already use `devAuthBypass` (which was updated):
 
 ```bash
 # Stop current backend (Ctrl+C in terminal)
-npm run dev:backend
+yarn dev:backend
 ```
 
 ### 2. Run Test Script
@@ -163,7 +163,7 @@ Open http://localhost:5174 in browser:
 pkill -f "tsx watch server.ts"
 
 # Restart
-npm run dev:backend
+yarn dev:backend
 ```
 
 ### Issue: "Failed to fetch user" error

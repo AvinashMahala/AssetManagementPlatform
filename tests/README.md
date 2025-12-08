@@ -33,7 +33,7 @@ Unit Tests               ██████████ 50%
 - **Vitest**: Fast unit testing for React components
 - **React Testing Library**: Component testing utilities
 - **Jest DOM**: DOM assertions
-- **MSW**: API mocking for component tests
+yarn test:coverage
 
 ### End-to-End Testing
 - **Playwright**: Cross-browser E2E testing
@@ -50,35 +50,35 @@ Unit Tests               ██████████ 50%
 ### Installation
 ```bash
 # Install all dependencies
-npm install
+yarn install
 
 # Install test-specific packages if needed
-npm install --workspace=backend --save-dev jest supertest
-npm install --workspace=frontend --save-dev vitest @testing-library/react
+yarn workspace backend add -D jest supertest
+yarn workspace frontend add -D vitest @testing-library/react
 ```
 
 ### Running Tests
 ```bash
 # Run all tests across workspaces
-npm test
+yarn test
 
 # Run backend tests only
-npm test --workspace=backend
+yarn workspace backend test
 
 # Run frontend tests only
-npm test --workspace=frontend
+yarn workspace frontend test
 
 # Run with coverage
-npm run test:coverage
-
+yarn test:coverage
+        run: yarn test:backend:ci
 # Run in watch mode
-npm run test:watch
+yarn test:watch
 ```
 
-## 📁 Test Structure
+        run: yarn test:frontend:ci
 
 ```
-tests/
+        run: yarn test:e2e:ci
 ├── unit/                          # Unit tests
 │   ├── backend/
 │   │   ├── controllers/
@@ -546,7 +546,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
+    command: 'yarn dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },
@@ -655,7 +655,7 @@ module.exports = {
 ### Coverage Report
 ```bash
 # Generate coverage report
-npm run test:coverage
+yarn test:coverage
 
 # View HTML report
 open coverage/lcov-report/index.html
@@ -690,18 +690,18 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Run backend tests
-        run: npm run test:backend:ci
+        run: yarn test:backend:ci
         env:
           MAIN_DATABASE_URL: postgresql://postgres:test@localhost:5432/test
 
       - name: Run frontend tests
-        run: npm run test:frontend:ci
+        run: yarn test:frontend:ci
 
       - name: Run E2E tests
-        run: npm run test:e2e:ci
+        run: yarn test:e2e:ci
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3

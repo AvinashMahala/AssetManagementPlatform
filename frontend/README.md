@@ -305,7 +305,7 @@ cd frontend
 
 # Install dependencies
 
-npm install├── src/
+yarn install├── src/
 
 ```
 
@@ -317,21 +317,20 @@ npm install├── src/
 
 ```bash
 
-# Start development server│   │   │   ├── Button.tsx   # Reusable button component- **Error Boundaries** for robust error handlingexport default defineConfig([
-
-npm run dev
+# Start development server
+yarn dev
 
 │   │   │   ├── Input.tsx    # Form input component
 
 # Build for production
 
-npm run build│   │   │   ├── Card.tsx     # Card container component- **Code Splitting** for optimal performance  globalIgnores(['dist']),
+yarn build│   │   │   ├── Card.tsx     # Card container component- **Code Splitting** for optimal performance  globalIgnores(['dist']),
 
 
 
-# Preview production build│   │   │   └── index.ts     # Component exports
+# Preview production build
 
-npm run preview
+yarn preview│   │   │   └── index.ts     # Component exports
 
 ```│   │   ├── forms/           # Form-specific components (planned)  {
 
@@ -881,7 +880,7 @@ export const useGoogleOAuth = () => {
 
       setLoading(false);
 
-    }    return response.data;npm run build
+    }    return response.data;yarn build
 
   };
 
@@ -893,7 +892,7 @@ export const useGoogleOAuth = () => {
 
       window.google.accounts.id.renderButton(
 
-        document.getElementById(elementId),  async post<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>> {npm run preview
+        document.getElementById(elementId),  async post<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>> {yarn preview
 
         {
 
@@ -1658,7 +1657,7 @@ export const Button: React.FC<ButtonProps> = ({}
 
 # Run unit tests## 📱 Responsive Design
 
-npm test
+yarn test
 
 Mobile-first responsive design with CSS Grid and Flexbox:
 

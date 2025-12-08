@@ -427,7 +427,7 @@ Use this checklist to track migration progress:
 1. **Start the server**
 ```bash
 cd backend
-npm run dev
+yarn dev
 ```
 
 2. **Check console output**
@@ -453,7 +453,7 @@ tail -f logs/backend/combined-*.log
 1. **Start the frontend**
 ```bash
 cd frontend
-npm run dev
+yarn dev
 ```
 
 2. **Open browser console**

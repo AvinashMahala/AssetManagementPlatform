@@ -24,9 +24,6 @@ Deploy your Asset Management Platform using **GitHub's free services**!
 
 1. **Enable GitHub Pages**:
    - Go to Settings → Pages
-   - Set source to "GitHub Actions"
-
-2. **Deploy Frontend** (automatic on push to main):
    - Frontend deploys to: `https://yourusername.github.io/repository-name`
 
 3. **Deploy Backend** (choose one free service):
@@ -36,10 +33,34 @@ Deploy your Asset Management Platform using **GitHub's free services**!
 
 ### 📋 Setup Steps
 
-1. **GitHub Pages**: Automatic via GitHub Actions
+ yarn build
 2. **Backend**: Connect your repo to chosen hosting service
 3. **Database**: Automatic with backend deployment
 4. **Environment Variables**: Set in hosting service dashboard
+## 🛠️ Quick Setup (Unified)
+
+To run the unified cross-platform setup script which validates tools, installs dependencies, optionally seeds the database, and starts the dev servers:
+
+```bash
+# run non-interactively and accept prompts
+node scripts/setup.js --yes
+
+# seed the database as part of setup
+node scripts/setup.js --seed-db
+
+# skip bringing up docker services
+node scripts/setup.js --skip-docker
+```
+
+You can still use the platform-specific wrappers:
+```bash
+# macOS/Linux
+bash setup.sh
+
+# Windows
+powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
 
 ### 🌐 Live Demo URLs
 - **Frontend**: `https://yourusername.github.io/repository-name`
@@ -324,8 +345,112 @@ git clone <repository-url>
 cd PropertyManagementPlatform
 
 # Install dependencies for all workspaces
-npm install
+yarn install
 ```
+
+## 📌 Requirements (Software / Tools / Packages)
+
+Before running or contributing to the project, the following items are required or strongly recommended. Most of these are explained in detail in `SETUP.md` and the setup scripts (`setup.ps1`, `setup.sh`, `scripts/setup.js`).
+
+1) System software / tools (install these first)
+   - Node.js >= 18 (required) — recommended LTS 18 or 20
+     - Windows: winget install -e --id OpenJS.NodeJS.LTS or nvm-windows
+     - macOS: brew install node OR use nvm: https://github.com/nvm-sh/nvm
+     - Linux: apt / dnf OR use nvm
+   - Yarn (recommended, optional if you prefer npm). Install via:
+     - npm: npm install -g yarn
+     - Corepack: corepack enable && corepack prepare yarn@stable --activate
+   - Docker & Docker Compose (for DB+services) — required for production / local containers
+     - Windows: Docker Desktop (with WSL2) — https://www.docker.com/get-started
+     - macOS: Docker Desktop via Homebrew `brew install --cask docker`
+     - Linux: `sudo apt install docker docker-compose` or use distro packages
+   - Python 3.10+ (optional / required for seeding and Python scripts)
+     - Used by `setup_database.py` and seeding scripts. On Windows, use winget or Python.org installer.
+   - Git (required) — `git` command line
+
+2) Node / workspace packages (installed by the setup or through yarn install)
+   - Project uses Yarn workspaces – prefer `yarn install` at the repo root
+   - Recommended local dev dependencies (already included in `frontend` and `backend` package.json):
+     - TypeScript, ESLint, Jest, Vite, vitest, tsx, ts-node
+     - `concurrently` (dev helper) — requires Node >= 18
+     - `pnpm` (optional, may be used internally by certain scripts)
+   - If you need them globally (optional): `yarn global add pnpm typescript`
+
+3) Other infra / config you should know about
+   - PostgreSQL — can run locally or via Docker Compose (recommended for quick starts)
+   - Environment variables: copy `.env.example` to `.env` (root / backend) and configure keys like `MAIN_DATABASE_URL`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`.
+   - Google OAuth (optional): `GOOGLE_CLIENT_ID` and Trusted Redirect URLs for working auth
+   - Editor/IDE with TypeScript support for best DX (VS Code recommended)
+
+  6) Data seeding (Python-based)
+     - The project includes Python-based seeding helpers to create and load seed data.
+     - Key scripts:
+       - `scripts/smart_seed_excel.py` — generate a simplified Excel file from JSON templates
+       - `scripts/seed_to_db.py` — load JSON/Excel seed files into the database
+     - Python packages are provided in `scripts/seeding_requirements.txt`. To install and seed manually:
+       ```bash
+       python3 -m venv .venv
+       source .venv/bin/activate  # or `.\.venv\Scripts\activate` on Windows PowerShell
+       pip install -U pip
+       pip install -r scripts/seeding_requirements.txt
+       # Generate Excel (optional)
+       python3 scripts/smart_seed_excel.py
+       # Run DB seed
+       python3 scripts/seed_to_db.py
+       ```
+
+4) Quick install hints & commands (common flows)
+   - Quick install (recommended):
+     - Use the platform wrapper: `yarn setup` (preferred), or `bash setup.sh` (macOS/Linux) or `powershell -ExecutionPolicy Bypass -File setup.ps1` (Windows)
+   - Manually install dependencies without the wrapper:
+     ```bash
+     # Yarn (recommended)
+     yarn install
+
+     # Or, if you prefer npm
+     npm install
+     npm ci --workspaces --if-present
+     ```
+
+5) How to start the dev environment:
+   - Preferred (Yarn + Node >= 18):
+     ```bash
+     yarn dev                # starts frontend/backend and docker via start-dev.js
+     yarn workspace frontend dev
+     yarn workspace backend dev
+     ```
+   - The `start-dev.js` and `start-dev.ps1` scripts open windows/terminals for the backend, frontend, and Docker DBs so that you can see logs independently.
+
+See `SETUP.md` and `setup.sh` / `setup.ps1` for more details and OS-specific guidance, auto-install attempts and prompts.
+
+
+### One-time Setup (Recommended)
+
+Run the one-time setup script to automatically install missing tools (or prompt you with instructions) and prepare the workspace for development.
+
+Windows (PowerShell):
+```powershell
+powershell -ExecutionPolicy Bypass -File setup.ps1
+# or via yarn
+yarn setup:win
+```
+
+macOS / Linux:
+```bash
+bash setup.sh
+# or via yarn
+yarn setup:unix
+```
+
+The script will:
+- Check/install Node.js (recommended v18+), Docker Desktop, Python 3 (for DB seeding), Git.
+-- Install workspace dependencies (prefer yarn: `yarn install` or `yarn workspaces install`).
+- Setup a Python virtual environment and install seeding requirements (scripts/seeding_requirements.txt).
+- Copy `.env.example` files into appropriate `.env` files if not present.
+- Optionally run the DB seeding pipeline and start development servers.
+
+Note: The setup script uses `winget`/`choco` on Windows and `brew`/`apt` on macOS/Linux when available. If none are present, the script prints manual install instructions.
+
 
 ### 2. Environment Configuration
 
@@ -420,11 +545,11 @@ See `scripts/python/README.md` for detailed database documentation.
 
 ```bash
 # Start both frontend and backend in development mode
-npm run dev
+yarn dev
 
 # Or run workspaces separately
-npm run dev --workspace=frontend
-npm run dev --workspace=backend
+yarn workspace frontend dev
+yarn workspace backend dev
 ```
 
 ### 5. Access the Application
@@ -540,13 +665,13 @@ Authorization: Bearer <token>
 
 ```bash
 # Run all tests
-npm test
+yarn test
 
 # Run backend tests only
-npm test --workspace=backend
+yarn workspace backend test
 
 # Run with coverage
-npm run test:coverage
+yarn test:coverage
 ```
 
 ## 🚢 Deployment
@@ -617,8 +742,8 @@ git checkout -b feature/new-feature
 npm test
 
 # 3. Lint and format code
-npm run lint
-npm run format
+yarn lint
+yarn format
 
 # 4. Commit with conventional format
 git commit -m "feat: add new property filtering"

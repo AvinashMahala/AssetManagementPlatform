@@ -116,7 +116,7 @@ router.get('/properties', devAuthBypass, controller.getAll);
 DISABLE_AUTH=false
 
 # Restart server
-npm run dev
+yarn dev
 ```
 
 ### Disable Authentication
@@ -126,7 +126,7 @@ npm run dev
 DISABLE_AUTH=true
 
 # Restart server
-npm run dev
+yarn dev
 ```
 
 ## Troubleshooting

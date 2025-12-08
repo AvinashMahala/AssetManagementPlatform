@@ -316,14 +316,14 @@ Set `NODE_ENV=development` for verbose logging with DEBUG level.
 ### Backend Test
 ```bash
 cd backend
-npm run dev
+yarn dev
 # Make API requests and check logs appear in console and files
 ```
 
 ### Frontend Test
 ```bash
 cd frontend
-npm run dev
+yarn dev
 # Open browser console and check formatted logs
 # View stored errors: logger.getStoredLogs()
 ```

@@ -108,7 +108,7 @@ python3 scripts/test_receipt.py
 ### Start Backend Server
 ```bash
 cd backend
-npm run dev
+yarn dev
 ```
 
 ## Verification Results
