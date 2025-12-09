@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "assetmanagement-seed"
+version = "0.1.0"
+description = "Seed tooling for Asset Management Platform"
+dependencies = [
+    "psycopg2-binary>=2.9.9",
+    "bcrypt>=4.1.2",
+    "pandas>=2.1.4",
+    "openpyxl>=3.1.2",
+]
+
+[tool.setuptools]
+packages = ["scripts"]

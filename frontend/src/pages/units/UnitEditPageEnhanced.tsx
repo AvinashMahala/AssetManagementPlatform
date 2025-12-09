@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { Card, CardContent } from '../../components/ui/card';
+import { PageLoadingSpinner } from '../../componentDesignLibrary';
 import { useUnit } from '../../hooks';
 import { UnitEditPage } from './UnitEditPage';
 
@@ -16,7 +17,7 @@ const UnitEditPageEnhanced: React.FC = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <PageLoadingSpinner text="Loading unit..." />
               </div>
             </CardContent>
           </Card>

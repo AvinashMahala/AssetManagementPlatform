@@ -6,23 +6,27 @@ import { ERROR_MESSAGES } from '../constants/validation';
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';
+import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 
 export class RentPaymentService implements IRentPaymentService {
   private repository: IRentPaymentRepository;
   private leaseRepository: ILeaseRepository;
   private propertyRepository: IPropertyRepository;
   private tenantRepository: ITenantRepository;
+  private userRepository: IUserRepository;
 
   constructor(
     repository: IRentPaymentRepository,
     leaseRepository: ILeaseRepository,
     propertyRepository: IPropertyRepository,
-    tenantRepository: ITenantRepository
+    tenantRepository: ITenantRepository,
+    userRepository: IUserRepository
   ) {
     this.repository = repository;
     this.leaseRepository = leaseRepository;
     this.propertyRepository = propertyRepository;
     this.tenantRepository = tenantRepository;
+    this.userRepository = userRepository;
   }
 
   async getAllPayments(): Promise<RentPayment[]> {
@@ -256,6 +260,25 @@ export class RentPaymentService implements IRentPaymentService {
     const payments: RentPayment[] = [];
     const currentDate = new Date(startDate);
 
+    // Determine default createdBy user id for generated payments
+    let defaultCreatedBy = process.env.SYSTEM_USER_ID || process.env.DEV_USER_ID;
+    if (!defaultCreatedBy && this.userRepository) {
+      const adminUser = await this.userRepository.findByUsername('admin');
+      if (adminUser) {
+        defaultCreatedBy = adminUser.id;
+      }
+    }
+    if (!defaultCreatedBy) {
+      throw new Error(`No default system user found for generated payments. Set SYSTEM_USER_ID, DEV_USER_ID or ensure admin user exists.`);
+    }
+    // Validate defaultCreatedBy exists
+    if (this.userRepository) {
+      const createdByUser = await this.userRepository.findById(defaultCreatedBy);
+      if (!createdByUser) {
+        throw new Error(`Default createdBy user not found: ${defaultCreatedBy}`);
+      }
+    }
+
     while (currentDate <= endDate) {
       // Calculate due date (use rent due day from lease or default to 1st)
       const dueDay = lease.rentDueDay || 1;
@@ -282,7 +305,7 @@ export class RentPaymentService implements IRentPaymentService {
         rentAmount: rentAmount,
         maintenanceCharges: maintenanceCharges > 0 ? maintenanceCharges : undefined,
         otherCharges: otherCharges > 0 ? otherCharges : undefined,
-        createdBy: 'system' // This should be the current user ID
+        createdBy: defaultCreatedBy
       };
 
       const payment = await this.repository.create(paymentInput);

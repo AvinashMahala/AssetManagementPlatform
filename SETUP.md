@@ -45,6 +45,11 @@ This unified script attempts installs using common package managers (winget/choc
 
 After installing Node and/or Python, re-run `node scripts/setup.js` or `yarn setup` to continue.
 
+Tip: To run a compatibility check without modifying anything, use the dry-run flag:
+```bash
+node scripts/setup.js --dry-run
+``` 
+
 ## Quick commands
 
 Windows (PowerShell):
@@ -94,3 +99,31 @@ After running setup, proceed to run the development servers:
 - Unix: `node start-dev.js` or `yarn start-dev`
 
 Happy developing!
+
+## Development configuration and seeding notes
+
+If you are running the server with authentication disabled (DISABLE_AUTH=true), the dev user id used by the middleware is determined by `DEV_USER_ID` in your `.env`. To avoid foreign key errors (e.g. `rent_transactions_created_by_fkey`) when creating transactions in dev, make sure the `DEV_USER_ID` and `SYSTEM_USER_ID` (if used) exist in the database.
+
+1. Set `DEV_USER_ID` and `DEV_USER_EMAIL` in `.env` (recommended default is the admin user id used by seeder):
+```bash
+DEV_USER_ID=f40a33a6-8f4c-4a1d-bd26-857920024739
+DEV_USER_EMAIL=admin@example.com
+DEV_USER_ROLE=admin
+```
+
+2. (Optional) Set `SYSTEM_USER_ID` for background/system generated transactions:
+```bash
+SYSTEM_USER_ID=1c9f4f3b-9b97-4b0d-bfa3-222d1112c0a9
+```
+
+3. Seed the database with the `seed_to_db.py` script to create these users:
+```bash
+python3 scripts/seed_to_db.py
+```
+
+4. Quick verification via psql:
+```bash
+psql -d <db_name> -c "SELECT id, email, username FROM users WHERE id = '<DEV_USER_ID>' LIMIT 1;"
+```
+
+The seeding script will prefer `DEV_USER_ID` for the admin user if present, and it will create a `system` user if `SYSTEM_USER_ID` is set. If you still encounter `Created by user not found` errors, check your `.env` for missing values and verify the user exists in the DB.

@@ -26,6 +26,7 @@ const SEED = args.includes('--seed') || args.includes('--seed-db') || args.inclu
 const SKIP_DOCKER = args.includes('--skip-docker') || args.includes('-s');
 const START = args.includes('--start') || !args.includes('--no-start');
 
+const DRY_RUN = args.includes('--dry-run');
 const MAX_RETRIES = 2;
 const REQUIRED_NODE_MAJOR = 18; // minimum Node major to run this project
 
@@ -46,6 +47,18 @@ function runSync(cmd, opts = {}) {
   return spawnSync(cmd, { shell: true, stdio: 'inherit', ...opts });
 }
 
+function execCommand(cmd, opts = {}, allowModify = true) {
+  // In dry-run mode, show the commands that would be executed and don't run them
+  if (DRY_RUN) {
+    console.log(`[DRY-RUN] ${cmd}`);
+    return { status: 0, stdout: '', stderr: '' };
+  }
+  if (!allowModify) {
+    // For commands that must always run (like detection), allowModify doesn't matter
+    return runSync(cmd, opts);
+  }
+  return runSync(cmd, opts);
+}
 async function hasCmd(cmd) {
   const platform = process.platform;
   const check = platform === 'win32' ? `where ${cmd}` : `command -v ${cmd}`;
@@ -73,7 +86,8 @@ async function tryInstallWithOSPackageManager(cmds, name) {
   for (const c of cmds) {
     try {
       info(`Attempting to install ${name} via: ${c}`);
-      const res = runSync(c);
+      if (DRY_RUN) { info(`[DRY-RUN] Would run: ${c}`); return false; }
+      const res = execCommand(c);
       if (res && res.status === 0) { info(`${name} installed (via ${c})`); return true; }
     } catch (e) {
       warn(`Failed to run ${c}: ${e}`);
@@ -112,6 +126,10 @@ async function installToolWithRetry(installCmds, name, predicateCmd = null) {
     }
 
     attempts++;
+    if (DRY_RUN) {
+      info(`[DRY-RUN] Would attempt installation of ${name} using: ${installCmds.join(' || ')}`);
+      return false;
+    }
     const ok = await tryInstallWithOSPackageManager(installCmds, name);
       if (!ok) {
       warn(`Automatic install attempt failed for ${name}.`);
@@ -274,8 +292,12 @@ async function checkAndInstallDependencies() {
       rl.question('pnpm not found. Install pnpm globally (yarn global add pnpm | npm install -g pnpm)? [y/N]: ', (answer) => { rl.close(); resolve(answer); });
     })).match(/^y/i)) {
       try {
-        if (await hasCmd('yarn')) { runSync('yarn global add pnpm'); }
-        else { runSync('npm install -g pnpm'); }
+        if (DRY_RUN) {
+          info('[DRY-RUN] Would install pnpm globally (yarn or npm)');
+        } else {
+          if (await hasCmd('yarn')) { execCommand('yarn global add pnpm'); }
+          else { execCommand('npm install -g pnpm'); }
+        }
         info('pnpm installed (global)');
       }
       catch (e) { warn('Failed to install pnpm globally.'); }
@@ -289,7 +311,7 @@ async function checkAndInstallDependencies() {
   if (!tscLocalBackend && !tscLocalFrontend) {
     warn('TypeScript not installed in backend or frontend node_modules. Running top-level install to add missing packages.');
     try {
-      if (await hasCmd('yarn')) { runSync('yarn install'); } else { runSync('npm ci'); runSync('npm ci --workspaces --if-present'); }
+      if (await hasCmd('yarn')) { execCommand('yarn install'); } else { execCommand('npm ci'); execCommand('npm ci --workspaces --if-present'); }
       info('Project dependencies installed');
     } catch (e) { warn('Failed to run project package install'); }
   }
@@ -298,19 +320,19 @@ async function checkAndInstallDependencies() {
   const tscPresent = await hasCmd('tsc');
   if (!tscPresent) {
     if (YES) {
-      try { if (await hasCmd('yarn')) { runSync('yarn global add typescript'); } else { runSync('npm install -g typescript'); } info('typescript installed globally'); }
+      try { if (await hasCmd('yarn')) { execCommand('yarn global add typescript'); } else { execCommand('npm install -g typescript'); } info('typescript installed globally'); }
       catch (e) { warn('Failed to install typescript globally'); }
     } else {
       const installTSC = await new Promise((resolve) => {
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
         rl.question('tsc (TypeScript compiler) not found globally. Install globally (npm install -g typescript)? [y/N]: ', (answer) => { rl.close(); resolve(answer); });
       });
-      if (/^y(es)?$/i.test(installTSC)) { try { if (await hasCmd('yarn')) { runSync('yarn global add typescript'); } else { runSync('npm install -g typescript'); } info('typescript installed globally'); } catch (e) { warn('Failed to install typescript globally'); } }
+      if (/^y(es)?$/i.test(installTSC)) { try { if (await hasCmd('yarn')) { execCommand('yarn global add typescript'); } else { execCommand('npm install -g typescript'); } info('typescript installed globally'); } catch (e) { warn('Failed to install typescript globally'); } }
     }
   }
 
   // Ensure workspace dependencies installed
-  try { if (await hasCmd('yarn')) { runSync('yarn install'); } else { runSync('npm ci --workspaces --if-present'); } } catch (e) { warn('Failed to run workspace install.'); }
+  try { if (await hasCmd('yarn')) { execCommand('yarn install'); } else { execCommand('npm ci --workspaces --if-present'); } } catch (e) { warn('Failed to run workspace install.'); }
 
   info('Dependency check phase complete');
 }
@@ -336,12 +358,12 @@ async function setupPythonVenv() {
   const venvPath = path.join(projectRoot, '.venv');
   if (!existsSync(venvPath)) {
     info('Creating python virtual environment');
-    try { runSync(`${pythonCmd} -m venv .venv`); }
+    try { execCommand(`${pythonCmd} -m venv .venv`); }
     catch (e) { warn('Failed to create python venv.'); }
   }
   const pipPath = process.platform === 'win32' ? path.join(venvPath, 'Scripts', 'pip.exe') : path.join(venvPath, 'bin', 'pip');
   if (existsSync(path.join(projectRoot, 'scripts', 'seeding_requirements.txt'))) {
-    try { runSync(`${pipPath} install -U pip`); runSync(`${pipPath} install -r scripts/seeding_requirements.txt`); }
+    try { execCommand(`${pipPath} install -U pip`); execCommand(`${pipPath} install -r scripts/seeding_requirements.txt`); }
     catch (e) { warn('Failed to install python seeding requirements'); }
   } else info('No python seeding requirements found');
 }
@@ -352,19 +374,19 @@ async function runSeedingIfRequested() {
     info('Running DB seeding via setup_database.py');
     const pythonCmd = (await hasCmd('python3')) ? 'python3' : 'python';
     if (!pythonCmd) { warn('Python not available; cannot run DB seed'); return; }
-    try { runSync(`${pythonCmd} setup_database.py`); } catch (e) { warn('DB seeding failed.'); }
+    try { execCommand(`${pythonCmd} setup_database.py`); } catch (e) { warn('DB seeding failed.'); }
   } else warn('setup_database.py not found; skipping DB seed');
 }
 
 async function startDevServers() {
   if (SKIP_DOCKER) info('Skipping Docker startup per flag');
   info('Starting dev servers (via start-dev.js) ...');
-  if (existsSync(path.join(projectRoot, 'start-dev.js'))) {
-    try { runSync(`node start-dev.js ${SKIP_DOCKER ? '--skip-docker' : ''}`); }
+    if (existsSync(path.join(projectRoot, 'start-dev.js'))) {
+    try { execCommand(`node start-dev.js ${SKIP_DOCKER ? '--skip-docker' : ''}`); }
     catch (e) { warn('Failed to start dev servers via start-dev.js.'); }
   } else if (existsSync(path.join(projectRoot, 'start-dev.ps1')) && process.platform === 'win32') {
     // On Windows run the PowerShell script
-    try { runSync('powershell -ExecutionPolicy Bypass -File start-dev.ps1'); }
+    try { execCommand('powershell -ExecutionPolicy Bypass -File start-dev.ps1'); }
     catch (e) { warn('Failed to start dev servers via start-dev.ps1.'); }
   } else {
     warn('No start-dev entrypoint found.');

@@ -5,6 +5,7 @@ import { Card } from '../../components/common';
 import { Button } from '../../components/common/Button';
 import { RevenueTrendChart } from '../../components/ui/charts';
 import { getErrorMessage } from '../../types/api';
+import { PageLoadingSpinner } from '../../componentDesignLibrary';
 
 export const UnitDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +15,7 @@ export const UnitDashboardPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Loading unit analytics...</div>
+        <PageLoadingSpinner text="Loading unit analytics..." />
       </div>
     );
   }

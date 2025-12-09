@@ -175,6 +175,15 @@ export class RentTransactionService implements IRentTransactionService {
       notificationSent: false,
       receiptSent: false
     } as Omit<RentTransaction, 'id' | 'createdAt' | 'updatedAt'>;
+    
+    // Ensure createdBy is valid and exists
+    if (!transactionInput.createdBy) {
+      throw new Error(`Created by user ID is required`);
+    }
+    const createdByUser = await this.userRepository.findById(transactionInput.createdBy);
+    if (!createdByUser) {
+      throw new Error(`Created by user not found: ${transactionInput.createdBy}`);
+    }
 
     // Create the transaction
     const transaction = await this.repository.create(transactionInput);
@@ -324,6 +333,19 @@ export class RentTransactionService implements IRentTransactionService {
     const transactions: RentTransaction[] = [];
     const currentDate = new Date(startDate);
 
+    // Determine default createdBy user id for generated transactions
+    // Prefer explicit SYSTEM_USER_ID or DEV_USER_ID env vars; fallback to first admin user in DB
+    let defaultCreatedBy = process.env.SYSTEM_USER_ID || process.env.DEV_USER_ID;
+    if (!defaultCreatedBy) {
+      const adminUser = await this.userRepository.findByUsername('admin');
+      if (adminUser) {
+        defaultCreatedBy = adminUser.id;
+      }
+    }
+    if (!defaultCreatedBy) {
+      throw new Error('No default system user found for generated transactions. Set SYSTEM_USER_ID, DEV_USER_ID or ensure admin user exists.');
+    }
+
     while (currentDate <= endDate) {
       // Calculate billing period (month start to month end)
       const billingPeriodStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -421,8 +443,8 @@ export class RentTransactionService implements IRentTransactionService {
         lastPaymentDate: undefined,
         notificationSent: false,
         receiptSent: false,
-        createdBy: 'system', // This should be the current user ID
-        updatedBy: 'system',
+        createdBy: defaultCreatedBy,
+        updatedBy: defaultCreatedBy,
         notes: undefined
       };
 

@@ -126,7 +126,7 @@ export class TemplateController {
 
   importTemplate = async (req: any, res: Response) => {
     try {
-      const newTemplateId = await this.service.importTemplate(req.body, req.user?.id || 'system');
+      const newTemplateId = await this.service.importTemplate(req.body, req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID);
       res.status(HTTP_STATUS.CREATED).json({ 
         success: true, 
         data: { id: newTemplateId },

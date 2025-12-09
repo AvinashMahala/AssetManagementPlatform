@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useDeleteUnit } from '../../hooks';
 import navigateBackOrFallback from '../../utils/navigation';
-import { PhotoCarousel } from '../../componentDesignLibrary';
+import { PhotoCarousel, PageLoadingSpinner } from '../../componentDesignLibrary';
 import { UnitUtilitiesManager } from '../../components/units/UnitUtilitiesManager';
 import { getErrorMessage } from '../../types/api';
 
@@ -26,7 +26,7 @@ export const UnitDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Loading unit details...</div>
+        <PageLoadingSpinner text="Loading unit details..." />
       </div>
     );
   }

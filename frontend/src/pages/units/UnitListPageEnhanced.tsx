@@ -25,6 +25,7 @@ import { Pagination } from '../../components/ui/pagination';
 import { useUnits, useDeleteUnit } from '../../hooks/useUnits';
 import { useProperties } from '../../hooks/useProperties';
 import { AppLayout } from '../../components/layout';
+import { PageLoadingSpinner } from '../../componentDesignLibrary';
 import './UnitListPageEnhanced.scss';
 
 const UnitListPageEnhanced: React.FC = () => {
@@ -268,9 +269,10 @@ const UnitListPageEnhanced: React.FC = () => {
     <AppLayout title="Units">
       {loading ? (
         <div className="unit-list-page-enhanced loading-container flex items-center justify-center min-h-[60vh]">
-          <div className="loading-spinner animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-lg text-muted-foreground">Loading units...</p>
-          <p className="text-sm text-muted-foreground">Please wait while we fetch your unit data</p>
+          <div className="text-center">
+            <PageLoadingSpinner text="Loading units..." />
+            <p className="text-sm text-muted-foreground mt-1">Please wait while we fetch your unit data</p>
+          </div>
         </div>
       ) : (
         <div className="unit-list-page-enhanced py-2 space-y-2 scroll-reveal revealed">

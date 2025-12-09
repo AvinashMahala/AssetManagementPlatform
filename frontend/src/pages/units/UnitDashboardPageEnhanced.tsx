@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { RevenueTrendChart } from '../../components/ui/charts';
 import { getErrorMessage } from '../../types/api';
 import './UnitDashboardPageEnhanced.scss';
+import { PageLoadingSpinner } from '../../componentDesignLibrary';
 
 export const UnitDashboardPageEnhanced: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,8 +58,8 @@ export const UnitDashboardPageEnhanced: React.FC = () => {
   if (loading) {
     return (
       <div className="unit-dashboard-enhanced">
-        <div className="loading-state">
-          <div className="loading-text">Loading unit analytics...</div>
+        <div className="loading-state py-12 flex items-center justify-center">
+          <PageLoadingSpinner text="Loading unit analytics..." />
         </div>
       </div>
     );

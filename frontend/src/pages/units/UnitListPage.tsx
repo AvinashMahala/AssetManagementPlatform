@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { AppLayout } from '../../components/layout/AppLayout';
+import { PageLoadingSpinner } from '../../componentDesignLibrary';
 import { useUnits } from '../../hooks/useUnits';
 
 const UnitListPage: React.FC = () => {
@@ -104,8 +105,7 @@ const UnitListPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-12 h-32">
                           <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
-                            Loading units...
+                            <PageLoadingSpinner text="Loading units..." />
                           </div>
                         </TableCell>
                       </TableRow>

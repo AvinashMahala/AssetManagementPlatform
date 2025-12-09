@@ -4,6 +4,7 @@ import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useUnit, useUpdateUnit } from '../../hooks';
 import { Button } from '../../components/ui/button';
+import { PageLoadingSpinner } from '../../componentDesignLibrary';
 import { AppLayout } from '../../components/layout/AppLayout';
 import UnitFormTabbed from '../../components/forms/UnitFormTabbed';
 import type { UnitInput } from '../../types/unit';
@@ -31,8 +32,7 @@ export const UnitEditPage: React.FC = () => {
       <AppLayout title="Edit Unit">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading unit...</p>
+            <PageLoadingSpinner text="Loading unit..." />
           </div>
         </div>
       </AppLayout>

@@ -338,6 +338,7 @@ export class DependencyContainer {
         this.leaseRepository,
         this.propertyRepository,
         this.tenantRepository
+        , this.userRepository
       );
     }
     return this._rentPaymentService;

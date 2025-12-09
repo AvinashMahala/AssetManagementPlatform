@@ -277,7 +277,16 @@ def seed_users(conn, df):
     for _, row in df.iterrows():
         try:
             # Generate UUID
-            user_id = str(uuid.uuid4())
+            # Use DEV_USER_ID for admin during development if provided
+            if row.get('key') == 'admin':
+                dev_user_id = os.getenv('DEV_USER_ID')
+                if dev_user_id:
+                    user_id = dev_user_id
+                    print_info(f"Using DEV_USER_ID for admin seeding: {dev_user_id}")
+                else:
+                    user_id = str(uuid.uuid4())
+            else:
+                user_id = str(uuid.uuid4())
             user_uuids[row['key']] = user_id
             
             # Hash password
@@ -303,6 +312,28 @@ def seed_users(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} users")
+    # If a SYSTEM_USER_ID is provided, ensure a system user is created with that ID
+    system_user_id = os.getenv('SYSTEM_USER_ID')
+    if system_user_id:
+        cursor = conn.cursor()
+        # Avoid creating duplicate entries
+        cursor.execute("SELECT id FROM users WHERE id = %s", (system_user_id,))
+        if cursor.fetchone() is None:
+            default_system_email = os.getenv('SYSTEM_USER_EMAIL', 'system@localhost')
+            default_system_role = os.getenv('SYSTEM_USER_ROLE', 'system')
+            try:
+                cursor.execute("""
+                    INSERT INTO users (id, username, email, password, role, is_email_verified)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                """, (
+                    system_user_id, 'system', default_system_email, hash_password('systempassword'), default_system_role, True
+                ))
+                print_info(f"Seeded system user with id {system_user_id}")
+                user_uuids['system'] = system_user_id
+            except Exception as e:
+                print_error(f"Error creating system user with id {system_user_id}: {e}")
+        cursor.close()
 
 def seed_tenants(conn, df):
     """Seed tenants with dynamic UUID generation"""

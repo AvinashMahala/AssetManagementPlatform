@@ -395,8 +395,17 @@ Before running or contributing to the project, the following items are required 
        pip install -r scripts/seeding_requirements.txt
        # Generate Excel (optional)
        python3 scripts/smart_seed_excel.py
-       # Run DB seed
-       python3 scripts/seed_to_db.py
+      # Run DB seed
+      python3 scripts/seed_to_db.py
+
+    Note: The `scripts/pyproject.toml` is provided for modern Python packaging in the `scripts/` folder; you can also install dependencies with:
+    ```bash
+    python -m pip install -r scripts/seeding_requirements.txt
+    # or using the pyproject (build wheel and install):
+    python -m pip install build
+    python -m build -C scripts
+    pip install scripts/dist/*.whl
+    ```
        ```
 
 4) Quick install hints & commands (common flows)
@@ -421,7 +430,7 @@ Before running or contributing to the project, the following items are required 
      ```
    - The `start-dev.js` and `start-dev.ps1` scripts open windows/terminals for the backend, frontend, and Docker DBs so that you can see logs independently.
 
-See `SETUP.md` and `setup.sh` / `setup.ps1` for more details and OS-specific guidance, auto-install attempts and prompts.
+See `SETUP.md`, `docs/PREREQUISITES.md` and `setup.sh` / `setup.ps1` for more details and OS-specific guidance, auto-install attempts and prompts.
 
 
 ### One-time Setup (Recommended)

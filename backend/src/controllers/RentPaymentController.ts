@@ -477,6 +477,9 @@ export class RentPaymentController {
           errorMessage.includes('Tenant not found')) {
         return ResponseUtils.badRequest(res, errorMessage);
       }
+      if (errorMessage.includes('Created by') || errorMessage.includes('Created by user')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
       ErrorUtils.handleGenericError(res, err, 'Failed to create payment');
     }
   }

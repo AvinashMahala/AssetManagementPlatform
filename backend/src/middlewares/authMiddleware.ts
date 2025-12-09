@@ -97,6 +97,16 @@ export const conditionalAuth = (userService: IUserService) => {
         email: process.env.DEV_USER_EMAIL || 'dev@example.com',
         role: (process.env.DEV_USER_ROLE as 'admin' | 'user') || 'admin'
       };
+      // Try to lookup the user in DB to warn if missing
+      try {
+        const found = await userService.getUserById(req.user.id);
+        if (!found) {
+          console.warn('[conditionalAuth] DEV_USER_ID is set but not present in DB:', req.user.id);
+          console.warn("Run 'scripts/seed_to_db.py' to create the user or set DEV_USER_ID to an existing user id.");
+        }
+      } catch (err) {
+        console.warn('[conditionalAuth] Error while verifying DEV_USER_ID:', err);
+      }
       return next();
     }
     
