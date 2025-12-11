@@ -6,6 +6,7 @@
  */
 
 const { spawn, exec, spawnSync } = require('child_process');
+const readline = require('readline');
 const path = require('path');
 
 const projectRoot = __dirname;
@@ -108,6 +109,32 @@ function checkPortAndOpen({ port, command, cwd, name, expectedIndicators = [] })
 
         console.log(`⚠️ Port ${port} is in use by process (pid ${foundPid}).`);
         if (cmdline) console.log(`   Command line: ${cmdline}`);
+
+        // Ask user whether they want to stop this process (only if running interactively)
+        if (process.stdin && process.stdin.isTTY) {
+          const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+          rl.question(`Do you want to stop process ${foundPid} and free port ${port}? (y/N): `, (answer) => {
+            rl.close();
+            const yn = (answer || '').trim().toLowerCase();
+            if (yn === 'y' || yn === 'yes') {
+              // Attempt to stop the process on Windows
+              console.log(`🛑 Attempting to stop process ${foundPid}...`);
+              exec(`taskkill /PID ${foundPid} /F`, (killErr, killStdout, killStderr) => {
+                if (killErr) {
+                  console.error(`❌ Failed to stop process ${foundPid}:`, (killStderr || killErr.message).trim());
+                  console.log(`ℹ️ Please stop it manually (e.g., Task Manager) and re-run this script.`);
+                  return;
+                }
+                console.log(`✅ Successfully stopped process ${foundPid}. Re-running check to open the terminal...`);
+                openTerminal(command, cwd, name);
+              });
+            } else {
+              console.log(`ℹ️ Not stopping process ${foundPid}. To start this project, stop it and re-run this script.`);
+            }
+          });
+          return;
+        }
+
         console.log(`ℹ️ To start this project, stop the process above and re-run this script.`);
       });
     });
@@ -143,6 +170,31 @@ function checkPortAndOpen({ port, command, cwd, name, expectedIndicators = [] })
 
       console.log(`⚠️ Port ${port} is in use by process ${foundCommand} (pid ${foundPid}).`);
       if (cmdline) console.log(`   Command line: ${cmdline}`);
+
+      // Ask user whether they want to stop this process (only if running interactively)
+      if (process.stdin && process.stdin.isTTY) {
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        rl.question(`Do you want to stop process ${foundPid} and free port ${port}? (y/N): `, (answer) => {
+          rl.close();
+          const yn = (answer || '').trim().toLowerCase();
+          if (yn === 'y' || yn === 'yes') {
+            console.log(`🛑 Attempting to stop process ${foundPid}...`);
+            exec(`kill -9 ${foundPid}`, (killErr, killStdout, killStderr) => {
+              if (killErr) {
+                console.error(`❌ Failed to stop process ${foundPid}:`, (killStderr || killErr.message).trim());
+                console.log(`ℹ️ Please stop it manually and re-run this script.`);
+                return;
+              }
+              console.log(`✅ Successfully stopped process ${foundPid}. Re-running check to open the terminal...`);
+              openTerminal(command, cwd, name);
+            });
+          } else {
+            console.log(`ℹ️ Not stopping process ${foundPid}. To start this project, stop it and re-run this script.`);
+          }
+        });
+        return;
+      }
+
       console.log(`ℹ️ To start this project, stop the process above (for example: 'kill ${foundPid}') and re-run this script.`);
     });
   });
