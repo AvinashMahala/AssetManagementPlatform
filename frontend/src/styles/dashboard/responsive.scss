@@ -1,0 +1,176 @@
+// Responsive enhancements
+@media (max-width: 768px) {
+  .dashboard-enhanced {
+    .stats-grid {
+      gap: 1rem;
+
+      .stat-card {
+        padding: 1rem;
+
+        .stat-icon {
+          // Mobile adjustments
+        }
+      }
+    }
+
+    .chart-container {
+      margin-bottom: 1rem;
+
+      &:hover {
+        transform: none; // Disable hover effects on mobile
+      }
+    }
+
+    .quick-actions {
+      flex-direction: column;
+      align-items: stretch;
+
+      .quick-action-btn {
+        margin-bottom: 0.5rem;
+      }
+    }
+
+    .activities-section {
+      .activity-card {
+        margin-bottom: 1rem;
+
+        .activity-item {
+          // Mobile activity item adjustments
+        }
+      }
+    }
+
+    // Mobile-optimized alert cards
+    .alert-card {
+      .alert-header {
+        // Mobile alert header
+      }
+
+      .alert-content {
+        // Mobile alert content
+      }
+    }
+  }
+}
+
+// Tablet optimizations
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dashboard-enhanced {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-row-1,
+    .charts-row-2 {
+      .chart-container {
+        // Tablet chart adjustments
+      }
+    }
+  }
+}
+
+// Large screen enhancements
+@media (min-width: 1440px) {
+  .dashboard-enhanced {
+    .stats-grid {
+      .stat-card {
+        // Large screen stat card adjustments
+      }
+    }
+
+    .chart-container {
+      &:hover {
+        // Large screen hover effects
+      }
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .dashboard-enhanced {
+    .stat-card {
+      border: 2px solid;
+
+      &::before {
+        // High contrast adjustments
+      }
+    }
+
+    .activity-item:hover {
+      border: 2px solid;
+    }
+  }
+}
+
+// Reduced motion preferences
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-enhanced {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+// Dark mode customizations
+@media (prefers-color-scheme: dark) {
+  .dashboard-enhanced {
+    .chart-container {
+      background: rgba(17, 24, 39, 0.8);
+      border-color: rgba(55, 65, 81, 0.3);
+
+      &:hover {
+        // Dark mode hover
+      }
+    }
+
+    .stat-card {
+      background: rgba(17, 24, 39, 0.8);
+      border-color: rgba(55, 65, 81, 0.3);
+
+      &::after {
+        // Dark mode shimmer
+      }
+    }
+
+    .activity-item:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .alert-card {
+      .alert-item {
+        // Dark mode alert
+      }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    }
+
+    .error-boundary {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #dc2626;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .dashboard-enhanced {
+    .chart-container,
+    .activity-item,
+    .quick-action-btn {
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .stat-card::before,
+    .stat-card::after {
+      display: none;
+    }
+  }
+}

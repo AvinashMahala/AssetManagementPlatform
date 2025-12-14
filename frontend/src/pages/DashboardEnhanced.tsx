@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2,
@@ -7,249 +7,33 @@ import {
   FileText,
   CreditCard,
   TrendingUp,
-  TrendingDown,
-  ArrowRight,
   AlertCircle,
   Receipt,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { useProperties, useTenants, useUnits, useLeases, usePayments } from '../hooks';
+import { useLeases, usePayments, useDashboardStats } from '../hooks';
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Button,
-  Badge,
   RevenueTrendChart,
   OccupancyRateChart,
   PaymentCollectionChart,
   PropertyStatusChart,
+  StatCard,
+  ChartContainer,
 } from '../components/ui';
+import { ActivityCard } from '../components/dashboard';
 import { AppLayout } from '../components/layout';
 import './DashboardEnhanced.scss';
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  change?: number;
-  icon: React.ComponentType<{ className?: string }>;
-  trend?: 'up' | 'down';
-  description?: string;
-  action?: () => void;
-  actionLabel?: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({
-  title,
-  value,
-  change,
-  icon: Icon,
-  trend,
-  description,
-  action,
-  actionLabel = 'View Details',
-}) => {
-  return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 stat-card p-2">
-      <div className="flex flex-row items-center justify-between pb-0.5">
-        <CardTitle className="text-xs font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <Icon className="h-3 w-3 text-muted-foreground stat-icon" />
-      </div>
-      <div className="space-y-0.5">
-        <div className="text-xl font-bold">{value}</div>
-        {change !== undefined && (
-          <div className="flex items-center space-x-1">
-            {trend === 'up' ? (
-              <TrendingUp className="h-3 w-3 text-green-500" />
-            ) : (
-              <TrendingDown className="h-3 w-3 text-red-500" />
-            )}
-            <span
-              className={`text-xs font-medium ${
-                trend === 'up' ? 'text-green-500' : 'text-red-500'
-              }`}
-            >
-              {change}%
-            </span>
-            <span className="text-xs text-muted-foreground">from last month</span>
-          </div>
-        )}
-        {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
-        )}
-        {action && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="w-full mt-1 justify-between h-6 text-xs px-2"
-            onClick={action}
-          >
-            {actionLabel}
-            <ArrowRight className="h-3 w-3" />
-          </Button>
-        )}
-      </div>
-    </Card>
-  );
-};
-
 const DashboardEnhanced: React.FC = () => {
   const navigate = useNavigate();
-  const { properties, loading: propertiesLoading } = useProperties();
-  const { tenants, loading: tenantsLoading } = useTenants();
-  const { units, loading: unitsLoading } = useUnits();
-  const { leases, loading: leasesLoading } = useLeases();
-  const { payments, loading: paymentsLoading } = usePayments();
+  const { stats, chartData, loading } = useDashboardStats();
+  const { leases } = useLeases();
+  const { payments } = usePayments();
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const totalProperties = Array.isArray(properties) ? properties.length : 0;
-    const availableProperties = Array.isArray(properties)
-      ? properties.filter((p) => p.status === 'available').length
-      : 0;
-    const totalTenants = Array.isArray(tenants) ? tenants.length : 0;
-    const activeTenants = Array.isArray(tenants)
-      ? tenants.filter((t) => t.status === 'active').length
-      : 0;
-    const totalUnits = Array.isArray(units) ? units.length : 0;
-    const occupiedUnits = Array.isArray(units)
-      ? units.filter((u) => u.status === 'occupied').length
-      : 0;
-    const occupancyRate = totalUnits > 0 ? ((occupiedUnits / totalUnits) * 100).toFixed(1) : '0';
-
-    const activeLeases = Array.isArray(leases)
-      ? leases.filter((l) => l.status === 'active').length
-      : 0;
-    const expiringLeases = Array.isArray(leases)
-      ? leases.filter((l) => {
-          const endDate = new Date(l.endDate);
-          const today = new Date();
-          const diffDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-          return diffDays > 0 && diffDays <= 30;
-        }).length
-      : 0;
-
-    const totalRevenue = Array.isArray(payments)
-      ? payments
-          .filter((p) => p.status === 'paid')
-          .reduce((sum, p) => sum + p.amount, 0)
-      : 0;
-    const pendingPayments = Array.isArray(payments)
-      ? payments
-          .filter((p) => p.status === 'pending')
-          .reduce((sum, p) => sum + p.amount, 0)
-      : 0;
-    const overduePayments = Array.isArray(payments)
-      ? payments.filter((p) => {
-          if (p.status !== 'pending') return false;
-          const dueDate = new Date(p.dueDate);
-          return dueDate < new Date();
-        }).length
-      : 0;
-
-    return {
-      totalProperties,
-      availableProperties,
-      totalTenants,
-      activeTenants,
-      totalUnits,
-      occupiedUnits,
-      occupancyRate,
-      activeLeases,
-      expiringLeases,
-      totalRevenue,
-      pendingPayments,
-      overduePayments,
-    };
-  }, [properties, tenants, units, leases, payments]);
-
-  // Prepare chart data
-  const revenueData = useMemo(() => {
-    if (!Array.isArray(payments)) return [];
-    
-    const monthlyData: { [key: string]: number } = {};
-    payments
-      .filter((p) => p.status === 'paid')
-      .forEach((payment) => {
-        const date = new Date(payment.paidDate || payment.dueDate);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        monthlyData[monthKey] = (monthlyData[monthKey] || 0) + payment.amount;
-      });
-
-    return Object.entries(monthlyData)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-6)
-      .map(([month, value]) => ({
-        name: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        value: Math.round(value),
-      }));
-  }, [payments]);
-
-  const occupancyData = useMemo(() => {
-    // Generate last 6 months occupancy data
-    const data = [];
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      data.push({
-        name: date.toLocaleDateString('en-US', { month: 'short' }),
-        value: Number(stats.occupancyRate) + (Math.random() * 10 - 5), // Simulated variation
-      });
-    }
-    return data;
-  }, [stats.occupancyRate]);
-
-  const collectionData = useMemo(() => {
-    if (!Array.isArray(payments)) return [];
-    
-    const monthlyData: { [key: string]: { collected: number; pending: number } } = {};
-    payments.forEach((payment) => {
-      const date = new Date(payment.dueDate);
-      const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
-      
-      if (!monthlyData[monthKey]) {
-        monthlyData[monthKey] = { collected: 0, pending: 0 };
-      }
-      
-      if (payment.status === 'paid') {
-        monthlyData[monthKey].collected += payment.amount;
-      } else {
-        monthlyData[monthKey].pending += payment.amount;
-      }
-    });
-
-    return Object.entries(monthlyData)
-      .slice(-6)
-      .map(([name, values]) => ({
-        name,
-        collected: Math.round(values.collected / 1000),
-        pending: Math.round(values.pending / 1000),
-      }));
-  }, [payments]);
-
-  const propertyStatusData = useMemo(() => {
-    if (!Array.isArray(properties)) return [];
-    
-    const statusCounts: { [key: string]: number } = {};
-    properties.forEach((property) => {
-      statusCounts[property.status] = (statusCounts[property.status] || 0) + 1;
-    });
-
-    return Object.entries(statusCounts).map(([name, value]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1).replace('_', ' '),
-      value,
-    }));
-  }, [properties]);
-
-  const isLoading =
-    propertiesLoading || tenantsLoading || unitsLoading || leasesLoading || paymentsLoading;
-
-  if (isLoading) {
+  if (loading) {
     return (
       <AppLayout title="Dashboard">
         <div className="flex items-center justify-center py-20 loading-container">
@@ -385,118 +169,58 @@ const DashboardEnhanced: React.FC = () => {
             </div>
           </div>
           <div className="charts-carousel overflow-x-auto flex space-x-4 pb-2">
-            <Card className="chart-container flex-shrink-0 w-96 p-3">
-              <div className="mb-2">
-                <h4 className="text-sm font-semibold text-foreground">Revenue Trend</h4>
-                <p className="text-xs text-muted-foreground">Monthly revenue over the last 6 months</p>
-              </div>
-              <div className="chart-content">
-                <RevenueTrendChart data={revenueData} height={250} />
-              </div>
-            </Card>
+            <ChartContainer title="Revenue Trend" description="Monthly revenue over the last 6 months">
+              <RevenueTrendChart data={chartData.revenue} height={250} />
+            </ChartContainer>
 
-            <Card className="chart-container flex-shrink-0 w-96 p-3">
-              <div className="mb-2">
-                <h4 className="text-sm font-semibold text-foreground">Occupancy Rate</h4>
-                <p className="text-xs text-muted-foreground">Unit occupancy trend over time</p>
-              </div>
-              <div className="chart-content">
-                <OccupancyRateChart data={occupancyData} height={250} />
-              </div>
-            </Card>
+            <ChartContainer title="Occupancy Rate" description="Unit occupancy trend over time">
+              <OccupancyRateChart data={chartData.occupancy} height={250} />
+            </ChartContainer>
 
-            <Card className="chart-container flex-shrink-0 w-96 p-3">
-              <div className="mb-2">
-                <h4 className="text-sm font-semibold text-foreground">Payment Collection</h4>
-                <p className="text-xs text-muted-foreground">Collected vs pending payments (in thousands)</p>
-              </div>
-              <div className="chart-content">
-                <PaymentCollectionChart data={collectionData} height={250} />
-              </div>
-            </Card>
+            <ChartContainer title="Payment Collection" description="Collected vs pending payments (in thousands)">
+              <PaymentCollectionChart data={chartData.collection} height={250} />
+            </ChartContainer>
 
-            <Card className="chart-container flex-shrink-0 w-96 p-3">
-              <div className="mb-2">
-                <h4 className="text-sm font-semibold text-foreground">Property Status Distribution</h4>
-                <p className="text-xs text-muted-foreground">Properties by current status</p>
-              </div>
-              <div className="chart-content">
-                <PropertyStatusChart data={propertyStatusData} height={250} />
-              </div>
-            </Card>
+            <ChartContainer title="Property Status Distribution" description="Properties by current status">
+              <PropertyStatusChart data={chartData.propertyStatus} height={250} />
+            </ChartContainer>
           </div>
         </div>
 
         {/* Recent Activities */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 activities-section">
-          <Card className="activity-card p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">Active Leases</h4>
-                <p className="text-xs text-muted-foreground">{stats.activeLeases} active lease agreements</p>
-              </div>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="space-y-2">
-              {Array.isArray(leases) && leases.filter((l) => l.status === 'active').slice(0, 5).map((lease) => (
-                <div
-                  key={lease.id}
-                  className="flex items-center justify-between py-1 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-1 rounded transition-colors"
-                  onClick={() => navigate(`/leases/${lease.id}`)}
-                >
-                  <div>
-                    <p className="text-xs font-medium">Lease #{lease.id.slice(0, 8)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(lease.startDate).toLocaleDateString()} - {new Date(lease.endDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge variant="default" className="text-xs px-1 py-0">Active</Badge>
-                </div>
-              ))}
-              {(!leases || leases.length === 0) && (
-                <p className="text-xs text-muted-foreground text-center py-2">
-                  No active leases
-                </p>
-              )}
-            </div>
-          </Card>
+          <ActivityCard
+            title="Active Leases"
+            description={`${stats.activeLeases} active lease agreements`}
+            icon={FileText}
+            items={Array.isArray(leases) ? leases.filter((l) => l.status === 'active').slice(0, 5).map((lease) => ({
+              id: lease.id,
+              title: `Lease #${lease.id.slice(0, 8)}`,
+              subtitle: `${new Date(lease.startDate).toLocaleDateString()} - ${new Date(lease.endDate).toLocaleDateString()}`,
+              badge: 'Active',
+              badgeVariant: 'default',
+              onClick: () => navigate(`/leases/${lease.id}`),
+            })) : []}
+            emptyMessage="No active leases"
+          />
 
-          <Card className="activity-card p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">Pending Payments</h4>
-                <p className="text-xs text-muted-foreground">₹{(stats.pendingPayments / 1000).toFixed(1)}K pending</p>
-              </div>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="space-y-2">
-              {Array.isArray(payments) && payments.filter((p) => p.status === 'pending').slice(0, 5).map((payment) => {
-                const isOverdue = new Date(payment.dueDate) < new Date();
-                return (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between py-1 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-1 rounded transition-colors"
-                    onClick={() => navigate(`/payments/${payment.id}`)}
-                  >
-                    <div>
-                      <p className="text-xs font-medium">₹{payment.amount.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Due: {new Date(payment.dueDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge variant={isOverdue ? 'destructive' : 'secondary'} className="text-xs px-1 py-0">
-                      {isOverdue ? 'Overdue' : 'Pending'}
-                    </Badge>
-                  </div>
-                );
-              })}
-              {(!Array.isArray(payments) || payments.filter((p) => p.status === 'pending').length === 0) && (
-                <p className="text-xs text-muted-foreground text-center py-2">
-                  No pending payments
-                </p>
-              )}
-            </div>
-          </Card>
+          <ActivityCard
+            title="Pending Payments"
+            description={`₹${(stats.pendingPayments / 1000).toFixed(1)}K pending`}
+            icon={CreditCard}
+            items={Array.isArray(payments) ? payments.filter((p) => p.status === 'pending').slice(0, 5).map((payment) => {
+              const isOverdue = new Date(payment.dueDate) < new Date();
+              return {
+                id: payment.id,
+                title: `₹${payment.amount.toLocaleString()}`,
+                subtitle: `Due: ${new Date(payment.dueDate).toLocaleDateString()}`,
+                badge: isOverdue ? 'Overdue' : 'Pending',
+                badgeVariant: isOverdue ? 'destructive' : 'secondary',
+                onClick: () => navigate(`/payments/${payment.id}`),
+              };
+            }) : []}
+            emptyMessage="No pending payments"
+          />
         </div>
       </div>
     </AppLayout>

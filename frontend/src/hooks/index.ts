@@ -14,3 +14,4 @@ export * from './useGoogleOAuth';
 export * from './useMeters';
 export * from './useExpenses';
 export * from './useNavigationConfig';
+export * from './useDashboardStats';

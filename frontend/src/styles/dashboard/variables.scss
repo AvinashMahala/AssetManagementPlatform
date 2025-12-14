@@ -1,0 +1,40 @@
+// Dashboard variables and mixins
+// CSS Custom Properties for theming
+:root {
+  --dashboard-primary: #3b82f6;
+  --dashboard-secondary: #8b5cf6;
+  --dashboard-accent: #ec4899;
+  --dashboard-success: #10b981;
+  --dashboard-warning: #f59e0b;
+  --dashboard-error: #ef4444;
+
+  --dashboard-glass-bg: rgba(255, 255, 255, 0.8);
+  --dashboard-glass-border: rgba(255, 255, 255, 0.2);
+  --dashboard-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --dashboard-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  --dashboard-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --dashboard-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --dashboard-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --dashboard-glass-bg: rgba(17, 24, 39, 0.8);
+  --dashboard-glass-border: rgba(55, 65, 81, 0.3);
+  --dashboard-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --dashboard-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+// Mixins
+@mixin glassmorphism {
+  background: var(--dashboard-glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--dashboard-glass-border);
+}
+
+@mixin hover-lift {
+  transition: transform 0.3s ease;
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
