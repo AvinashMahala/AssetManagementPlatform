@@ -13,6 +13,15 @@ interface LoginFormProps {
   onForgotPassword?: () => void;
 }
 
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+interface GoogleAuthResponse {
+  credential: string;
+}
+
 export const LoginForm: React.FC<LoginFormProps> = ({
   onSuccess,
   onSwitchToRegister,
@@ -22,22 +31,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitError, setSubmitError] = useState<string>('');
 
-  const handleSubmit = async (data: Record<string, any>) => {
+  const handleSubmit = async (data: Record<string, string>) => {
+    const formData = data as unknown as LoginFormData;
     setSubmitError('');
     setErrors({});
 
     // Validate form data
     const newErrors: Partial<Record<string, string>> = {};
 
-    if (!data.email) {
+    if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!data.password) {
-      newErrors.password = 'Password is required';
-    } else if (data.password.length < 6) {
+    if (!formData.password) {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
@@ -47,7 +55,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     }
 
     try {
-      const success = await login(data as UserCredentials);
+      const success = await login(formData as UserCredentials);
       if (success) {
         onSuccess?.();
       } else {
@@ -58,7 +66,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     }
   };
 
-  const handleGoogleSuccess = async (response: any) => {
+  const handleGoogleSuccess = async (response: GoogleAuthResponse) => {
     try {
       console.log('[LoginForm.handleGoogleSuccess] Raw Google response:', response);
       setSubmitError('');
@@ -179,7 +187,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </div>
 
         <GoogleOAuthButton
-          clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+          clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
           disabled={loading}
