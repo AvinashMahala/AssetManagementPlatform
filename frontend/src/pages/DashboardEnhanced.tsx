@@ -8,7 +8,6 @@ import {
   CreditCard,
   TrendingUp,
   TrendingDown,
-  Plus,
   ArrowRight,
   AlertCircle,
   Receipt,
@@ -261,30 +260,6 @@ const DashboardEnhanced: React.FC = () => {
   return (
     <AppLayout title="Dashboard">
       <div className="space-y-6 dashboard-enhanced">
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-3 quick-actions">
-          <Button onClick={() => navigate('/properties/create')} className="flex items-center space-x-2 quick-action-btn">
-            <Plus className="h-4 w-4" />
-            <span>Add Property</span>
-          </Button>
-          <Button onClick={() => navigate('/tenants/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
-            <Plus className="h-4 w-4" />
-            <span>Add Tenant</span>
-          </Button>
-          <Button onClick={() => navigate('/units/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
-            <Plus className="h-4 w-4" />
-            <span>Add Unit</span>
-          </Button>
-          <Button onClick={() => navigate('/leases/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
-            <Plus className="h-4 w-4" />
-            <span>Create Lease</span>
-          </Button>
-          <Button onClick={() => navigate('/payments/create')} variant="secondary" className="flex items-center space-x-2 quick-action-btn">
-            <Plus className="h-4 w-4" />
-            <span>Record Payment</span>
-          </Button>
-        </div>
-
         {/* Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 stats-grid">
           <StatCard
