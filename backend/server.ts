@@ -1,5 +1,16 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' });
+import path from 'path';
+import fs from 'fs';
+
+// Try to load .env from current directory first (for Docker/local), then parent (original setup)
+const localEnv = path.resolve(process.cwd(), '.env');
+const parentEnv = path.resolve(process.cwd(), '../.env');
+
+if (fs.existsSync(localEnv)) {
+  dotenv.config({ path: localEnv });
+} else {
+  dotenv.config({ path: parentEnv });
+}
 
 import express from 'express';
 import cors from 'cors';
@@ -64,25 +75,33 @@ logger.info('🚀 Starting Asset Management Platform Backend...', {
   nodeEnv: process.env.NODE_ENV,
   emailProvider: process.env.EMAIL_PROVIDER,
   hasResendApiKey: !!process.env.RESEND_API_KEY,
-});
-
-// Setup global process error handlers
-setupProcessErrorHandlers();
-
-logger.info('🚀 Starting Asset Management Platform Backend...', {
-  nodeEnv: process.env.NODE_ENV,
-  emailProvider: process.env.EMAIL_PROVIDER,
-  hasResendApiKey: !!process.env.RESEND_API_KEY,
+  dbConfig: process.env.MAIN_DATABASE_URL ? 'url' : 'env_vars',
 });
 
 const startServer = async () => {
-  const mainPool = new Pool({
-    connectionString: process.env.MAIN_DATABASE_URL,
-  });
+  const mainDbConfig = process.env.MAIN_DATABASE_URL
+    ? { connectionString: process.env.MAIN_DATABASE_URL }
+    : {
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+      };
 
-  const filesPool = new Pool({
-    connectionString: process.env.FILES_DATABASE_URL,
-  });
+  const mainPool = new Pool(mainDbConfig);
+
+  const filesDbConfig = process.env.FILES_DATABASE_URL
+    ? { connectionString: process.env.FILES_DATABASE_URL }
+    : {
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: process.env.DB_FILES_NAME || process.env.DB_NAME, // Fallback to main DB if not specified
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+      };
+
+  const filesPool = new Pool(filesDbConfig);
 
   // Initialize file storage service
   const fileStorageService = new FileStorageService(mainPool, filesPool);
