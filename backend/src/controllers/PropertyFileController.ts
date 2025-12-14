@@ -302,7 +302,16 @@ export class PropertyFileController {
       }
 
       // Use FileStorageService to download the actual file
-      const fileBuffer = await this.fileStorageService.downloadFile(propertyFile.fileId);
+      // @ts-ignore - req.user is added by auth middleware
+      const userId = req.user?.id;
+      console.log('DEBUG: req.user:', req.user);
+      console.log('DEBUG: userId:', userId);
+      if (!userId) {
+        console.log('DEBUG: User not authenticated, returning 401');
+        return ResponseUtils.unauthorized(res, 'User not authenticated');
+      }
+      console.log('DEBUG: Calling downloadFile with userId:', userId);
+      const fileBuffer = await this.fileStorageService.downloadFile(propertyFile.fileId, userId);
 
       // Get file metadata to determine content type
       const metadata = await this.fileStorageService.getFileMetadata(propertyFile.fileId);
