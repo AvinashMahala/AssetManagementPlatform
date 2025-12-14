@@ -11,6 +11,8 @@ import {
   ArrowRight,
   AlertCircle,
   Receipt,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useProperties, useTenants, useUnits, useLeases, usePayments } from '../hooks';
 import {
@@ -51,21 +53,21 @@ const StatCard: React.FC<StatCardProps> = ({
   actionLabel = 'View Details',
 }) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 stat-card">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+    <Card className="hover:shadow-lg transition-shadow duration-200 stat-card p-2">
+      <div className="flex flex-row items-center justify-between pb-0.5">
+        <CardTitle className="text-xs font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground stat-icon" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <Icon className="h-3 w-3 text-muted-foreground stat-icon" />
+      </div>
+      <div className="space-y-0.5">
+        <div className="text-xl font-bold">{value}</div>
         {change !== undefined && (
-          <div className="flex items-center space-x-1 mt-1">
+          <div className="flex items-center space-x-1">
             {trend === 'up' ? (
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-3 w-3 text-green-500" />
             ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
+              <TrendingDown className="h-3 w-3 text-red-500" />
             )}
             <span
               className={`text-xs font-medium ${
@@ -78,20 +80,20 @@ const StatCard: React.FC<StatCardProps> = ({
           </div>
         )}
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         )}
         {action && (
           <Button
             size="sm"
             variant="ghost"
-            className="w-full mt-3 justify-between"
+            className="w-full mt-1 justify-between h-6 text-xs px-2"
             onClick={action}
           >
             {actionLabel}
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-3 w-3" />
           </Button>
         )}
-      </CardContent>
+      </div>
     </Card>
   );
 };
@@ -259,9 +261,9 @@ const DashboardEnhanced: React.FC = () => {
 
   return (
     <AppLayout title="Dashboard">
-      <div className="space-y-6 dashboard-enhanced">
+      <div className="space-y-3 dashboard-enhanced">
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 stats-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2 stats-grid">
           <StatCard
             title="Total Properties"
             value={stats.totalProperties}
@@ -307,171 +309,193 @@ const DashboardEnhanced: React.FC = () => {
 
         {/* Alerts and Notifications */}
         {(stats.expiringLeases > 0 || stats.overduePayments > 0) && (
-          <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 alert-card">
-            <CardHeader className="flex flex-row items-center space-x-2 alert-header">
-              <AlertCircle className="h-5 w-5 text-amber-600 alert-icon" />
-              <CardTitle className="text-amber-900 dark:text-amber-300 alert-title">
-                Attention Required
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 alert-content">
-              {stats.expiringLeases > 0 && (
-                <div className="flex items-center justify-between alert-item">
-                  <span className="text-sm text-amber-800 dark:text-amber-200 alert-text">
-                    {stats.expiringLeases} lease(s) expiring within 30 days
-                  </span>
+          <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 alert-card p-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-amber-600 alert-icon" />
+                <span className="text-sm font-medium text-amber-900 dark:text-amber-300 alert-title">
+                  Attention Required:
+                </span>
+                <div className="flex items-center space-x-4">
+                  {stats.expiringLeases > 0 && (
+                    <span className="text-sm text-amber-800 dark:text-amber-200">
+                      {stats.expiringLeases} lease(s) expiring soon
+                    </span>
+                  )}
+                  {stats.overduePayments > 0 && (
+                    <span className="text-sm text-amber-800 dark:text-amber-200">
+                      {stats.overduePayments} overdue payment(s)
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                {stats.expiringLeases > 0 && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => navigate('/leases')}
-                    className="border-amber-300 hover:bg-amber-100 alert-action-btn"
+                    className="border-amber-300 hover:bg-amber-100 alert-action-btn h-7 px-2"
                   >
-                    Review
+                    Review Leases
                   </Button>
-                </div>
-              )}
-              {stats.overduePayments > 0 && (
-                <div className="flex items-center justify-between alert-item">
-                  <span className="text-sm text-amber-800 dark:text-amber-200 alert-text">
-                    {stats.overduePayments} overdue payment(s)
-                  </span>
+                )}
+                {stats.overduePayments > 0 && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => navigate('/payments')}
-                    className="border-amber-300 hover:bg-amber-100 alert-action-btn"
+                    className="border-amber-300 hover:bg-amber-100 alert-action-btn h-7 px-2"
                   >
-                    Review
+                    Review Payments
                   </Button>
-                </div>
-              )}
-            </CardContent>
+                )}
+              </div>
+            </div>
           </Card>
         )}
 
-        {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 charts-row-1">
-          <Card className="chart-container">
-            <CardHeader className="chart-header">
-              <CardTitle className="chart-title">Revenue Trend</CardTitle>
-              <CardDescription className="chart-description">Monthly revenue over the last 6 months</CardDescription>
-            </CardHeader>
-            <CardContent className="chart-content">
-              <RevenueTrendChart data={revenueData} height={300} />
-            </CardContent>
-          </Card>
+        {/* Charts Carousel */}
+        <div className="relative charts-carousel-container">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold">Analytics Overview</h3>
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const container = document.querySelector('.charts-carousel');
+                  if (container) container.scrollBy({ left: -400, behavior: 'smooth' });
+                }}
+                className="carousel-nav-btn"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const container = document.querySelector('.charts-carousel');
+                  if (container) container.scrollBy({ left: 400, behavior: 'smooth' });
+                }}
+                className="carousel-nav-btn"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="charts-carousel overflow-x-auto flex space-x-4 pb-2">
+            <Card className="chart-container flex-shrink-0 w-96 p-3">
+              <div className="mb-2">
+                <h4 className="text-sm font-semibold text-foreground">Revenue Trend</h4>
+                <p className="text-xs text-muted-foreground">Monthly revenue over the last 6 months</p>
+              </div>
+              <div className="chart-content">
+                <RevenueTrendChart data={revenueData} height={250} />
+              </div>
+            </Card>
 
-          <Card className="chart-container">
-            <CardHeader className="chart-header">
-              <CardTitle className="chart-title">Occupancy Rate</CardTitle>
-              <CardDescription className="chart-description">Unit occupancy trend over time</CardDescription>
-            </CardHeader>
-            <CardContent className="chart-content">
-              <OccupancyRateChart data={occupancyData} height={300} />
-            </CardContent>
-          </Card>
-        </div>
+            <Card className="chart-container flex-shrink-0 w-96 p-3">
+              <div className="mb-2">
+                <h4 className="text-sm font-semibold text-foreground">Occupancy Rate</h4>
+                <p className="text-xs text-muted-foreground">Unit occupancy trend over time</p>
+              </div>
+              <div className="chart-content">
+                <OccupancyRateChart data={occupancyData} height={250} />
+              </div>
+            </Card>
 
-        {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 charts-row-2">
-          <Card className="chart-container">
-            <CardHeader className="chart-header">
-              <CardTitle className="chart-title">Payment Collection</CardTitle>
-              <CardDescription className="chart-description">Collected vs pending payments (in thousands)</CardDescription>
-            </CardHeader>
-            <CardContent className="chart-content">
-              <PaymentCollectionChart data={collectionData} height={300} />
-            </CardContent>
-          </Card>
+            <Card className="chart-container flex-shrink-0 w-96 p-3">
+              <div className="mb-2">
+                <h4 className="text-sm font-semibold text-foreground">Payment Collection</h4>
+                <p className="text-xs text-muted-foreground">Collected vs pending payments (in thousands)</p>
+              </div>
+              <div className="chart-content">
+                <PaymentCollectionChart data={collectionData} height={250} />
+              </div>
+            </Card>
 
-          <Card className="chart-container">
-            <CardHeader className="chart-header">
-              <CardTitle className="chart-title">Property Status Distribution</CardTitle>
-              <CardDescription className="chart-description">Properties by current status</CardDescription>
-            </CardHeader>
-            <CardContent className="chart-content">
-              <PropertyStatusChart data={propertyStatusData} height={300} />
-            </CardContent>
-          </Card>
+            <Card className="chart-container flex-shrink-0 w-96 p-3">
+              <div className="mb-2">
+                <h4 className="text-sm font-semibold text-foreground">Property Status Distribution</h4>
+                <p className="text-xs text-muted-foreground">Properties by current status</p>
+              </div>
+              <div className="chart-content">
+                <PropertyStatusChart data={propertyStatusData} height={250} />
+              </div>
+            </Card>
+          </div>
         </div>
 
         {/* Recent Activities */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 activities-section">
-          <Card className="activity-card">
-            <CardHeader className="activity-header">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="activity-title">Active Leases</CardTitle>
-                  <CardDescription className="activity-description">{stats.activeLeases} active lease agreements</CardDescription>
-                </div>
-                <FileText className="h-5 w-5 text-muted-foreground activity-icon" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 activities-section">
+          <Card className="activity-card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">Active Leases</h4>
+                <p className="text-xs text-muted-foreground">{stats.activeLeases} active lease agreements</p>
               </div>
-            </CardHeader>
-            <CardContent className="activity-content">
-              <div className="space-y-3 activity-list">
-                {Array.isArray(leases) && leases.filter((l) => l.status === 'active').slice(0, 5).map((lease) => (
-                  <div
-                    key={lease.id}
-                    className="flex items-center justify-between py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-2 rounded transition-colors activity-item"
-                    onClick={() => navigate(`/leases/${lease.id}`)}
-                  >
-                    <div className="activity-item-content">
-                      <p className="text-sm font-medium activity-item-title">Lease #{lease.id.slice(0, 8)}</p>
-                      <p className="text-xs text-muted-foreground activity-item-subtitle">
-                        {new Date(lease.startDate).toLocaleDateString()} - {new Date(lease.endDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge variant="default" className="activity-badge">Active</Badge>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              {Array.isArray(leases) && leases.filter((l) => l.status === 'active').slice(0, 5).map((lease) => (
+                <div
+                  key={lease.id}
+                  className="flex items-center justify-between py-1 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-1 rounded transition-colors"
+                  onClick={() => navigate(`/leases/${lease.id}`)}
+                >
+                  <div>
+                    <p className="text-xs font-medium">Lease #{lease.id.slice(0, 8)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(lease.startDate).toLocaleDateString()} - {new Date(lease.endDate).toLocaleDateString()}
+                    </p>
                   </div>
-                ))}
-                {(!leases || leases.length === 0) && (
-                  <p className="text-sm text-muted-foreground text-center py-4 activity-empty">
-                    No active leases
-                  </p>
-                )}
-              </div>
-            </CardContent>
+                  <Badge variant="default" className="text-xs px-1 py-0">Active</Badge>
+                </div>
+              ))}
+              {(!leases || leases.length === 0) && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  No active leases
+                </p>
+              )}
+            </div>
           </Card>
 
-          <Card className="activity-card">
-            <CardHeader className="activity-header">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="activity-title">Pending Payments</CardTitle>
-                  <CardDescription className="activity-description">₹{(stats.pendingPayments / 1000).toFixed(1)}K pending</CardDescription>
-                </div>
-                <CreditCard className="h-5 w-5 text-muted-foreground activity-icon" />
+          <Card className="activity-card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">Pending Payments</h4>
+                <p className="text-xs text-muted-foreground">₹{(stats.pendingPayments / 1000).toFixed(1)}K pending</p>
               </div>
-            </CardHeader>
-            <CardContent className="activity-content">
-              <div className="space-y-3 activity-list">
-                {Array.isArray(payments) && payments.filter((p) => p.status === 'pending').slice(0, 5).map((payment) => {
-                  const isOverdue = new Date(payment.dueDate) < new Date();
-                  return (
-                    <div
-                      key={payment.id}
-                      className="flex items-center justify-between py-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-2 rounded transition-colors activity-item"
-                      onClick={() => navigate(`/payments/${payment.id}`)}
-                    >
-                      <div className="activity-item-content">
-                        <p className="text-sm font-medium activity-item-title">₹{payment.amount.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground activity-item-subtitle">
-                          Due: {new Date(payment.dueDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Badge variant={isOverdue ? 'destructive' : 'secondary'} className="activity-badge">
-                        {isOverdue ? 'Overdue' : 'Pending'}
-                      </Badge>
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              {Array.isArray(payments) && payments.filter((p) => p.status === 'pending').slice(0, 5).map((payment) => {
+                const isOverdue = new Date(payment.dueDate) < new Date();
+                return (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between py-1 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-1 rounded transition-colors"
+                    onClick={() => navigate(`/payments/${payment.id}`)}
+                  >
+                    <div>
+                      <p className="text-xs font-medium">₹{payment.amount.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Due: {new Date(payment.dueDate).toLocaleDateString()}
+                      </p>
                     </div>
-                  );
-                })}
-                {(!Array.isArray(payments) || payments.filter((p) => p.status === 'pending').length === 0) && (
-                  <p className="text-sm text-muted-foreground text-center py-4 activity-empty">
-                    No pending payments
-                  </p>
-                )}
-              </div>
-            </CardContent>
+                    <Badge variant={isOverdue ? 'destructive' : 'secondary'} className="text-xs px-1 py-0">
+                      {isOverdue ? 'Overdue' : 'Pending'}
+                    </Badge>
+                  </div>
+                );
+              })}
+              {(!Array.isArray(payments) || payments.filter((p) => p.status === 'pending').length === 0) && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  No pending payments
+                </p>
+              )}
+            </div>
           </Card>
         </div>
       </div>

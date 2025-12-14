@@ -477,6 +477,55 @@
     }
   }
 
+  // Charts Carousel
+  .charts-carousel-container {
+    .charts-carousel {
+      scrollbar-width: none; // Firefox
+      -ms-overflow-style: none; // IE and Edge
+
+      &::-webkit-scrollbar {
+        display: none; // Chrome, Safari, and Opera
+      }
+
+      .chart-container {
+        .chart-header {
+          .chart-title {
+            // Custom chart title - enhanced hierarchy
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f2937, #374151);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+
+          .chart-description {
+            // Custom chart description - subtle styling
+            color: rgba(var(--foreground), 0.7);
+            font-size: 0.875rem;
+          }
+        }
+
+        .chart-content {
+          // Custom chart content area - smooth animations
+          transition: opacity 0.3s ease;
+        }
+      }
+    }
+
+    .carousel-nav-btn {
+      transition: all var(--dashboard-transition-fast);
+
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: var(--dashboard-shadow-light);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
   // Activities section
   .activities-section {
     // Custom activities section container
@@ -848,9 +897,7 @@
 @media (min-width: 1440px) {
   .dashboard-enhanced {
     .stats-grid {
-      .stat-card {
-        padding: 2rem;
-
+      .stat-card {    
         .stat-value {
           font-size: 2.5rem;
         }
