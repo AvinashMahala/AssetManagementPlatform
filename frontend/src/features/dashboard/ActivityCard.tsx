@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card } from '../ui/card';
-import { Badge } from '../ui/badge';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 interface ActivityItem {
   id: string;
@@ -34,13 +34,17 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
       </div>
       <Icon className="h-4 w-4 text-muted-foreground" />
     </div>
-    <div className="space-y-2">
+    <div className="space-y-2" role="list">
       {items.length > 0 ? (
         items.map((item) => (
           <div
             key={item.id}
+            role="listitem"
             className="flex items-center justify-between py-1 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 px-1 rounded transition-colors"
             onClick={item.onClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onClick(); } }}
+            tabIndex={0}
+            aria-label={`${item.title}: ${item.subtitle}, status: ${item.badge}`}
           >
             <div>
               <p className="text-xs font-medium">{item.title}</p>
@@ -60,4 +64,4 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   </Card>
 );
 
-export default ActivityCard;
+export default React.memo(ActivityCard);

@@ -8,8 +8,9 @@ export const useDashboardStats = () => {
   const { leases, loading: leasesLoading } = useLeases();
   const { payments, loading: paymentsLoading } = usePayments();
 
-  const stats = useMemo(() => {
-    const totalProperties = Array.isArray(properties) ? properties.length : 0;
+  const result = useMemo(() => {
+    try {
+      const totalProperties = Array.isArray(properties) ? properties.length : 0;
     const availableProperties = Array.isArray(properties)
       ? properties.filter((p) => p.status === 'available').length
       : 0;
@@ -53,23 +54,43 @@ export const useDashboardStats = () => {
         }).length
       : 0;
 
-    return {
-      totalProperties,
-      availableProperties,
-      totalTenants,
-      activeTenants,
-      totalUnits,
-      occupiedUnits,
-      occupancyRate,
-      activeLeases,
-      expiringLeases,
-      totalRevenue,
-      pendingPayments,
-      overduePayments,
-    };
+      const statsObj = {
+        totalProperties,
+        availableProperties,
+        totalTenants,
+        activeTenants,
+        totalUnits,
+        occupiedUnits,
+        occupancyRate,
+        activeLeases,
+        expiringLeases,
+        totalRevenue,
+        pendingPayments,
+        overduePayments,
+      };
+      return { stats: statsObj, error: null };
+    } catch (err) {
+      return {
+        stats: {
+          totalProperties: 0,
+          availableProperties: 0,
+          totalTenants: 0,
+          activeTenants: 0,
+          totalUnits: 0,
+          occupiedUnits: 0,
+          occupancyRate: '0',
+          activeLeases: 0,
+          expiringLeases: 0,
+          totalRevenue: 0,
+          pendingPayments: 0,
+          overduePayments: 0,
+        },
+        error: err as Error,
+      };
+    }
   }, [properties, tenants, units, leases, payments]);
 
-  const revenueData = useMemo(() => {
+  const { stats, error } = result;  const revenueData = useMemo(() => {
     if (!Array.isArray(payments)) return [];
     
     const monthlyData: { [key: string]: number } = {};
@@ -156,5 +177,6 @@ export const useDashboardStats = () => {
       propertyStatus: propertyStatusData,
     },
     loading,
+    error,
   };
 };

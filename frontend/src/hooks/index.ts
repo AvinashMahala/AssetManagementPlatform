@@ -15,3 +15,5 @@ export * from './useMeters';
 export * from './useExpenses';
 export * from './useNavigationConfig';
 export * from './useDashboardStats';
+export * from './useActivityItems';
+export * from './useChartCarousel';

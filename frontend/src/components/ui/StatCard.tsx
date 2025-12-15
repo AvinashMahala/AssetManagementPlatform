@@ -25,7 +25,13 @@ const StatCard: React.FC<StatCardProps> = ({
   actionLabel = 'View Details',
 }) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 stat-card p-2">
+    <Card
+      className="hover:shadow-lg transition-shadow duration-200 stat-card p-2"
+      role="button"
+      tabIndex={0}
+      aria-label={`${title}: ${value}. ${description || ''}`}
+      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && action) { e.preventDefault(); action(); } }}
+    >
       <div className="flex flex-row items-center justify-between pb-0.5">
         <CardTitle className="text-xs font-medium text-muted-foreground">
           {title}
@@ -70,4 +76,4 @@ const StatCard: React.FC<StatCardProps> = ({
   );
 };
 
-export default StatCard;
+export default React.memo(StatCard);

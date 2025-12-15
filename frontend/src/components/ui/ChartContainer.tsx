@@ -23,4 +23,4 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
   </Card>
 );
 
-export default ChartContainer;
+export default React.memo(ChartContainer);
