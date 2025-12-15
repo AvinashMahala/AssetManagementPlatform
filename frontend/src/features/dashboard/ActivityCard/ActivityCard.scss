@@ -1,0 +1,136 @@
+// ActivityCard.scss
+// Styles for ActivityCard component
+
+.activity-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.1);
+    transition: width 0.6s, height 0.6s;
+    transform: translate(-50%, -50%);
+  }
+
+  &:hover {
+    background-color: rgba(var(--muted), 0.5);
+    border-radius: 8px;
+    transform: translateX(4px);
+
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  &:active {
+    transform: translateX(4px) scale(0.98);
+    transition-duration: 0.1s;
+  }
+}
+
+.activity-item:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.activities-section {
+  .activity-card {
+    .activity-header {
+      .activity-title {
+        font-weight: 600;
+        color: rgba(var(--foreground), 0.95);
+      }
+
+      .activity-description {
+        color: rgba(var(--foreground), 0.7);
+        font-size: 0.875rem;
+      }
+
+      .activity-icon {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 8px;
+        padding: 6px;
+      }
+    }
+
+    .activity-content {
+      .activity-list {
+        .activity-item {
+          .activity-item-content {
+            .activity-item-title {
+              cursor: pointer;
+              transition: color 0.2s ease;
+
+              &:hover {
+                color: #3b82f6;
+              }
+            }
+
+            .activity-item-subtitle {
+              color: rgba(var(--foreground), 0.6);
+              font-size: 0.8rem;
+            }
+          }
+
+          .activity-badge {
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 2px 8px;
+          }
+        }
+
+        .activity-empty {
+          text-align: center;
+          color: rgba(var(--foreground), 0.5);
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+.loading-container {
+  .loading-spinner {
+    border-color: transparent;
+    border-top-color: #3b82f6;
+  }
+}
+
+@media (max-width: 768px) {
+  .activities-section {
+    .activity-card {
+      margin-bottom: 1rem;
+
+      .activity-item {
+        padding: 0.75rem;
+
+        &:hover {
+          transform: none;
+        }
+      }
+    }
+  }
+}
+
+@media (prefers-contrast: high) {
+  .activity-item:hover {
+    border: 2px solid;
+  }
+}
+
+@media print {
+  .activity-item {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}

@@ -32,7 +32,7 @@ export const useActivityItems = () => {
           title: `₹${payment.amount.toLocaleString()}`,
           subtitle: `Due: ${new Date(payment.dueDate).toLocaleDateString()}`,
           badge: isOverdue ? 'Overdue' : 'Pending',
-          badgeVariant: (isOverdue ? 'destructive' : 'secondary') as const,
+          badgeVariant: isOverdue ? ('destructive' as const) : ('secondary' as const),
           onClick: (navigate: (path: string) => void) => navigate(`/payments/${payment.id}`),
         };
       });

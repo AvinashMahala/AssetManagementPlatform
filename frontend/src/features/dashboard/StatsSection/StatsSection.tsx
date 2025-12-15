@@ -7,7 +7,8 @@ import {
   TrendingUp,
   Receipt,
 } from 'lucide-react';
-import { StatCard } from '../../components/ui';
+import { StatCard } from '../../../components/ui';
+import './StatsSection.scss';
 
 interface StatsSectionProps {
   stats: {

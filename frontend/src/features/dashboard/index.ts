@@ -1,5 +1,5 @@
-export { default as ActivityCard } from './ActivityCard';
-export { default as StatsSection } from './StatsSection';
-export { default as AlertsSection } from './AlertsSection';
-export { default as ChartsCarousel } from './ChartsCarousel';
-export { default as DashboardEnhanced } from './DashboardEnhanced';
+export { default as ActivityCard } from './ActivityCard/ActivityCard';
+export { default as StatsSection } from './StatsSection/StatsSection';
+export { default as AlertsSection } from './AlertsSection/AlertsSection';
+export { default as ChartsCarousel } from './ChartsCarousel/ChartsCarousel';
+export { default as DashboardEnhanced } from './DashboardEnhanced/DashboardEnhanced';

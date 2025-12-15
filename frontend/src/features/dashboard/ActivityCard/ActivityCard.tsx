@@ -1,6 +1,7 @@
 import React from 'react';
-import { Card } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
+import { Card } from '../../../components/ui';
+import { Badge } from '../../../components/ui';
+import './ActivityCard.scss';
 
 interface ActivityItem {
   id: string;

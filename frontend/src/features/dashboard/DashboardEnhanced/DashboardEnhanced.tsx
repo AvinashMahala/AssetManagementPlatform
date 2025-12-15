@@ -4,11 +4,11 @@ import {
   FileText,
   CreditCard,
 } from 'lucide-react';
-import { useLeases, usePayments, useDashboardStats, useActivityItems, useChartCarousel } from '../../hooks';
-import { ActivityCard, StatsSection, AlertsSection } from './';
-const ChartsCarousel = React.lazy(() => import('./ChartsCarousel'));
-import { ErrorBoundary } from '../../components/common';
-import { AppLayout } from '../../components/layout';
+import { useDashboardStats, useActivityItems, useChartCarousel } from '../../../hooks';
+import { ActivityCard, StatsSection, AlertsSection } from '../';
+const ChartsCarousel = React.lazy(() => import('../ChartsCarousel/ChartsCarousel'));
+import { ErrorBoundary } from '../../../components/common';
+import { AppLayout } from '../../../components/layout';
 import './DashboardEnhanced.scss';
 
 const DashboardEnhanced: React.FC = () => {
@@ -64,7 +64,7 @@ const DashboardEnhanced: React.FC = () => {
             title="Active Leases"
             description={`${stats.activeLeases} active lease agreements`}
             icon={FileText}
-            items={activeLeases.map((item) => ({
+            items={activeLeases.map((item: any) => ({
               ...item,
               onClick: () => item.onClick(navigate),
             }))}
@@ -75,7 +75,7 @@ const DashboardEnhanced: React.FC = () => {
             title="Pending Payments"
             description={`₹${(stats.pendingPayments / 1000).toFixed(1)}K pending`}
             icon={CreditCard}
-            items={pendingPayments.map((item) => ({
+            items={pendingPayments.map((item: any) => ({
               ...item,
               onClick: () => item.onClick(navigate),
             }))}

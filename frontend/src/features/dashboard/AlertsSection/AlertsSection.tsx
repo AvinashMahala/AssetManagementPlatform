@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
-import { Card, Button } from '../../components/ui';
+import { Card, Button } from '../../../components/ui';
+import './AlertsSection.scss';
 
 interface AlertsSectionProps {
   stats: {

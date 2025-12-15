@@ -1,7 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button, ChartContainer } from '../../components/ui';
-import { RevenueTrendChart, OccupancyRateChart, PaymentCollectionChart, PropertyStatusChart } from '../../components/ui';
+import { Button, ChartContainer } from '../../../components/ui';
+import { RevenueTrendChart, OccupancyRateChart, PaymentCollectionChart, PropertyStatusChart } from '../../../components/ui';
+import './ChartsCarousel.scss';
 
 interface ChartsCarouselProps {
   chartData: {

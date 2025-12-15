@@ -1,0 +1,23 @@
+// Responsive styles and media queries
+
+// Tablet optimizations
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dashboard-enhanced {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+// Reduced motion preferences
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-enhanced {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

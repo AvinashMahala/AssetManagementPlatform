@@ -22,7 +22,7 @@ export const useDashboardStats = () => {
     const occupiedUnits = Array.isArray(units)
       ? units.filter((u) => u.status === 'occupied').length
       : 0;
-    const occupancyRate = totalUnits > 0 ? ((occupiedUnits / totalUnits) * 100).toFixed(1) : '0';
+    const occupancyRate = totalUnits > 0 ? parseFloat(((occupiedUnits / totalUnits) * 100).toFixed(1)) : 0;
 
     const activeLeases = Array.isArray(leases)
       ? leases.filter((l) => l.status === 'active').length
@@ -78,7 +78,7 @@ export const useDashboardStats = () => {
           activeTenants: 0,
           totalUnits: 0,
           occupiedUnits: 0,
-          occupancyRate: '0',
+          occupancyRate: 0,
           activeLeases: 0,
           expiringLeases: 0,
           totalRevenue: 0,
