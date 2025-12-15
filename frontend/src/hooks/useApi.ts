@@ -16,19 +16,15 @@ export function useApi<T>(
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      console.log('[useApi] Executing API call...');
       const response = await apiCall();
-      console.log('[useApi] Response received:', response);
 
       if (response.success) {
-        console.log('[useApi] Success! Data:', response.data);
         setState({
           data: response.data || null,
           loading: false,
           error: null,
         });
       } else {
-        console.log('[useApi] Error response:', response.error);
         setState({
           data: null,
           loading: false,

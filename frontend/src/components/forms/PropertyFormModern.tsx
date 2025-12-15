@@ -25,11 +25,9 @@ interface PropertyFormModernProps {
 const AMENITIES = ['Parking', 'Lift', 'Security', 'Gym', 'Power Backup', 'Water Supply', 'Garden', 'Swimming Pool'];
 
 const PropertyFormModern: React.FC<PropertyFormModernProps> = ({ initialData, onSubmit, loading, isEdit = false, propertyName, apiError }) => {
-  console.log('PropertyFormModern rendered');
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { data: users, loading: usersLoading } = useUsers();
-  console.log('Users hook result:', { users, usersLoading });
   const { data: owner, loading: ownerLoading } = useUser(initialData?.ownerId && initialData.ownerId.trim() ? initialData.ownerId : (!isEdit ? currentUser?.id || '' : null));
 
   // Update owner details when owner data is loaded

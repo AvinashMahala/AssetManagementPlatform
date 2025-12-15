@@ -440,7 +440,6 @@ export const PropertyDashboardPage: React.FC = () => {
               <PropertyFileGallery
                 propertyId={id!}
                 onFileDeleted={(fileId: string) => {
-                  console.log('File deleted:', fileId);
                 }}
               />
             </CardContent>

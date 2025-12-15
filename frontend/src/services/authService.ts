@@ -236,14 +236,11 @@ class AuthService {
 
     // Google OAuth
   async googleAuth(profile: GoogleUserProfile): Promise<AuthResponse> {
-    console.log('[authService.googleAuth] Calling API with profile:', profile);
     const response = await apiClient.post<AuthResponse>('/api/auth/google-auth', profile);
-    console.log('[authService.googleAuth] API response:', response);
     if (!response.success || !response.data) {
       console.error('[authService.googleAuth] Failed:', response.error);
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Google authentication failed' });
     }
-    console.log('[authService.googleAuth] Success! Returning:', response.data);
     return response.data;
   }
 

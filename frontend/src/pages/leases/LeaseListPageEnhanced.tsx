@@ -232,8 +232,6 @@ const LeaseListPageEnhanced: React.FC = () => {
       // For now, simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('Terminating leases:', Array.from(selectedLeases));
-
       // Clear selection after successful operation
       setSelectedLeases(new Set());
       setShowBulkActions(false);
@@ -257,8 +255,6 @@ const LeaseListPageEnhanced: React.FC = () => {
       // Delete leases one by one
       const deletePromises = Array.from(selectedLeases).map(id => deleteLease(id));
       await Promise.all(deletePromises);
-
-      console.log('Deleted leases:', Array.from(selectedLeases));
 
       // Clear selection after successful operation
       setSelectedLeases(new Set());

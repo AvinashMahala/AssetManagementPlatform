@@ -240,7 +240,6 @@ const PaymentListPageEnhanced: React.FC = () => {
 
       // Update local state to reflect changes
       // This would normally be handled by the API response and refetching data
-      console.log('Marking payments as paid:', Array.from(selectedPayments));
 
       // Clear selection after successful operation
       setSelectedPayments(new Set());
@@ -300,17 +299,13 @@ const PaymentListPageEnhanced: React.FC = () => {
   const confirmSingleDelete = async () => {
     if (!paymentToDelete) return;
 
-    console.log('[confirmSingleDelete] Starting delete for payment:', paymentToDelete.id);
     setDeleteLoading(true);
     try {
-      console.log('[confirmSingleDelete] Calling deletePayment.mutate');
       const result = await deletePayment.mutate(paymentToDelete.id);
-      console.log('[confirmSingleDelete] Delete result:', result);
       
       if (result.success) {
         showSuccess(`Payment for ${getTenantName(paymentToDelete.tenantId)} has been successfully deleted.`);
         await refetch();
-        console.log('[confirmSingleDelete] Refetch completed');
         setDeleteDialogOpen(false);
         setPaymentToDelete(null);
       } else {
@@ -327,13 +322,10 @@ const PaymentListPageEnhanced: React.FC = () => {
   const handleBulkDelete = async () => {
     if (selectedPayments.size === 0) return;
 
-    console.log('[handleBulkDelete] Starting bulk delete for payments:', Array.from(selectedPayments));
     setBulkActionLoading(true);
     try {
       const idsToDelete = Array.from(selectedPayments);
-      console.log('[handleBulkDelete] Calling bulkDeletePayments.mutate with ids:', idsToDelete);
       const result = await bulkDeletePayments.mutate(idsToDelete);
-      console.log('[handleBulkDelete] Bulk delete result:', result);
       
       if (result.success) {
         const { deleted, failed } = result.data || { deleted: 0, failed: [] };
@@ -347,7 +339,6 @@ const PaymentListPageEnhanced: React.FC = () => {
         }
         
         await refetch();
-        console.log('[handleBulkDelete] Refetch completed');
         
         // Clear selection after successful operation
         setSelectedPayments(new Set());

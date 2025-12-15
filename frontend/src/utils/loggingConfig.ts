@@ -199,7 +199,6 @@ export const updateLoggingConfig = (updates: Partial<LoggingConfig>): void => {
     const current = getLoggingConfig();
     const updated = { ...current, ...updates };
     localStorage.setItem('logging_config', JSON.stringify(updated));
-    console.log('Logging configuration updated:', updated);
   } catch (error) {
     console.error('Failed to update logging configuration:', error);
   }
@@ -211,9 +210,7 @@ export const updateLoggingConfig = (updates: Partial<LoggingConfig>): void => {
 export const resetLoggingConfig = (): void => {
   try {
     localStorage.removeItem('logging_config');
-    console.log('Logging configuration reset to defaults');
   } catch (error) {
-    console.error('Failed to reset logging configuration:', error);
   }
 };
 
@@ -285,10 +282,6 @@ if (import.meta.env.DEV) {
     presets: loggingPresets,
     applyPreset: applyLoggingPreset,
   };
-
-  console.log('🔧 Logging configuration utilities available at window.__loggingConfig');
-  console.log('📋 Available presets:', Object.keys(loggingPresets));
-  console.log('🎯 Current config:', getLoggingConfig());
 }
 
 export default getLoggingConfig;

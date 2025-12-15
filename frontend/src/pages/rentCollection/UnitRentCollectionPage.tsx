@@ -866,9 +866,7 @@ export const UnitRentCollectionPage: React.FC = () => {
       };
 
       // Step 1: Create the transaction
-      console.log('Creating transaction with data:', transactionData);
       const response = await createTransaction(transactionData);
-      console.log('Transaction creation response:', response);
       
       if (!response.success || !response.data) {
         const errorMsg = typeof response.error === 'string' 
@@ -885,18 +883,15 @@ export const UnitRentCollectionPage: React.FC = () => {
       }
 
       const transaction = response.data;
-      console.log('Transaction created successfully:', transaction);
 
       // Store the generated transaction ID for payment recording
       setGeneratedTransactionId(transaction.id);
 
       // Step 2: Generate the invoice PDF
       setInvoiceGenerationStatus({ step: 'generating', message: 'Step 2 of 4: Generating invoice PDF...', currentStep: 2, totalSteps: 4 });
-      console.log('Calling generateInvoice with transaction ID:', transaction.id);
       const invoiceResponse = await rentTransactionService.generateInvoice({
         transactionId: transaction.id
       });
-      console.log('Invoice generation response:', invoiceResponse);
 
       if (!invoiceResponse.success || !invoiceResponse.data) {
         const errorMsg = typeof invoiceResponse.error === 'string' 

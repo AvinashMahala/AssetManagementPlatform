@@ -186,7 +186,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
               email={user.email}
               onResendVerification={() => {
                 // TODO: Implement email verification resend
-                console.log('Resend verification email');
+
               }}
             />
           </div>

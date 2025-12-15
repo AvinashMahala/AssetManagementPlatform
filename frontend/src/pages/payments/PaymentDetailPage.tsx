@@ -156,7 +156,6 @@ export const PaymentDetailPage: React.FC = () => {
               tenantName={`${tenant.firstName} ${tenant.lastName}`}
               amount={payment.amount}
               onReceiptGenerated={(receipt) => {
-                console.log('Receipt generated:', receipt);
                 // Could navigate to receipt detail page or show success message
               }}
             />

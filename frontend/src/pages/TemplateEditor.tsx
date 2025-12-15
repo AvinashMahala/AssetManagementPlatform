@@ -52,9 +52,6 @@ export default function TemplateEditor() {
         format: 'html',
       }) as any;
       
-      // Debug logging
-      console.log('Preview response:', response);
-      
       if (response && response.success && response.previewHtml) {
         setPreviewHtml(response.previewHtml);
       } else {

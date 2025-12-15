@@ -112,8 +112,6 @@ class ApiClient {
   async get<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
     
-    console.log('[apiClient.get] URL:', url);
-    console.log('[apiClient.get] Headers:', this.getHeaders(config?.headers));
 
     // Create AbortController for manual timeout
     const controller = new AbortController();
@@ -129,11 +127,8 @@ class ApiClient {
 
       clearTimeout(timeoutId);
       
-      console.log('[apiClient.get] Response status:', response.status);
-      console.log('[apiClient.get] Response ok:', response.ok);
       
       const result = await this.handleResponse<T>(response);
-      console.log('[apiClient.get] Handled response:', result);
       
       return result;
     } catch (_error) {
@@ -260,9 +255,6 @@ class ApiClient {
   async delete<T>(endpoint: string, config?: RequestConfig): Promise<ApiResponse<T>> {
     const url = this.buildURL(endpoint, config?.params);
 
-    console.log('[apiClient.delete] URL:', url);
-    console.log('[apiClient.delete] Headers:', this.getHeaders(config?.headers));
-    console.log('[apiClient.delete] Config data:', config?.data);
 
     // Create AbortController for manual timeout
     const controller = new AbortController();
@@ -278,12 +270,8 @@ class ApiClient {
       });
 
       clearTimeout(timeoutId);
-      
-      console.log('[apiClient.delete] Response status:', response.status);
-      console.log('[apiClient.delete] Response ok:', response.ok);
-      
+
       const result = await this.handleResponse<T>(response);
-      console.log('[apiClient.delete] Handled response:', result);
       
       return result;
     } catch (_error) {

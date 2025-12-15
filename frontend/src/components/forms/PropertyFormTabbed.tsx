@@ -122,10 +122,6 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
 
   // Debug logging
   React.useEffect(() => {
-    console.log('PropertyFormTabbed - currentUser:', currentUser);
-    console.log('PropertyFormTabbed - users:', users);
-    console.log('PropertyFormTabbed - usersLoading:', usersLoading);
-    console.log('PropertyFormTabbed - usersError:', usersError);
   }, [currentUser, users, usersLoading, usersError]);
 
   const [activeTab, setActiveTab] = useState('basic');

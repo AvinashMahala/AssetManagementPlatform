@@ -197,7 +197,6 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({
                           size="sm"
                           onClick={() => {
                             // Could open a modal with receipt details
-                            console.log('View receipt details:', receipt);
                           }}
                         >
                           <Eye className="h-4 w-4" />

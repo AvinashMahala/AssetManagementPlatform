@@ -165,8 +165,6 @@ const UnitListPageEnhanced: React.FC = () => {
       // For now, simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('Marking units as under maintenance:', Array.from(selectedUnits));
-
       // Clear selection after successful operation
       setSelectedUnits(new Set());
       setShowBulkActions(false);
@@ -190,8 +188,6 @@ const UnitListPageEnhanced: React.FC = () => {
       // Delete units one by one
       const deletePromises = Array.from(selectedUnits).map(id => deleteUnit(id));
       await Promise.all(deletePromises);
-
-      console.log('Deleted units:', Array.from(selectedUnits));
 
       // Clear selection after successful operation
       setSelectedUnits(new Set());

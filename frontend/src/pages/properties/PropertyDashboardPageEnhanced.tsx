@@ -852,7 +852,6 @@ export const PropertyDashboardPageEnhanced: React.FC = () => {
                       propertyId={id!}
                       refreshTrigger={fileRefreshTrigger}
                       onFileDeleted={(fileId: string) => {
-                        console.log('File deleted:', fileId);
                       }}
                     />
                   </CardContent>

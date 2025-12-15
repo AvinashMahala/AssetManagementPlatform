@@ -112,8 +112,6 @@ const TenantListPageEnhanced: React.FC = () => {
       // For now, simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('Deactivating tenants:', Array.from(selectedTenants));
-
       // Clear selection after successful operation
       setSelectedTenants(new Set());
       setShowBulkActions(false);

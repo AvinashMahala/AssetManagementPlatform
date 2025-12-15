@@ -49,7 +49,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, title = 'Dashboard'
     e.preventDefault();
     if (searchQuery.trim()) {
       // Navigate to search results page - implement based on your needs
-      console.log('Searching for:', searchQuery);
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setSearchOpen(false);
     }

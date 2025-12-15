@@ -157,8 +157,6 @@ const PropertyListPageEnhanced: React.FC = () => {
       // For now, simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('Marking properties as under maintenance:', Array.from(selectedProperties));
-
       // Clear selection after successful operation
       setSelectedProperties(new Set());
       setShowBulkActions(false);
