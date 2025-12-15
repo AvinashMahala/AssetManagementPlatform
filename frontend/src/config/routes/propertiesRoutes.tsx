@@ -5,7 +5,6 @@ import { AppLayout } from '../../components/layout/AppLayout';
 
 // Lazy-loaded property components
 const PropertyListPageEnhanced = lazy(() => import('../../pages/properties/PropertyListPageEnhanced'));
-const PropertyCreatePageEnhanced = lazy(() => import('../../pages/properties/PropertyCreatePageEnhanced'));
 const PropertyCreatePageTabbed = lazy(() => import('../../pages/properties/PropertyCreatePageTabbed'));
 const PropertyEditPageEnhanced = lazy(() => import('../../pages/properties/PropertyEditPageEnhanced'));
 const PropertyDetailPage = lazy(() => import('../../pages/properties/PropertyDetailPage'));
@@ -16,11 +15,6 @@ export const propertiesRoutes: RouteConfig[] = [
   {
     path: ROUTE_PATHS.PROPERTIES,
     element: <PropertyListPageEnhanced />,
-    isProtected: true,
-  },
-  {
-    path: ROUTE_PATHS.PROPERTIES_CREATE,
-    element: <PropertyCreatePageEnhanced />,
     isProtected: true,
   },
   {

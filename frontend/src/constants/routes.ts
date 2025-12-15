@@ -12,7 +12,6 @@ export const ROUTE_PATHS = {
 
   // Properties
   PROPERTIES: '/properties',
-  PROPERTIES_CREATE: '/properties/create',
   PROPERTIES_CREATE_TABBED: '/properties/create-tabbed',
   PROPERTY_DETAIL: '/properties/:id',
   PROPERTY_DASHBOARD: '/properties/:id/dashboard',
