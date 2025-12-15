@@ -1,12 +1,12 @@
 import React from 'react';
-import { useCreateProperty } from '../../hooks';
+import { useCreateProperty } from '../../../hooks';
 import { useNavigate } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
-import PropertyFormTabbed from '../../components/forms/PropertyFormTabbed';
-import { AppLayout } from '../../components/layout/AppLayout';
-import type { PropertyInput } from '../../types';
+import navigateBackOrFallback from '../../../utils/navigation';
+import PropertyFormTabbed from '../../../components/forms/PropertyFormTabbed';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import type { PropertyInput } from '../../../types';
 
-const PropertyCreatePageTabbed: React.FC = () => {
+const PropertyCreate: React.FC = () => {
   const navigate = useNavigate();
   const { mutate: createProperty, loading, error } = useCreateProperty();
 
@@ -38,4 +38,4 @@ const PropertyCreatePageTabbed: React.FC = () => {
   );
 };
 
-export default PropertyCreatePageTabbed;
+export default PropertyCreate;

@@ -1,13 +1,13 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProperty, useUpdateProperty } from '../../hooks';
-import navigateBackOrFallback from '../../utils/navigation';
-import PropertyFormTabbed from '../../components/forms/PropertyFormTabbed';
-import { AppLayout } from '../../components/layout/AppLayout';
-import { Card, CardContent } from '../../components/ui/card';
-import type { PropertyInput } from '../../types';
+import { useProperty, useUpdateProperty } from '../../../hooks';
+import navigateBackOrFallback from '../../../utils/navigation';
+import PropertyFormTabbed from '../../../components/forms/PropertyFormTabbed';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import { Card, CardContent } from '../../../components/ui/card';
+import type { PropertyInput } from '../../../types';
 
-const PropertyEditPageEnhanced: React.FC = () => {
+const PropertyEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: property, loading: fetchLoading } = useProperty(id!);
@@ -88,4 +88,4 @@ const PropertyEditPageEnhanced: React.FC = () => {
   );
 };
 
-export default PropertyEditPageEnhanced;
+export default PropertyEdit;

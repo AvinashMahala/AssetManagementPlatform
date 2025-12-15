@@ -1,16 +1,16 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
+import navigateBackOrFallback from '../../../utils/navigation';
 import { ArrowLeft, Edit, Building2, MapPin, Home, Calendar, FileImage, Receipt, FileText } from 'lucide-react';
-import { useProperty } from '../../hooks';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { FileUpload, PropertyFileGallery } from '../../components/files';
-import { formatDate } from '../../utils';
+import { useProperty } from '../../../hooks';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
+import { FileUpload, PropertyFileGallery } from '../../../components/files';
+import { formatDate } from '../../../utils';
 
-const PropertyDetailPage: React.FC = () => {
+const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: property, loading, error, displayError } = useProperty(id!);
@@ -151,4 +151,4 @@ const PropertyDetailPage: React.FC = () => {
   );
 };
 
-export default PropertyDetailPage;
+export default PropertyDetail;

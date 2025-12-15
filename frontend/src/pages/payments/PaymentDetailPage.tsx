@@ -155,7 +155,7 @@ export const PaymentDetailPage: React.FC = () => {
               paymentId={payment.id}
               tenantName={`${tenant.firstName} ${tenant.lastName}`}
               amount={payment.amount}
-              onReceiptGenerated={(receipt) => {
+              onReceiptGenerated={() => {
                 // Could navigate to receipt detail page or show success message
               }}
             />

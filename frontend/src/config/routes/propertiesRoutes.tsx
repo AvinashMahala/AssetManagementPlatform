@@ -3,12 +3,12 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 import { AppLayout } from '../../components/layout/AppLayout';
 
-// Lazy-loaded property components
-const PropertyListPageEnhanced = lazy(() => import('../../pages/properties/PropertyListPageEnhanced'));
-const PropertyCreatePageTabbed = lazy(() => import('../../pages/properties/PropertyCreatePageTabbed'));
-const PropertyEditPageEnhanced = lazy(() => import('../../pages/properties/PropertyEditPageEnhanced'));
-const PropertyDetailPage = lazy(() => import('../../pages/properties/PropertyDetailPage'));
-const PropertyDashboardPageEnhanced = lazy(() => import('../../pages/properties/PropertyDashboardPageEnhanced').then(module => ({ default: module.PropertyDashboardPageEnhanced })));
+// Lazy-loaded property components from features
+const PropertyListPageEnhanced = lazy(() => import('../../features/properties/List/PropertyList'));
+const PropertyCreatePageTabbed = lazy(() => import('../../features/properties/Create/PropertyCreate'));
+const PropertyEditPageEnhanced = lazy(() => import('../../features/properties/Edit/PropertyEdit'));
+const PropertyDetailPage = lazy(() => import('../../features/properties/Detail/PropertyDetail'));
+const PropertyDashboardPageEnhanced = lazy(() => import('../../features/properties/Dashboard/PropertyDashboard'));
 const PropertyTemplateCustomization = lazy(() => import('../../pages/PropertyTemplateCustomization'));
 
 export const propertiesRoutes: RouteConfig[] = [
