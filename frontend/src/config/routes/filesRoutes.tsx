@@ -3,7 +3,7 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded file components
-const FilesPageEnhanced = lazy(() => import('../../pages/FilesPageEnhanced'));
+const FilesPageEnhanced = lazy(() => import('../../pages/files-page-enhanced/FilesPageEnhanced'));
 
 export const filesRoutes: RouteConfig[] = [
   {

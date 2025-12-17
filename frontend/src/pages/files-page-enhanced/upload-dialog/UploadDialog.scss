@@ -1,0 +1,39 @@
+/* Upload Dialog Component Styles */
+
+.upload-dialog {
+  .upload-stats {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex: 1;
+
+      &.success {
+        color: #16a34a;
+      }
+
+      &.error {
+        color: #dc2626;
+      }
+
+      &.pending {
+        color: #ca8a04;
+      }
+
+      span:first-child {
+        font-weight: 500;
+      }
+
+      span:last-child {
+        font-weight: bold;
+      }
+    }
+  }
+}

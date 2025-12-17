@@ -1,0 +1,108 @@
+/* RecentFilesSection Component Styles */
+
+@import '../shared-mixins.scss';
+
+.recent-files-section {
+  animation: slideInFromTop 0.5s ease-out 0.8s both;
+
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+.sidebar-section {
+  @include files-slide-in-from-top;
+  animation-delay: 0.8s;
+  border-radius: var(--files-border-radius);
+  border: 1px solid var(--files-glass-border);
+  background: var(--files-glass-bg);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+
+  .sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid hsl(var(--border));
+    background: linear-gradient(135deg, var(--files-glass-bg), rgba(99, 102, 241, 0.02));
+
+    .sidebar-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.25rem;
+    }
+
+    .sidebar-description {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+  }
+
+  .sidebar-content {
+    padding: 1.5rem;
+
+    .recent-file-item {
+      @include files-hover-lift;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: 0.5rem;
+      background: hsl(var(--background));
+      transition: all 0.3s ease;
+      cursor: pointer;
+      margin-bottom: 0.75rem;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--files-hover-shadow);
+        border-color: rgba(99, 102, 241, 0.2);
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .file-icon-container {
+        @include files-icon-glow;
+        background: linear-gradient(135deg, var(--files-primary), var(--files-secondary));
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .file-icon {
+        color: white;
+        width: 1rem;
+        height: 1rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .file-info {
+        flex: 1;
+        min-width: 0;
+
+        .file-name {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: hsl(var(--foreground));
+          line-height: 1.25;
+          margin-bottom: 0.125rem;
+          word-break: break-word;
+        }
+
+        .file-meta {
+          font-size: 0.75rem;
+          color: hsl(var(--muted-foreground));
+          line-height: 1.25;
+        }
+      }
+    }
+  }
+}
