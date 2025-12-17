@@ -1,10 +1,7 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui';
-import type { NavItem } from '../../hooks';
-
-interface NavigationPreviewProps {
-  enabledItems: NavItem[];
-}
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui';
+import type { NavItem } from '../../../hooks';
+import type { NavigationPreviewProps } from './index';
 
 export const NavigationPreview: React.FC<NavigationPreviewProps> = ({ enabledItems }) => {
   return (
@@ -18,7 +15,7 @@ export const NavigationPreview: React.FC<NavigationPreviewProps> = ({ enabledIte
         </div>
         <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
           <div className="space-y-2">
-            {enabledItems.map((item) => {
+            {enabledItems.map((item: NavItem) => {
               const Icon = item.icon;
               return (
                 <div key={item.id} className="flex items-center gap-3 p-2 rounded hover:bg-white dark:hover:bg-gray-700">

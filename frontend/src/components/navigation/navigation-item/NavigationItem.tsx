@@ -1,19 +1,8 @@
 import React from 'react';
 import { GripVertical, Eye, EyeOff } from 'lucide-react';
-import { Button } from '../../components/ui';
-import type { NavItem } from '../../hooks';
-
-interface NavigationItemProps {
-  item: NavItem;
-  index: number;
-  isDraggedOver: boolean;
-  isDragged: boolean;
-  onDragStart: (e: React.DragEvent, item: NavItem) => void;
-  onDragOver: (e: React.DragEvent, index: number) => void;
-  onDragEnd: () => void;
-  onDrop: (e: React.DragEvent, index: number) => void;
-  onToggle: (itemId: string) => void;
-}
+import { Button } from '../../../components/ui';
+import type { NavItem } from '../../../hooks';
+import type { NavigationItemProps } from './index';
 
 export const NavigationItem: React.FC<NavigationItemProps> = ({
   item,

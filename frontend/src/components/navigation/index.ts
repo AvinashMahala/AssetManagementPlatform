@@ -1,3 +1,3 @@
-export { NavigationItem } from './NavigationItem';
-export { NavigationPreview } from './NavigationPreview';
-export { InstructionsCard } from './InstructionsCard';
+export { NavigationItem } from './navigation-item';
+export { NavigationPreview } from './navigation-preview';
+export { InstructionsCard } from './instructions-card';
