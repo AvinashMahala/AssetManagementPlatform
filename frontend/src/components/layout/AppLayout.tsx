@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { Header } from './Header';
+import { Sidebar } from './sidebar';
+import { Header } from './header';
+import { MobileSidebar } from './mobile-sidebar';
 import { Breadcrumbs } from '../ui';
 
 interface AppLayoutProps {
@@ -24,20 +25,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, showBread
       </aside>
 
       {/* Mobile Sidebar */}
-      {mobileSidebarOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          
-          {/* Sidebar */}
-          <aside className="fixed inset-y-0 left-0 z-50 lg:hidden">
-            <Sidebar />
-          </aside>
-        </>
-      )}
+      <MobileSidebar 
+        isOpen={mobileSidebarOpen} 
+        onClose={() => setMobileSidebarOpen(false)} 
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">

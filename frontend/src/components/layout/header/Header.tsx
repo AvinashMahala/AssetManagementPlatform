@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Bell, Menu, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-interface HeaderProps {
-  onMenuClick?: () => void;
-  title?: string;
-}
+import type { HeaderProps } from './Header.types';
 
 export const Header: React.FC<HeaderProps> = ({ onMenuClick, title = 'Dashboard' }) => {
   const [searchQuery, setSearchQuery] = useState('');
