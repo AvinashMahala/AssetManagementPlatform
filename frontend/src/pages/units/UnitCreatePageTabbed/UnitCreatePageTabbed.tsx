@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
-import { useCreateUnit } from '../../hooks';
-import { useNotifications } from '../../contexts';
-import UnitFormTabbed from '../../components/forms/UnitFormTabbed';
-import type { UnitInput } from '../../types/unit';
+import navigateBackOrFallback from '../../../utils/navigation';
+import { useCreateUnit } from '../../../hooks';
+import { useNotifications } from '../../../contexts';
+import UnitFormTabbed from '../../../components/forms/UnitFormTabbed';
+import type { UnitInput } from '../../../types/unit';
+import './UnitCreatePageTabbed.scss';
 
 export const UnitCreatePageTabbed: React.FC = () => {
   const navigate = useNavigate();

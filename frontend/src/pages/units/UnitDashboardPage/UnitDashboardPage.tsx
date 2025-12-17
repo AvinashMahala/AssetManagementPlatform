@@ -1,11 +1,12 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUnitAnalytics } from '../../hooks';
-import { Card } from '../../components/common';
-import { Button } from '../../components/common/Button';
-import { RevenueTrendChart } from '../../components/ui/charts';
-import { getErrorMessage } from '../../types/api';
-import { PageLoadingSpinner } from '../../componentDesignLibrary';
+import { useUnitAnalytics } from '../../../hooks';
+import { Card } from '../../../components/common';
+import { Button } from '../../../components/common/Button';
+import { RevenueTrendChart } from '../../../components/ui/charts';
+import { getErrorMessage } from '../../../types/api';
+import { PageLoadingSpinner } from '../../../componentDesignLibrary';
+import './UnitDashboardPage.scss';
 
 export const UnitDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -1,13 +1,14 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
+import navigateBackOrFallback from '../../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { useUnit, useUpdateUnit } from '../../hooks';
-import { Button } from '../../components/ui/button';
-import { PageLoadingSpinner } from '../../componentDesignLibrary';
-import { AppLayout } from '../../components/layout/AppLayout';
-import UnitFormTabbed from '../../components/forms/UnitFormTabbed';
-import type { UnitInput } from '../../types/unit';
+import { useUnit, useUpdateUnit } from '../../../hooks';
+import { Button } from '../../../components/ui/button';
+import { PageLoadingSpinner } from '../../../componentDesignLibrary';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import UnitFormTabbed from '../../../components/forms/UnitFormTabbed';
+import type { UnitInput } from '../../../types/unit';
+import './UnitEditPage.scss';
 
 export const UnitEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

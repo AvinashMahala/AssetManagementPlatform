@@ -4,11 +4,11 @@ import type { RouteConfig } from '../routeTypes';
 import { AppLayout } from '../../components/layout/AppLayout';
 
 // Lazy-loaded unit components
-const UnitCreatePageTabbedEnhanced = lazy(() => import('../../pages/units/UnitCreatePageTabbedEnhanced'));
-const UnitDetailPage = lazy(() => import('../../pages/units/UnitDetailPage').then(module => ({ default: module.UnitDetailPage })));
-const UnitDashboardPage = lazy(() => import('../../pages/units/UnitDashboardPage').then(module => ({ default: module.UnitDashboardPage })));
-const UnitEditPage = lazy(() => import('../../pages/units/UnitEditPage').then(module => ({ default: module.UnitEditPage })));
-const UnitListPageEnhanced = lazy(() => import('../../pages/units/UnitListPageEnhanced'));
+const UnitCreatePageTabbedEnhanced = lazy(() => import('../../pages/units/UnitCreatePageTabbedEnhanced/UnitCreatePageTabbedEnhanced'));
+const UnitDetailPage = lazy(() => import('../../pages/units/UnitDetailPage/UnitDetailPage').then(module => ({ default: module.UnitDetailPage })));
+const UnitDashboardPage = lazy(() => import('../../pages/units/UnitDashboardPage/UnitDashboardPage').then(module => ({ default: module.UnitDashboardPage })));
+const UnitEditPage = lazy(() => import('../../pages/units/UnitEditPage/UnitEditPage').then(module => ({ default: module.UnitEditPage })));
+const UnitListPageEnhanced = lazy(() => import('../../pages/units/UnitListPageEnhanced/UnitListPageEnhanced'));
 
 export const unitsRoutes: RouteConfig[] = [
   {
