@@ -27,6 +27,16 @@ import { StatsCard, DataTable, AlertCard } from '../componentDesignLibrary';
 
 ## Component Index
 
+### Common UI
+
+| Component | Description | Documentation |
+|-----------|-------------|---------------|
+| **[Button](./components/common/button)** | Standard button component. | [Read More](./components/common/button/README.md) |
+| **[Card](./components/common/card)** | Container for content. | [Read More](./components/common/card/README.md) |
+| **[Input](./components/common/input)** | Form input field. | [Read More](./components/common/input/README.md) |
+| **[Badge](./components/common/badge)** | Status indicator. | [Read More](./components/common/badge/README.md) |
+| **[Alert](./components/common/alert)** | Callout for user attention. | [Read More](./components/common/alert/README.md) |
+
 ### Data Display
 
 | Component | Description | Documentation |

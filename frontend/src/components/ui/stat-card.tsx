@@ -1,0 +1,1 @@
+export * from '../../componentDesignLibrary/components/common/stat-card';
