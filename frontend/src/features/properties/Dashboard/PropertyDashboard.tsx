@@ -8,7 +8,6 @@ import { Badge } from '../../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 import {
   ArrowLeft,
-  MapPin,
   Edit,
   FileImage,
   Home,
@@ -28,6 +27,7 @@ import { PropertyStatsSection } from './PropertyStatsSection';
 import { PropertyAlertsSection } from './PropertyAlertsSection';
 import { PropertyChartsSection } from './PropertyChartsSection';
 import { PropertyTabsSection } from './PropertyTabsSection';
+import { PageHeader } from '../../../componentDesignLibrary/components/PageHeader';
 import './PropertyDashboard.scss';
 
 const PropertyDashboard: React.FC = () => {
@@ -302,55 +302,40 @@ const PropertyDashboard: React.FC = () => {
           {/* Overview Tab */}
           <TabsContent value="overview" className="main-tab-content space-y-6">
             {/* Header */}
-            <div
-              ref={headerRef}
-              data-section="header"
-              className="property-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
-            >
-              <div className="property-info flex items-start gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => navigateBackOrFallback(navigate, '/properties')}
-                  className="back-button mt-1"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div className="property-details">
-                  <h1 className="property-title text-2xl font-bold tracking-tight">{property.name}</h1>
-                  <div className="property-address flex items-center gap-2 mt-1 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <p>
-                      {property.address.street}, {property.address.city}, {property.address.state} {property.address.pincode}
-                    </p>
-                  </div>
-                  <div className="property-badges flex items-center gap-2 mt-1">
-                    <Badge className={getUnitStatusColor(property.status)}>
-                      {property.status.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                    <Badge variant="outline">
-                      {property.propertyType.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              <div className="property-actions flex gap-2">
-                <Button variant="default" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
-                  <Receipt className="w-4 h-4 mr-2" />
-                  Rent Collection
-                </Button>
-                <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit Property
-                </Button>
-                <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
-                  <FileImage className="w-4 h-4 mr-2" />
-                  Templates
-                </Button>
-                <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Unit
-                </Button>
+            <div ref={headerRef} data-section="header">
+              <PageHeader
+                title={property.name}
+                subtitle={`${property.address.city}, ${property.address.state}`}
+                backLabel="Back"
+                onBack={() => navigateBackOrFallback(navigate, '/properties')}
+                actions={
+                  <>
+                    <Button variant="default" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
+                      <Receipt className="w-4 h-4 mr-2" />
+                      Rent Collection
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate(`/properties/${id}/edit`)}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Property
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
+                      <FileImage className="w-4 h-4 mr-2" />
+                      Templates
+                    </Button>
+                    <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Unit
+                    </Button>
+                  </>
+                }
+              />
+              <div className="property-badges flex items-center gap-2 mt-2 px-4 sm:px-6 lg:px-8">
+                <Badge className={getUnitStatusColor(property.status)}>
+                  {property.status.replace('_', ' ').toUpperCase()}
+                </Badge>
+                <Badge variant="outline">
+                  {property.propertyType.replace('_', ' ').toUpperCase()}
+                </Badge>
               </div>
             </div>
 

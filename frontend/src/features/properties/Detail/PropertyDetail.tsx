@@ -1,19 +1,33 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import navigateBackOrFallback from '../../../utils/navigation';
-import { ArrowLeft, Edit, Building2, MapPin, Home, Calendar, FileImage, Receipt, FileText } from 'lucide-react';
+import { Edit, Building2, MapPin, Home, FileImage, Receipt, FileText } from 'lucide-react';
 import { useProperty } from '../../../hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 import { FileUpload, PropertyFileGallery } from '../../../components/files';
-import { formatDate } from '../../../utils';
+import { PageHeader } from '../../../componentDesignLibrary/components/PageHeader';
+import { StatusBadge } from '../../../componentDesignLibrary/components/status-badge/StatusBadge';
+import type { StatusType } from '../../../componentDesignLibrary/components/status-badge/StatusBadge';
+import { PropertyStatus } from '../../../types/property';
+import { getTypeLabel } from '../utils/propertyUtils';
 
 const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: property, loading, error, displayError } = useProperty(id!);
+
+  const mapStatusToBadgeStatus = (status: string): StatusType => {
+    switch (status) {
+      case PropertyStatus.AVAILABLE: return 'available';
+      case PropertyStatus.OCCUPIED: return 'occupied';
+      case PropertyStatus.UNDER_MAINTENANCE: return 'maintenance';
+      case PropertyStatus.VACANT: return 'inactive';
+      default: return 'inactive';
+    }
+  };
 
   if (loading) {
     return (
@@ -39,29 +53,36 @@ const PropertyDetail: React.FC = () => {
 
   return (
     <div className="container mx-auto py-6 max-w-6xl space-y-6">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => navigateBackOrFallback(navigate, '/properties')}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
-            <Receipt className="mr-2 h-4 w-4" />
-            Rent Collection
-          </Button>
-          <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
-            <FileImage className="mr-2 h-4 w-4" />
-            Templates
-          </Button>
-          <Button onClick={() => navigate(`/properties/${id}/edit`)}><Edit className="mr-2 h-4 w-4" /> Edit Property</Button>
-        </div>
-      </div>
+      <PageHeader
+        title={property.name}
+        subtitle="Details"
+        backLabel="Back"
+        onBack={() => navigateBackOrFallback(navigate, '/properties')}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => navigate(`/properties/${id}/rent-collection`)}>
+              <Receipt className="mr-2 h-4 w-4" />
+              Rent Collection
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/properties/${id}/template-customization`)}>
+              <FileImage className="mr-2 h-4 w-4" />
+              Templates
+            </Button>
+            <Button onClick={() => navigate(`/properties/${id}/edit`)}><Edit className="mr-2 h-4 w-4" /> Edit Property</Button>
+          </>
+        }
+      />
 
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-3xl mb-2">{property.name}</CardTitle>
               <p className="text-muted-foreground">{property.description}</p>
             </div>
-            <Badge variant={property.status === 'available' ? 'success' : 'secondary'}>{property.status.replace('_', ' ')}</Badge>
+            <StatusBadge
+              status={mapStatusToBadgeStatus(property.status)}
+              customLabel={property.status.replace('_', ' ')}
+            />
           </div>
         </CardHeader>
       </Card>
@@ -82,7 +103,7 @@ const PropertyDetail: React.FC = () => {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Property Info</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            <div><p className="text-sm text-muted-foreground">Type</p><p className="font-medium capitalize">{property.propertyType.replace('_', ' ')}</p></div>
+            <div><p className="text-sm text-muted-foreground">Type</p><p className="font-medium capitalize">{getTypeLabel(property.propertyType)}</p></div>
             <div className="grid grid-cols-2 gap-3">
               <div><p className="text-sm text-muted-foreground">Total Area</p><p className="font-medium">{property.totalArea.toLocaleString()} sq ft</p></div>
               {property.totalFloors && <div><p className="text-sm text-muted-foreground">Floors</p><p className="font-medium">{property.totalFloors}</p></div>}
@@ -100,53 +121,28 @@ const PropertyDetail: React.FC = () => {
         </Card>
       )}
 
-      {/* File Management Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Property Files & Documents
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="gallery" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="gallery">File Gallery</TabsTrigger>
-              <TabsTrigger value="upload">Upload Files</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="gallery" className="mt-6">
-              <PropertyFileGallery
-                propertyId={property.id}
-                onFileDeleted={(fileId: string) => {
-                  console.log('File deleted:', fileId);
-                }}
-              />
-            </TabsContent>
-
-            <TabsContent value="upload" className="mt-6">
-              <FileUpload
-                entityType="property"
-                entityId={property.id}
-                onUploadSuccess={(file) => {
-                  console.log('File uploaded:', file);
-                }}
-                onUploadError={(error) => {
-                  console.error('Upload error:', error);
-                }}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" /> Timeline</CardTitle></CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
-          <div><p className="text-sm text-muted-foreground">Created</p><p className="font-medium">{formatDate(property.createdAt)}</p></div>
-          <div><p className="text-sm text-muted-foreground">Last Updated</p><p className="font-medium">{formatDate(property.updatedAt)}</p></div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="files" className="w-full">
+        <TabsList>
+          <TabsTrigger value="files" className="flex items-center gap-2"><FileText className="h-4 w-4" /> Files & Documents</TabsTrigger>
+        </TabsList>
+        <TabsContent value="files" className="mt-4">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader><CardTitle>Upload Documents</CardTitle></CardHeader>
+              <CardContent>
+                <FileUpload
+                  entityId={property.id}
+                  entityType="property"
+                  onUploadComplete={() => {
+                    // Refresh property data or file list
+                  }}
+                />
+              </CardContent>
+            </Card>
+            <PropertyFileGallery propertyId={property.id} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

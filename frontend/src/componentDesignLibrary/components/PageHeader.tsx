@@ -7,13 +7,15 @@ interface PageHeaderProps {
   subtitle?: string;
   backLabel: string;
   onBack?: () => void;
+  actions?: React.ReactNode;
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
   backLabel,
-  onBack
+  onBack,
+  actions
 }) => {
   return (
     <div className="flex-shrink-0 flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8">
@@ -40,6 +42,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           </h1>
         </div>
       </div>
+      {actions && (
+        <div className="flex items-center space-x-3">
+          {actions}
+        </div>
+      )}
     </div>
   );
 };

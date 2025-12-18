@@ -1,8 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Receipt, Eye, Edit, Trash2 } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { Card, CardContent } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import {
   Table,
@@ -12,8 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from '../../../components/ui/table';
-import { PropertyStatus, PropertyType } from '../../../types/property';
+import { PropertyStatus } from '../../../types/property';
 import type { Property } from '../../../types/property';
+import { PropertyActions } from '../components/PropertyActions';
+import { StatusBadge } from '../../../componentDesignLibrary/components/status-badge/StatusBadge';
+import type { StatusType } from '../../../componentDesignLibrary/components/status-badge/StatusBadge';
+import { getTypeLabel } from '../utils/propertyUtils';
 
 interface PropertyTableViewProps {
   properties: Property[];
@@ -32,34 +35,14 @@ const PropertyTableView: React.FC<PropertyTableViewProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const getStatusColor = (status: string) => {
+  const mapStatusToBadgeStatus = (status: string): StatusType => {
     switch (status) {
-      case PropertyStatus.AVAILABLE:
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case PropertyStatus.OCCUPIED:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case PropertyStatus.UNDER_MAINTENANCE:
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      case PropertyStatus.VACANT:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case PropertyStatus.AVAILABLE: return 'available';
+      case PropertyStatus.OCCUPIED: return 'occupied';
+      case PropertyStatus.UNDER_MAINTENANCE: return 'maintenance';
+      case PropertyStatus.VACANT: return 'inactive';
+      default: return 'inactive';
     }
-  };
-
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      [PropertyType.APARTMENT]: 'Apartment',
-      [PropertyType.HOUSE]: 'House',
-      [PropertyType.VILLA]: 'Villa',
-      [PropertyType.COMMERCIAL]: 'Commercial',
-      [PropertyType.PG_HOSTEL]: 'PG/Hostel',
-      [PropertyType.CO_LIVING]: 'Co-Living',
-      [PropertyType.OFFICE]: 'Office',
-      [PropertyType.SHOP]: 'Shop',
-      [PropertyType.WAREHOUSE]: 'Warehouse',
-    };
-    return labels[type] || type;
   };
 
   return (
@@ -126,49 +109,20 @@ const PropertyTableView: React.FC<PropertyTableViewProps> = ({
                       {property.totalArea ? property.totalArea.toLocaleString() : 'N/A'}
                     </TableCell>
                     <TableCell className="break-words py-2 px-3">
-                      <Badge className={`${getStatusColor(property.status)} whitespace-normal text-xs`}>
-                        {property.status.replace('_', ' ')}
-                      </Badge>
+                      <StatusBadge
+                        status={mapStatusToBadgeStatus(property.status)}
+                        customLabel={property.status.replace('_', ' ')}
+                        size="sm"
+                        showIcon={false}
+                      />
                     </TableCell>
                     <TableCell className="text-right py-2 px-3">
-                      <div className="table-actions flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="table-action-button"
-                          onClick={() => navigate(`/properties/${property.id}/rent-collection`)}
-                          title="Rent Collection"
-                        >
-                          <Receipt className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="table-action-button"
-                          onClick={() => navigate(`/properties/${property.id}/dashboard`)}
-                          title="View Dashboard"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="table-action-button"
-                          onClick={() => navigate(`/properties/${property.id}/edit`)}
-                          title="Edit Property"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="table-action-button"
-                          onClick={() => onDeleteClick(property.id, property.name)}
-                          title="Delete Property"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </div>
+                      <PropertyActions
+                        propertyId={property.id}
+                        propertyName={property.name}
+                        onDelete={onDeleteClick}
+                        variant="table"
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
