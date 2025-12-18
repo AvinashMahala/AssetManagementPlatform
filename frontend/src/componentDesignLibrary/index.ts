@@ -3,6 +3,8 @@ export { FormLayout } from './layouts/FormLayout';
 
 // Forms
 export { BaseForm } from './forms/BaseForm';
+export { GenericTabbedForm } from './forms/generic-tabbed-form';
+export type { GenericTabbedFormProps, TabConfig } from './forms/generic-tabbed-form';
 
 // Components
 export { PageHeader } from './components/PageHeader';
