@@ -1,6 +1,6 @@
 /* FileStats Component Styles */
 
-@import '../shared-mixins.scss';
+@use '../shared-mixins.scss' as *;
 
 .stats-section {
   display: grid;

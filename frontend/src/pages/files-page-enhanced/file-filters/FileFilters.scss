@@ -1,6 +1,6 @@
 /* FileFilters Component Styles */
 
-@import '../shared-mixins.scss';
+@use '../shared-mixins.scss' as *;
 
 .filters-section {
   @include files-glass-morphism;
