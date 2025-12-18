@@ -3,7 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import navigateBackOrFallback from '../../utils/navigation';
 import { useCreateMeter } from '../../hooks';
 import type { MeterInput } from '../../types/meter';
+import { AppLayout } from '../../components/layout/AppLayout';
 import MeterFormTabbed from '../../components/forms/MeterFormTabbed';
+import { MeterPageHeader } from './components/shared';
 
 export const MeterCreatePageTabbed: React.FC = () => {
   const navigate = useNavigate();
@@ -30,10 +32,19 @@ export const MeterCreatePageTabbed: React.FC = () => {
   };
 
   return (
-    <MeterFormTabbed
-      initialData={initialData}
-      onSubmit={handleSubmit}
-      loading={loading}
-    />
+    <AppLayout title="Add Meter">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <MeterPageHeader 
+          title="Add Meter" 
+          subtitle="Create a new utility meter" 
+        />
+
+        <MeterFormTabbed
+          initialData={initialData}
+          onSubmit={handleSubmit}
+          loading={loading}
+        />
+      </div>
+    </AppLayout>
   );
 };

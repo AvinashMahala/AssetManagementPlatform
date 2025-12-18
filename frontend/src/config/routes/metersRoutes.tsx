@@ -4,7 +4,7 @@ import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded meter components
 const MeterListPageEnhanced = lazy(() => import('../../pages/meters/MeterListPageEnhanced'));
-const MeterCreatePageTabbedEnhanced = lazy(() => import('../../pages/meters/MeterCreatePageTabbedEnhanced'));
+const MeterCreatePageTabbed = lazy(() => import('../../pages/meters/MeterCreatePageTabbed').then(module => ({ default: module.MeterCreatePageTabbed })));
 const MeterEditPage = lazy(() => import('../../pages/meters/MeterEditPage').then(module => ({ default: module.MeterEditPage })));
 const MeterDetailPage = lazy(() => import('../../pages/meters/MeterDetailPage').then(module => ({ default: module.MeterDetailPage })));
 const MeterReadingCreatePage = lazy(() => import('../../pages/meters/MeterReadingCreatePage').then(module => ({ default: module.MeterReadingCreatePage })));
@@ -17,12 +17,12 @@ export const metersRoutes: RouteConfig[] = [
   },
   {
     path: ROUTE_PATHS.METERS_CREATE,
-    element: <MeterCreatePageTabbedEnhanced />,
+    element: <MeterCreatePageTabbed />,
     isProtected: true,
   },
   {
     path: ROUTE_PATHS.METERS_CREATE_TABBED,
-    element: <MeterCreatePageTabbedEnhanced />,
+    element: <MeterCreatePageTabbed />,
     isProtected: true,
   },
   {

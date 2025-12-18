@@ -1,0 +1,56 @@
+@use './MeterList.scss' as *;
+
+.meter-list-header {
+  animation: fadeInUp 0.6s ease-out;
+  position: relative;
+
+  .header-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
+    position: relative;
+    animation: slideInFromLeft 0.6s ease-out;
+
+    .header-subtitle {
+      display: inline-block;
+      animation: fadeIn 0.8s ease-out 0.4s both;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+  }
+
+  .header-actions {
+    animation: slideInFromRight 0.6s ease-out 0.3s both;
+
+    .action-button {
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transition: width 0.5s, height 0.5s;
+        transform: translate(-50%, -50%);
+      }
+
+      &:hover::before {
+        width: 200px;
+        height: 200px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .meter-list-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
+}
