@@ -20,6 +20,7 @@ const PropertyFileUpload: React.FC<PropertyFileUploadProps> = ({
 }) => {
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -46,18 +47,20 @@ const PropertyFileUpload: React.FC<PropertyFileUploadProps> = ({
   }, []);
 
   const handleFiles = async (newFiles: File[]) => {
+    setUploadError(null);
     if (files.length + newFiles.length > maxFiles) {
-      alert(`Maximum ${maxFiles} files allowed`);
+      setUploadError(`Maximum ${maxFiles} files allowed`);
       return;
     }
 
     setUploading(true);
 
     try {
+      const errors: string[] = [];
       const validFiles = newFiles.filter(file => {
         // Check file size
         if (file.size > maxFileSize * 1024 * 1024) {
-          alert(`${file.name} is too large. Maximum size is ${maxFileSize}MB`);
+          errors.push(`${file.name} is too large. Maximum size is ${maxFileSize}MB`);
           return false;
         }
 
@@ -66,33 +69,43 @@ const PropertyFileUpload: React.FC<PropertyFileUploadProps> = ({
           if (type.startsWith('.')) {
             return file.name.toLowerCase().endsWith(type.toLowerCase());
           }
-          return file.type.match(type.replace('*', '.*'));
+          try {
+            return !!file.type.match(new RegExp(type.replace('*', '.*')));
+          } catch (_) {
+            return false;
+          }
         });
 
         if (!isValidType) {
-          alert(`${file.name} has an invalid file type`);
+          errors.push(`${file.name} has an invalid file type`);
           return false;
         }
 
         return true;
       });
 
+      if (errors.length > 0) {
+        setUploadError(errors.join('; '));
+      }
+
       // In a real implementation, you would upload files to the server here
       // For now, we'll create mock PropertyFile objects
       const propertyFiles: PropertyFile[] = validFiles.map(file => ({
-        id: `temp-${Date.now()}-${Math.random()}`,
+        id: `temp-${Date.now()}-${Math.random().toString(36).slice(2,10)}`,
         propertyId: '', // Will be set when uploaded
-        fileId: `temp-file-${Date.now()}-${Math.random()}`,
+        fileId: `temp-file-${Date.now()}-${Math.random().toString(36).slice(2,10)}`,
         fileName: file.name,
         fileType: file.type.startsWith('image/') ? 'photo' : 'document',
         uploadedAt: new Date().toISOString(),
         description: ''
       }));
 
-      onFilesChange([...files, ...propertyFiles]);
+      if (propertyFiles.length > 0) {
+        onFilesChange([...files, ...propertyFiles]);
+      }
     } catch (error) {
       console.error('Error uploading files:', error);
-      alert('Error uploading files. Please try again.');
+      setUploadError('Error uploading files. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -144,6 +157,9 @@ const PropertyFileUpload: React.FC<PropertyFileUploadProps> = ({
         <p className="mt-1 text-xs text-gray-500">
           Supported: Images, PDF, Word documents
         </p>
+        {uploadError && (
+          <p className="mt-2 text-sm text-red-600" role="alert">{uploadError}</p>
+        )}
       </div>
 
       {/* File List */}

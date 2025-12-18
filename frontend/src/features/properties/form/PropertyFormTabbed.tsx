@@ -118,9 +118,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
   );
   const { data: users, loading: usersLoading, error: usersError } = useUsers();
 
-  // Debug logging
-  React.useEffect(() => {
-  }, [currentUser, users, usersLoading, usersError]);
+  // Debug effect removed — avoid no-op effects in production
 
   const [activeTab, setActiveTab] = useState('basic');
   const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
@@ -140,18 +138,37 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
 
   // Handle API validation errors
   React.useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (apiError) {
       if (apiError.details) {
         // Field-specific validation errors
-        const fieldErrors: Record<string, string> = {};
+        const fieldErrors: FormErrors = {};
         Object.entries(apiError.details).forEach(([field, message]) => {
-          // Handle nested address fields
+          // Handle nested address fields (address.street -> street)
           if (field.startsWith('address.')) {
             const addressField = field.split('.')[1];
             fieldErrors[addressField] = message as string;
-          } else {
-            fieldErrors[field] = message as string;
+            return;
           }
+
+          // Map ownerDetails.* into ownerName/ownerMobile/ownerEmail for UI
+          if (field.startsWith('ownerDetails.')) {
+            // Examples: ownerDetails.name, ownerDetails.mobileNumbers[0], ownerDetails.emailIds[0]
+            if (field.includes('name')) {
+              fieldErrors['ownerName'] = message as string;
+            } else if (field.includes('mobileNumbers')) {
+              fieldErrors['ownerMobile'] = message as string;
+            } else if (field.includes('emailIds')) {
+              fieldErrors['ownerEmail'] = message as string;
+            } else {
+              // fallback to raw key
+              fieldErrors[field] = message as string;
+            }
+            return;
+          }
+
+          // Default mapping
+          fieldErrors[field] = message as string;
         });
         setErrors(fieldErrors);
 
@@ -162,7 +179,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
           if (targetTab) {
             setActiveTab(targetTab);
           }
-          setTimeout(() => {
+          timer = setTimeout(() => {
             const element = document.getElementById(firstInvalidField) ||
                           document.querySelector(`[name="${firstInvalidField}"]`) as HTMLElement;
             if (element) {
@@ -173,9 +190,13 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
         }
       } else {
         // Generic error - show in submit error
-        setErrors({ submit: apiError.message });
+        setErrors(prev => ({ ...prev, submit: apiError.message }));
       }
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [apiError]);
 
   const [formData, setFormData] = useState<PropertyInput>({
@@ -231,15 +252,18 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       wallets: [],
       additionalInfo: {}
     },
-    ownerId: initialData?.ownerId || (!isEdit ? currentUser?.id || '0935d25e-60ed-4f76-aef5-bc51d52b9599' : ''),
+    ownerId: initialData?.ownerId || (!isEdit ? currentUser?.id || '' : ''),
     coOwners: initialData?.coOwners || [],
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  type FormErrors = Record<string, string>;
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
+  const handleChange = <K extends keyof PropertyInput>(field: K, value: PropertyInput[K]) => {
+    setFormData(prev => ({ ...prev, [field]: value } as unknown as PropertyInput));
+    const fieldKey = field as string;
+    if (errors[fieldKey]) setErrors(prev => ({ ...prev, [fieldKey]: '' }));
   };
 
   const handleAddressChange = (field: keyof PropertyInput['address'], value: string) => {
@@ -309,8 +333,8 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const validate = (): FormErrors => {
+    const newErrors: FormErrors = {};
 
     if (!formData.name || formData.name.trim().length === 0) newErrors.name = 'Property name is required';
     if (!formData.address.street || formData.address.street.trim().length === 0) newErrors.street = 'Street address is required';
@@ -323,7 +347,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
     if (!isEdit && !formData.ownerDetails.emailIds[0] || (formData.ownerDetails.emailIds[0] && formData.ownerDetails.emailIds[0].trim().length === 0)) newErrors.ownerEmail = 'At least one email ID is required';
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
   const handleTabChange = (tabId: string) => {
@@ -356,12 +380,17 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && typeof (e as any).preventDefault === 'function') {
+      (e as any).preventDefault();
+    }
+    // Clear submit error from previous attempts
+    setErrors(prev => ({ ...prev, submit: '' }));
 
-    if (!validate()) {
+    const newErrors = validate();
+    if (Object.keys(newErrors).length > 0) {
       // Find first tab with errors
-      const firstErrorField = Object.keys(errors)[0];
+      const firstErrorField = Object.keys(newErrors)[0];
       if (firstErrorField) {
         const targetTab = getTabForField(firstErrorField);
         if (targetTab) {
@@ -371,7 +400,14 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       return;
     }
 
-    await onSubmit(formData);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } catch (err: any) {
+      setErrors(prev => ({ ...prev, submit: err?.message || 'Submit failed' }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -414,7 +450,7 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       onTabChange={handleTabChange}
       completedTabs={completedTabs}
       isEdit={isEdit}
-      loading={loading}
+      loading={loading || isSubmitting}
       hasTabData={isEdit ? hasTabData : undefined}
       onNext={handleNext}
       onPrevious={handlePrevious}
@@ -422,6 +458,12 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       onCancel={handleCancel}
       submitLabel={isEdit ? "Save Changes" : "Create Property"}
     >
+      {errors.submit && (
+        <div role="alert" className="p-4 mb-4 rounded bg-red-50 text-red-700">
+          {errors.submit}
+        </div>
+      )}
+
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsContent value="basic" className="p-6">
           <FormGrid className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" gap="lg">
