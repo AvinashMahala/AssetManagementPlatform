@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProperty, useUpdateProperty } from '../../../hooks';
 import navigateBackOrFallback from '../../../utils/navigation';
-import PropertyFormTabbed from '../../../components/forms/PropertyFormTabbed';
+import PropertyFormTabbed from '../form/PropertyFormTabbed';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import { Card, CardContent } from '../../../components/ui/card';
 import type { PropertyInput } from '../../../types';

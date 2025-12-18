@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
+import navigateBackOrFallback from '../../../utils/navigation';
 import {
   Building2,
   MapPin,
@@ -24,17 +24,17 @@ import {
   FormField,
   Badge,
   GenericTabbedForm
-} from '../../componentDesignLibrary';
-import { Tabs, TabsContent } from '../ui/tabs';
-import type { PropertyInput, PropertyReceiptTemplate, ApiError } from '../../types';
-import { PropertyType, PropertyStatus } from '../../types/property';
-import { getCurrencyOptions, DEFAULT_CURRENCY } from '../../types/currency';
-import { useUser, useUsers } from '../../hooks';
-import { useAuth } from '../../hooks';
-import OwnerContactForm from './OwnerContactForm';
-import EnhancedAmenitiesForm from './EnhancedAmenitiesForm';
-import PropertyFileUpload from './PropertyFileUpload';
-import ReceiptTemplateForm from './ReceiptTemplateForm';
+} from '../../../componentDesignLibrary';
+import { Tabs, TabsContent } from '../../../components/ui/tabs';
+import type { PropertyInput, PropertyReceiptTemplate, ApiError } from '../../../types';
+import { PropertyType, PropertyStatus } from '../../../types/property';
+import { getCurrencyOptions, DEFAULT_CURRENCY } from '../../../types/currency';
+import { useUser, useUsers } from '../../../hooks';
+import { useAuth } from '../../../hooks';
+import OwnerContactForm from '../../../components/forms/OwnerContactForm';
+import EnhancedAmenitiesForm from '../../../components/forms/EnhancedAmenitiesForm';
+import PropertyFileUpload from '../../../components/forms/PropertyFileUpload';
+import ReceiptTemplateForm from '../../../components/forms/ReceiptTemplateForm';
 
 interface PropertyFormTabbedProps {
   initialData?: Partial<PropertyInput>;
@@ -86,7 +86,7 @@ const TABS = [
   },
   {
     id: 'files',
-    title: 'Files',
+    title: 'Photos & Documents',
     description: 'Photos & documents',
     icon: Upload,
     required: false
