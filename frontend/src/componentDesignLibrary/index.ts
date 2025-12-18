@@ -36,6 +36,15 @@ export type { StatusBadgeProps, StatusType } from './components/status-badge';
 export { PhotoCarousel } from './components/PhotoCarousel';
 export type { PhotoCarouselProps } from './components/PhotoCarousel';
 
+export { ListCard } from './components/list-card';
+export type { ListCardProps, ListItem } from './components/list-card';
+
+export { AlertCard } from './components/alert-card';
+export type { AlertCardProps } from './components/alert-card';
+
+export { ScrollableRow } from './components/scrollable-row';
+export type { ScrollableRowProps } from './components/scrollable-row';
+
 // Re-export common UI components for convenience
 export { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 export { Button } from '../components/ui/button';

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
-import { Card, Button } from '../../../components/ui';
+import { Button } from '../../../components/ui';
+import { AlertCard } from '../../../componentDesignLibrary/components/alert-card';
 import './AlertsSection.scss';
 
 interface AlertsSectionProps {
@@ -18,28 +19,22 @@ const AlertsSection: React.FC<AlertsSectionProps> = ({ stats }) => {
     return null;
   }
 
+  const messages = [];
+  if (stats.expiringLeases > 0) {
+    messages.push(`${stats.expiringLeases} lease(s) expiring soon`);
+  }
+  if (stats.overduePayments > 0) {
+    messages.push(`${stats.overduePayments} overdue payment(s)`);
+  }
+
   return (
-    <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 alert-card p-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <AlertCircle className="h-4 w-4 text-amber-600 alert-icon" />
-          <span className="text-sm font-medium text-amber-900 dark:text-amber-300 alert-title">
-            Attention Required:
-          </span>
-          <div className="flex items-center space-x-4">
-            {stats.expiringLeases > 0 && (
-              <span className="text-sm text-amber-800 dark:text-amber-200">
-                {stats.expiringLeases} lease(s) expiring soon
-              </span>
-            )}
-            {stats.overduePayments > 0 && (
-              <span className="text-sm text-amber-800 dark:text-amber-200">
-                {stats.overduePayments} overdue payment(s)
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex space-x-2">
+    <AlertCard
+      title="Attention Required:"
+      icon={<AlertCircle className="h-4 w-4" />}
+      variant="warning"
+      messages={messages}
+      actions={
+        <>
           {stats.expiringLeases > 0 && (
             <Button
               size="sm"
@@ -60,9 +55,10 @@ const AlertsSection: React.FC<AlertsSectionProps> = ({ stats }) => {
               Review Payments
             </Button>
           )}
-        </div>
-      </div>
-    </Card>
+        </>
+      }
+      className="alert-card"
+    />
   );
 };
 

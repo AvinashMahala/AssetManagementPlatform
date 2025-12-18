@@ -7,7 +7,7 @@ import {
   TrendingUp,
   Receipt,
 } from 'lucide-react';
-import { StatCard } from '../../../components/ui';
+import { StatsCard } from '../../../componentDesignLibrary/components/stats-card';
 import './StatsSection.scss';
 
 interface StatsSectionProps {
@@ -32,46 +32,40 @@ const StatsSection: React.FC<StatsSectionProps> = ({ stats }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2 stats-grid">
-      <StatCard
+      <StatsCard
         title="Total Properties"
         value={stats.totalProperties}
-        icon={Building2}
+        icon={<Building2 className="h-4 w-4" />}
         description={`${stats.availableProperties} available`}
-        action={() => navigate('/properties')}
-        actionLabel="Manage Properties"
+        action={{ label: 'Manage Properties', onClick: () => navigate('/properties') }}
       />
-      <StatCard
+      <StatsCard
         title="Active Tenants"
         value={stats.activeTenants}
-        icon={Users}
+        icon={<Users className="h-4 w-4" />}
         description={`${stats.totalTenants} total tenants`}
-        action={() => navigate('/tenants')}
-        actionLabel="View Tenants"
+        action={{ label: 'View Tenants', onClick: () => navigate('/tenants') }}
       />
-      <StatCard
+      <StatsCard
         title="Occupancy Rate"
         value={`${stats.occupancyRate}%`}
-        icon={Home}
+        icon={<Home className="h-4 w-4" />}
         description={`${stats.occupiedUnits}/${stats.totalUnits} units occupied`}
-        action={() => navigate('/units')}
-        actionLabel="View Units"
+        action={{ label: 'View Units', onClick: () => navigate('/units') }}
       />
-      <StatCard
+      <StatsCard
         title="Total Revenue"
         value={`₹${(stats.totalRevenue / 1000).toFixed(1)}K`}
-        icon={TrendingUp}
-        trend="up"
-        change={12.5}
-        action={() => navigate('/payments')}
-        actionLabel="View Payments"
+        icon={<TrendingUp className="h-4 w-4" />}
+        trend={{ value: 12.5, direction: 'up' }}
+        action={{ label: 'View Payments', onClick: () => navigate('/payments') }}
       />
-      <StatCard
+      <StatsCard
         title="Rent Collection"
         value="Workflow"
-        icon={Receipt}
+        icon={<Receipt className="h-4 w-4" />}
         description="Monitor collection process"
-        action={() => navigate('/rent-collection/workflow-dashboard')}
-        actionLabel="View Dashboard"
+        action={{ label: 'View Dashboard', onClick: () => navigate('/rent-collection/workflow-dashboard') }}
       />
     </div>
   );

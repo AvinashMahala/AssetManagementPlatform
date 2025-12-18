@@ -1,6 +1,6 @@
 /* FileTable Component Styles */
 
-@import '../shared-mixins.scss';
+@use '../shared-mixins.scss';
 
 .table-view {
   @include files-slide-in-from-top;

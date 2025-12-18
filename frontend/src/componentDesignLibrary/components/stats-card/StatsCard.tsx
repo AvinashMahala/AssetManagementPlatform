@@ -1,23 +1,7 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-
-export type TrendDirection = 'up' | 'down' | 'neutral';
-
-export interface StatsCardProps {
-  title: string;
-  value: string | number;
-  description?: string;
-  icon?: React.ReactNode;
-  trend?: {
-    value: number;
-    direction: TrendDirection;
-    label?: string;
-  };
-  variant?: 'default' | 'success' | 'warning' | 'error';
-  className?: string;
-  onClick?: () => void;
-}
+import { Button } from '../../../components/ui/button';
+import { TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
+import type { StatsCardProps } from './types';
 
 const variantStyles = {
   default: 'hover:shadow-md transition-shadow',
@@ -39,6 +23,7 @@ export function StatsCard({
   description,
   icon,
   trend,
+  action,
   variant = 'default',
   className = '',
   onClick
@@ -84,6 +69,21 @@ export function StatsCard({
               </span>
             )}
           </div>
+        )}
+
+        {action && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="w-full mt-3 justify-between h-8 text-xs px-2 hover:bg-muted/50"
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick();
+            }}
+          >
+            {action.label}
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
         )}
       </CardContent>
     </Card>

@@ -1,6 +1,6 @@
 /* RecentFilesSection Component Styles */
 
-@import '../shared-mixins.scss';
+@use '../shared-mixins.scss';
 
 .recent-files-section {
   animation: slideInFromTop 0.5s ease-out 0.8s both;

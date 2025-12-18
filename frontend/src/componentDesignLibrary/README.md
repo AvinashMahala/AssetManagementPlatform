@@ -1,162 +1,71 @@
-# CDC (Common Design Components)
+# Component Design Library
 
-A centralized design system and component framework for the Asset Management Platform.
+A centralized, modular design system for the Asset Management Platform. This library provides reusable UI components, layouts, and patterns to ensure consistency and maintainability across the application.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation & Usage](#installation--usage)
+- [Component Index](#component-index)
+  - [Data Display](#data-display)
+  - [Feedback & Status](#feedback--status)
+  - [Forms & Layout](#forms--layout)
+  - [Navigation & Structure](#navigation--structure)
+- [Contributing](#contributing)
 
 ## Overview
 
-CDC provides reusable, consistent components and patterns that can be used across all screens in the application. This ensures maintainability and consistency when changes are needed.
+The Component Design Library (CDL) is structured to be modular and independent. Each component resides in its own directory with its logic, styles, types, and documentation.
 
-## Structure
+## Installation & Usage
 
-```
-src/cdc/
-├── components/     # Reusable UI components
-├── layouts/        # Layout components
-├── forms/          # Form-specific components
-├── patterns/       # Common UI patterns
-├── hooks/          # Custom hooks
-├── utils/          # Utility functions
-├── types/          # TypeScript types
-└── index.ts        # Main exports
-```
-
-## Key Components
-
-### FormLayout
-Base layout for forms with fixed header/footer and scrollable content.
+Components are exported from the root of the library. You can import them directly:
 
 ```tsx
-import { FormLayout } from '../cdc';
-
-<FormLayout
-  title="Page Title"
-  subtitle="Create Item"
-  backTo="/items"
-  backLabel="Back to Items"
-  onBack={() => navigate('/items')}
-  onCancel={() => navigate('/items')}
-  onSubmit={() => handleSubmit()}
-  loading={loading}
->
-  {/* Form content */}
-</FormLayout>
+import { StatsCard, DataTable, AlertCard } from '../componentDesignLibrary';
 ```
 
-### BaseForm
-Complete form wrapper with layout, grid, and actions.
+## Component Index
 
-```tsx
-import { BaseForm, FormColumn } from '../cdc';
+### Data Display
 
-<BaseForm
-  title="Items"
-  subtitle="Create Item"
-  backTo="/items"
-  backLabel="Back to Items"
-  onSubmit={handleSubmit}
-  onCancel={handleCancel}
-  loading={loading}
->
-  <FormColumn title="Basic Info" icon={<Icon />}>
-    {/* Form fields */}
-  </FormColumn>
+| Component | Description | Documentation |
+|-----------|-------------|---------------|
+| **[StatsCard](./components/stats-card)** | Displays a statistic with value, trend, and action. | [Read More](./components/stats-card/README.md) |
+| **[ListCard](./components/list-card)** | A card displaying a list of items with badges. | [Read More](./components/list-card/README.md) |
+| **[DataTable](./components/data-table)** | Advanced table with sorting, filtering, and pagination. | [Read More](./components/data-table/README.md) |
+| **[PhotoCarousel](./components/PhotoCarousel.tsx)** | Image carousel for property galleries. | - |
+| **[ScrollableRow](./components/scrollable-row)** | Horizontal scrolling container for cards/charts. | [Read More](./components/scrollable-row/README.md) |
 
-  <FormColumn title="Details" icon={<Icon />}>
-    {/* Form fields */}
-  </FormColumn>
-</BaseForm>
-```
+### Feedback & Status
 
-### FormColumn
-Individual column component for 3-column layouts.
+| Component | Description | Documentation |
+|-----------|-------------|---------------|
+| **[AlertCard](./components/alert-card)** | Displays warnings, errors, or info messages. | [Read More](./components/alert-card/README.md) |
+| **[StatusBadge](./components/status-badge)** | Standardized badge for status indication. | - |
+| **[LoadingSpinner](./components/loading-spinner)** | Loading indicators for various contexts. | - |
+| **[EmptyState](./components/empty-state)** | Placeholder UI for empty data states. | - |
+| **[ConfirmDialog](./components/confirm-dialog)** | Modal for confirming user actions. | - |
 
-```tsx
-<FormColumn
-  title="Section Title"
-  description="Section description"
-  icon={<Icon className="h-5 w-5" />}
->
-  {/* Form fields */}
-</FormColumn>
-```
+### Forms & Layout
 
-## Usage Examples
+| Component | Description | Documentation |
+|-----------|-------------|---------------|
+| **[FormActions](./components/FormActions.tsx)** | Standard Save/Cancel button group. | - |
+| **[FormGrid](./components/FormGrid.tsx)** | Grid layout system for forms. | - |
+| **[BaseForm](./forms/BaseForm.tsx)** | Complete form wrapper with layout and validation. | - |
+| **[FormLayout](./layouts/FormLayout.tsx)** | Page layout for form screens. | - |
 
-### Creating a New Form Component
+### Navigation & Structure
 
-```tsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { BaseForm, FormColumn, Input, FormField } from '../../cdc';
+| Component | Description | Documentation |
+|-----------|-------------|---------------|
+| **[PageHeader](./components/PageHeader.tsx)** | Standard page header with title and actions. | - |
 
-const MyFormComponent: React.FC = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: '', description: '' });
+## Contributing
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Submit logic
-  };
-
-  const handleCancel = () => {
-    navigate('/items');
-  };
-
-  return (
-    <BaseForm
-      title="Items"
-      subtitle="Create Item"
-      backTo="/items"
-      backLabel="Back to Items"
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-    >
-      <FormColumn title="Basic Information">
-        <FormField label="Name" required>
-          <Input
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          />
-        </FormField>
-      </FormColumn>
-
-      <FormColumn title="Details">
-        <FormField label="Description">
-          <Textarea
-            value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-          />
-        </FormField>
-      </FormColumn>
-    </BaseForm>
-  );
-};
-```
-
-## Benefits
-
-1. **Consistency**: All forms follow the same patterns and styling
-2. **Maintainability**: Changes to common components affect all screens
-3. **Reusability**: Components can be easily reused across different features
-4. **Scalability**: Easy to add new screens using existing patterns
-5. **Developer Experience**: Simplified component creation with pre-built layouts
-
-## Adding New Components
-
-When adding new components to CDC:
-
-1. Place in appropriate subfolder (`components/`, `layouts/`, etc.)
-2. Export from `index.ts`
-3. Add documentation to this README
-4. Ensure TypeScript types are properly defined
-5. Follow existing naming conventions
-
-## Migration Guide
-
-To migrate existing forms to use CDC:
-
-1. Replace manual layout code with `BaseForm`
-2. Replace `Card` components with `FormColumn`
-3. Import components from `../cdc` instead of individual paths
-4. Remove redundant layout and styling code
-5. Test responsiveness and functionality
+When adding a new component:
+1. Create a new folder in `components/`.
+2. Include `index.ts`, `Component.tsx`, `types.ts`, `Component.scss`, and `README.md`.
+3. Export the component in `src/componentDesignLibrary/index.ts`.
+4. Update this README.
