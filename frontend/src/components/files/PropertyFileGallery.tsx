@@ -5,7 +5,7 @@ import { Card } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
 import { ConfirmDialog } from '../../componentDesignLibrary';
-import { propertyService } from '../../services';
+import { propertyFileService } from '../../services';
 import type { PropertyFile } from '../../types/property';
 import { format } from 'date-fns';
 
@@ -111,7 +111,7 @@ const PropertyFileGallery: React.FC<PropertyFileGalleryProps> = ({
     try {
       setLoading(true);
       setError(null);
-      const response = await propertyService.getPropertyFiles(propertyId);
+      const response = await propertyFileService.getPropertyFiles(propertyId);
       if (response.success && response.data) {
         setFiles(response.data);
       } else {
@@ -140,7 +140,7 @@ const PropertyFileGallery: React.FC<PropertyFileGalleryProps> = ({
 
   const handleDelete = async (fileId: string) => {
     try {
-      const response = await propertyService.deletePropertyFile(propertyId, fileId);
+      const response = await propertyFileService.deletePropertyFile(propertyId, fileId);
       if (response.success) {
         setFiles(files.filter(f => f.id !== fileId));
         onFileDeleted?.(fileId);
@@ -169,7 +169,7 @@ const PropertyFileGallery: React.FC<PropertyFileGalleryProps> = ({
       // Determine file type based on MIME type
       const fileType = file.type.startsWith('image/') ? 'photo' : 'document';
 
-      const response = await propertyService.uploadPropertyFile(propertyId, file, fileType);
+      const response = await propertyFileService.uploadPropertyFile(propertyId, file, fileType);
 
       if (response.success && response.data) {
         setFiles(prevFiles => [response.data!, ...prevFiles]);

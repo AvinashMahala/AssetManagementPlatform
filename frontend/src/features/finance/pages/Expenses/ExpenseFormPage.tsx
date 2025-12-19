@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
+import navigateBackOrFallback from '../../../../utils/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
@@ -9,13 +9,13 @@ import { Label } from '@/componentDesignLibrary';
 import { Textarea } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Checkbox } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { useProperties, useUnits, useCreateExpense, useUpdateExpense, useExpense } from '../../hooks';
-import { useAuthContext } from '../../contexts';
-import { useNotifications } from '../../contexts';
-import type { Property } from '../../types/property';
-import type { Unit } from '../../types/unit';
-import type { ExpenseInput, ExpenseUpdateInput, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue } from '../../types/expense';
+import { AppLayout } from '../../../../components/layout';
+import { useProperties, useUnits, useCreateExpense, useUpdateExpense, useExpense } from '../../../../hooks';
+import { useAuthContext } from '../../../../contexts';
+import { useNotifications } from '../../../../contexts';
+import type { Property } from '../../../../types/property';
+import type { Unit } from '../../../../types/unit';
+import type { ExpenseInput, ExpenseUpdateInput, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue } from '../../../../types/expense';
 
 const ExpenseFormPage: React.FC = () => {
   const navigate = useNavigate();

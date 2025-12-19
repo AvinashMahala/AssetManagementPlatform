@@ -1,120 +1,18 @@
 import { apiClient } from './apiClient';
-import type { ApiError } from '../types/api';
-
-export interface User {
-  id: number;
-  username: string;
-  name?: string; // Full display name (for Google OAuth users)
-  email: string;
-  phone?: string;
-  role: 'admin' | 'user';
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-  profilePicture?: string;
-  lastLogin?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
-export interface AuthResponse {
-  user: User;
-  tokens: AuthTokens;
-}
-
-export interface UserRegistrationInput {
-  username: string;
-  name?: string; // Full display name (for Google OAuth users)
-  email: string;
-  password: string;
-  phone?: string;
-  registrationMethod: 'email' | 'phone' | 'google';
-  googleId?: string; // For Google OAuth registration
-}
-
-export interface UserCredentials {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
-
-export interface EmailVerificationRequest {
-  email: string;
-}
-
-export interface EmailVerificationConfirm {
-  token: string;
-}
-
-export interface PhoneVerificationRequest {
-  phone: string;
-}
-
-export interface PhoneVerificationConfirm {
-  phone: string;
-  code: string;
-}
-
-export interface PasswordResetOptions {
-  availableMethods: string[];
-  enabledMethods: string[];
-  hasSecurityQuestions: boolean;
-  recoveryCodesCount: number;
-}
-
-export interface SecurityQuestionSetup {
-  questions: {
-    question: string;
-    answer: string;
-  }[];
-}
-
-export interface PasswordResetViaSecurityQuestions {
-  email: string;
-  answers: {
-    question: string;
-    answer: string;
-  }[];
-  newPassword: string;
-}
-
-export interface PasswordResetViaRecoveryCode {
-  email: string;
-  recoveryCode: string;
-  newPassword: string;
-}
-
-export interface AdminPasswordReset {
-  userId: number;
-  sendEmail?: boolean;
-}
-
-export interface GoogleUserProfile {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
-  verified_email: boolean;
-}
-
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-export interface UpdateProfileRequest {
-  username?: string;
-  email?: string;
-  phone?: string;
-}
-
-export interface LinkGoogleRequest {
-  googleId: string;
-}
+import { ApiException } from '../utils/ApiException';
+import type {
+  User,
+  AuthResponse,
+  UserRegistrationInput,
+  UserCredentials,
+  PasswordResetOptions,
+  SecurityQuestionSetup,
+  PasswordResetViaSecurityQuestions,
+  PasswordResetViaRecoveryCode,
+  AdminPasswordReset,
+  GoogleUserProfile,
+  UpdateProfileRequest
+} from '../types/auth';
 
 class AuthService {
   // User registration
@@ -317,29 +215,6 @@ class AuthService {
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Delete user failed' });
     }
     return response.data;
-  }
-}
-
-// Custom error class that preserves API error information
-export class ApiException extends Error {
-  public readonly code: string;
-  public readonly details?: Record<string, unknown>;
-
-  constructor(error: ApiError) {
-    super(error.message);
-    this.name = 'ApiException';
-    this.code = error.code;
-    this.details = error.details;
-  }
-
-  // Check if this is an authentication error (401, 403)
-  isAuthError(): boolean {
-    return this.code === 'HTTP_401' || this.code === 'HTTP_403';
-  }
-
-  // Check if this is a network error
-  isNetworkError(): boolean {
-    return this.code === 'NETWORK_ERROR' || this.code === 'TIMEOUT_ERROR';
   }
 }
 

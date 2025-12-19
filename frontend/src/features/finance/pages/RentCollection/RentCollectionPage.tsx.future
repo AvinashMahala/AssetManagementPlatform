@@ -4,7 +4,7 @@ import { ArrowLeft, Save, FileText, Receipt as ReceiptIcon, Calendar, AlertCircl
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
+import { AppLayout } from '../../../../components/layout';
 import { MeterReadingStep } from './steps/MeterReadingStep';
 import { ExpenseManagementStep } from './steps/ExpenseManagementStep';
 import { ReviewStep } from './steps/ReviewStep';
@@ -17,9 +17,9 @@ import {
   useUpdateRentTransaction,
   useGenerateInvoice,
   useGenerateReceipt
-} from '../../hooks';
-import type { RentCollectionState, MeterReadingInput, ExpenseItem, PaymentEntry } from '../../types/rentTransaction';
-import { getCurrentBillingPeriod, calculateTotalMeterCharges, calculateTotalExpenses, calculateGrandTotal } from '../../utils/billingCalculations';
+} from '../../../../hooks';
+import type { RentCollectionState, MeterReadingInput, ExpenseItem, PaymentEntry } from '../../../../types/rentTransaction';
+import { getCurrentBillingPeriod, calculateTotalMeterCharges, calculateTotalExpenses, calculateGrandTotal } from '../../../../utils/billingCalculations';
 
 export const RentCollectionPage: React.FC = () => {
   const { unitId } = useParams<{ unitId: string }>();

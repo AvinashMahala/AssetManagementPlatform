@@ -10,14 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination } from '@/componentDesignLibrary';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { usePayments, useTenants, useLeases, useUnits, useDeletePayment, useBulkDeletePayments } from '../../hooks';
-import { useNotifications } from '../../contexts';
+import { AppLayout } from '../../../../components/layout';
+import { usePayments, useTenants, useLeases, useUnits, useDeletePayment, useBulkDeletePayments } from '../../../../hooks';
+import { useNotifications } from '../../../../contexts';
 import { format, isWithinInterval } from 'date-fns';
-import type { Tenant } from '../../types/tenant';
-import type { Lease } from '../../types/lease';
-import type { Unit } from '../../types/unit';
-import type { RentPayment } from '../../types/payment';
+import type { Tenant } from '../../../../types/tenant';
+import type { Lease } from '../../../../types/lease';
+import type { Unit } from '../../../../types/unit';
+import type { RentPayment } from '../../../../types/payment';
 import { RevenueTrendChart, PaymentCollectionChart } from '@/componentDesignLibrary';
 import './PaymentListPageEnhanced.scss';
 

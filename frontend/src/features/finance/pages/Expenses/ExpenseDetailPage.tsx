@@ -1,15 +1,15 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
+import navigateBackOrFallback from '../../../../utils/navigation';
 import { ArrowLeft, Edit, Calendar, DollarSign, Building, MapPin, Users, FileImage, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { useExpense, useProperties, useUnits } from '../../hooks';
-import type { Property } from '../../types/property';
-import type { Unit } from '../../types/unit';
-import { getErrorMessage } from '../../types/api';
+import { AppLayout } from '../../../../components/layout';
+import { useExpense, useProperties, useUnits } from '../../../../hooks';
+import type { Property } from '../../../../types/property';
+import type { Unit } from '../../../../types/unit';
+import { getErrorMessage } from '../../../../types/api';
 
 const ExpenseDetailPage: React.FC = () => {
   const navigate = useNavigate();

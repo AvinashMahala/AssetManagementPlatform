@@ -19,13 +19,6 @@ export function getErrorMessage(error: string | ApiError | null | undefined): st
   return error.message;
 }
 
-export interface AuthResponse {
-  user: any; // TODO: Define proper user type
-  tokens: {
-    accessToken: string;
-    refreshToken: string;
-  };
-}
 
 export interface PaginationParams {
   page?: number;

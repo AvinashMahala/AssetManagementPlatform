@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppLayout } from '../../components/layout/AppLayout';
+import { AppLayout } from '../../../../components/layout/AppLayout';
 import ExpenseCreatePageTabbed from './ExpenseCreatePageTabbed';
 
 const ExpenseCreatePageTabbedEnhanced: React.FC = () => {

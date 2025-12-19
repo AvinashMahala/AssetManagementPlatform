@@ -5,10 +5,10 @@ import type { RouteConfig } from '../routeTypes';
 import { AppLayout } from '../../components/layout/AppLayout';
 
 // Lazy-loaded payment components
-const PaymentCreatePageTabbedEnhanced = lazy(() => import('../../pages/payments/PaymentCreatePageTabbedEnhanced'));
-const PaymentDetailPage = lazy(() => import('../../pages/payments/PaymentDetailPage').then(module => ({ default: module.PaymentDetailPage })));
-const PaymentEditPage = lazy(() => import('../../pages/payments/PaymentEditPage').then(module => ({ default: module.PaymentEditPage })));
-const PaymentListPageEnhanced = lazy(() => import('../../pages/payments/PaymentListPageEnhanced'));
+const PaymentCreatePageTabbedEnhanced = lazy(() => import('../../features/finance/pages/Payments/PaymentCreatePageTabbedEnhanced'));
+const PaymentDetailPage = lazy(() => import('../../features/finance/pages/Payments/PaymentDetailPage').then(module => ({ default: module.PaymentDetailPage })));
+const PaymentEditPage = lazy(() => import('../../features/finance/pages/Payments/PaymentEditPage').then(module => ({ default: module.PaymentEditPage })));
+const PaymentListPageEnhanced = lazy(() => import('../../features/finance/pages/Payments/PaymentListPageEnhanced'));
 
 export const paymentsRoutes: RouteConfig[] = [
   {

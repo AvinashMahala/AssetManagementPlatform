@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { useAuthContext } from '@/contexts/AuthContext';
-import type { PasswordResetOptions } from '@/services/authService';
+import type { PasswordResetOptions } from '@/types/auth';
 
 interface ResetPasswordFormProps {
   onSuccess?: () => void;

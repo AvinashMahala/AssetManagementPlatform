@@ -6,19 +6,19 @@ import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory, useDeleteRentTransaction } from '../../hooks';
-import { useUnitUtilities } from '../../hooks/useUnitUtilities';
-import { useAuthContext } from '../../contexts';
-import { rentTransactionService } from '../../services/rentTransactionService';
-import { useNotifications } from '../../contexts';
-import type { MeterReadingInput, ExpenseItem } from '../../types/rentTransaction';
+import { AppLayout } from '../../../../components/layout';
+import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory, useDeleteRentTransaction } from '../../../../hooks';
+import { useUnitUtilities } from '../../../../hooks/useUnitUtilities';
+import { useAuthContext } from '../../../../contexts';
+import { rentTransactionService } from '@/services/rentTransactionService';
+import { useNotifications } from '../../../../contexts';
+import type { MeterReadingInput, ExpenseItem } from '../../../../types/rentTransaction';
 import { 
   formatCurrency, 
   getCurrentBillingPeriod, 
   calculateMeterCharge, 
   validateMeterReading 
-} from '../../utils/billingCalculations';
+} from '../../../../utils/billingCalculations';
 
 export const UnitRentCollectionPage: React.FC = () => {
   const { propertyId, unitId } = useParams<{ propertyId: string; unitId: string }>();

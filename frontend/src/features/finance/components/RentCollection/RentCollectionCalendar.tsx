@@ -4,7 +4,8 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, DollarSign, CheckC
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import { formatCurrency } from '../../utils/billingCalculations';
+import { formatCurrency } from '../../../../utils/billingCalculations';
+import { calculateTotalAmount, calculateTotalPaid } from '../../utils/calculations';
 
 interface CalendarTransaction {
   id: string;
@@ -73,8 +74,8 @@ export const RentCollectionCalendar: React.FC<RentCollectionCalendarProps> = ({
   const getDateTotals = (date: Date) => {
     const dayTransactions = getTransactionsForDate(date);
     return {
-      total: dayTransactions.reduce((sum, t) => sum + t.amount, 0),
-      collected: dayTransactions.reduce((sum, t) => sum + (t.amountPaid || 0), 0),
+      total: calculateTotalAmount(dayTransactions),
+      collected: calculateTotalPaid(dayTransactions),
       count: dayTransactions.length,
       status: dayTransactions.length > 0 ? getOverallStatus(dayTransactions) : null
     };

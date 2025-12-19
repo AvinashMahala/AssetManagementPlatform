@@ -12,8 +12,9 @@ import type {
   PasswordResetViaSecurityQuestions,
   PasswordResetViaRecoveryCode,
   AdminPasswordReset
-} from '../services/authService';
-import { authService, ApiException } from '../services/authService';
+} from '../types/auth';
+import { authService } from '../services/authService';
+import { ApiException } from '../utils/ApiException';
 import { apiClient } from '../services/apiClient';
 
 /* eslint-disable react-refresh/only-export-components */

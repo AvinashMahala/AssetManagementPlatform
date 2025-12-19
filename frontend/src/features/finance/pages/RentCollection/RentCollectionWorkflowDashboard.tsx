@@ -21,11 +21,11 @@ import { Badge } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { useProperties, useRentTransactions, useTenants, useUnits } from '../../hooks';
-import { formatCurrency } from '../../utils/formatters';
-import { RentCollectionWorkflowStatus } from '../../types/rentTransaction';
-import type { RentCollectionWorkflowStatusType } from '../../types/rentTransaction';
+import { AppLayout } from '../../../../components/layout';
+import { useProperties, useRentTransactions, useTenants, useUnits } from '../../../../hooks';
+import { formatCurrency } from '../../../../utils/formatters';
+import { RentCollectionWorkflowStatus } from '../../../../types/rentTransaction';
+import type { RentCollectionWorkflowStatusType } from '../../../../types/rentTransaction';
 
 export const RentCollectionWorkflowDashboard: React.FC = () => {
   const navigate = useNavigate();

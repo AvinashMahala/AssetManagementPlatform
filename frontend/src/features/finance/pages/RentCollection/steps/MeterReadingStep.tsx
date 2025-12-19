@@ -3,8 +3,8 @@ import { Zap, Droplet, Flame, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import type { MeterReadingInput } from '../../../types/rentTransaction';
-import { calculateMeterCharge, validateMeterReading, formatDate } from '../../../utils/billingCalculations';
+import type { MeterReadingInput } from '@/types/rentTransaction';
+import { calculateMeterCharge, validateMeterReading, formatDate } from '@/utils/billingCalculations';
 
 interface MeterReadingStepProps {
   meterReadings: MeterReadingInput[];

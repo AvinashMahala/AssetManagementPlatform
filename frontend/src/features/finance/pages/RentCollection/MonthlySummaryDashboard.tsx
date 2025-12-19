@@ -21,10 +21,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
+import { calculateTotalAmount, calculateTotalPaid, calculateTotalExpected } from '../../utils/calculations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { useProperty, useUnits, useRentTransactions, useTenants } from '../../hooks';
-import { formatCurrency } from '../../utils/formatters';
+import { AppLayout } from '../../../../components/layout';
+import { useProperty, useUnits, useRentTransactions, useTenants } from '../../../../hooks';
+import { formatCurrency } from '../../../../utils/formatters';
 
 export const MonthlySummaryDashboard: React.FC = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
@@ -56,15 +57,13 @@ export const MonthlySummaryDashboard: React.FC = () => {
 
   // Calculate monthly statistics
   const monthlyStats = useMemo(() => {
-    const totalCollected = monthTransactions
-      .filter(t => t.status === 'paid')
-      .reduce((sum, t) => sum + (t.amountPaid || 0), 0);
+    const totalCollected = calculateTotalPaid(monthTransactions.filter(t => t.status === 'paid'));
 
     const totalBalance = monthTransactions
       .filter(t => t.status !== 'paid')
       .reduce((sum, t) => sum + (t.newBalance || 0), 0);
 
-    const totalExpected = monthTransactions.reduce((sum, t) => sum + t.totalAmount, 0);
+    const totalExpected = calculateTotalExpected(monthTransactions);
 
     const activeTenants = tenants.filter(t => t.status === 'active').length;
 
@@ -74,7 +73,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
     // Calculate expenses breakdown
     const totalExpenses = monthTransactions.reduce((sum, t) => {
       const expenses = t.expenses || [];
-      return sum + expenses.filter(e => e.isRemoved !== true).reduce((expSum, e) => expSum + e.amount, 0);
+      return sum + calculateTotalAmount(expenses.filter(e => e.isRemoved !== true));
     }, 0);
 
     const totalMeterCharges = monthTransactions.reduce((sum, t) => sum + (t.totalMeterCharges || 0), 0);
@@ -108,9 +107,7 @@ export const MonthlySummaryDashboard: React.FC = () => {
         return txnMonth === monthKey;
       });
 
-      const collected = monthTxns
-        .filter(t => t.status === 'paid')
-        .reduce((sum, t) => sum + (t.amountPaid || 0), 0);
+      const collected = calculateTotalPaid(monthTxns.filter(t => t.status === 'paid'));
 
       const balance = monthTxns
         .filter(t => t.status !== 'paid')

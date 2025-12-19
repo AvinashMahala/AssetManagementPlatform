@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibra
 import { Input } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import type { ExpenseItem } from '../../../types/rentTransaction';
+import type { ExpenseItem } from '@/types/rentTransaction';
 
 interface ExpenseManagementStepProps {
   expenses: ExpenseItem[];
