@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../common/card';
+import { Button } from '../common/button';
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 import type { StatsCardProps } from './types';
 

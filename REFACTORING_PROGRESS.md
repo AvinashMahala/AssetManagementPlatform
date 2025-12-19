@@ -1,5 +1,10 @@
 # Refactoring Progress & Component Hierarchy
 
+**LATEST UPDATE:**
+- 🟢 **Architecture Shift:** The application now imports ALL UI components directly from `@/componentDesignLibrary`.
+- 💀 **Deprecated:** `src/components/ui/` is now a legacy adapter layer and is no longer used by the application code. It can be safely deleted in the next phase.
+- 🟢 **Alias Configured:** `@` alias points to `src` in `vite.config.ts` and `tsconfig.app.json`.
+
 This document tracks the refactoring progress of the frontend codebase.
 **Goal:** "One Component, One Folder", strict separation of concerns, and elimination of dead code.
 

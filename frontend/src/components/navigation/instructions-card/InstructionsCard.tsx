@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from '../../../components/ui';
+import { Card, CardContent } from '@/componentDesignLibrary';
 
 export const InstructionsCard: React.FC = () => {
   return (

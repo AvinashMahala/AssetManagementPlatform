@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Receipt, BarChart3, Edit, Trash2, Eye } from 'lucide-react';
-import { Button } from '../../../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 import type { PropertyActionsProps } from './types';
 
 export const PropertyActions: React.FC<PropertyActionsProps> = ({

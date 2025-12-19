@@ -6,14 +6,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../components/ui/dialog';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Checkbox } from '../../components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
-import { Alert, AlertDescription } from '../../components/ui/alert';
+} from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Label } from '@/componentDesignLibrary';
+import { Checkbox } from '@/componentDesignLibrary';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Alert, AlertDescription } from '@/componentDesignLibrary';
 import {
   Calendar,
   Home,

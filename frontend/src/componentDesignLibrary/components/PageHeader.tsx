@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '../../components/ui/button';
+import { Button } from './common/button';
 
 interface PageHeaderProps {
   title: string;

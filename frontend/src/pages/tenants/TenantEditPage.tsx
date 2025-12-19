@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import navigateBackOrFallback from '../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useTenant, useUpdateTenant } from '../../hooks';
-import { Button } from '../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout/AppLayout';
 import TenantFormTabbed from '../../components/forms/TenantFormTabbed';
 import type { TenantInput } from '../../types/tenant';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity, Zap, Droplets } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import './MeterStats.scss';
 
 interface MeterStatsProps {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
-import { Card } from '../../../../components/ui/card';
-import { Badge } from '../../../../components/ui/badge';
+import { Card } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
 import { StatusBadge } from '../../../../componentDesignLibrary/components/status-badge/StatusBadge';
 import type { StatusType } from '../../../../componentDesignLibrary/components/status-badge/StatusBadge';
 import { PropertyActions } from '../PropertyActions';

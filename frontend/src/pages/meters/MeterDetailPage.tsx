@@ -9,7 +9,7 @@ import {
 } from '../../hooks';
 import navigateBackOrFallback from '../../utils/navigation';
 import { AppLayout } from '../../components/layout/AppLayout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import {
   MeterDetailHeader,
   MeterStatusCards,

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Save, FileText, Plus, X, Zap, Droplet, Flame, Eye, Trash2, DollarSign } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Badge } from '../../components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout';
 import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory, useDeleteRentTransaction } from '../../hooks';
 import { useUnitUtilities } from '../../hooks/useUnitUtilities';

@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Building2, FileImage } from 'lucide-react';
 import { useProperties, useDeleteProperty } from '../../../hooks';
 import { useNotifications } from '../../../contexts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../../components/ui/dialog';
-import { Pagination } from '../../../components/ui/pagination';
+} from '@/componentDesignLibrary';
+import { Pagination } from '@/componentDesignLibrary';
 import { PropertyStatus, PropertyType } from '../../../types/property';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import PropertyFilters from './PropertyFilters';

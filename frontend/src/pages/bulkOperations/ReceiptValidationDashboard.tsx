@@ -5,11 +5,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Alert, AlertDescription } from '../../components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+} from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Alert, AlertDescription } from '@/componentDesignLibrary';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import {
   FileText,
   CheckCircle,

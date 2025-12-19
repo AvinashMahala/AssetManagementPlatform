@@ -1,6 +1,6 @@
 import React from 'react';
 import { GripVertical, Eye, EyeOff } from 'lucide-react';
-import { Button } from '../../../components/ui';
+import { Button } from '@/componentDesignLibrary';
 import type { NavigationItemProps } from './index';
 
 export const NavigationItem: React.FC<NavigationItemProps> = ({

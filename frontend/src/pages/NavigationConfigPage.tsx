@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui';
-import { Button } from '../components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
 import { AppLayout } from '../components/layout';
 import { NavigationItem } from '../components/navigation';
 import { NavigationPreview } from '../components/navigation';

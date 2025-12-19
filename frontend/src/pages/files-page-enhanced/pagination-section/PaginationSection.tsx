@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pagination } from '../../../components/ui/pagination';
+import { Pagination } from '@/componentDesignLibrary';
 import './PaginationSection.scss';
 
 interface PaginationSectionProps {

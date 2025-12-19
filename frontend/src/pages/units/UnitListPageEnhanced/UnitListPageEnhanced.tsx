@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Home, DoorOpen, DoorClosed, Square, Eye, Building2, FileImage, Download, X, Wrench, Trash2, Edit, BarChart3 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Badge } from '../../../components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../../components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
+} from '@/componentDesignLibrary';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import {
   Dialog,
   DialogContent,
@@ -20,8 +20,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../../components/ui/dialog';
-import { Pagination } from '../../../components/ui/pagination';
+} from '@/componentDesignLibrary';
+import { Pagination } from '@/componentDesignLibrary';
 import { useUnits, useDeleteUnit } from '../../../hooks/useUnits';
 import { useProperties } from '../../../hooks/useProperties';
 import { AppLayout } from '../../../components/layout';

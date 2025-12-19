@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { templateService } from '../services/templateService';
-import { Button } from '../components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Button } from '@/componentDesignLibrary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { Save } from 'lucide-react';
 import LogoUploader from '../components/template-editor/LogoUploader';
 

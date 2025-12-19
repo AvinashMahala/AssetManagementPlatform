@@ -15,12 +15,12 @@ import {
   Send,
   CreditCard
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Input } from '../../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout';
 import { useProperties, useRentTransactions, useTenants, useUnits } from '../../hooks';
 import { formatCurrency } from '../../utils/formatters';

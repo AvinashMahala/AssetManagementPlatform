@@ -19,14 +19,14 @@ import {
   Coffee
 } from 'lucide-react';
 import { ProfileForm, ResetPasswordForm } from '../../components/forms';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui';
-import { Button } from '../../components/ui';
-import { Badge } from '../../components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
 import {
   ProfileAvatarSkeleton,
   ProfileStatsSkeleton
-} from '../../components/ui';
-import { Tooltip, ExpandableSection } from '../../components/ui';
+} from '@/componentDesignLibrary';
+import { Tooltip, ExpandableSection } from '@/componentDesignLibrary';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 export const ProfilePage: React.FC = () => {

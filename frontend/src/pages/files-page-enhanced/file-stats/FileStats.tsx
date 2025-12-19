@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { HardDrive, FileImage, FileText, FolderOpen } from 'lucide-react';
 import type { FileStatsProps } from './FileStats.types';
 import './FileStats.scss';

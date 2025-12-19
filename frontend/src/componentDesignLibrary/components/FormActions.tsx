@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../../components/ui/button';
+import { Button } from './common/button';
 
 interface FormActionsProps {
   onCancel: () => void;

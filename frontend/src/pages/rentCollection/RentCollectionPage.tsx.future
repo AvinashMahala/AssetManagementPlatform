@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, FileText, Receipt as ReceiptIcon, Calendar, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout';
 import { MeterReadingStep } from './steps/MeterReadingStep';
 import { ExpenseManagementStep } from './steps/ExpenseManagementStep';

@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, XCircle, Clock, AlertTriangle, Calendar, Eye, Edit, User, Home, Filter, X, ChevronDown, ChevronUp, Download, Trash2, BarChart3, Settings } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Badge } from '../../components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../components/ui/dialog';
-import { Pagination } from '../../components/ui/pagination';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+} from '@/componentDesignLibrary';
+import { Pagination } from '@/componentDesignLibrary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { useLeases, useDeleteLease } from '../../hooks/useLeases';
 import { useTenants } from '../../hooks/useTenants';
 import { useUnits } from '../../hooks/useUnits';

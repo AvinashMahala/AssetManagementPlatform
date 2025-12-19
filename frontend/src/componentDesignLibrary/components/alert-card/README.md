@@ -6,7 +6,7 @@ Displays a list of important messages or warnings with optional action buttons.
 
 ```tsx
 import { AlertCard } from './AlertCard';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 
 <AlertCard
   title="Attention"

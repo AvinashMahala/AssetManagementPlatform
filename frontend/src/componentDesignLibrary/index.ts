@@ -126,7 +126,7 @@ export type { FloatingParticlesProps } from './components/common/floating-partic
 export { Form } from './components/common/form';
 export type { FormProps } from './components/common/form';
 
-// Note: FormField was already exported from ../components/ui/form-field in the index, we should update it to point to the new location.
+
 // I will handle the replacement in the next step, but for now I will add the new export and then clean up.
 // Actually, I should check if FormField is already exported.
 

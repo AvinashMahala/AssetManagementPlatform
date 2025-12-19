@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChartContainer } from '../../../components/ui';
-import { RevenueTrendChart, OccupancyRateChart, PaymentCollectionChart, PropertyStatusChart } from '../../../components/ui';
+import { ChartContainer } from '@/componentDesignLibrary';
+import { RevenueTrendChart, OccupancyRateChart, PaymentCollectionChart, PropertyStatusChart } from '@/componentDesignLibrary';
 import { ScrollableRow } from '../../../componentDesignLibrary/components/scrollable-row';
 import './ChartsCarousel.scss';
 

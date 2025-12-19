@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card } from '../../components/ui/card';
+import { Card } from '@/componentDesignLibrary';
 import { useLease, useDeleteLease, useUnit, useTenant, useProperty } from '../../hooks';
 import navigateBackOrFallback from '../../utils/navigation';
 import { getErrorMessage } from '../../types/api';

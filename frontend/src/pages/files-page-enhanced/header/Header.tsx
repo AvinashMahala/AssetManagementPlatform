@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 import './Header.scss';
 
 interface HeaderProps {

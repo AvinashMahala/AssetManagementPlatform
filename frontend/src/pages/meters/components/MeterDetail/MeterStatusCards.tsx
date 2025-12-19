@@ -1,8 +1,8 @@
 import React from 'react';
 import { Activity, TrendingUp, DollarSign, Calendar } from 'lucide-react';
 import { MeterType } from '../../../../types/meter';
-import { Card, CardContent } from '../../../../components/ui/card';
-import { Badge } from '../../../../components/ui/badge';
+import { Card, CardContent } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
 
 interface MeterStatusCardsProps {
   meter: any; // Replace with Meter type

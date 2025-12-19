@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
-import { Card, CardContent } from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
+import { Card, CardContent } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../../../components/ui/table';
+} from '@/componentDesignLibrary';
 import { PropertyStatus } from '../../../types/property';
 import type { Property } from '../../../types/property';
 import { PropertyActions } from '../components/PropertyActions';

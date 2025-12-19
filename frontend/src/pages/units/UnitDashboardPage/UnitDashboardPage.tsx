@@ -1,9 +1,9 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnitAnalytics } from '../../../hooks';
-import { Card } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { RevenueTrendChart } from '../../../components/ui/charts';
+import { Card } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { RevenueTrendChart } from '@/componentDesignLibrary';
 import { getErrorMessage } from '../../../types/api';
 import { PageLoadingSpinner } from '../../../componentDesignLibrary';
 import './UnitDashboardPage.scss';

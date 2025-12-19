@@ -1,4 +1,4 @@
-import { Card } from '../../../components/ui/card';
+import { Card } from '../common/card';
 import type { AlertCardProps } from './types';
 import './AlertCard.scss';
 

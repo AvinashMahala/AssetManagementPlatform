@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { Button } from '../../../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
 import { Upload, X } from 'lucide-react';
 import { EntitySelector } from '../entity-selector';
 import type { FileUploadDialogProps } from './FileUploadDialog.types';

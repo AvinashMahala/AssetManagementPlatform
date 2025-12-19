@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Eye, Power, PowerOff, Plus, ChevronLeft, ChevronRight, Zap, Droplets, Flame, Activity } from 'lucide-react';
 import { MeterType } from '../../../../types/meter';
-import { Card, CardContent } from '../../../../components/ui/card';
-import { Button } from '../../../../components/ui/button';
-import { Badge } from '../../../../components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/ui/table';
+import { Card, CardContent } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import './MeterTable.scss';
 
 interface MeterTableProps {

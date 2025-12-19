@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, DollarSign, AlertCircle, Clock, Download, Eye, Edit, Calendar, TrendingUp, User, Home, FileImage, Filter, X, ChevronDown, ChevronUp, CheckCircle, Trash2, Settings, BarChart3 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Badge } from '../../components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { Pagination } from '../../components/ui/pagination';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
+import { Pagination } from '@/componentDesignLibrary';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout';
 import { usePayments, useTenants, useLeases, useUnits, useDeletePayment, useBulkDeletePayments } from '../../hooks';
 import { useNotifications } from '../../contexts';
@@ -18,7 +18,7 @@ import type { Tenant } from '../../types/tenant';
 import type { Lease } from '../../types/lease';
 import type { Unit } from '../../types/unit';
 import type { RentPayment } from '../../types/payment';
-import { RevenueTrendChart, PaymentCollectionChart } from '../../components/ui/charts';
+import { RevenueTrendChart, PaymentCollectionChart } from '@/componentDesignLibrary';
 import './PaymentListPageEnhanced.scss';
 
 const PaymentListPageEnhanced: React.FC = () => {

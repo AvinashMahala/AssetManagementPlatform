@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Wrench, Trash2, Download } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 
 interface PropertyBulkActionsProps {
   selectedCount: number;

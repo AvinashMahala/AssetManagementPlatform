@@ -4,7 +4,7 @@ import { useProperty, useUpdateProperty } from '../../../hooks';
 import navigateBackOrFallback from '../../../utils/navigation';
 import PropertyFormTabbed from '../form/PropertyFormTabbed';
 import { AppLayout } from '../../../components/layout/AppLayout';
-import { Card, CardContent } from '../../../components/ui/card';
+import { Card, CardContent } from '@/componentDesignLibrary';
 import type { PropertyInput } from '../../../types';
 
 const PropertyEdit: React.FC = () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { X, Trash2 } from 'lucide-react';
 import type { BulkActionsProps } from './BulkActions.types';
 import './BulkActions.scss';

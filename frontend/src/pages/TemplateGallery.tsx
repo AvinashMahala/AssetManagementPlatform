@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { templateService } from '../services/templateService';
-import { Button } from '../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { Search, Edit, Eye, Sparkles } from 'lucide-react';
-import { Badge } from '../components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Badge } from '@/componentDesignLibrary';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import { AppLayout } from '../components/layout/AppLayout';
 
 interface Template {

@@ -4,7 +4,7 @@ import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from './components/auth';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConsentDialog, DevTools } from './components/ConsentDialog';
-import { Toast } from './components/ui/toast';
+import { Toast } from '@/componentDesignLibrary';
 import { routes } from './config/routes';
 
 /**

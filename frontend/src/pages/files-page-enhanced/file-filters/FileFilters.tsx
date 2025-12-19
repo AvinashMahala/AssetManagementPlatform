@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { Input } from '../../../components/ui/input';
-import { Button } from '../../../components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Filter, Search } from 'lucide-react';
 import type { FileFiltersProps } from './FileFilters.types';
 import './FileFilters.scss';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import type { NavItem } from '../../../hooks';
 import type { NavigationPreviewProps } from './index';
 

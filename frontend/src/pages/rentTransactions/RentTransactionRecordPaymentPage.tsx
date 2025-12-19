@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, DollarSign, CreditCard, Banknote } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Button } from '@/componentDesignLibrary';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Label } from '@/componentDesignLibrary';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout';
 import { useRecordPayment } from '../../hooks';
 import { useNotifications } from '../../contexts';

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import navigateBackOrFallback from '../../../utils/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useUnit, useUpdateUnit } from '../../../hooks';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { PageLoadingSpinner } from '../../../componentDesignLibrary';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import UnitFormTabbed from '../../../components/forms/UnitFormTabbed';

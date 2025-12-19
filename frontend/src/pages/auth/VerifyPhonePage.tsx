@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { VerifyPhoneForm } from '../../components/forms';
-import { Card } from '../../components/ui/card';
+import { Card } from '@/componentDesignLibrary';
 
 export const VerifyPhonePage: React.FC = () => {
   const navigate = useNavigate();

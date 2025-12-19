@@ -17,12 +17,12 @@ import {
   EyeOff,
   Loader2
 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Card } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { FloatingParticles } from '../../components/ui/floating-particles';
-import { AuthLoading } from '../../components/ui/auth-loading';
+import { Button } from '@/componentDesignLibrary';
+import { Card } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Label } from '@/componentDesignLibrary';
+import { FloatingParticles } from '@/componentDesignLibrary';
+import { AuthLoading } from '@/componentDesignLibrary';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 type AuthView = 'login' | 'register' | 'reset-password';

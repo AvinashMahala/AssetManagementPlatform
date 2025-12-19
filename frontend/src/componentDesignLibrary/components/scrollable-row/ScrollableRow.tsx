@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '../common/button';
 import type { ScrollableRowProps } from './types';
 import './ScrollableRow.scss';
 

@@ -1,5 +1,5 @@
-import { Card } from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
+import { Card } from '../common/card';
+import { Badge } from '../common/badge';
 import type { ListCardProps } from './types';
 import './ListCard.scss';
 

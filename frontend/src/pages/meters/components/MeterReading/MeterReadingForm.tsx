@@ -1,9 +1,9 @@
 import React from 'react';
 import { Save } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
-import { Button } from '../../../../components/ui/button';
-import { Input } from '../../../../components/ui/input';
-import { Label } from '../../../../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
+import { Label } from '@/componentDesignLibrary';
 import type { MeterReadingInput } from '../../../../types/meter';
 
 interface MeterReadingFormProps {

@@ -26,13 +26,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle
-} from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui';
+} from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { getErrorMessage } from '../../types/api';
-import { RevenueTrendChart, PaymentCollectionChart } from '../../components/ui/charts';
+import { RevenueTrendChart, PaymentCollectionChart } from '@/componentDesignLibrary';
 
 export const TenantDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

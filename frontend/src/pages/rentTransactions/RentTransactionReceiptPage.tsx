@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Receipt, Download, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Alert, AlertDescription } from '../../components/ui/alert';
+import { Button } from '@/componentDesignLibrary';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Alert, AlertDescription } from '@/componentDesignLibrary';
 import { AppLayout } from '../../components/layout';
 import { rentTransactionService } from '../../services/rentTransactionService';
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
-import { RevenueTrendChart, PropertyStatusChart } from '../../../components/ui/charts';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
+import { RevenueTrendChart, PropertyStatusChart } from '@/componentDesignLibrary';
 
 interface PropertyChartsSectionProps {
   revenueTrend: Array<{ name: string; value: number }>;

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
-import { Input } from '../../components/ui/input';
-import { FormField } from '../../components/ui/form-field';
-import { Form } from '../../components/ui/form';
-import { LoadingSpinner, ValidationFeedback, EmailVerificationStatus, useRealTimeValidation, ExpandableSection, Tooltip } from '../../components/ui';
+import { Input } from '@/componentDesignLibrary';
+import { FormField } from '@/componentDesignLibrary';
+import { Form } from '@/componentDesignLibrary';
+import { LoadingSpinner, ValidationFeedback, EmailVerificationStatus, useRealTimeValidation, ExpandableSection, Tooltip } from '@/componentDesignLibrary';
 import { useAuthContext } from '../../contexts/AuthContext';
 import type { UpdateProfileRequest } from '../../services/authService';
 

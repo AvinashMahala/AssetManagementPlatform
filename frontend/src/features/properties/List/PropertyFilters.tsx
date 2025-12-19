@@ -1,14 +1,14 @@
 import React from 'react';
 import { Search, Grid3x3, List } from 'lucide-react';
-import { Input } from '../../../components/ui/input';
-import { Button } from '../../../components/ui/button';
+import { Input } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../../components/ui/select';
+} from '@/componentDesignLibrary';
 import { PropertyType, PropertyStatus } from '../../../types/property';
 
 interface PropertyFiltersProps {

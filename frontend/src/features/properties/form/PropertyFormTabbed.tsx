@@ -16,7 +16,7 @@ import {
   GenericTabbedForm
 } from '../../../componentDesignLibrary';
 import StatusCurrencyPanel from './components/StatusCurrencyPanel';
-import { Tabs, TabsContent } from '../../../components/ui/tabs';
+import { Tabs, TabsContent } from '@/componentDesignLibrary';
 // PropertyStatus and currency options are used inside StatusCurrencyPanel
 import { useUser, useUsers } from '../../../hooks';
 import { useAuth } from '../../../hooks';

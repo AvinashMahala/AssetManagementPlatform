@@ -2,8 +2,8 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useDeleteTenant } from '../../hooks';
 import navigateBackOrFallback from '../../utils/navigation';
-import { Button } from '../../components/ui/button';
-import { Card } from '../../components/ui/card';
+import { Button } from '@/componentDesignLibrary';
+import { Card } from '@/componentDesignLibrary';
 import { ReceiptList } from '../../components/receipts';
 import { getErrorMessage } from '../../types/api';
 

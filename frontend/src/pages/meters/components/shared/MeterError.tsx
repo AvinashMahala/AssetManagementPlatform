@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '../../../../components/ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { useNavigate } from 'react-router-dom';
 import navigateBackOrFallback from '../../../../utils/navigation';
 

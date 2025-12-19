@@ -6,13 +6,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../components/ui/dialog';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
-import { Alert, AlertDescription } from '../../components/ui/alert';
-import { Checkbox } from '../../components/ui/checkbox';
-import { Label } from '../../components/ui/label';
+} from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Card, CardContent } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Alert, AlertDescription } from '@/componentDesignLibrary';
+import { Checkbox } from '@/componentDesignLibrary';
+import { Label } from '@/componentDesignLibrary';
 import {
   Receipt,
   CheckCircle,
