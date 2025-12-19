@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../common/Button';
+import { Button } from '../ui/button';
 import { Input } from '../../components/ui/input';
 import { useAuthContext } from '../../contexts/AuthContext';
 import type { PasswordResetOptions } from '../../services/authService';
@@ -224,7 +224,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
                     <Button
                       onClick={() => setStep('security-questions')}
                       variant="secondary"
-                      size="small"
+                      size="sm"
                     >
                       Set Up
                     </Button>
@@ -232,15 +232,15 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
                     <>
                       <Button
                         onClick={() => setStep('reset-via-questions')}
-                        variant="primary"
-                        size="small"
+                        variant="default"
+                        size="sm"
                       >
                         Use
                       </Button>
                       <Button
                         onClick={() => handleDisableMethod('security_questions')}
                         variant="secondary"
-                        size="small"
+                        size="sm"
                         disabled={loading}
                       >
                         Disable
@@ -268,7 +268,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
                     <Button
                       onClick={() => setStep('recovery-codes')}
                       variant="secondary"
-                      size="small"
+                      size="sm"
                     >
                       Generate
                     </Button>
@@ -276,15 +276,15 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
                     <>
                       <Button
                         onClick={() => setStep('reset-via-codes')}
-                        variant="primary"
-                        size="small"
+                        variant="default"
+                        size="sm"
                       >
                         Use
                       </Button>
                       <Button
                         onClick={() => handleGenerateRecoveryCodes()}
                         variant="secondary"
-                        size="small"
+                        size="sm"
                         disabled={loading}
                       >
                         Regenerate
@@ -336,7 +336,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
               <Button
                 onClick={addSecurityQuestion}
                 variant="secondary"
-                size="small"
+                size="sm"
                 className="w-full"
               >
                 Add Another Question
@@ -346,7 +346,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             <div className="flex space-x-2">
               <Button
                 onClick={handleSetupSecurityQuestions}
-                variant="primary"
+                variant="default"
                 disabled={loading}
               >
                 Save Questions
@@ -388,7 +388,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             <div className="flex space-x-2">
               <Button
                 onClick={handleGenerateRecoveryCodes}
-                variant="primary"
+                variant="default"
                 disabled={loading}
               >
                 Generate Codes
@@ -451,7 +451,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             <div className="flex space-x-2">
               <Button
                 onClick={handleResetViaSecurityQuestions}
-                variant="primary"
+                variant="default"
                 disabled={loading}
               >
                 Reset Password
@@ -504,7 +504,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
             <div className="flex space-x-2">
               <Button
                 onClick={handleResetViaRecoveryCode}
-                variant="primary"
+                variant="default"
                 disabled={loading}
               >
                 Reset Password

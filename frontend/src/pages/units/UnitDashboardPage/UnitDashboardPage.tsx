@@ -1,8 +1,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnitAnalytics } from '../../../hooks';
-import { Card } from '../../../components/common';
-import { Button } from '../../../components/common/Button';
+import { Card } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
 import { RevenueTrendChart } from '../../../components/ui/charts';
 import { getErrorMessage } from '../../../types/api';
 import { PageLoadingSpinner } from '../../../componentDesignLibrary';
@@ -67,7 +67,7 @@ export const UnitDashboardPage: React.FC = () => {
             View Details
           </Button>
           <Button
-            variant="primary"
+            variant="default"
             onClick={() => navigate(`/units/${id}/edit`)}
           >
             Edit Unit

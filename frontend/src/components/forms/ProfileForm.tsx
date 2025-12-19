@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../common/Button';
+import { Button } from '../ui/button';
 import { Input } from '../../components/ui/input';
 import { FormField } from '../../components/ui/form-field';
 import { Form } from '../../components/ui/form';
@@ -249,8 +249,8 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
         <div className="flex space-x-3 mt-4">
           <Button
             type="submit"
-            variant="primary"
-            size="medium"
+            variant="default"
+            size="default"
             className="flex-1"
             disabled={loading || !usernameValidation.isValid || !emailValidation.isValid || !phoneValidation.isValid}
           >
@@ -267,7 +267,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           <Button
             type="button"
             variant="secondary"
-            size="medium"
+            size="default"
             className="flex-1"
             onClick={onCancel}
             disabled={loading}
@@ -281,7 +281,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
             <Button
               type="button"
               variant="secondary"
-              size="small"
+              size="sm"
               onClick={handleRetry}
               className="w-full flex items-center justify-center space-x-2"
             >

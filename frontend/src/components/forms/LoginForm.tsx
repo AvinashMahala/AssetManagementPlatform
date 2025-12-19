@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../common/Button';
+import { Button } from '../ui/button';
 import { Input } from '../../components/ui/input';
 import { FormField } from '../../components/ui/form-field';
 import { Form } from '../../components/ui/form';
@@ -151,8 +151,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
         <Button
           type="submit"
-          variant="primary"
-          size="large"
+          variant="default"
+          size="lg"
           className="w-full"
         >
           {loading ? 'Signing in...' : 'Sign In'}
@@ -163,7 +163,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <Button
             type="button"
             variant="secondary"
-            size="large"
+            size="lg"
             className="w-full"
             onClick={() => {
               devModeLogin();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../common/Button';
+import { Button } from '../ui/button';
 import { Input } from '../../components/ui/input';
 import { FormField } from '../../components/ui/form-field';
 import { Form } from '../../components/ui/form';
@@ -126,8 +126,8 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
 
           <Button
             type="submit"
-            variant="primary"
-            size="large"
+            variant="default"
+            size="lg"
             className="w-full"
           >
             {loading ? 'Verifying...' : 'Verify Email'}
@@ -142,7 +142,7 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({
             <Button
               type="button"
               variant="secondary"
-              size="medium"
+              size="default"
               onClick={handleResend}
               disabled={resendLoading}
             >

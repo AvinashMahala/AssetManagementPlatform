@@ -2,8 +2,8 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useDeleteTenant } from '../../hooks';
 import navigateBackOrFallback from '../../utils/navigation';
-import { Button } from '../../components/common/Button';
-import { Card } from '../../components/common';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 import { ReceiptList } from '../../components/receipts';
 import { getErrorMessage } from '../../types/api';
 
@@ -66,7 +66,7 @@ const TenantDetailPage: React.FC = () => {
           </Button>
           <Button onClick={() => navigate(`/tenants/${id}/dashboard`)}>View Dashboard</Button>
           <Button onClick={() => navigate(`/tenants/${id}/edit`)}>Edit</Button>
-          <Button variant="danger" onClick={handleDelete} loading={deleteLoading}>
+          <Button variant="destructive" onClick={handleDelete} loading={deleteLoading}>
             Delete
           </Button>
         </div>

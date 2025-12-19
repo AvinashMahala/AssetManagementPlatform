@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../common/Button';
+import { Button } from '../ui/button';
 import { Input } from '../../components/ui/input';
 import { useAuthContext } from '../../contexts/AuthContext';
 
@@ -168,8 +168,8 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             />
             <Button
               type="button"
-              variant="primary"
-              size="large"
+              variant="default"
+              size="lg"
               className="w-full"
               onClick={handleEmailSubmit}
               disabled={loading}
@@ -207,7 +207,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
                 type="button"
                 onClick={addSecurityQuestion}
                 variant="secondary"
-                size="small"
+                size="sm"
                 className="w-full"
               >
                 Add Another Question
@@ -234,7 +234,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
               <Button
                 type="button"
                 onClick={handleSecurityQuestionsReset}
-                variant="primary"
+                variant="default"
                 disabled={loading}
               >
                 Reset Password
@@ -283,7 +283,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
               <Button
                 type="button"
                 onClick={handleRecoveryCodeReset}
-                variant="primary"
+                variant="default"
                 disabled={loading}
               >
                 Reset Password
