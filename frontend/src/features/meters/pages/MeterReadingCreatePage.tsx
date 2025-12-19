@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMeter, useCreateMeterReading, useLatestMeterReading } from '../../hooks';
-import type { MeterReadingInput } from '../../types/meter';
-import { AppLayout } from '../../components/layout/AppLayout';
-import { MeterReadingForm, MeterReadingPreview } from './components/MeterReading';
-import { MeterLoading, MeterError, MeterPageHeader } from './components/shared';
+import { useMeter, useCreateMeterReading, useLatestMeterReading } from '../../../hooks';
+import type { MeterReadingInput } from '../../../types/meter';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import { MeterReadingForm, MeterReadingPreview, MeterLoading, MeterError, MeterPageHeader } from '../components';
 
 export const MeterReadingCreatePage: React.FC = () => {
   const navigate = useNavigate();

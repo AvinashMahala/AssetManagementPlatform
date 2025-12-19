@@ -3,11 +3,11 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded meter components
-const MeterListPageEnhanced = lazy(() => import('../../pages/meters/MeterListPageEnhanced'));
-const MeterCreatePageTabbed = lazy(() => import('../../pages/meters/MeterCreatePageTabbed').then(module => ({ default: module.MeterCreatePageTabbed })));
-const MeterEditPage = lazy(() => import('../../pages/meters/MeterEditPage').then(module => ({ default: module.MeterEditPage })));
-const MeterDetailPage = lazy(() => import('../../pages/meters/MeterDetailPage').then(module => ({ default: module.MeterDetailPage })));
-const MeterReadingCreatePage = lazy(() => import('../../pages/meters/MeterReadingCreatePage').then(module => ({ default: module.MeterReadingCreatePage })));
+const MeterListPageEnhanced = lazy(() => import('../../features/meters/pages/MeterListPageEnhanced'));
+const MeterCreatePageTabbed = lazy(() => import('../../features/meters/pages/MeterCreatePageTabbed').then(module => ({ default: module.MeterCreatePageTabbed })));
+const MeterEditPage = lazy(() => import('../../features/meters/pages/MeterEditPage').then(module => ({ default: module.MeterEditPage })));
+const MeterDetailPage = lazy(() => import('../../features/meters/pages/MeterDetailPage').then(module => ({ default: module.MeterDetailPage })));
+const MeterReadingCreatePage = lazy(() => import('../../features/meters/pages/MeterReadingCreatePage').then(module => ({ default: module.MeterReadingCreatePage })));
 
 export const metersRoutes: RouteConfig[] = [
   {

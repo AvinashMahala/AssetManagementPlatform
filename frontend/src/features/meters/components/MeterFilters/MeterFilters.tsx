@@ -2,7 +2,7 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
-import './MeterFilters.scss';
+import styles from './MeterFilters.module.scss';
 
 interface MeterFiltersProps {
   searchTerm: string;
@@ -28,19 +28,19 @@ export const MeterFilters: React.FC<MeterFiltersProps> = ({
   return (
     <div
       data-section="filters"
-      className="filters-section flex flex-col sm:flex-row gap-2"
+      className={`${styles['filters-section']} flex flex-col sm:flex-row gap-2`}
     >
       <div className="relative flex-1">
         <Search className="search-icon absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          className="search-input pl-10"
+          className={`${styles['search-input']} pl-10`}
           placeholder="Search meters by name or number..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
-      <div className="filter-select">
+      <div className={styles['filter-select']}>
         <Select
           value={meterType || 'all'}
           onValueChange={onMeterTypeChange}
@@ -57,7 +57,7 @@ export const MeterFilters: React.FC<MeterFiltersProps> = ({
         </Select>
       </div>
 
-      <div className="filter-select">
+      <div className={styles['filter-select']}>
         <Select
           value={status || 'all'}
           onValueChange={onStatusChange}
@@ -73,7 +73,7 @@ export const MeterFilters: React.FC<MeterFiltersProps> = ({
         </Select>
       </div>
 
-      <div className="filter-select">
+      <div className={styles['filter-select']}>
         <Select
           value={limit.toString()}
           onValueChange={(value) => onLimitChange(parseInt(value))}

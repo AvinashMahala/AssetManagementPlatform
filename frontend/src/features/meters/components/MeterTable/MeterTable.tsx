@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
-import './MeterTable.scss';
+import styles from './MeterTable.module.scss';
 
 interface MeterTableProps {
   meters: any[]; // Replace 'any' with proper Meter type if available
@@ -74,11 +74,11 @@ export const MeterTable: React.FC<MeterTableProps> = ({
   };
 
   return (
-    <div data-section="table" className="table-container">
-      <Card className="table-card border">
+    <div data-section="table" className={styles['table-container']}>
+      <Card className={`${styles['table-card']} border`}>
         <CardContent className="p-0">
           {/* Fixed Header */}
-          <div className="table-header-fixed">
+          <div className={styles['table-header-fixed']}>
             <Table>
               <TableHeader>
                 <TableRow className="bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/20">
@@ -96,46 +96,46 @@ export const MeterTable: React.FC<MeterTableProps> = ({
           </div>
 
           {/* Scrollable Body */}
-          <div className="table-body-scrollable">
+          <div className={styles['table-body-scrollable']}>
             <Table>
               <TableBody>
                 {meters.length > 0 ? (
                   meters.map((meter, index) => (
                     <TableRow key={meter.id} className={`hover:bg-orange-50 dark:hover:bg-orange-950/10 transition-colors ${meter.isActive ? 'bg-green-50/30 dark:bg-green-950/10' : ''}`} style={{ '--row-index': index } as React.CSSProperties}>
                       <TableCell className="px-2 py-1 text-xs font-medium">
-                        <div className="meter-name-cell">
-                          <span className="meter-name">{meter.meterName}</span>
+                        <div className={styles['meter-name-cell']}>
+                          <span className={styles['meter-name']}>{meter.meterName}</span>
                         </div>
                       </TableCell>
                       <TableCell className="px-2 py-1 text-xs">
-                        <Badge className={`meter-type-badge text-xs px-1.5 py-0 ${getMeterTypeColor(meter.meterType)}`}>
+                        <Badge className={`${styles['meter-type-badge']} text-xs px-1.5 py-0 ${getMeterTypeColor(meter.meterType)}`}>
                           {getMeterTypeIcon(meter.meterType)}
                           <span className="ml-1">{getMeterTypeLabel(meter.meterType)}</span>
                         </Badge>
                       </TableCell>
                       <TableCell className="px-2 py-1 text-xs">
-                        <span className="meter-number font-mono">{meter.meterNumber || 'N/A'}</span>
+                        <span className={`${styles['meter-number']} font-mono`}>{meter.meterNumber || 'N/A'}</span>
                       </TableCell>
                       <TableCell className="px-2 py-1 text-xs">
-                        <span className="cost-value font-semibold">₹{meter.costPerUnit}</span>
+                        <span className={`${styles['cost-value']} font-semibold`}>₹{meter.costPerUnit}</span>
                       </TableCell>
                       <TableCell className="px-2 py-1 text-xs">
-                        <span className="fixed-charge">{meter.fixedCharge ? `₹${meter.fixedCharge}` : 'None'}</span>
+                        <span className={styles['fixed-charge']}>{meter.fixedCharge ? `₹${meter.fixedCharge}` : 'None'}</span>
                       </TableCell>
                       <TableCell className="px-2 py-1 text-xs">
-                        <Badge className={`status-badge text-xs px-1.5 py-0 ${meter.isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                        <Badge className={`${styles['status-badge']} text-xs px-1.5 py-0 ${meter.isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                           {meter.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                       </TableCell>
                       <TableCell className="px-2 py-1 text-xs" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }} title={meter.remarks}>
-                        <span className="remarks-text">{meter.remarks || '-'}</span>
+                        <span className={styles['remarks-text']}>{meter.remarks || '-'}</span>
                       </TableCell>
                       <TableCell className="px-2 py-1 text-xs text-right">
-                        <div className="table-actions flex justify-end gap-2">
+                        <div className={`${styles['table-actions']} flex justify-end gap-2`}>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="table-action-button"
+                            className={styles['table-action-button']}
                             onClick={() => navigate(`/meters/${meter.id}`)}
                             title="View details"
                           >
@@ -145,7 +145,7 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="table-action-button"
+                            className={styles['table-action-button']}
                             onClick={() => onToggleStatus(meter.id, meter.isActive)}
                             disabled={updatingStatus}
                             title={meter.isActive ? 'Deactivate meter' : 'Activate meter'}
@@ -160,7 +160,7 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="table-action-button"
+                            className={styles['table-action-button']}
                             onClick={() => navigate(`/meters/${meter.id}/edit`)}
                             title="Edit meter"
                           >
@@ -170,7 +170,7 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="table-action-button delete-button"
+                            className={`${styles['table-action-button']} ${styles['delete-button']}`}
                             onClick={() => onDelete(meter.id)}
                             disabled={deleting}
                             title="Delete meter"
@@ -183,17 +183,17 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="empty-table-cell h-32 text-center">
-                      <div className="empty-state">
-                        <div className="empty-icon">⚡</div>
-                        <h3 className="empty-title">No meters found</h3>
-                        <p className="empty-description">
+                    <TableCell colSpan={8} className={`${styles['empty-table-cell']} h-32 text-center`}>
+                      <div className={styles['empty-state']}>
+                        <div className={styles['empty-icon']}>⚡</div>
+                        <h3 className={styles['empty-title']}>No meters found</h3>
+                        <p className={styles['empty-description']}>
                           {searchTerm || filters?.meterType || filters?.status
                             ? 'Try adjusting your filters'
                             : 'Get started by adding your first utility meter'}
                         </p>
                         {!searchTerm && !filters?.meterType && !filters?.status && (
-                          <Button className="empty-action-button" onClick={() => navigate('/meters/create-tabbed')}>
+                          <Button className={styles['empty-action-button']} onClick={() => navigate('/meters/create-tabbed')}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add Meter
                           </Button>
@@ -208,18 +208,18 @@ export const MeterTable: React.FC<MeterTableProps> = ({
 
           {/* Pagination */}
           {paginationInfo && paginationInfo.totalPages > 1 && (
-            <div className="pagination-container flex justify-between items-center px-4 py-2 border-t">
-              <div className="pagination-info text-sm text-muted-foreground">
+            <div className={`${styles['pagination-container']} flex justify-between items-center px-4 py-2 border-t`}>
+              <div className={`${styles['pagination-info']} text-sm text-muted-foreground`}>
                 Showing {((paginationInfo.page - 1) * paginationInfo.limit) + 1} to{' '}
                 {Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} of{' '}
                 {paginationInfo.total} meters
               </div>
 
-              <div className="pagination-controls flex items-center gap-2">
+              <div className={`${styles['pagination-controls']} flex items-center gap-2`}>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="pagination-button"
+                  className={styles['pagination-button']}
                   onClick={() => onPageChange(paginationInfo.page - 1)}
                   disabled={!paginationInfo.hasPrev}
                 >
@@ -227,7 +227,7 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                   Previous
                 </Button>
 
-                <div className="pagination-numbers flex items-center gap-1">
+                <div className={`${styles['pagination-numbers']} flex items-center gap-1`}>
                   {Array.from({ length: Math.min(5, paginationInfo.totalPages) }, (_, i) => {
                     const pageNum = Math.max(1, Math.min(
                       paginationInfo.totalPages - 4,
@@ -241,7 +241,7 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                         key={pageNum}
                         variant={pageNum === paginationInfo.page ? "default" : "outline"}
                         size="sm"
-                        className="pagination-number"
+                        className={styles['pagination-number']}
                         onClick={() => onPageChange(pageNum)}
                       >
                         {pageNum}
@@ -253,7 +253,7 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="pagination-button"
+                  className={styles['pagination-button']}
                   onClick={() => onPageChange(paginationInfo.page + 1)}
                   disabled={!paginationInfo.hasNext}
                 >

@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '../../hooks';
-import { MeterType } from '../../types/meter';
-import { AppLayout } from '../../components/layout/AppLayout';
-import type { PaginationOptions, MeterFilters as MeterFiltersType } from '../../services/meterService';
-import { useNotifications } from '../../contexts';
-import { getErrorMessage } from '../../types/api';
-import { MeterListHeader, MeterStats, MeterFilters, MeterTable } from './components/MeterList';
-import { MeterLoading, MeterError } from './components/shared';
-import './MeterListPageEnhanced.scss';
+import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '../../../hooks';
+import { MeterType } from '../../../types/meter';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import type { PaginationOptions, MeterFilters as MeterFiltersType } from '../../../services/meterService';
+import { useNotifications } from '../../../contexts';
+import { getErrorMessage } from '../../../types/api';
+import { MeterListHeader, MeterStats, MeterFilters, MeterTable, MeterLoading, MeterError } from '../components';
+import styles from './MeterListPageEnhanced.module.scss';
 
 export const MeterListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
@@ -153,7 +152,7 @@ export const MeterListPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="meter-list-page-enhanced">
+      <div className={styles['meter-list-page-enhanced']}>
         <div className="py-2 space-y-2">
           <div ref={headerRef}>
             <MeterListHeader onAddClick={() => navigate('/meters/create-tabbed')} />
@@ -161,9 +160,9 @@ export const MeterListPageEnhanced: React.FC = () => {
 
           {/* Success Message */}
           {successMessage && (
-            <div className="success-message">
-              <div className="success-icon">✓</div>
-              <p className="success-text">{successMessage}</p>
+            <div className={styles['success-message']}>
+              <div className={styles['success-icon']}>✓</div>
+              <p className={styles['success-text']}>{successMessage}</p>
             </div>
           )}
 

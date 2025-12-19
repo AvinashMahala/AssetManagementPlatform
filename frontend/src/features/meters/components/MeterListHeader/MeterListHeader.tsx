@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/componentDesignLibrary';
-import './MeterListHeader.scss';
+import styles from './MeterListHeader.module.scss';
 
 interface MeterListHeaderProps {
   onAddClick: () => void;
@@ -11,11 +11,11 @@ export const MeterListHeader: React.FC<MeterListHeaderProps> = ({ onAddClick }) 
   return (
     <div
       data-section="header"
-      className="meter-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2"
+      className={`${styles['meter-list-header']} flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2`}
     >
       <div>
-        <h1 className="header-title text-2xl font-bold text-gray-900 dark:text-white">
-          Meters <span className="header-subtitle text-base font-normal text-gray-600 dark:text-gray-400">(Manage utility meters)</span>
+        <h1 className={`${styles['header-title']} text-2xl font-bold text-gray-900 dark:text-white`}>
+          Meters <span className={`${styles['header-subtitle']} text-base font-normal text-gray-600 dark:text-gray-400`}>(Manage utility meters)</span>
         </h1>
       </div>
       <div className="header-actions flex gap-2">

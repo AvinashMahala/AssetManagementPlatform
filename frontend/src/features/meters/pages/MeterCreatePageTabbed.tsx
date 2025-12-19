@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import navigateBackOrFallback from '../../utils/navigation';
-import { useCreateMeter } from '../../hooks';
-import type { MeterInput } from '../../types/meter';
-import { AppLayout } from '../../components/layout/AppLayout';
-import MeterFormTabbed from '../../components/forms/MeterFormTabbed';
-import { MeterPageHeader } from './components/shared';
+import navigateBackOrFallback from '../../../utils/navigation';
+import { useCreateMeter } from '../../../hooks';
+import type { MeterInput } from '../../../types/meter';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import MeterFormTabbed from '../../../components/forms/MeterFormTabbed';
+import { MeterPageHeader } from '../components';
 
 export const MeterCreatePageTabbed: React.FC = () => {
   const navigate = useNavigate();
