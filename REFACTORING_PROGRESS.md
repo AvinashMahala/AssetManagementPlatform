@@ -1,6 +1,8 @@
 # Refactoring Progress & Component Hierarchy
 
 **LATEST UPDATE:**
+- 🟢 **Documentation:** Generated READMEs for all `src/features/*` modules.
+- 🟢 **Quality Audit:** Completed Theme, Resilience, and Performance audits (see `frontend/docs/`).
 - 🟢 **Cleanup Complete:** `src/components/ui` and `src/components/common` have been DELETED.
 - 🟢 **Architecture Shift:** The application now imports ALL UI components directly from `@/componentDesignLibrary`.
 - 🟢 **Feature Migration:** `GoogleOAuthButton` moved to `src/features/auth`. `ErrorBoundary` moved to `src/componentDesignLibrary`.
