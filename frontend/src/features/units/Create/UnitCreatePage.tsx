@@ -5,7 +5,7 @@ import { useCreateUnit } from '../../../hooks';
 import { useNotifications } from '../../../contexts';
 import UnitFormTabbed from '../../../components/forms/UnitFormTabbed';
 import type { UnitInput } from '../../../types/unit';
-import './UnitCreatePageTabbed.scss';
+import './UnitCreatePage.module.scss';
 
 export const UnitCreatePageTabbed: React.FC = () => {
   const navigate = useNavigate();

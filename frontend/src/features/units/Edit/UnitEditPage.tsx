@@ -8,7 +8,7 @@ import { PageLoadingSpinner } from '../../../componentDesignLibrary';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import UnitFormTabbed from '../../../components/forms/UnitFormTabbed';
 import type { UnitInput } from '../../../types/unit';
-import './UnitEditPage.scss';
+import './UnitEditPage.module.scss';
 
 export const UnitEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

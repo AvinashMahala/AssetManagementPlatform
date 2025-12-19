@@ -26,7 +26,7 @@ import { useUnits, useDeleteUnit } from '../../../hooks/useUnits';
 import { useProperties } from '../../../hooks/useProperties';
 import { AppLayout } from '../../../components/layout';
 import { PageLoadingSpinner } from '../../../componentDesignLibrary';
-import './UnitListPageEnhanced.scss';
+import './UnitListPage.module.scss';
 
 const UnitListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();

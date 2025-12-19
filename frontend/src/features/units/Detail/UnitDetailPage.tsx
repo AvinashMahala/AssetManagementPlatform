@@ -5,7 +5,7 @@ import navigateBackOrFallback from '../../../utils/navigation';
 import { PhotoCarousel, PageLoadingSpinner } from '../../../componentDesignLibrary';
 import { UnitUtilitiesManager } from '../../../components/units/UnitUtilitiesManager';
 import { getErrorMessage } from '../../../types/api';
-import './UnitDetailPage.scss';
+import './UnitDetailPage.module.scss';
 
 export const UnitDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

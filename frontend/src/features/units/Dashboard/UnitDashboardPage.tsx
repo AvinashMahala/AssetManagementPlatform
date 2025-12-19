@@ -6,7 +6,7 @@ import { Button } from '@/componentDesignLibrary';
 import { RevenueTrendChart } from '@/componentDesignLibrary';
 import { getErrorMessage } from '../../../types/api';
 import { PageLoadingSpinner } from '../../../componentDesignLibrary';
-import './UnitDashboardPage.scss';
+import './UnitDashboardPage.module.scss';
 
 export const UnitDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

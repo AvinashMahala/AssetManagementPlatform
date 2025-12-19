@@ -5,16 +5,16 @@ import type { RouteConfig } from '../routeTypes';
 import { AppLayout } from '../../components/layout/AppLayout';
 
 // Lazy-loaded tenant components
-const TenantCreatePageTabbedEnhanced = lazy(() => import('../../pages/tenants/TenantCreatePageTabbedEnhanced'));
-const TenantDetailPage = lazy(() => import('../../pages/tenants/TenantDetailPage'));
-const TenantEditPage = lazy(() => import('../../pages/tenants/TenantEditPage'));
-const TenantListPageEnhanced = lazy(() => import('../../pages/tenants/TenantListPageEnhanced'));
-const TenantDashboardPage = lazy(() => import('../../pages/tenants/TenantDashboardPage').then(module => ({ default: module.TenantDashboardPage })));
+const TenantCreatePage = lazy(() => import('../../features/tenants/Create/TenantCreatePage'));
+const TenantDetailPage = lazy(() => import('../../features/tenants/Detail/TenantDetailPage'));
+const TenantEditPage = lazy(() => import('../../features/tenants/Edit/TenantEditPage'));
+const TenantListPage = lazy(() => import('../../features/tenants/List/TenantListPage'));
+const TenantDashboardPage = lazy(() => import('../../features/tenants/Dashboard/TenantDashboardPage').then(module => ({ default: module.TenantDashboardPage })));
 
 export const tenantsRoutes: RouteConfig[] = [
   {
     path: ROUTE_PATHS.TENANTS,
-    element: <TenantListPageEnhanced />,
+    element: <TenantListPage />,
     isProtected: true,
   },
   {
@@ -24,7 +24,7 @@ export const tenantsRoutes: RouteConfig[] = [
   },
   {
     path: ROUTE_PATHS.TENANTS_CREATE_TABBED,
-    element: <TenantCreatePageTabbedEnhanced />,
+    element: <AppLayout><TenantCreatePage /></AppLayout>,
     isProtected: true,
   },
   {

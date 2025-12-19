@@ -18,8 +18,8 @@ import {
   Building2,
   Settings
 } from 'lucide-react';
-import { useTenant, useLeases, usePayments, useProperties, useUnits } from '../../hooks';
-import navigateBackOrFallback from '../../utils/navigation';
+import { useTenant, useLeases, usePayments, useProperties, useUnits } from '../../../hooks';
+import navigateBackOrFallback from '../../../utils/navigation';
 import {
   Card,
   CardContent,
@@ -30,8 +30,8 @@ import {
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout/AppLayout';
-import { getErrorMessage } from '../../types/api';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import { getErrorMessage } from '../../../types/api';
 import { RevenueTrendChart, PaymentCollectionChart } from '@/componentDesignLibrary';
 
 export const TenantDashboardPage: React.FC = () => {

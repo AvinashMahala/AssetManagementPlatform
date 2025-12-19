@@ -16,10 +16,10 @@ import {
   DialogTitle,
 } from '@/componentDesignLibrary';
 import { Pagination } from '@/componentDesignLibrary';
-import { useTenants, useDeleteTenant } from '../../hooks/useTenants';
-import { useNotifications } from '../../contexts';
-import { AppLayout } from '../../components/layout';
-import './TenantListPageEnhanced.scss';
+import { useTenants, useDeleteTenant } from '../../../hooks/useTenants';
+import { useNotifications } from '../../../contexts';
+import { AppLayout } from '../../../components/layout';
+import './TenantListPage.module.scss';
 
 const TenantListPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
