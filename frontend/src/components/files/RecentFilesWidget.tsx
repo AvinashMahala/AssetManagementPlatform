@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Image, Download } from 'lucide-react';
-import { Card, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
+import { Card, CardContent } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
 import { fileService } from '../../services';
 import type { FileMetadata } from '../../types/file';
 

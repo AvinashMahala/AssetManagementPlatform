@@ -7,7 +7,7 @@ import {
 import { useDashboardStats, useActivityItems, useChartCarousel } from '../../../hooks';
 import { ActivityCard, StatsSection, AlertsSection } from '../';
 const ChartsCarousel = React.lazy(() => import('../ChartsCarousel/ChartsCarousel'));
-import { ErrorBoundary } from '../../../components/common';
+import { ErrorBoundary } from '@/componentDesignLibrary';
 import { AppLayout } from '../../../components/layout';
 import './DashboardEnhanced.scss';
 

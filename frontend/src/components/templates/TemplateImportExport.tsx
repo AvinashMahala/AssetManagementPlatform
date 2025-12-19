@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Download, Upload, FileJson } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '@/componentDesignLibrary';
 
 interface TemplateImportExportProps {
   templateId: string;

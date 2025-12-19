@@ -1,8 +1,9 @@
 # Refactoring Progress & Component Hierarchy
 
 **LATEST UPDATE:**
+- 🟢 **Cleanup Complete:** `src/components/ui` and `src/components/common` have been DELETED.
 - 🟢 **Architecture Shift:** The application now imports ALL UI components directly from `@/componentDesignLibrary`.
-- 💀 **Deprecated:** `src/components/ui/` is now a legacy adapter layer and is no longer used by the application code. It can be safely deleted in the next phase.
+- 🟢 **Feature Migration:** `GoogleOAuthButton` moved to `src/features/auth`. `ErrorBoundary` moved to `src/componentDesignLibrary`.
 - 🟢 **Alias Configured:** `@` alias points to `src` in `vite.config.ts` and `tsconfig.app.json`.
 
 This document tracks the refactoring progress of the frontend codebase.

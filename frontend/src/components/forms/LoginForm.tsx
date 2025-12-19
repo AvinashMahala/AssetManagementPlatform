@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
-import { GoogleOAuthButton } from '../common/GoogleOAuthButton';
+import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
 import { useAuthContext } from '../../contexts';
 import type { UserCredentials } from '../../types/user';
 

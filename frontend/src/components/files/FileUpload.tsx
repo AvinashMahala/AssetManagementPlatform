@@ -1,10 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, X, File, Image, FileText, Video, Archive, AlertCircle, CheckCircle, Edit3, Check, RotateCcw, ChevronUp, ChevronDown } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Input } from '../ui/input';
+import { Button } from '@/componentDesignLibrary';
+import { Card } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Alert, AlertDescription } from '@/componentDesignLibrary';
+import { Input } from '@/componentDesignLibrary';
 import { fileService } from '../../services';
 import type { FileUploadRequest, FileMetadata } from '../../types/file';
 

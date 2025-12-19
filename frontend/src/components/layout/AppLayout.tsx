@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Sidebar } from './sidebar';
 import { Header } from './header';
 import { MobileSidebar } from './mobile-sidebar';
-import { Breadcrumbs } from '../ui';
+import { Breadcrumbs } from '@/componentDesignLibrary';
 
 interface AppLayoutProps {
   children: React.ReactNode;

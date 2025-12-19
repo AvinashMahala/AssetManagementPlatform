@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Loading } from '../ui/loading';
+import { Button } from '@/componentDesignLibrary';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/componentDesignLibrary';
+import { Alert, AlertDescription } from '@/componentDesignLibrary';
+import { Loading } from '@/componentDesignLibrary';
 import { receiptService } from '../../services/receiptService';
 import type { ReceiptGenerationRequest, Receipt } from '../../types/receipt';
 import { Download, FileText, AlertCircle, CheckCircle } from 'lucide-react';

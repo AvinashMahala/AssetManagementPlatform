@@ -47,6 +47,9 @@ export type { AlertCardProps } from './components/alert-card';
 export { ScrollableRow } from './components/scrollable-row';
 export type { ScrollableRowProps } from './components/scrollable-row';
 
+export { ErrorBoundary, withErrorBoundary } from './components/common/error-boundary';
+export type { ErrorBoundaryProps } from './components/common/error-boundary';
+
 // Core UI Components
 export { Button, buttonVariants } from './components/common/button';
 export type { ButtonProps } from './components/common/button';
@@ -170,7 +173,7 @@ export type {
   SelectScrollDownButtonProps,
 } from './components/common/select';
 
-export { Skeleton } from './components/common/skeleton';
+export { Skeleton, ProfileAvatarSkeleton, ProfileStatsSkeleton } from './components/common/skeleton';
 export type { SkeletonProps } from './components/common/skeleton';
 
 export { StatCard } from './components/common/stat-card';

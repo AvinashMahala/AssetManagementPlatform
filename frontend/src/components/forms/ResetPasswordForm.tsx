@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { useAuthContext } from '../../contexts/AuthContext';
 import type { PasswordResetOptions } from '../../services/authService';

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Trash2, Eye, File, Image, FileText, Calendar, Upload, Plus } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button } from '@/componentDesignLibrary';
+import { Card } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
 import { ConfirmDialog } from '../../componentDesignLibrary';
 import { propertyService } from '../../services';
 import type { PropertyFile } from '../../types/property';

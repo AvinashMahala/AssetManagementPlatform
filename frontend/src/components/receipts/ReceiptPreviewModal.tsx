@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { templateService } from '../../services/templateService';
-import { Button } from '../ui/button';
+import { Button } from '@/componentDesignLibrary';
 import { X, Download } from 'lucide-react';
 
 interface ReceiptPreviewModalProps {
