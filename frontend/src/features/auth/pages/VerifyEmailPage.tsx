@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { VerifyEmailForm } from '../../components/forms';
+import { VerifyEmailForm } from '../components';
 import { Card } from '@/componentDesignLibrary';
 
 export const VerifyEmailPage: React.FC = () => {

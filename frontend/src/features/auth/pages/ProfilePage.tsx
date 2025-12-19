@@ -18,7 +18,7 @@ import {
   Moon,
   Coffee
 } from 'lucide-react';
-import { ProfileForm, ResetPasswordForm } from '../../components/forms';
+import { ProfileForm, ResetPasswordForm } from '../components';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
@@ -27,7 +27,7 @@ import {
   ProfileStatsSkeleton
 } from '@/componentDesignLibrary';
 import { Tooltip, ExpandableSection } from '@/componentDesignLibrary';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -47,11 +47,6 @@ export const ProfilePage: React.FC = () => {
     navigate('/login');
   };
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-
   useEffect(() => {
     const updateGreeting = () => {
       const hour = new Date().getHours();
@@ -65,6 +60,11 @@ export const ProfilePage: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
 
   const getInitials = (name?: string, email?: string) => {
     if (name) return name.split(' ').map(n => n[0]).join('').toUpperCase();

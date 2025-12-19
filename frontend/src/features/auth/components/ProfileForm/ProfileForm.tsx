@@ -4,8 +4,8 @@ import { Input } from '@/componentDesignLibrary';
 import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
 import { LoadingSpinner, ValidationFeedback, EmailVerificationStatus, useRealTimeValidation, ExpandableSection, Tooltip } from '@/componentDesignLibrary';
-import { useAuthContext } from '../../contexts/AuthContext';
-import type { UpdateProfileRequest } from '../../services/authService';
+import { useAuthContext } from '@/contexts/AuthContext';
+import type { UpdateProfileRequest } from '@/services/authService';
 
 interface ProfileFormProps {
   onSuccess?: () => void;

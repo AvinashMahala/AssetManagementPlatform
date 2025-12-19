@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Suspense } from 'react';
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
-import { ProtectedRoute, PublicRoute } from './components/auth';
+import { ProtectedRoute, PublicRoute } from '@/features/auth/components';
 import { ErrorBoundary } from '@/componentDesignLibrary';
 import { ConsentDialog, DevTools } from './components/ConsentDialog';
 import { Toast } from '@/componentDesignLibrary';

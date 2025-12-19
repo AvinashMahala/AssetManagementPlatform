@@ -3,7 +3,7 @@ import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface VerifyPhoneFormProps {
   onSuccess?: () => void;
