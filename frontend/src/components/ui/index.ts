@@ -73,7 +73,7 @@ export { Tooltip } from './tooltip';
 
 export { ExpandableSection } from './expandable-section';
 
-export { default as StatCard } from './StatCard';
+export { StatCard } from './stat-card';
 
 export { default as ChartContainer } from './ChartContainer';
 
