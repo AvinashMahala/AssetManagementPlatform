@@ -1,7 +1,7 @@
 import type { Lease, LeaseInput } from '../types/lease';
-import type { ApiResponse } from '../types/api';
-import { apiClient } from './apiClient';
-import { API_ENDPOINTS } from '../constants/api';
+import type { ApiResponse } from '../../../types/api';
+import { apiClient } from '../../../services/apiClient';
+import { API_ENDPOINTS } from '../../../constants/api';
 
 class LeaseService {
   async getAll(unitId?: string, tenantId?: string): Promise<ApiResponse<Lease[]>> {

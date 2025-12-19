@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { Lease, LeaseInput } from '../types/lease';
-import { useApi, useApiMutation } from './useApi';
+import { useApi, useApiMutation } from '../../../hooks/useApi';
 import { leaseService } from '../services/leaseService';
 
 export function useLeases(unitId?: string, tenantId?: string) {

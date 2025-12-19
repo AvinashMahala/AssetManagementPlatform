@@ -8,7 +8,7 @@ export * from './useDashboardStats';
 export * from './useDragAndDrop';
 export * from './useExpenses';
 export * from './useGoogleOAuth';
-export * from './useLeases';
+export * from '../features/leases/hooks/useLeases';
 export * from './useMeters';
 export * from './useNavigationConfig';
 export * from './usePayments';

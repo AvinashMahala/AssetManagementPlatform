@@ -1,6 +1,8 @@
 # Refactoring Progress & Component Hierarchy
 
 **LATEST UPDATE:**
+- 🟢 **Lease Feature Refactoring:** Complete. Moved `src/pages/leases` to `src/features/leases`.
+- 🟢 **Runtime Fixes:** Resolved "missing export" errors in Lease feature (Type-Only imports).
 - 🟢 **Documentation:** Generated READMEs for all `src/features/*` modules.
 - 🟢 **Quality Audit:** Completed Theme, Resilience, and Performance audits (see `frontend/docs/`).
 - 🟢 **Cleanup Complete:** `src/components/ui` and `src/components/common` have been DELETED.
@@ -86,6 +88,13 @@ This document tracks the refactoring progress of the frontend codebase.
 - [ ] `src/features/properties/List/PropertyList.tsx`
 - [ ] `src/features/properties/components/PropertyCard/PropertyCard.tsx`
 - [ ] `src/features/properties/form/PropertyFormTabbed.tsx`
+
+### Leases
+- 🟢 `src/features/leases/pages/LeaseListPage.tsx`
+- 🟢 `src/features/leases/components/LeaseList/LeaseList.tsx`
+- 🟢 `src/features/leases/components/LeaseFilters/LeaseFilters.tsx`
+- 🟢 `src/features/leases/components/LeaseBulkActions/LeaseBulkActions.tsx`
+- 🟢 `src/features/leases/components/LeaseForm/LeaseForm.tsx`
 
 ### Files
 - [ ] `src/components/files/FileGallery.tsx`

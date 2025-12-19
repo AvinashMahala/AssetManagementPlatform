@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useProperty } from '../../../hooks/useProperties';
 import { useUnits } from '../../../hooks/useUnits';
-import { useLeases } from '../../../hooks/useLeases';
+import { useLeases } from '../../../hooks';
 import { usePayments } from '../../../hooks/usePayments';
 import { useTenants } from '../../../hooks/useTenants';
 import { navigateBackOrFallback } from '../../../utils/navigation';

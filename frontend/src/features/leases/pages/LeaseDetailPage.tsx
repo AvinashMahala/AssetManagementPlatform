@@ -1,9 +1,10 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/componentDesignLibrary';
-import { useLease, useDeleteLease, useUnit, useTenant, useProperty } from '../../hooks';
-import navigateBackOrFallback from '../../utils/navigation';
-import { getErrorMessage } from '../../types/api';
+import { useLease, useDeleteLease } from '../hooks/useLeases';
+import { useUnit, useTenant, useProperty } from '../../../hooks';
+import navigateBackOrFallback from '../../../utils/navigation';
+import { getErrorMessage } from '../../../types/api';
 
 export const LeaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

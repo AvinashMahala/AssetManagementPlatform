@@ -72,6 +72,54 @@
 
 ---
 
+## 📜 Session 8: Feature Modularization (Leases) ✅ COMPLETED
+**Goal:** Refactor Lease management into a self-contained feature.
+**Target:** `src/pages/leases` -> `src/features/leases`
+**Prompt for Agent:**
+> "Read `.github/agents/FrontendArchitect.agent.md`. Start **Phase 3: Modularization**. Refactor the Lease feature. Move `src/pages/leases` into `src/features/leases`. Ensure components use the centralized Design Library and follow the 'One Component, One Folder' rule."
+
+---
+
+## ⚡ Session 9: Feature Modularization (Meters)
+**Goal:** Refactor Meter management into a self-contained feature.
+**Target:** `src/pages/meters` -> `src/features/meters`
+**Prompt for Agent:**
+> "Read `.github/agents/FrontendArchitect.agent.md`. Start **Phase 3: Modularization**. Refactor the Meter feature. Move `src/pages/meters` into `src/features/meters`. Ensure components use the centralized Design Library and follow the 'One Component, One Folder' rule."
+
+---
+
+## 📂 Session 10: Feature Modularization (Files)
+**Goal:** Refactor File management into a self-contained feature.
+**Target:** `src/pages/files-page-enhanced` -> `src/features/files`
+**Prompt for Agent:**
+> "Read `.github/agents/FrontendArchitect.agent.md`. Start **Phase 3: Modularization**. Refactor the File management feature. Move `src/pages/files-page-enhanced` into `src/features/files`. Ensure components use the centralized Design Library and follow the 'One Component, One Folder' rule."
+
+---
+
+## 📦 Session 11: Feature Modularization (Bulk Operations)
+**Goal:** Refactor Bulk Operations into a self-contained feature.
+**Target:** `src/pages/bulkOperations` -> `src/features/bulkOperations`
+**Prompt for Agent:**
+> "Read `.github/agents/FrontendArchitect.agent.md`. Start **Phase 3: Modularization**. Refactor Bulk Operations. Move `src/pages/bulkOperations` into `src/features/bulkOperations`. Ensure components use the centralized Design Library and follow the 'One Component, One Folder' rule."
+
+---
+
+## 📝 Session 12: Feature Modularization (Templates & Config)
+**Goal:** Refactor Template management and Admin Config.
+**Target:** `src/pages/Template*`, `src/pages/NavigationConfigPage.tsx` -> `src/features/templates`, `src/features/admin`
+**Prompt for Agent:**
+> "Read `.github/agents/FrontendArchitect.agent.md`. Start **Phase 3: Modularization**. Refactor Template management and Admin Config. Move `src/pages/Template*` to `src/features/templates` and `src/pages/NavigationConfigPage.tsx` to `src/features/admin`. Ensure components use the centralized Design Library."
+
+---
+
+## 💸 Session 13: Feature Modularization (Rent Transactions)
+**Goal:** Consolidate Rent Transactions into the Finance feature.
+**Target:** `src/pages/rentTransactions` -> `src/features/finance`
+**Prompt for Agent:**
+> "Read `.github/agents/FrontendArchitect.agent.md`. Start **Phase 3: Modularization**. Refactor Rent Transactions. Move `src/pages/rentTransactions` into `src/features/finance/rentTransactions`. Ensure components use the centralized Design Library and follow the 'One Component, One Folder' rule."
+
+---
+
 ## 🔄 How to Use This Roadmap
 1.  Start a new Copilot session.
 2.  Paste the **Prompt for Agent** for the current session.

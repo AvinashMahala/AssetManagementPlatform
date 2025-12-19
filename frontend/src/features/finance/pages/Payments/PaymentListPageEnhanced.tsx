@@ -15,7 +15,7 @@ import { usePayments, useTenants, useLeases, useUnits, useDeletePayment, useBulk
 import { useNotifications } from '../../../../contexts';
 import { format, isWithinInterval } from 'date-fns';
 import type { Tenant } from '../../../../types/tenant';
-import type { Lease } from '../../../../types/lease';
+import type { Lease } from '../../../leases/types/lease';
 import type { Unit } from '../../../../types/unit';
 import type { RentPayment } from '../../../../types/payment';
 import { RevenueTrendChart, PaymentCollectionChart } from '@/componentDesignLibrary';
