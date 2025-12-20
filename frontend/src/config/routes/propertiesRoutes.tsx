@@ -9,7 +9,7 @@ const PropertyCreatePageTabbed = lazy(() => import('../../features/properties/Cr
 const PropertyEditPageEnhanced = lazy(() => import('../../features/properties/Edit/PropertyEdit'));
 const PropertyDetailPage = lazy(() => import('../../features/properties/Detail/PropertyDetail'));
 const PropertyDashboardPageEnhanced = lazy(() => import('../../features/properties/Dashboard/PropertyDashboard'));
-const PropertyTemplateCustomization = lazy(() => import('../../pages/PropertyTemplateCustomization'));
+const PropertyTemplateCustomization = lazy(() => import('../../features/templates/pages/PropertyTemplateCustomization'));
 
 export const propertiesRoutes: RouteConfig[] = [
   {

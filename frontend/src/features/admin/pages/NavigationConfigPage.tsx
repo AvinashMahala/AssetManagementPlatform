@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Card, CardContent, CardHeader, CardTitle, PageLoadingSpinner } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
-import { AppLayout } from '../components/layout';
+import { AppLayout } from '../../../components/layout';
 import { NavigationItem } from '../components/navigation';
 import { NavigationPreview } from '../components/navigation';
 import { InstructionsCard } from '../components/navigation';
-import { useNavigationConfig, useDragAndDrop, type NavItem } from '../hooks';
+import { useNavigationConfig, useDragAndDrop, type NavItem } from '../../../hooks';
 
 const NavigationConfigPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,12 +17,7 @@ const NavigationConfigPage: React.FC = () => {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading navigation settings...</p>
-          </div>
-        </div>
+        <PageLoadingSpinner />
       </AppLayout>
     );
   }

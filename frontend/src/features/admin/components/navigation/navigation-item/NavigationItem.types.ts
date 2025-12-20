@@ -1,4 +1,4 @@
-import type { NavItem } from '../../../hooks';
+import type { NavItem } from '@/hooks';
 
 export interface NavigationItemProps {
   item: NavItem;

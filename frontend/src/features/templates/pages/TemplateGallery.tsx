@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { templateService } from '../services/templateService';
-import { Button } from '@/componentDesignLibrary';
+import { templateService } from '../../../services/templateService';
+import { Button, PageLoadingSpinner } from '@/componentDesignLibrary';
 import { Search, Edit, Eye, Sparkles } from 'lucide-react';
 import { Badge } from '@/componentDesignLibrary';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
-import { AppLayout } from '../components/layout/AppLayout';
+import { AppLayout } from '../../../components/layout/AppLayout';
 
 interface Template {
   id: string;
@@ -90,12 +90,7 @@ export default function TemplateGallery() {
   if (isLoading) {
     return (
       <AppLayout title="Templates">
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading templates...</p>
-          </div>
-        </div>
+        <PageLoadingSpinner />
       </AppLayout>
     );
   }

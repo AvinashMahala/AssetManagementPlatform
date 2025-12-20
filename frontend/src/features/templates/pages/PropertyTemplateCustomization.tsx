@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { templateService } from '../services/templateService';
-import { Button } from '@/componentDesignLibrary';
+import { templateService } from '../../../services/templateService';
+import { Button, PageLoadingSpinner } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { Save } from 'lucide-react';
-import LogoUploader from '../components/template-editor/LogoUploader';
+import LogoUploader from '../components/LogoUploader';
 
 export default function PropertyTemplateCustomization() {
   const { propertyId } = useParams();
@@ -50,7 +50,7 @@ export default function PropertyTemplateCustomization() {
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return <PageLoadingSpinner />;
   }
 
   return (
