@@ -2,8 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Suspense } from 'react';
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
 import { ProtectedRoute, PublicRoute } from '@/features/auth/components';
-import { ErrorBoundary } from '@/componentDesignLibrary';
-import { ConsentDialog, DevTools } from '@/components/common/ConsentDialog';
+import { ErrorBoundary, ConsentDialog, DevTools } from '@/componentDesignLibrary';
 import { Toast } from '@/componentDesignLibrary';
 import { routes } from './config/routes';
 

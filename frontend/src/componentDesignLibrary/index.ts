@@ -228,3 +228,5 @@ export type {
   RetryButtonProps,
 } from './components/common/validation-feedback';
 
+export { ConsentDialog } from './components/ConsentDialog';
+export { DevTools } from './components/DevTools';

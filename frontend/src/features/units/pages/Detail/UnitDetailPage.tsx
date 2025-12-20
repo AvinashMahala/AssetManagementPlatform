@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useUnit, useDeleteUnit } from '@/hooks';
 import navigateBackOrFallback from '@/utils/navigation';
 import { PhotoCarousel, PageLoadingSpinner } from '@/componentDesignLibrary';
-import { UnitUtilitiesManager } from '@/components/units/UnitUtilitiesManager';
+import { UnitUtilitiesManager } from '@/features/units/components/UnitUtilitiesManager';
 import { getErrorMessage } from '@/types/api';
 import './UnitDetailPage.module.scss';
 
