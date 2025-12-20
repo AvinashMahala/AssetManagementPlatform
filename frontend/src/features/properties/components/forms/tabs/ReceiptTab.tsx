@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormColumn } from '@/componentDesignLibrary';
 import { FileText } from 'lucide-react';
-import type { PropertyReceiptTemplate } from '@/types';
+import type { PropertyReceiptTemplate } from '@/features/properties/types';
 import ReceiptTemplateForm from '@/features/finance/components/forms/ReceiptTemplateForm';
 
 interface ReceiptTabProps {

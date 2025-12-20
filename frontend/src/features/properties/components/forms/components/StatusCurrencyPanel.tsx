@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormColumn, FormField, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/componentDesignLibrary';
 import { CheckCircle } from 'lucide-react';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import { PropertyStatus } from '@/features/properties/types';
 import { getCurrencyOptions } from '@/types/currency';
 

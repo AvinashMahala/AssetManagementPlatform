@@ -2,7 +2,7 @@ import React from 'react';
 import { FormColumn, FormField, Input } from '@/componentDesignLibrary';
 import BuildingAmenities from '../components/BuildingAmenities';
 import { Home } from 'lucide-react';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import type { FormErrors } from '../types';
 // AMENITIES moved to BuildingAmenities component
 

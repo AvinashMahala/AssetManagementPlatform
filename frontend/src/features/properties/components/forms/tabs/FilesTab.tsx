@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormColumn } from '@/componentDesignLibrary';
 import { Upload } from 'lucide-react';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import PropertyFileUpload from '@/features/properties/components/forms/PropertyFileUpload';
 
 interface FilesTabProps {

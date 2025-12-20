@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormColumn } from '@/componentDesignLibrary';
 import { User } from 'lucide-react';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import type { FormErrors } from '../types';
 import OwnerContactForm from '@/features/tenants/components/forms/OwnerContactForm';
 

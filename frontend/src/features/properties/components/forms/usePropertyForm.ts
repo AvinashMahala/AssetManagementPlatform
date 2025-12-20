@@ -1,5 +1,6 @@
 import React from 'react';
-import type { PropertyInput, ApiError } from '@/types';
+import type { ApiError } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import { buildInitialState } from './initialState';
 import { getTabForField, validateTab, validateAll, hasTabData } from './validators';
 import type { FormErrors, TabId } from './types';

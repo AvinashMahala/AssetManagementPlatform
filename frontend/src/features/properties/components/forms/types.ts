@@ -1,4 +1,5 @@
-import type { PropertyInput, ApiError } from '@/types';
+import type { ApiError } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 
 export type TabId = 'basic' | 'address' | 'details' | 'owner' | 'amenities' | 'files' | 'receipt';
 

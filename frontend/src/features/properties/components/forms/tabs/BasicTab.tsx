@@ -11,7 +11,7 @@ import {
   Textarea
 } from '@/componentDesignLibrary';
 import { Building2 } from 'lucide-react';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import { PropertyType } from '@/features/properties/types';
 import type { FormErrors } from '../types';
 

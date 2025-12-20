@@ -1,4 +1,4 @@
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import { PropertyType, PropertyStatus } from '@/features/properties/types';
 import { DEFAULT_CURRENCY } from '@/types/currency';
 

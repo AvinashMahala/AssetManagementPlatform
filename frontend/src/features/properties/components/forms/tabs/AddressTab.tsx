@@ -2,7 +2,7 @@ import React from 'react';
 import { FormColumn, FormField, Input } from '@/componentDesignLibrary';
 import { MapPin } from 'lucide-react';
 import type { FormErrors } from '../types';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 
 interface AddressTabProps {
   formData: PropertyInput;

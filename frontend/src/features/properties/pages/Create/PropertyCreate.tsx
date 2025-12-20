@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import navigateBackOrFallback from '@/utils/navigation';
 import PropertyFormTabbed from '@/features/properties/components/forms/PropertyFormTabbed';
 import { AppLayout } from '@/components/layout/AppLayout';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 
 const PropertyCreate: React.FC = () => {
   const navigate = useNavigate();

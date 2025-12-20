@@ -1,4 +1,4 @@
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 import type { FormErrors, TabId } from './types';
 
 export const getTabForField = (fieldName: string): TabId | null => {

@@ -5,7 +5,7 @@ import navigateBackOrFallback from '@/utils/navigation';
 import PropertyFormTabbed from '@/features/properties/components/forms/PropertyFormTabbed';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/componentDesignLibrary';
-import type { PropertyInput } from '@/types';
+import type { PropertyInput } from '@/features/properties/types';
 
 const PropertyEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
