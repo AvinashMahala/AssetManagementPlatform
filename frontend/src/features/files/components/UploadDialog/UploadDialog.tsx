@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
-import { FileUpload } from '../../../components/files';
-import { EntitySelector } from '../entity-selector';
-import type { EntityOption } from '../entity-selector';
-import type { UploadStats } from '../file-upload-dialog';
+import { FileUpload } from '../Shared';
+import { EntitySelector } from '../EntitySelector';
+import type { EntityOption } from '../EntitySelector';
+import type { UploadStats } from '../../types';
 import './UploadDialog.scss';
 
 interface UploadDialogProps {
@@ -82,12 +82,18 @@ export const UploadDialog: React.FC<UploadDialogProps> = ({
   };
 
   const handleQueueChange = (queue: any[]) => {
-    onQueueChange(queue);
-    const pending = queue.filter(u => u.status === 'pending').length;
-    setUploadStats(prev => ({
-      ...prev,
-      pending
-    }));
+    // Avoid state updates during render by wrapping in setTimeout or checking if mounted
+    // However, onQueueChange is usually called from an event handler in FileUpload, so it should be fine.
+    // The error suggests FileUpload calls this during render.
+    // Let's wrap it in a microtask to be safe if it's being called synchronously during render.
+    setTimeout(() => {
+        onQueueChange(queue);
+        const pending = queue.filter(u => u.status === 'pending').length;
+        setUploadStats(prev => ({
+        ...prev,
+        pending
+        }));
+    }, 0);
   };
 
   return (
@@ -95,6 +101,9 @@ export const UploadDialog: React.FC<UploadDialogProps> = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border shadow-xl upload-dialog">
         <DialogHeader className="sticky top-0 bg-white dark:bg-gray-900 pb-4 border-b">
           <DialogTitle>Upload Files</DialogTitle>
+          <DialogDescription>
+            Select files to upload and associate them with properties, units, or tenants.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-4">
           <p className="text-sm text-gray-600">

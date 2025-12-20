@@ -3,8 +3,8 @@ import { FileText, Image, Download } from 'lucide-react';
 import { Card, CardContent } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import { fileService } from '../../services';
-import type { FileMetadata } from '../../types/file';
+import { fileService } from '@/services';
+import type { FileMetadata } from '@/types/file';
 
 interface RecentFilesWidgetProps {
   limit?: number;

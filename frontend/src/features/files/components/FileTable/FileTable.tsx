@@ -3,8 +3,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/componentDesignLibrary';
 import { HardDrive, Image, FileVideo, FileAudio, FileText, Archive, Download, Trash2, Upload, CheckSquare, Square } from 'lucide-react';
 import { format } from 'date-fns';
-import { fileService } from '../../../services';
-import type { FileMetadata } from '../../../types/file';
+import { fileService } from '@/services';
+import type { FileMetadata } from '@/types/file';
 import type { FileTableProps } from './FileTable.types';
 import './FileTable.scss';
 

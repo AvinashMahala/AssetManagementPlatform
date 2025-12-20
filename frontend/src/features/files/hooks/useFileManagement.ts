@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fileService } from '../../services';
-import type { FileMetadata } from '../../types/file';
-import type { FileFilters } from './file-filters/FileFilters.types';
+import { fileService } from '@/services';
+import type { FileMetadata } from '@/types/file';
+import type { FileFilters } from '../components/FileFilters/FileFilters.types';
 
 export const useFileManagement = () => {
   const [files, setFiles] = useState<FileMetadata[]>([]);

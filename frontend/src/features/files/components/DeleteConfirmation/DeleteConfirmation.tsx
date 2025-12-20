@@ -1,5 +1,5 @@
 import React from 'react';
-import { ConfirmDialog } from '../../../componentDesignLibrary';
+import { ConfirmDialog } from '@/componentDesignLibrary';
 import './DeleteConfirmation.scss';
 
 interface DeleteConfirmationProps {

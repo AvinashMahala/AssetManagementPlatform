@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
-import { propertyService } from '../../../services';
-import { unitService } from '../../../services';
-import { tenantService } from '../../../services';
+import { propertyService } from '@/services';
+import { unitService } from '@/services';
+import { tenantService } from '@/services';
 import type { EntitySelectorProps, EntityOption } from './EntitySelector.types';
 
 export const EntitySelector: React.FC<EntitySelectorProps> = ({

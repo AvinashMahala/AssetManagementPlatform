@@ -1,4 +1,4 @@
-import type { FileMetadata } from '../../../types/file';
+import type { FileMetadata } from '@/types/file';
 
 export interface FileTableProps {
   files: FileMetadata[];

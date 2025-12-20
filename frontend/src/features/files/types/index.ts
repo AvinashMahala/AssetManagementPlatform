@@ -1,4 +1,4 @@
-import type { EntityOption } from '../entity-selector';
+import type { EntityOption } from '../components/EntitySelector';
 
 export interface UploadStats {
   total: number;

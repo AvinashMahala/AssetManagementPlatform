@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibra
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { FileUpload, PropertyFileGallery } from '../../../components/files';
+import { FileUpload, PropertyFileGallery } from '../../files';
 import { PageHeader } from '../../../componentDesignLibrary/components/PageHeader';
 import { StatusBadge } from '../../../componentDesignLibrary/components/status-badge/StatusBadge';
 import type { StatusType } from '../../../componentDesignLibrary/components/status-badge/StatusBadge';

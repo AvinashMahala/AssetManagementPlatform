@@ -5,8 +5,8 @@ import { Card } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Alert, AlertDescription } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
-import { fileService } from '../../services';
-import type { FileUploadRequest, FileMetadata } from '../../types/file';
+import { fileService } from '@/services';
+import type { FileUploadRequest, FileMetadata } from '@/types/file';
 
 interface FileUploadProps {
   entityType?: 'property' | 'unit' | 'tenant'; // Optional for general uploads
@@ -137,7 +137,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
     setUploads(prev => {
       const newUploads = [...prev, ...pendingUploads];
-      onQueueChange?.(newUploads);
       return newUploads;
     });
 
@@ -146,6 +145,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
       setTimeout(() => startUpload(), 100); // Small delay to allow state to update
     }
   }, [maxFileSize, acceptedTypes, multiple, onUploadError]);
+
+  // Notify parent of queue changes
+  useEffect(() => {
+    onQueueChange?.(uploads);
+  }, [uploads, onQueueChange]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -289,7 +293,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
     // you'd need to cancel the actual HTTP request
     setUploads(prev => {
       const newUploads = prev.filter(u => u.file !== file);
-      onQueueChange?.(newUploads);
       return newUploads;
     });
   };
@@ -297,7 +300,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const cancelAllUploads = () => {
     setUploads(prev => {
       const newUploads = prev.filter(u => u.status !== 'uploading');
-      onQueueChange?.(newUploads);
       return newUploads;
     });
     setIsUploading(false);
@@ -448,7 +450,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
           <div className="space-y-3">
             {uploads.map((upload, index) => (
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div key={`${upload.file.name}-${index}`} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   {/* Reorder buttons */}
                   <div className="flex flex-col space-y-1">
                     <Button

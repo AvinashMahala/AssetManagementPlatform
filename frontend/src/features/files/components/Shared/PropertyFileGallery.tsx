@@ -3,10 +3,10 @@ import { Download, Trash2, Eye, File, Image, FileText, Calendar, Upload, Plus } 
 import { Button } from '@/componentDesignLibrary';
 import { Card } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
-import { ConfirmDialog } from '../../componentDesignLibrary';
-import { propertyFileService } from '../../services';
-import type { PropertyFile } from '../../types/property';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/componentDesignLibrary';
+import { ConfirmDialog } from '@/componentDesignLibrary';
+import { propertyFileService } from '@/services';
+import type { PropertyFile } from '@/types/property';
 import { format } from 'date-fns';
 
 interface PropertyFileGalleryProps {
@@ -358,6 +358,9 @@ const PropertyFileGallery: React.FC<PropertyFileGalleryProps> = ({
           <DialogContent className="max-w-4xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle>{viewingFile.fileName}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Preview of {viewingFile.fileName}
+              </DialogDescription>
             </DialogHeader>
             <PropertyFileViewer
               file={viewingFile}

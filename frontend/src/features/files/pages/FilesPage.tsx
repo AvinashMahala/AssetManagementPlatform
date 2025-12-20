@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
-import { AppLayout } from '../../components/layout/AppLayout';
-import { fileService } from '../../services';
-import type { FileMetadata } from '../../types/file';
-import { FileStats } from './file-stats';
-import { FileTable } from './file-table';
-import { RecentFilesSection } from './recent-files-section';
-import { FileFilters as FileFiltersComponent } from './file-filters';
-import { Header } from './header';
-import { BulkActions } from './bulk-actions';
-import { UploadDialog } from './upload-dialog';
-import { LoadingSpinner } from './loading-spinner';
-import { PaginationSection } from './pagination-section';
-import { DeleteConfirmation } from './delete-confirmation';
-import { useKeyboardShortcuts } from './use-keyboard-shortcuts';
-import { useFileManagement } from './use-file-management';
-import './FilesPageEnhanced.scss';
+import { AppLayout } from '../../../components/layout/AppLayout';
+import { fileService } from '@/services';
+import type { FileMetadata } from '@/types/file';
+import { FileStats } from '../components/FileStats';
+import { FileTable } from '../components/FileTable';
+import { RecentFilesSection } from '../components/RecentFilesSection';
+import { FileFilters as FileFiltersComponent } from '../components/FileFilters';
+import { Header } from '../components/FilesHeader';
+import { BulkActions } from '../components/BulkActions';
+import { UploadDialog } from '../components/UploadDialog';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PaginationSection } from '../components/PaginationSection';
+import { DeleteConfirmation } from '../components/DeleteConfirmation';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useFileManagement } from '../hooks/useFileManagement';
+import styles from './FilesPage.module.scss';
+import '../files-animations.scss';
 
-const FilesPageEnhanced: React.FC = () => {
+const FilesPage: React.FC = () => {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
 
@@ -63,7 +64,7 @@ const FilesPageEnhanced: React.FC = () => {
   if (loading) {
     return (
       <AppLayout>
-        <div className="files-page-enhanced">
+        <div className={styles.root}>
           <LoadingSpinner />
         </div>
       </AppLayout>
@@ -72,7 +73,7 @@ const FilesPageEnhanced: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="files-page-enhanced space-y-2">
+      <div className={`${styles.root} space-y-2`}>
         {/* Header */}
         <Header onUploadClick={() => setShowUploadDialog(true)} />
 
@@ -163,4 +164,4 @@ const FilesPageEnhanced: React.FC = () => {
   );
 };
 
-export default FilesPageEnhanced;
+export default FilesPage;

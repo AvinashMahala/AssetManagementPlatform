@@ -20,7 +20,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { PropertyFileGallery } from '../../../components/files';
+import { PropertyFileGallery } from '../../files';
 
 interface Unit {
   id: string;

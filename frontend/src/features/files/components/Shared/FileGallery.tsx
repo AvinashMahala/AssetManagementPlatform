@@ -3,10 +3,10 @@ import { Download, Trash2, Eye, File, Image, FileText, Video, Archive, Calendar,
 import { Button } from '@/componentDesignLibrary';
 import { Card } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
-import { ConfirmDialog } from '../../componentDesignLibrary';
-import { fileService } from '../../services';
-import type { FileMetadata } from '../../types/file';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/componentDesignLibrary';
+import { ConfirmDialog } from '@/componentDesignLibrary';
+import { fileService } from '@/services';
+import type { FileMetadata } from '@/types/file';
 import { format } from 'date-fns';
 
 interface FileGalleryProps {
@@ -318,7 +318,15 @@ const FileGallery: React.FC<FileGalleryProps> = ({
       {/* File Viewer Dialog */}
       {viewingFile && (
         <Dialog open={!!viewingFile} onOpenChange={() => setViewingFile(null)}>
-          <FileViewer file={viewingFile} onClose={() => setViewingFile(null)} />
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{viewingFile.originalName}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Preview of {viewingFile.originalName}
+              </DialogDescription>
+            </DialogHeader>
+            <FileViewer file={viewingFile} onClose={() => setViewingFile(null)} />
+          </DialogContent>
         </Dialog>
       )}
 
