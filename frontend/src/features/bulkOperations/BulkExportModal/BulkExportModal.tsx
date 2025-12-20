@@ -20,10 +20,10 @@ import {
   AlertTriangle,
   Loader2,
 } from 'lucide-react';
-import { bulkOperationsService } from '../../services';
-import { useNotifications } from '../../contexts';
-import type { BulkExportInput, BulkExportResponse } from '../../types/bulkOperations';
-import { propertyService } from '../../services';
+import { bulkOperationsService } from '../../../services';
+import { useNotifications } from '../../../contexts';
+import type { BulkExportInput, BulkExportResponse } from '../../../types/bulkOperations';
+import { propertyService } from '../../../services';
 
 interface Property {
   id: string;

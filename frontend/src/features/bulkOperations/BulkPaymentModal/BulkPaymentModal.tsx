@@ -21,10 +21,10 @@ import {
   FileText,
   DollarSign,
 } from 'lucide-react';
-import { bulkOperationsService } from '../../services';
-import { useNotifications } from '../../contexts';
-import type { BulkPaymentInput, BulkOperationResult } from '../../types/bulkOperations';
-import rentTransactionService from '../../services/rentTransactionService';
+import { bulkOperationsService } from '../../../services';
+import { useNotifications } from '../../../contexts';
+import type { BulkPaymentInput, BulkOperationResult } from '../../../types/bulkOperations';
+import rentTransactionService from '../../../services/rentTransactionService';
 
 interface RentTransaction {
   id: string;

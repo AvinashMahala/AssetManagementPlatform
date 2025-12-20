@@ -181,7 +181,7 @@ This document tracks the refactoring progress of the frontend codebase.
 - [ ] `src/pages/meters/MeterListPageEnhanced.tsx`
 
 ### Bulk Operations
-- [ ] `src/pages/bulkOperations/BulkOperationsDashboard.tsx`
+- [x] `src/features/bulkOperations/BulkOperationsDashboard/BulkOperationsDashboard.tsx`
 
 ### Files
 - [ ] `src/pages/files-page-enhanced/FilesPageEnhanced.tsx`

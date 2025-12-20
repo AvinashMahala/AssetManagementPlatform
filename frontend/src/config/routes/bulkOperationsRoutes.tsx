@@ -3,7 +3,7 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded bulk operations components
-const BulkOperationsDashboard = lazy(() => import('../../pages/bulkOperations/BulkOperationsDashboard').then(module => ({ default: module.BulkOperationsDashboard })));
+const BulkOperationsDashboard = lazy(() => import('../../features/bulkOperations').then(module => ({ default: module.BulkOperationsDashboard })));
 
 export const bulkOperationsRoutes: RouteConfig[] = [
   {

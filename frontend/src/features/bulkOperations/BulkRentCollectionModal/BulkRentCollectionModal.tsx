@@ -23,11 +23,11 @@ import {
   Loader2,
   Building2,
 } from 'lucide-react';
-import { bulkOperationsService } from '../../services';
-import { useNotifications } from '../../contexts';
-import type { BulkRentCollectionInput, BulkOperationResult } from '../../types/bulkOperations';
-import { propertyService } from '../../services';
-import unitService from '../../services/unitService';
+import { bulkOperationsService } from '../../../services';
+import { useNotifications } from '../../../contexts';
+import type { BulkRentCollectionInput, BulkOperationResult } from '../../../types/bulkOperations';
+import { propertyService } from '../../../services';
+import unitService from '../../../services/unitService';
 
 interface Unit {
   id: string;
@@ -38,7 +38,7 @@ interface Unit {
   status: string;
 }
 
-import type { Property } from '../../types/property';
+import type { Property } from '../../../types/property';
 
 interface BulkRentCollectionModalProps {
   onClose: () => void;

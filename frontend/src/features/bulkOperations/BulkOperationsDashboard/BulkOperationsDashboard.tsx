@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppLayout } from '../../components/layout/AppLayout';
+import { AppLayout } from '../../../components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
@@ -12,12 +12,12 @@ import {
   AlertTriangle,
   DollarSign,
 } from 'lucide-react';
-import { BulkRentCollectionModal } from './BulkRentCollectionModal';
-import { BulkPaymentModal } from './BulkPaymentModal';
-import { BulkReceiptGenerationModal } from './BulkReceiptGenerationModal';
-import { BulkCommunicationModal } from './BulkCommunicationModal';
-import { BulkExportModal } from './BulkExportModal';
-import { ReceiptValidationDashboard } from './ReceiptValidationDashboard';
+import { BulkRentCollectionModal } from '../BulkRentCollectionModal';
+import { BulkPaymentModal } from '../BulkPaymentModal';
+import { BulkReceiptGenerationModal } from '../BulkReceiptGenerationModal';
+import { BulkCommunicationModal } from '../BulkCommunicationModal';
+import { BulkExportModal } from '../BulkExportModal';
+import { ReceiptValidationDashboard } from '../ReceiptValidationDashboard';
 
 type BulkOperationType = 'rent-collection' | 'payments' | 'receipts' | 'communication' | 'export' | 'validation';
 
