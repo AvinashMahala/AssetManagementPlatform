@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { RentTransaction, RentTransactionInput, InvoiceGenerationRequest, ReceiptGenerationRequest } from '@/types/rentTransaction';
+import type { RentTransaction, RentTransactionInput, InvoiceGenerationRequest, TransactionReceiptGenerationRequest } from '@/features/finance/types';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { rentTransactionService } from '@/features/finance/services/rentTransactionService';
 
@@ -105,7 +105,7 @@ export function useGenerateInvoice() {
  * Generate receipt
  */
 export function useGenerateReceipt() {
-  return useApiMutation<{ pdfUrl: string; receiptNumber: string }, ReceiptGenerationRequest>(
+  return useApiMutation<{ pdfUrl: string; receiptNumber: string }, TransactionReceiptGenerationRequest>(
     (request) => rentTransactionService.generateReceipt(request)
   );
 }

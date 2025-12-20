@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMeter, useCreateMeterReading, useLatestMeterReading } from '../../../hooks';
-import type { MeterReadingInput } from '../../../types/meter';
+import type { MeterReadingInput } from '@/features/meters/types';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import { MeterReadingForm, MeterReadingPreview, MeterLoading, MeterError, MeterPageHeader } from '../components';
 

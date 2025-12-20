@@ -1,7 +1,7 @@
 import React from 'react';
 import { User, Phone, Mail, Globe, Plus, X } from 'lucide-react';
 import { FormField, Input, Button } from '@/componentDesignLibrary';
-import type { OwnerContact } from '@/types/property';
+import type { OwnerContact } from '@/features/properties/types';
 
 interface OwnerContactFormProps {
   value: OwnerContact;

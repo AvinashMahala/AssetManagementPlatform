@@ -8,7 +8,7 @@ import type {
   BulkOperationResult,
   ReceiptValidationResult,
   BulkExportResponse,
-} from '../types/bulkOperations';
+} from '@/features/bulkOperations/types';
 
 export class BulkOperationsService {
   /**

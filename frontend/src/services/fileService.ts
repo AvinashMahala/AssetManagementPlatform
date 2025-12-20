@@ -6,7 +6,7 @@ import type {
   FileUploadResponse,
   FileListResponse,
   FileStorageStats
-} from '../types/file';
+} from '@/features/files/types';
 import type { ApiResponse } from '../types/api';
 
 class FileService {

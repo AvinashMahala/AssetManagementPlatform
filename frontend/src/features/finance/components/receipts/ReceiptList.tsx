@@ -6,7 +6,7 @@ import { Badge } from '@/componentDesignLibrary';
 import { Loading } from '@/componentDesignLibrary';
 import { Alert, AlertDescription } from '@/componentDesignLibrary';
 import { receiptService } from '@/features/finance/services/receiptService';
-import type { Receipt } from '@/types/receipt';
+import type { Receipt } from '@/features/finance/types';
 import { FileText, Download, Eye, AlertCircle, Calendar, DollarSign } from 'lucide-react';
 
 interface ReceiptListProps {

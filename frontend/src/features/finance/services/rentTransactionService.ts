@@ -1,4 +1,4 @@
-import type { RentTransaction, RentTransactionInput, InvoiceGenerationRequest, ReceiptGenerationRequest, InvoiceReceiptData } from '@/types/rentTransaction';
+import type { RentTransaction, RentTransactionInput, InvoiceGenerationRequest, TransactionReceiptGenerationRequest, InvoiceReceiptData } from '@/features/finance/types';
 import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 
@@ -70,7 +70,7 @@ class RentTransactionService {
   /**
    * Generate receipt for transaction
    */
-  async generateReceipt(request: ReceiptGenerationRequest): Promise<ApiResponse<{ pdfUrl: string; receiptNumber: string }>> {
+  async generateReceipt(request: TransactionReceiptGenerationRequest): Promise<ApiResponse<{ pdfUrl: string; receiptNumber: string }>> {
     return apiClient.post<{ pdfUrl: string; receiptNumber: string }>('/api/rent-transactions/generate-receipt', request);
   }
 

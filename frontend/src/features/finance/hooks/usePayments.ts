@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { RentPayment, RentPaymentInput } from '@/types/payment';
+import type { RentPayment, RentPaymentInput } from '@/features/finance/types';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { paymentService } from '@/features/finance/services/paymentService';
 

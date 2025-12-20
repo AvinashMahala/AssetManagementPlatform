@@ -6,7 +6,7 @@ import { Badge } from '@/componentDesignLibrary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/componentDesignLibrary';
 import { ConfirmDialog } from '@/componentDesignLibrary';
 import { propertyFileService } from '@/services';
-import type { PropertyFile } from '@/types/property';
+import type { PropertyFile } from '@/features/properties/types';
 import { format } from 'date-fns';
 
 interface PropertyFileGalleryProps {

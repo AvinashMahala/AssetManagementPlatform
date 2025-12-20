@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity, TrendingUp, DollarSign, Calendar } from 'lucide-react';
-import { MeterType } from '../../../../types/meter';
+import { MeterType } from '@/features/meters/types';
 import { Card, CardContent } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 

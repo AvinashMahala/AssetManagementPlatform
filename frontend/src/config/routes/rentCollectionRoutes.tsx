@@ -3,10 +3,10 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded rent collection components
-const PropertyRentCollectionPage = lazy(() => import('../../features/finance/pages/RentCollection/PropertyRentCollectionPage').then(module => ({ default: module.PropertyRentCollectionPage })));
-const UnitRentCollectionPage = lazy(() => import('../../features/finance/pages/RentCollection/UnitRentCollectionPage').then(module => ({ default: module.UnitRentCollectionPage })));
-const MonthlySummaryDashboard = lazy(() => import('../../features/finance/pages/RentCollection/MonthlySummaryDashboard').then(module => ({ default: module.MonthlySummaryDashboard })));
-const RentCollectionWorkflowDashboard = lazy(() => import('../../features/finance/pages/RentCollection/RentCollectionWorkflowDashboard').then(module => ({ default: module.RentCollectionWorkflowDashboard })));
+const PropertyRentCollectionPage = lazy(() => import('../../features/finance/pages/PropertyRentCollectionPage/PropertyRentCollectionPage').then(module => ({ default: module.PropertyRentCollectionPage })));
+const UnitRentCollectionPage = lazy(() => import('../../features/finance/pages/UnitRentCollectionPage/UnitRentCollectionPage').then(module => ({ default: module.UnitRentCollectionPage })));
+const MonthlySummaryDashboard = lazy(() => import('../../features/finance/pages/MonthlySummaryDashboard/MonthlySummaryDashboard').then(module => ({ default: module.MonthlySummaryDashboard })));
+const RentCollectionWorkflowDashboard = lazy(() => import('../../features/finance/pages/RentCollectionWorkflowDashboard/RentCollectionWorkflowDashboard').then(module => ({ default: module.RentCollectionWorkflowDashboard })));
 
 export const rentCollectionRoutes: RouteConfig[] = [
   {

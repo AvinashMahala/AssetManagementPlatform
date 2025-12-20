@@ -1,4 +1,4 @@
-import type { Tenant, TenantInput } from '@/types/tenant';
+import type { Tenant, TenantInput } from '@/features/tenants/types';
 import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';

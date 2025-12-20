@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { fileService } from '@/services';
-import type { FileMetadata } from '@/types/file';
+import type { FileMetadata } from '@/features/files/types';
 
 interface RecentFilesWidgetProps {
   limit?: number;

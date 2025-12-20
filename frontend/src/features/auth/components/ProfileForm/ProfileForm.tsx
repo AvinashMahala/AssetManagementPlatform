@@ -5,7 +5,7 @@ import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
 import { LoadingSpinner, ValidationFeedback, EmailVerificationStatus, useRealTimeValidation, ExpandableSection, Tooltip } from '@/componentDesignLibrary';
 import { useAuthContext } from '@/contexts/AuthContext';
-import type { UpdateProfileRequest } from '@/types/auth';
+import type { UpdateProfileRequest } from '@/features/auth/types/auth';
 
 interface ProfileFormProps {
   onSuccess?: () => void;

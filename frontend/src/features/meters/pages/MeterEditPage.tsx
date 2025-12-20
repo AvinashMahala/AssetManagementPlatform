@@ -4,7 +4,7 @@ import navigateBackOrFallback from '../../../utils/navigation';
 import { useMeter, useUpdateMeter } from '../../../hooks';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import MeterFormTabbed from '@/features/meters/components/forms/MeterFormTabbed';
-import type { MeterInput } from '../../../types/meter';
+import type { MeterInput } from '@/features/meters/types';
 import { MeterLoading, MeterError, MeterPageHeader } from '../components';
 
 export const MeterEditPage: React.FC = () => {

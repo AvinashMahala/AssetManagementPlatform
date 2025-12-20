@@ -1,4 +1,4 @@
-import type { Property, PropertyInput, PropertyFilters } from '@/types/property';
+import type { Property, PropertyInput, PropertyFilters } from '@/features/properties/types';
 import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';

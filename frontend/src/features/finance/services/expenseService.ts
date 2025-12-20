@@ -1,4 +1,4 @@
-import type { Expense, ExpenseInput, ExpenseUpdateInput, ExpenseFilters, ExpenseStatistics, ExpenseWithDetails } from '@/types/expense';
+import type { Expense, ExpenseInput, ExpenseUpdateInput, ExpenseFilters, ExpenseStatistics, ExpenseWithDetails } from '@/features/finance/types';
 import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';

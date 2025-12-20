@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Property, PropertyInput, PropertyFilters } from '@/types/property';
+import type { Property, PropertyInput, PropertyFilters } from '@/features/properties/types';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { propertyService } from '@/features/properties/services/propertyService';
 

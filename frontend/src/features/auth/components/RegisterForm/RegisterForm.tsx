@@ -5,7 +5,7 @@ import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
 import { useAuthContext } from '@/contexts/AuthContext';
-import type { UserRegistrationInput } from '@/types/auth';
+import type { UserRegistrationInput } from '@/features/auth/types/auth';
 import type { GoogleCredentialResponse } from '@/hooks';
 
 interface RegisterFormProps {

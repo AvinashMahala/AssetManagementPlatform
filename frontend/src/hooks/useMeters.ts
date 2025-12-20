@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '../types/meter';
+import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '@/features/meters/types';
 import { meterService, type PaginationOptions, type PaginationResult, type MeterFilters } from '../services/meterService';
 import { useApi, useApiMutation } from './useApi';
 

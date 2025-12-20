@@ -1,4 +1,4 @@
-import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '../types/meter';
+import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '@/features/meters/types';
 import type { ApiResponse } from '../types/api';
 import { apiClient } from '@/lib/apiClient';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { UnitUtility, UtilityTypeValue, UtilityBillingMethodValue } from '../../types/unit';
-import { UtilityType, UtilityBillingMethod } from '../../types/unit';
+import type { UnitUtility, UtilityTypeValue, UtilityBillingMethodValue } from '@/features/units/types';
+import { UtilityType, UtilityBillingMethod } from '@/features/units/types';
 import { useUnitUtilities, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility } from '../../hooks';
 import { useLastMeterReadings } from '../../hooks';
 import { getErrorMessage } from '../../types/api';

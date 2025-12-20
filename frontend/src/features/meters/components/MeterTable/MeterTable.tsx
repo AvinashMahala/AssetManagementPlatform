@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Eye, Power, PowerOff, Plus, ChevronLeft, ChevronRight, Zap, Droplets, Flame, Activity } from 'lucide-react';
-import { MeterType } from '../../../../types/meter';
+import { MeterType } from '@/features/meters/types';
 import { Card, CardContent } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';

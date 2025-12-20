@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '../../../hooks';
-import { MeterType } from '../../../types/meter';
+import { MeterType } from '@/features/meters/types';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import type { PaginationOptions, MeterFilters as MeterFiltersType } from '../../../services/meterService';
 import { useNotifications } from '../../../contexts';

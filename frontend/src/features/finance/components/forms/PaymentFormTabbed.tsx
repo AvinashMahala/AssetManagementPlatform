@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { useLeases, useTenants } from '@/hooks';
-import type { RentPaymentInput, PaymentMethodValue } from '@/types/payment';
-import { PaymentMethod } from '@/types/payment';
+import type { RentPaymentInput, PaymentMethodValue } from '@/features/finance/types';
+import { PaymentMethod } from '@/features/finance/types';
 
 interface PaymentFormTabbedProps {
   initialData?: Partial<RentPaymentInput>;

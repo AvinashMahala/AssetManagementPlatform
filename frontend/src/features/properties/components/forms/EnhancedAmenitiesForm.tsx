@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, Crown, Settings, Plus, X } from 'lucide-react';
 import { FormField, Badge, Button, Textarea } from '@/componentDesignLibrary';
-import type { PropertyAmenities } from '@/types/property';
+import type { PropertyAmenities } from '@/features/properties/types';
 
 interface EnhancedAmenitiesFormProps {
   value: PropertyAmenities;

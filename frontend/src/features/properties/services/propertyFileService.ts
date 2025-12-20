@@ -1,7 +1,7 @@
 import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types/api';
-import type { PropertyFile } from '@/types/property';
+import type { PropertyFile } from '@/features/properties/types';
 
 class PropertyFileService {
   async getPropertyFiles(propertyId: string): Promise<ApiResponse<PropertyFile[]>> {

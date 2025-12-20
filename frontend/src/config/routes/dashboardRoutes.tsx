@@ -3,7 +3,7 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded dashboard components
-import DashboardEnhanced from '../../features/dashboard/DashboardEnhanced/DashboardEnhanced';
+import DashboardEnhanced from '../../features/dashboard/pages/DashboardEnhanced/DashboardEnhanced';
 const NavigationConfigPage = lazy(() => import('../../features/admin/pages/NavigationConfigPage'));
 
 export const dashboardRoutes: RouteConfig[] = [

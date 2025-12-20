@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { Expense, ExpenseInput, ExpenseUpdateInput, ExpenseFilters, ExpenseStatistics, ExpenseWithDetails } from '@/types/expense';
+import type { Expense, ExpenseInput, ExpenseUpdateInput, ExpenseFilters, ExpenseStatistics, ExpenseWithDetails } from '@/features/finance/types';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { expenseService } from '@/features/finance/services/expenseService';
 

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibra
 import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { Label } from '@/componentDesignLibrary';
-import type { MeterReadingInput } from '../../../../types/meter';
+import type { MeterReadingInput } from '@/features/meters/types';
 
 interface MeterReadingFormProps {
   formData: Partial<MeterReadingInput>;

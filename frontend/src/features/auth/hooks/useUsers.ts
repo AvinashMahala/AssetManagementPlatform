@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { User, UserInput, UserLoginInput } from '@/types/user';
+import type { User, UserInput, UserLoginInput } from '@/features/auth/types/user';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { userService } from '@/features/auth/services/userService';
 

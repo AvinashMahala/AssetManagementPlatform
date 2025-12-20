@@ -1,7 +1,7 @@
 import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types/api';
-import type { PropertyReceiptTemplate } from '@/types/property';
+import type { PropertyReceiptTemplate } from '@/features/properties/types';
 
 class ReceiptTemplateService {
   async getReceiptTemplate(propertyId: string): Promise<ApiResponse<PropertyReceiptTemplate>> {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import navigateBackOrFallback from '../../../utils/navigation';
 import { useCreateMeter } from '../../../hooks';
-import type { MeterInput } from '../../../types/meter';
+import type { MeterInput } from '@/features/meters/types';
 import { AppLayout } from '../../../components/layout/AppLayout';
 import MeterFormTabbed from '@/features/meters/components/forms/MeterFormTabbed';
 import { MeterPageHeader } from '../components';

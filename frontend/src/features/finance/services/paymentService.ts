@@ -1,4 +1,4 @@
-import type { RentPayment, RentPaymentInput } from '@/types/payment';
+import type { RentPayment, RentPaymentInput } from '@/features/finance/types';
 import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';

@@ -1,4 +1,4 @@
-import type { UnitUtility, UnitUtilityInput } from '../types/unit';
+import type { UnitUtility, UnitUtilityInput } from '@/features/units/types';
 import type { ApiResponse } from '../types/api';
 import { apiClient } from '@/lib/apiClient';
 

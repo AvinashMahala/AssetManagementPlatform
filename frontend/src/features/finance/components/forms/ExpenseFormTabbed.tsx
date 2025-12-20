@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { useProperties, useUnits } from '@/hooks';
-import type { ExpenseInput, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue, ExpenseStatusValue } from '@/types/expense';
-import { ExpenseType, ExpenseFrequency, ExpenseDistribution, ExpenseStatus } from '@/types/expense';
+import type { ExpenseInput, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue, ExpenseStatusValue } from '@/features/finance/types';
+import { ExpenseType, ExpenseFrequency, ExpenseDistribution, ExpenseStatus } from '@/features/finance/types';
 
 interface ExpenseFormTabbedProps {
   initialData?: Partial<ExpenseInput>;

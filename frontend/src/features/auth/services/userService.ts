@@ -1,4 +1,4 @@
-import type { User, UserInput, UserLoginInput, AuthUser } from '@/types/user';
+import type { User, UserInput, UserLoginInput, AuthUser } from '@/features/auth/types/user';
 import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';

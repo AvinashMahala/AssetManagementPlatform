@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { Tenant, TenantInput } from '@/types/tenant';
+import type { Tenant, TenantInput } from '@/features/tenants/types';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { tenantService } from '@/features/tenants/services/tenantService';
 

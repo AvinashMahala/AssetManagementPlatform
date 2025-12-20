@@ -12,7 +12,7 @@ import type {
   AdminPasswordReset,
   GoogleUserProfile,
   UpdateProfileRequest
-} from '@/types/auth';
+} from '@/features/auth/types/auth';
 
 class AuthService {
   // User registration

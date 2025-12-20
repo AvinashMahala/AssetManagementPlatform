@@ -1,5 +1,5 @@
-import type { Unit } from '../../../../types/unit';
-import type { Tenant } from '../../../../types/tenant';
+import type { Unit } from '@/features/units/types';
+import type { Tenant } from '@/features/tenants/types';
 
 export interface LeaseFiltersProps {
   search: string;

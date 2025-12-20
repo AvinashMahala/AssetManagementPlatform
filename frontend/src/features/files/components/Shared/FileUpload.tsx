@@ -6,7 +6,7 @@ import { Badge } from '@/componentDesignLibrary';
 import { Alert, AlertDescription } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { fileService } from '@/services';
-import type { FileUploadRequest, FileMetadata } from '@/types/file';
+import type { FileUploadRequest, FileMetadata } from '@/features/files/types';
 
 interface FileUploadProps {
   entityType?: 'property' | 'unit' | 'tenant'; // Optional for general uploads

@@ -12,7 +12,7 @@ import type {
   PasswordResetViaSecurityQuestions,
   PasswordResetViaRecoveryCode,
   AdminPasswordReset
-} from '../types/auth';
+} from '@/features/auth/types/auth';
 import { authService } from '@/features/auth/services/authService';
 import { ApiException } from '../utils/ApiException';
 import { apiClient } from '@/lib/apiClient';

@@ -1,4 +1,4 @@
-import type { FileMetadata } from '@/types/file';
+import type { FileMetadata } from '@/features/files/types';
 
 export interface FileStatsProps {
   totalFiles: number;

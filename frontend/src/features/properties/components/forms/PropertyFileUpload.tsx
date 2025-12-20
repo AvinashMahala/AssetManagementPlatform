@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, X, File, Image, Eye, Download } from 'lucide-react';
 import { Button, Badge } from '@/componentDesignLibrary';
-import type { PropertyFile } from '@/types/property';
+import type { PropertyFile } from '@/features/properties/types';
 
 interface PropertyFileUploadProps {
   files: PropertyFile[];

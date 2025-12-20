@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { useProperties, useUnits, useProperty, useUnit } from '@/hooks';
-import { MeterType } from '@/types/meter';
-import type { MeterInput } from '@/types/meter';
+import { MeterType } from '@/features/meters/types';
+import type { MeterInput } from '@/features/meters/types';
 import { generateMeterName } from '@/utils/helpers';
 
 interface MeterFormTabbedProps {

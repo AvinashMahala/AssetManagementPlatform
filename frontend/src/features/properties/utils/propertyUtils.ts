@@ -1,4 +1,4 @@
-import { PropertyStatus, PropertyType } from '../../../types/property';
+import { PropertyStatus, PropertyType } from '@/features/properties/types';
 
 export const getStatusColor = (status: string) => {
   switch (status) {

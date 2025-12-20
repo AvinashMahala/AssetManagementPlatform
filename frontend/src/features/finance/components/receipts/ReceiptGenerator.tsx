@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription } from '@/componentDesignLibrary';
 import { Loading } from '@/componentDesignLibrary';
 import { receiptService } from '@/features/finance/services/receiptService';
-import type { ReceiptGenerationRequest, Receipt } from '@/types/receipt';
+import type { ReceiptGenerationRequest, Receipt } from '@/features/finance/types';
 import { Download, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface ReceiptGeneratorProps {

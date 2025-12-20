@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { Unit, UnitInput } from '../types/unit';
+import type { Unit, UnitInput } from '@/features/units/types';
 import { useApi, useApiMutation } from './useApi';
 import { unitService } from '../services/unitService';
 

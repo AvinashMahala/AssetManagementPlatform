@@ -10,8 +10,8 @@ import { Badge } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { useProperties, useProperty } from '@/hooks';
-import type { UnitInput } from '@/types/unit';
-import { UnitStatus, UnitType } from '@/types/unit';
+import type { UnitInput } from '@/features/units/types';
+import { UnitStatus, UnitType } from '@/features/units/types';
 
 interface UnitFormTabbedProps {
   initialData?: Partial<UnitInput>;

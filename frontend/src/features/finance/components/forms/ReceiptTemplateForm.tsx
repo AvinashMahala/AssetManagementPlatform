@@ -1,7 +1,7 @@
 import { generateUPILink, copyUPILink, openUPIApp } from '@/utils/upiUtils';
 import { CreditCard, Smartphone, QrCode, FileSignature, Image, Plus, X, Copy, ExternalLink } from 'lucide-react';
 import { FormField, Input, Textarea, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
-import type { PropertyReceiptTemplate, BankDetails, WalletDetails } from '@/types/property';
+import type { PropertyReceiptTemplate, BankDetails, WalletDetails } from '@/features/properties/types';
 
 interface ReceiptTemplateFormProps {
   value: PropertyReceiptTemplate;

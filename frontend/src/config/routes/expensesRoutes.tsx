@@ -4,10 +4,10 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded expense components
-const ExpenseListPageEnhanced = lazy(() => import('../../features/finance/pages/Expenses/ExpenseListPageEnhanced'));
-const ExpenseCreatePageTabbedEnhanced = lazy(() => import('../../features/finance/pages/Expenses/ExpenseCreatePageTabbedEnhanced'));
-const ExpenseDetailPage = lazy(() => import('../../features/finance/pages/Expenses/ExpenseDetailPage'));
-const ExpenseEditPage = lazy(() => import('../../features/finance/pages/Expenses/ExpenseEditPage').then(module => ({ default: module.ExpenseEditPage })));
+const ExpenseListPageEnhanced = lazy(() => import('../../features/finance/pages/ExpenseListPageEnhanced/ExpenseListPageEnhanced'));
+const ExpenseCreatePageTabbedEnhanced = lazy(() => import('../../features/finance/pages/ExpenseCreatePageTabbedEnhanced/ExpenseCreatePageTabbedEnhanced'));
+const ExpenseDetailPage = lazy(() => import('../../features/finance/pages/ExpenseDetailPage/ExpenseDetailPage'));
+const ExpenseEditPage = lazy(() => import('../../features/finance/pages/ExpenseEditPage/ExpenseEditPage').then(module => ({ default: module.ExpenseEditPage })));
 
 export const expensesRoutes: RouteConfig[] = [
   {

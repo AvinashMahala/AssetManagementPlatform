@@ -5,7 +5,7 @@ import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
 import { useAuthContext } from '@/contexts';
-import type { UserCredentials } from '@/types/user';
+import type { UserCredentials } from '@/features/auth/types/user';
 
 interface LoginFormProps {
   onSuccess?: () => void;

@@ -7,7 +7,7 @@ import { Input } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import type { TenantInput } from '@/types/tenant';
+import type { TenantInput } from '@/features/tenants/types';
 
 interface TenantFormTabbedProps {
   initialData?: Partial<TenantInput>;

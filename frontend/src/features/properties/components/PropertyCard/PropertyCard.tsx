@@ -6,7 +6,7 @@ import { StatusBadge } from '../../../../componentDesignLibrary/components/statu
 import type { StatusType } from '../../../../componentDesignLibrary/components/status-badge/StatusBadge';
 import { PropertyActions } from '../PropertyActions';
 import { getTypeLabel, getStatusColor } from '../../utils/propertyUtils';
-import { PropertyStatus } from '../../../../types/property';
+import { PropertyStatus } from '@/features/properties/types';
 import type { PropertyCardProps } from './types';
 
 export const PropertyCard: React.FC<PropertyCardProps> = ({

@@ -6,7 +6,7 @@ import { Badge } from '@/componentDesignLibrary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/componentDesignLibrary';
 import { ConfirmDialog } from '@/componentDesignLibrary';
 import { fileService } from '@/services';
-import type { FileMetadata } from '@/types/file';
+import type { FileMetadata } from '@/features/files/types';
 import { format } from 'date-fns';
 
 interface FileGalleryProps {
