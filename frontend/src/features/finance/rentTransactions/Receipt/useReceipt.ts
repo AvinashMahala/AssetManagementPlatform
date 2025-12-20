@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { rentTransactionService } from '@/services/rentTransactionService';
+import { rentTransactionService } from '@/features/finance/services/rentTransactionService';
 
 export const useReceipt = () => {
   const { transactionId } = useParams<{ transactionId: string }>();

@@ -10,7 +10,7 @@ import { AppLayout } from '../../../../components/layout';
 import { useUnit, useProperty, useLastMeterReadings, useCreateRentTransaction, useLeases, useUnitTransactionHistory, useDeleteRentTransaction } from '../../../../hooks';
 import { useUnitUtilities } from '../../../../hooks/useUnitUtilities';
 import { useAuthContext } from '../../../../contexts';
-import { rentTransactionService } from '@/services/rentTransactionService';
+import { rentTransactionService } from '@/features/finance/services/rentTransactionService';
 import { useNotifications } from '../../../../contexts';
 import type { MeterReadingInput, ExpenseItem } from '../../../../types/rentTransaction';
 import { 

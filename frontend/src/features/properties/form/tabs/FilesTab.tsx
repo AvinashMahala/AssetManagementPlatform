@@ -2,7 +2,7 @@ import React from 'react';
 import { FormColumn } from '../../../../componentDesignLibrary';
 import { Upload } from 'lucide-react';
 import type { PropertyInput } from '../../../../types';
-import PropertyFileUpload from '../../../../components/forms/PropertyFileUpload';
+import PropertyFileUpload from '@/features/properties/components/forms/PropertyFileUpload';
 
 interface FilesTabProps {
   files: PropertyInput['files'];

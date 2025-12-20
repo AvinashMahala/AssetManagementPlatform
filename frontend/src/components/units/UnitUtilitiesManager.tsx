@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { UnitUtility, UtilityTypeValue, UtilityBillingMethodValue } from '../../types/unit';
 import { UtilityType, UtilityBillingMethod } from '../../types/unit';
 import { useUnitUtilities, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility } from '../../hooks';
-import { useLastMeterReadings } from '../../hooks/useRentTransactions';
+import { useLastMeterReadings } from '../../hooks';
 import { getErrorMessage } from '../../types/api';
 
 interface UnitUtilitiesManagerProps {

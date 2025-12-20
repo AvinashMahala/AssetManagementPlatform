@@ -6,7 +6,7 @@ import { useUnit, useUpdateUnit } from '../../../hooks';
 import { Button } from '@/componentDesignLibrary';
 import { PageLoadingSpinner } from '../../../componentDesignLibrary';
 import { AppLayout } from '../../../components/layout/AppLayout';
-import UnitFormTabbed from '../../../components/forms/UnitFormTabbed';
+import UnitFormTabbed from '@/features/units/components/forms/UnitFormTabbed';
 import type { UnitInput } from '../../../types/unit';
 import './UnitEditPage.module.scss';
 

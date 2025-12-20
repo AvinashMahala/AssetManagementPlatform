@@ -16,11 +16,11 @@ import {
   Receipt,
   Plus,
 } from 'lucide-react';
-import { useProperty } from '../../../hooks/useProperties';
+import { useProperty } from '../../../hooks';
 import { useUnits } from '../../../hooks/useUnits';
 import { useLeases } from '../../../hooks';
-import { usePayments } from '../../../hooks/usePayments';
-import { useTenants } from '../../../hooks/useTenants';
+import { usePayments } from '../../../hooks';
+import { useTenants } from '../../../hooks';
 import { navigateBackOrFallback } from '../../../utils/navigation';
 import { getErrorMessage } from '../../../types/api';
 import { PropertyStatsSection } from './PropertyStatsSection';

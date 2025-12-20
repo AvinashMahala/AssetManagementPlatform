@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePayment, useDeletePayment, useLease, useTenant } from '../../../../hooks';
 import navigateBackOrFallback from '../../../../utils/navigation';
-import { ReceiptGenerator } from '../../../../components/receipts/ReceiptGenerator';
+import { ReceiptGenerator } from '@/features/finance/components/receipts/ReceiptGenerator';
 import { getErrorMessage } from '../../../../types/api';
 
 export const PaymentDetailPage: React.FC = () => {

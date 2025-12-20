@@ -2,7 +2,7 @@ import React from 'react';
 import { FormColumn } from '../../../../componentDesignLibrary';
 import { FileText } from 'lucide-react';
 import type { PropertyReceiptTemplate } from '../../../../types';
-import ReceiptTemplateForm from '../../../../components/forms/ReceiptTemplateForm';
+import ReceiptTemplateForm from '@/features/finance/components/forms/ReceiptTemplateForm';
 
 interface ReceiptTabProps {
   value: PropertyReceiptTemplate | Partial<PropertyReceiptTemplate>;

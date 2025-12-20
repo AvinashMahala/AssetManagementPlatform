@@ -3,7 +3,7 @@ import { FormColumn } from '../../../../componentDesignLibrary';
 import { User } from 'lucide-react';
 import type { PropertyInput } from '../../../../types';
 import type { FormErrors } from '../types';
-import OwnerContactForm from '../../../../components/forms/OwnerContactForm';
+import OwnerContactForm from '@/features/tenants/components/forms/OwnerContactForm';
 
 interface OwnerTabProps {
   formData: PropertyInput;

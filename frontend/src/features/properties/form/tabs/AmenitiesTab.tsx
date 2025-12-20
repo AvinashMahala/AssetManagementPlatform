@@ -2,7 +2,7 @@ import React from 'react';
 import { FormColumn } from '../../../../componentDesignLibrary';
 import { Star } from 'lucide-react';
 import type { PropertyInput } from '../../../../types';
-import EnhancedAmenitiesForm from '../../../../components/forms/EnhancedAmenitiesForm';
+import EnhancedAmenitiesForm from '@/features/properties/components/forms/EnhancedAmenitiesForm';
 
 interface AmenitiesTabProps {
   value: PropertyInput['amenities'];

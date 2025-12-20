@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateExpense } from '../../../../hooks';
 import { useNotifications } from '../../../../contexts';
-import ExpenseFormTabbed from '../../../../components/forms/ExpenseFormTabbed';
+import ExpenseFormTabbed from '@/features/finance/components/forms/ExpenseFormTabbed';
 import type { ExpenseInput } from '../../../../types/expense';
 
 const ExpenseCreatePageTabbed: React.FC = () => {

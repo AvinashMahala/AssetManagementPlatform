@@ -13,7 +13,7 @@ import type {
   PasswordResetViaRecoveryCode,
   AdminPasswordReset
 } from '../types/auth';
-import { authService } from '../services/authService';
+import { authService } from '@/features/auth/services/authService';
 import { ApiException } from '../utils/ApiException';
 import { apiClient } from '../services/apiClient';
 

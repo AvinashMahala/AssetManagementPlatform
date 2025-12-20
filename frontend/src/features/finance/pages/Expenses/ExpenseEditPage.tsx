@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useExpense, useUpdateExpense } from '../../../../hooks';
 import { Button } from '@/componentDesignLibrary';
 import { AppLayout } from '../../../../components/layout/AppLayout';
-import ExpenseFormTabbed from '../../../../components/forms/ExpenseFormTabbed';
+import ExpenseFormTabbed from '@/features/finance/components/forms/ExpenseFormTabbed';
 import type { ExpenseInput } from '../../../../types/expense';
 
 export const ExpenseEditPage: React.FC = () => {

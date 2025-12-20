@@ -23,7 +23,7 @@ import {
 import { bulkOperationsService } from '../../../services';
 import { useNotifications } from '../../../contexts';
 import type { BulkReceiptGenerationInput, BulkOperationResult } from '../../../types/bulkOperations';
-import rentTransactionService from '../../../services/rentTransactionService';
+import rentTransactionService from '@/features/finance/services/rentTransactionService';
 
 interface PaidTransaction {
   id: string;

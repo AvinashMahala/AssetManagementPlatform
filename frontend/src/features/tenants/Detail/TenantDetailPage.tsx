@@ -4,7 +4,7 @@ import { useTenant, useDeleteTenant } from '../../../hooks';
 import navigateBackOrFallback from '../../../utils/navigation';
 import { Button } from '@/componentDesignLibrary';
 import { Card } from '@/componentDesignLibrary';
-import { ReceiptList } from '../../../components/receipts';
+import { ReceiptList } from '@/features/finance/components/receipts';
 import { getErrorMessage } from '../../../types/api';
 
 const TenantDetailPage: React.FC = () => {

@@ -23,7 +23,7 @@ import {
 } from '@/componentDesignLibrary';
 import { Pagination } from '@/componentDesignLibrary';
 import { useUnits, useDeleteUnit } from '../../../hooks/useUnits';
-import { useProperties } from '../../../hooks/useProperties';
+import { useProperties } from '../../../hooks';
 import { AppLayout } from '../../../components/layout';
 import { PageLoadingSpinner } from '../../../componentDesignLibrary';
 import './UnitListPage.module.scss';

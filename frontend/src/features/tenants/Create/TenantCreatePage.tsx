@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateTenant } from '../../../hooks';
 import { useNotifications } from '../../../contexts';
-import TenantFormTabbed from '../../../components/forms/TenantFormTabbed';
+import TenantFormTabbed from '@/features/tenants/components/forms/TenantFormTabbed';
 import type { TenantInput } from '../../../types/tenant';
 
 const TenantCreatePageTabbed: React.FC = () => {

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import navigateBackOrFallback from '../../../utils/navigation';
 import { useMeter, useUpdateMeter } from '../../../hooks';
 import { AppLayout } from '../../../components/layout/AppLayout';
-import MeterFormTabbed from '../../../components/forms/MeterFormTabbed';
+import MeterFormTabbed from '@/features/meters/components/forms/MeterFormTabbed';
 import type { MeterInput } from '../../../types/meter';
 import { MeterLoading, MeterError, MeterPageHeader } from '../components';
 

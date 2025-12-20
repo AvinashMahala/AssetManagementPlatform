@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { usePayment, useUpdatePayment } from '../../../../hooks';
 import { Button } from '@/componentDesignLibrary';
 import { AppLayout } from '../../../../components/layout/AppLayout';
-import PaymentFormTabbed from '../../../../components/forms/PaymentFormTabbed';
+import PaymentFormTabbed from '@/features/finance/components/forms/PaymentFormTabbed';
 import type { RentPaymentInput } from '../../../../types/payment';
 
 export const PaymentEditPage: React.FC = () => {
