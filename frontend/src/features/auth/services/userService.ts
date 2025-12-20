@@ -1,6 +1,6 @@
 import type { User, UserInput, UserLoginInput, AuthUser } from '@/types/user';
 import type { ApiResponse } from '@/types/api';
-import { apiClient } from '@/services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 
 class UserService {

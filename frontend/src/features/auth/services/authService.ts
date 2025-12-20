@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { ApiException } from '@/utils/ApiException';
 import type {
   User,

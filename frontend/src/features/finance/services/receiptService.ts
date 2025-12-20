@@ -5,7 +5,7 @@ import type {
   ReceiptData
 } from '@/types/receipt';
 import type { ApiResponse } from '@/types/api';
-import { apiClient } from '@/services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 
 class ReceiptService {

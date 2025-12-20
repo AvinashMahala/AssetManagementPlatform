@@ -1,6 +1,6 @@
 import type { Unit, UnitInput } from '../types/unit';
 import type { ApiResponse } from '../types/api';
-import { apiClient } from './apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '../constants/api';
 
 class UnitService {

@@ -1,6 +1,6 @@
 import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '../types/meter';
 import type { ApiResponse } from '../types/api';
-import { apiClient } from './apiClient';
+import { apiClient } from '@/lib/apiClient';
 
 export interface PaginationOptions {
   page: number;

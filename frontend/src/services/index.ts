@@ -1,5 +1,4 @@
 // Services index
-export { default as apiClient } from './apiClient';
 export { default as propertyService } from '@/features/properties/services/propertyService';
 export { default as propertyFileService } from '@/features/properties/services/propertyFileService';
 export { default as receiptTemplateService } from '@/features/finance/services/receiptTemplateService';

@@ -1,6 +1,6 @@
 import type { Asset, AssetInput, AssetFilters } from '../types/asset';
 import type { ApiResponse } from '../types/api';
-import { apiClient } from './apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '../constants/api';
 
 class AssetService {

@@ -1,6 +1,6 @@
 import type { Property, PropertyInput, PropertyFilters } from '@/types/property';
 import type { ApiResponse } from '@/types/api';
-import { apiClient } from '@/services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import { createComponentLogger } from '@/utils/logger';
 

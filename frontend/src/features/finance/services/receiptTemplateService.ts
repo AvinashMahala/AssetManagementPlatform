@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types/api';
 import type { PropertyReceiptTemplate } from '@/types/property';

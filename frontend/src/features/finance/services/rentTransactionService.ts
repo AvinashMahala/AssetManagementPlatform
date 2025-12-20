@@ -1,6 +1,6 @@
 import type { RentTransaction, RentTransactionInput, InvoiceGenerationRequest, ReceiptGenerationRequest, InvoiceReceiptData } from '@/types/rentTransaction';
 import type { ApiResponse } from '@/types/api';
-import { apiClient } from '@/services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 
 class RentTransactionService {
   /**

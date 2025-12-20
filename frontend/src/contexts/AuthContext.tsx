@@ -15,7 +15,7 @@ import type {
 } from '../types/auth';
 import { authService } from '@/features/auth/services/authService';
 import { ApiException } from '../utils/ApiException';
-import { apiClient } from '../services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 
 /* eslint-disable react-refresh/only-export-components */
 

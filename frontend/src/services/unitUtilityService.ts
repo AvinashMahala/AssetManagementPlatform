@@ -1,6 +1,6 @@
 import type { UnitUtility, UnitUtilityInput } from '../types/unit';
 import type { ApiResponse } from '../types/api';
-import { apiClient } from './apiClient';
+import { apiClient } from '@/lib/apiClient';
 
 class UnitUtilityService {
   async getAll(unitId?: string, propertyId?: string): Promise<ApiResponse<UnitUtility[]>> {

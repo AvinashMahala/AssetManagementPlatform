@@ -1,6 +1,6 @@
 import type { Lease, LeaseInput } from '../types/lease';
 import type { ApiResponse } from '../../../types/api';
-import { apiClient } from '../../../services/apiClient';
+import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '../../../constants/api';
 
 class LeaseService {
