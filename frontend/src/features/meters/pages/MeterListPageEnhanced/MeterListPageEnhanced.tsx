@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '../../../hooks';
+import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '@/hooks';
 import { MeterType } from '@/features/meters/types';
-import { AppLayout } from '../../../components/layout/AppLayout';
-import type { PaginationOptions, MeterFilters as MeterFiltersType } from '../../../services/meterService';
-import { useNotifications } from '../../../contexts';
-import { getErrorMessage } from '../../../types/api';
-import { MeterListHeader, MeterStats, MeterFilters, MeterTable, MeterLoading, MeterError } from '../components';
+import { AppLayout } from '@/components/layout/AppLayout';
+import type { PaginationOptions, MeterFilters as MeterFiltersType } from '@/services/meterService';
+import { useNotifications } from '@/contexts';
+import { getErrorMessage } from '@/types/api';
+import { MeterListHeader, MeterStats, MeterFilters, MeterTable, MeterLoading, MeterError } from '@/features/meters/components';
 import styles from './MeterListPageEnhanced.module.scss';
 
 export const MeterListPageEnhanced: React.FC = () => {

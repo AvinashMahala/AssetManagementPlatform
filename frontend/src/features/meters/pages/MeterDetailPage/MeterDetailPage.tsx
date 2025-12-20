@@ -6,9 +6,9 @@ import {
   useMeterTrend,
   useMeterStatistics,
   useDeleteMeter
-} from '../../../hooks';
-import navigateBackOrFallback from '../../../utils/navigation';
-import { AppLayout } from '../../../components/layout/AppLayout';
+} from '@/hooks';
+import navigateBackOrFallback from '@/utils/navigation';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import {
   MeterDetailHeader,
@@ -19,7 +19,7 @@ import {
   MeterAnalytics,
   MeterLoading,
   MeterError
-} from '../components';
+} from '@/features/meters/components';
 
 export const MeterDetailPage: React.FC = () => {
   const navigate = useNavigate();

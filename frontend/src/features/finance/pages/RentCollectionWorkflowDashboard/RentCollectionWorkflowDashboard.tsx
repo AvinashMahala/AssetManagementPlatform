@@ -21,9 +21,9 @@ import { Badge } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { AppLayout } from '../../../../components/layout';
-import { useProperties, useRentTransactions, useTenants, useUnits } from '../../../../hooks';
-import { formatCurrency } from '../../../../utils/formatters';
+import { AppLayout } from '@/components/layout';
+import { useProperties, useRentTransactions, useTenants, useUnits } from '@/hooks';
+import { formatCurrency } from '@/utils/formatters';
 import { RentCollectionWorkflowStatus } from '@/features/finance/types';
 import type { RentCollectionWorkflowStatusType } from '@/features/finance/types';
 

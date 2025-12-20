@@ -9,14 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import { Pagination } from '@/componentDesignLibrary';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/componentDesignLibrary';
-import { AppLayout } from '../../../../components/layout';
-import { useExpenses, useProperties, useUnits, useDeleteExpense, useArchiveExpense } from '../../../../hooks';
+import { AppLayout } from '@/components/layout';
+import { useExpenses, useProperties, useUnits, useDeleteExpense, useArchiveExpense } from '@/hooks';
 import { format, isWithinInterval } from 'date-fns';
-import { useNotifications } from '../../../../contexts/NotificationContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import type { Property } from '@/features/properties/types';
 import type { Unit } from '@/features/units/types';
 import type { ExpenseWithDetails, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue, ExpenseStatusValue } from '@/features/finance/types';
-import { getErrorMessage } from '../../../../types/api';
+import { getErrorMessage } from '@/types/api';
 import './ExpenseListPageEnhanced.scss';
 
 const ExpenseListPageEnhanced: React.FC = () => {

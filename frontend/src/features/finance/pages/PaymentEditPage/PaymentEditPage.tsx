@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import navigateBackOrFallback from '../../../../utils/navigation';
+import navigateBackOrFallback from '@/utils/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { usePayment, useUpdatePayment } from '../../../../hooks';
+import { usePayment, useUpdatePayment } from '@/hooks';
 import { Button } from '@/componentDesignLibrary';
-import { AppLayout } from '../../../../components/layout/AppLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import PaymentFormTabbed from '@/features/finance/components/forms/PaymentFormTabbed';
 import type { RentPaymentInput } from '@/features/finance/types';
 

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreateLease } from '../hooks/useLeases';
-import { useNotifications } from '../../../contexts';
-import LeaseFormTabbed from '../components/LeaseForm/LeaseForm';
-import type { LeaseInput } from '../types/lease';
+import { useCreateLease } from '@/features/leases/hooks/useLeases';
+import { useNotifications } from '@/contexts';
+import LeaseFormTabbed from '@/features/leases/components/LeaseForm/LeaseForm';
+import type { LeaseInput } from '@/features/leases/types/lease';
 
 const LeaseCreatePageTabbed: React.FC = () => {
   const navigate = useNavigate();

@@ -5,10 +5,10 @@ import type { RouteConfig } from '../routeTypes';
 import { AppLayout } from '../../components/layout/AppLayout';
 
 // Lazy-loaded lease components
-const LeaseCreatePageTabbedEnhanced = lazy(() => import('../../features/leases/pages/LeaseCreatePage'));
-const LeaseDetailPage = lazy(() => import('../../features/leases/pages/LeaseDetailPage').then(module => ({ default: module.LeaseDetailPage })));
-const LeaseEditPage = lazy(() => import('../../features/leases/pages/LeaseEditPage').then(module => ({ default: module.LeaseEditPage })));
-const LeaseListPageEnhanced = lazy(() => import('../../features/leases/pages/LeaseListPage'));
+const LeaseCreatePageTabbedEnhanced = lazy(() => import('../../features/leases/pages/LeaseCreatePage/LeaseCreatePage'));
+const LeaseDetailPage = lazy(() => import('../../features/leases/pages/LeaseDetailPage/LeaseDetailPage').then(module => ({ default: module.LeaseDetailPage })));
+const LeaseEditPage = lazy(() => import('../../features/leases/pages/LeaseEditPage/LeaseEditPage').then(module => ({ default: module.LeaseEditPage })));
+const LeaseListPageEnhanced = lazy(() => import('../../features/leases/pages/LeaseListPage/LeaseListPage'));
 
 export const leasesRoutes: RouteConfig[] = [
   {

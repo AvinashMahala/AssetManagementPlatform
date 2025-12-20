@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import navigateBackOrFallback from '../../../utils/navigation';
+import navigateBackOrFallback from '@/utils/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { useLease, useUpdateLease } from '../hooks/useLeases';
+import { useLease, useUpdateLease } from '@/features/leases/hooks/useLeases';
 import { Button } from '@/componentDesignLibrary';
-import { AppLayout } from '../../../components/layout/AppLayout';
-import LeaseFormTabbed from '../components/LeaseForm/LeaseForm';
-import type { LeaseInput } from '../types/lease';
+import { AppLayout } from '@/components/layout/AppLayout';
+import LeaseFormTabbed from '@/features/leases/components/LeaseForm/LeaseForm';
+import type { LeaseInput } from '@/features/leases/types/lease';
 
 export const LeaseEditPage: React.FC = () => {
   const navigate = useNavigate();

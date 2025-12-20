@@ -12,17 +12,17 @@ import {
 } from '@/componentDesignLibrary';
 import { Pagination } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { useLeases, useDeleteLease } from '../hooks/useLeases';
-import { useTenants } from '../../../hooks';
-import { useUnits } from '../../../hooks/useUnits';
-import { AppLayout } from '../../../components/layout';
+import { useLeases, useDeleteLease } from '@/features/leases/hooks/useLeases';
+import { useTenants } from '@/hooks';
+import { useUnits } from '@/hooks/useUnits';
+import { AppLayout } from '@/components/layout';
 import { format, isWithinInterval } from 'date-fns';
-import type { Lease } from '../types/lease';
+import type { Lease } from '@/features/leases/types/lease';
 import type { Tenant } from '@/features/tenants/types';
 import type { Unit } from '@/features/units/types';
-import { LeaseList } from '../components/LeaseList/LeaseList';
-import { LeaseFilters } from '../components/LeaseFilters/LeaseFilters';
-import { LeaseBulkActions } from '../components/LeaseBulkActions/LeaseBulkActions';
+import { LeaseList } from '@/features/leases/components/LeaseList/LeaseList';
+import { LeaseFilters } from '@/features/leases/components/LeaseFilters/LeaseFilters';
+import { LeaseBulkActions } from '@/features/leases/components/LeaseBulkActions/LeaseBulkActions';
 import './LeaseListPage.scss';
 
 const LeaseListPage: React.FC = () => {

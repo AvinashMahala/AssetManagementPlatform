@@ -1,6 +1,6 @@
 import React from 'react';
-import { AppLayout } from '../../../components/layout/AppLayout';
-import LeaseCreatePageTabbed from './LeaseCreatePageTabbed';
+import { AppLayout } from '@/components/layout/AppLayout';
+import LeaseCreatePageTabbed from '../LeaseCreatePageTabbed/LeaseCreatePageTabbed';
 
 const LeaseCreatePageTabbedEnhanced: React.FC = () => {
   return (

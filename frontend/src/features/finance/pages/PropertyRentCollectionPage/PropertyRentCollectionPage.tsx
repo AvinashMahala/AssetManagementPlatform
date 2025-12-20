@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibra
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
-import { AppLayout } from '../../../../components/layout';
-import { useProperty, useUnits, useRentTransactions } from '../../../../hooks';
-import { formatCurrency, formatMonthYear, deriveTransactionDisplayStatus } from '../../../../utils/billingCalculations';
-import { RentCollectionCalendar } from '../../components/RentCollection/RentCollectionCalendar';
+import { AppLayout } from '@/components/layout';
+import { useProperty, useUnits, useRentTransactions } from '@/hooks';
+import { formatCurrency, formatMonthYear, deriveTransactionDisplayStatus } from '@/utils/billingCalculations';
+import { RentCollectionCalendar } from '@/features/finance/components/RentCollection/RentCollectionCalendar';
 
 export const PropertyRentCollectionPage: React.FC = () => {
   const { propertyId } = useParams<{ propertyId: string }>();

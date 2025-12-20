@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreateExpense } from '../../../../hooks';
-import { useNotifications } from '../../../../contexts';
+import { useCreateExpense } from '@/hooks';
+import { useNotifications } from '@/contexts';
 import ExpenseFormTabbed from '@/features/finance/components/forms/ExpenseFormTabbed';
 import type { ExpenseInput } from '@/features/finance/types';
 
