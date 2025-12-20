@@ -1,66 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React from 'react';
 import { ArrowLeft, FileText, Download, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Alert, AlertDescription } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { rentTransactionService } from '../../services/rentTransactionService';
+import { AppLayout } from '@/components/layout';
+import { useInvoice } from './useInvoice';
 
-export const RentTransactionInvoicePage: React.FC = () => {
-  const { transactionId } = useParams<{ transactionId: string }>();
-  const navigate = useNavigate();
-
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [invoiceNumber, setInvoiceNumber] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (transactionId) {
-      generateInvoice();
-    }
-  }, [transactionId]);
-
-  const generateInvoice = async () => {
-    if (!transactionId) return;
-
-    try {
-      setGenerating(true);
-      setError(null);
-
-      const response = await rentTransactionService.generateInvoice({
-        transactionId
-      });
-
-      if (response.success && response.data) {
-        setPdfUrl(response.data.pdfUrl);
-        setInvoiceNumber(response.data.invoiceNumber);
-      } else {
-        setError(response.message || 'Failed to generate invoice');
-      }
-    } catch (err) {
-      console.error('Invoice generation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate invoice');
-    } finally {
-      setGenerating(false);
-      setLoading(false);
-    }
-  };
-
-  const handleDownload = () => {
-    if (pdfUrl) {
-      // Create a temporary link to download the PDF
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = `invoice-${invoiceNumber || transactionId}.pdf`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+export const InvoicePage: React.FC = () => {
+  const {
+    transactionId,
+    loading,
+    generating,
+    error,
+    pdfUrl,
+    invoiceNumber,
+    generateInvoice,
+    handleDownload,
+    navigate
+  } = useInvoice();
 
   if (loading || generating) {
     return (

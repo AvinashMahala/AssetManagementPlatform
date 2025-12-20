@@ -1,66 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React from 'react';
 import { ArrowLeft, Receipt, Download, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Alert, AlertDescription } from '@/componentDesignLibrary';
-import { AppLayout } from '../../components/layout';
-import { rentTransactionService } from '../../services/rentTransactionService';
+import { AppLayout } from '@/components/layout';
+import { useReceipt } from './useReceipt';
 
-export const RentTransactionReceiptPage: React.FC = () => {
-  const { transactionId } = useParams<{ transactionId: string }>();
-  const navigate = useNavigate();
-
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [receiptNumber, setReceiptNumber] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (transactionId) {
-      generateReceipt();
-    }
-  }, [transactionId]);
-
-  const generateReceipt = async () => {
-    if (!transactionId) return;
-
-    try {
-      setGenerating(true);
-      setError(null);
-
-      const response = await rentTransactionService.generateReceipt({
-        transactionId
-      });
-
-      if (response.success && response.data) {
-        setPdfUrl(response.data.pdfUrl);
-        setReceiptNumber(response.data.receiptNumber);
-      } else {
-        setError(response.message || 'Failed to generate receipt');
-      }
-    } catch (err) {
-      console.error('Receipt generation error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate receipt');
-    } finally {
-      setGenerating(false);
-      setLoading(false);
-    }
-  };
-
-  const handleDownload = () => {
-    if (pdfUrl) {
-      // Create a temporary link to download the PDF
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = `receipt-${receiptNumber || transactionId}.pdf`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+export const ReceiptPage: React.FC = () => {
+  const {
+    transactionId,
+    loading,
+    generating,
+    error,
+    pdfUrl,
+    receiptNumber,
+    generateReceipt,
+    handleDownload,
+    navigate
+  } = useReceipt();
 
   if (loading || generating) {
     return (

@@ -3,9 +3,9 @@ import { ROUTE_PATHS } from '../../constants/routes';
 import type { RouteConfig } from '../routeTypes';
 
 // Lazy-loaded rent transaction components
-const RentTransactionInvoicePage = lazy(() => import('../../pages/rentTransactions/RentTransactionInvoicePage').then(module => ({ default: module.RentTransactionInvoicePage })));
-const RentTransactionRecordPaymentPage = lazy(() => import('../../pages/rentTransactions/RentTransactionRecordPaymentPage').then(module => ({ default: module.RentTransactionRecordPaymentPage })));
-const RentTransactionReceiptPage = lazy(() => import('../../pages/rentTransactions/RentTransactionReceiptPage').then(module => ({ default: module.RentTransactionReceiptPage })));
+const RentTransactionInvoicePage = lazy(() => import('../../features/finance/rentTransactions/Invoice/InvoicePage').then(module => ({ default: module.InvoicePage })));
+const RentTransactionRecordPaymentPage = lazy(() => import('../../features/finance/rentTransactions/RecordPayment/RecordPaymentPage').then(module => ({ default: module.RecordPaymentPage })));
+const RentTransactionReceiptPage = lazy(() => import('../../features/finance/rentTransactions/Receipt/ReceiptPage').then(module => ({ default: module.ReceiptPage })));
 
 export const rentTransactionsRoutes: RouteConfig[] = [
   {
