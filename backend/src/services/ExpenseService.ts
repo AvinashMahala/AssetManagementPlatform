@@ -2,7 +2,7 @@ import { Expense, ExpenseInput, ExpenseUpdateInput, ExpenseFilters, ExpenseStati
 import { IExpenseRepository } from '../interfaces/repositories/IExpenseRepository';
 import { IExpenseService } from '../interfaces/services/IExpenseService';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
-import { IUnitRepository } from '../interfaces/repositories/IUnitRepository';
+import { IUnitRepository } from '@/features/properties/unit/core/interfaces/IUnitRepository';
 
 export class ExpenseService implements IExpenseService {
   constructor(

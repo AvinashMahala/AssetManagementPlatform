@@ -1,4 +1,5 @@
 import { Pool, QueryResult } from 'pg';
+import { logger } from '@/shared/utils/logger';
 
 export interface QueryOptions {
   select?: string[];
@@ -9,7 +10,7 @@ export interface QueryOptions {
   relations?: string[]; // e.g., ['tenant', 'property']
 }
 
-export abstract class BaseRepository<T, CreateDTO = Partial<T>> {
+export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>> {
   constructor(
     protected readonly pool: Pool,
     protected readonly tableName: string,
@@ -36,8 +37,18 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>> {
    */
   async findAll(options: QueryOptions = {}): Promise<T[]> {
     const { query, values } = this.buildSelectQuery(options);
-    const result = await this.pool.query(query, values);
-    return result.rows.map(row => this.mapToDomain(row));
+    try {
+      const start = Date.now();
+      const result = await this.pool.query(query, values);
+      const duration = Date.now() - start;
+      if (duration > 1000) {
+        logger.warn(`Slow query in ${this.tableName}.findAll: ${duration}ms`, { query, values });
+      }
+      return result.rows.map(row => this.mapToDomain(row));
+    } catch (error) {
+      logger.error(`Error in ${this.tableName}.findAll`, { error, query, values });
+      throw error;
+    }
   }
 
   /**
@@ -55,10 +66,24 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>> {
   }
 
   /**
+   * Find a single record by criteria.
+   */
+  async findOne(where: Record<string, any>, relations: string[] = []): Promise<T | null> {
+    const { query, values } = this.buildSelectQuery({
+      where,
+      relations,
+      limit: 1
+    });
+    
+    const result = await this.pool.query(query, values);
+    return result.rows[0] ? this.mapToDomain(result.rows[0]) : null;
+  }
+
+  /**
    * Create a new record.
    * Automatically handles columns based on the input object.
    */
-  async create(data: CreateDTO): Promise<T> {
+  async add(data: CreateDTO): Promise<T> {
     const keys = Object.keys(data as any);
     const values = Object.values(data as any);
     
@@ -78,9 +103,9 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>> {
   /**
    * Update a record by ID.
    */
-  async update(id: string, data: Partial<T>): Promise<T | null> {
-    const keys = Object.keys(data);
-    const values = Object.values(data);
+  async updateById(id: string, data: UpdateDTO): Promise<T | null> {
+    const keys = Object.keys(data as any);
+    const values = Object.values(data as any);
     
     if (keys.length === 0) return this.findById(id);
 

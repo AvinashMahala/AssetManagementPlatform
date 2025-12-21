@@ -25,15 +25,18 @@ import { swaggerUiOptions } from './src/shared/config/swagger/index.js';
 import { createLeaseRoutes as createNewLeaseRoutes } from '@/features/leases/api/lease.routes';
 import { PropertyModule } from '@/features/properties/property/index.js';
 import { UnitModule } from '@/features/properties/unit/unit.module.js';
+import { TenantModule } from '@/features/tenants/tenant/index.js';
+import { UnitTenantModule } from '@/features/tenants/unit-tenant/unit-tenant.module.js';
+import { MeterModule } from '@/features/properties/meter/meter.module.js';
 import { authMiddleware } from '@/shared/middleware/authMiddleware';
 // import { initializeDatabase } from './src/shared/config/database/init/index.js';
-import { LeaseController } from './src/controllers/leaseController.js';
+// import { LeaseController } from './src/controllers/leaseController.js';
 import { RentPaymentController } from './src/controllers/RentPaymentController.js';
 import { createRentPaymentRoutes } from './src/routes/rentPaymentRoutes.js';
 import { RentTransactionController } from './src/controllers/RentTransactionController.js';
 import { createRentTransactionRoutes } from './src/routes/rentTransactionRoutes.js';
-import { MeterController } from './src/controllers/MeterController.js';
-import { createMeterRoutes } from './src/routes/meterRoutes.js';
+// import { MeterController } from './src/controllers/MeterController.js';
+// import { createMeterRoutes } from './src/routes/meterRoutes.js';
 import { ReceiptController } from './src/controllers/ReceiptController.js';
 import { createReceiptRoutes } from './src/routes/receiptRoutes.js';
 import { ReceiptTemplateController } from './src/controllers/ReceiptTemplateController.js';
@@ -49,14 +52,13 @@ import { UpdatePropertyUseCase } from '@/features/properties/property/core/use-c
 import { DeletePropertyUseCase } from '@/features/properties/property/core/use-cases/DeleteProperty.usecase.js';
 import { PropertyRepository as NewPropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository.js';
 import { UserController } from './src/controllers/userController.js';
-import { TenantController } from './src/controllers/TenantController.js';
-import { UnitController } from './src/controllers/UnitController.js';
-import { UnitTenantController } from './src/controllers/UnitTenantController.js';
+// import { UnitController } from './src/controllers/UnitController.js';
+// import { UnitTenantController } from './src/controllers/UnitTenantController.js';
 import { createAuthRoutes } from './src/routes/authRoutes.js';
 import { createUserRoutes } from './src/routes/userRoutes.js';
-import { createTenantRoutes } from './src/routes/tenantRoutes.js';
-import { createUnitRoutes } from './src/routes/unitRoutes.js';
-import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
+// import { createTenantRoutes } from './src/routes/tenantRoutes.js';
+// import { createUnitRoutes } from './src/routes/unitRoutes.js';
+// import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
 import { UnitUtilityController } from './src/controllers/UnitUtilityController.js';
 import { createUnitUtilityRoutes } from './src/routes/unitUtilityRoutes.js';
 import { createFileRoutes } from './src/routes/fileRoutes.js';
@@ -110,10 +112,7 @@ const startServer = async () => {
 
   // Get services from container
   const userService = container.userService;
-  const tenantService = container.tenantService;
-  const unitService = container.unitService;
-  const unitTenantService = container.unitTenantService;
-  const leaseService = container.leaseService;
+  // const leaseService = container.leaseService;
   const rentPaymentService = container.rentPaymentService;
   const rentTransactionService = container.rentTransactionService;
   const passwordResetService = container.passwordResetService;
@@ -154,13 +153,12 @@ const startServer = async () => {
   );
 
   const userController = new UserController(userService, passwordResetService);
-  const tenantController = new TenantController(tenantService);
-  const unitController = new UnitController(unitService);
-  const unitTenantController = new UnitTenantController(unitTenantService);
-  const leaseController = new LeaseController(leaseService);
+  // const unitController = new UnitController(unitService);
+  // const unitTenantController = new UnitTenantController(unitTenantService);
+  // const leaseController = new LeaseController(leaseService);
   const rentPaymentController = new RentPaymentController(rentPaymentService);
   const rentTransactionController = new RentTransactionController(rentTransactionService);
-  const meterController = new MeterController(meterService, meterReadingService);
+  // const meterController = new MeterController(meterService, meterReadingService);
   const receiptController = new ReceiptController(receiptService);
   const receiptTemplateController = new ReceiptTemplateController(receiptTemplateService);
   const unitUtilityController = new UnitUtilityController(unitUtilityService);
@@ -264,19 +262,23 @@ const startServer = async () => {
   app.use('/api/properties', PropertyModule.create(mainPool, userService, { fileController: propertyFileController, receiptTemplateController: propertyReceiptTemplateController }));
   app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
   app.use('/api/users', createUserRoutes(userController, userService));
-  app.use('/api', createTenantRoutes(tenantController, userService));
+  // app.use('/api', createTenantRoutes(tenantController, userService));
+  app.use('/api/tenants', TenantModule.create(mainPool, userService));
   
   // New Unit Module (Handles /api/units CRUD)
   app.use('/api/units', UnitModule.create(mainPool, userService));
   
-  // Legacy Unit Routes (Handles /api/units/:id/tenants, etc.)
-  app.use('/api', createUnitRoutes(unitController, userService));
+  // New Unit Tenant Module (Handles /api/unit-tenants)
+  app.use('/api/unit-tenants', UnitTenantModule.create(mainPool, userService));
   
-  app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
+  // Legacy Unit Routes (Handles /api/units/:id/tenants, etc.)
+  // app.use('/api', createUnitRoutes(unitController, userService));
+  
+  // app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
   app.use('/api/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
   app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
   app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionController, userService));
-  app.use('/api/meters', createMeterRoutes(meterController, userService));
+  app.use('/api/meters', MeterModule.create(mainPool, userService));
   app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
   app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
   app.use('/api', createTemplateRoutes(mainPool, userService));

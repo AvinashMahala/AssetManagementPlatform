@@ -1,3 +1,8 @@
+/**
+ * @deprecated This repository is deprecated. Use the new TenantRepository in src/features/tenants/tenant/data/repository/TenantRepository.ts
+ * This file is kept only because RentPaymentService, RentTransactionService, etc. still depend on it.
+ * Once those features are migrated, this file should be deleted.
+ */
 import { Pool } from 'pg';
 import { Tenant, TenantDocument } from '../models/Tenant.js';
 import { TABLES, COLUMNS } from '@/shared/constants/database.js';

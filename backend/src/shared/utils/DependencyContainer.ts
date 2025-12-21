@@ -1,9 +1,8 @@
 import { Pool } from 'pg';
 import { IPropertyRepository } from '@/interfaces/repositories/IPropertyRepository';
 import { IUserRepository } from '@/interfaces/repositories/IUserRepository';
+import { IUnitRepository } from '@/features/properties/unit/core/interfaces/IUnitRepository';
 import { ITenantRepository } from '@/interfaces/repositories/ITenantRepository';
-import { IUnitRepository } from '@/interfaces/repositories/IUnitRepository';
-import { IUnitTenantRepository } from '@/interfaces/repositories/IUnitTenantRepository';
 import { ILeaseRepository } from '@/interfaces/repositories/ILeaseRepository';
 import { IRentPaymentRepository } from '@/interfaces/repositories/IRentPaymentRepository';
 import { IRentTransactionRepository } from '@/interfaces/repositories/IRentTransactionRepository';
@@ -11,9 +10,7 @@ import { IMeterRepository, IMeterReadingRepository } from '@/interfaces/reposito
 import { IMeterService, IMeterReadingService } from '@/interfaces/services/IMeterService';
 import { IUserService } from '@/interfaces/services/IUserService';
 import { ITenantService } from '@/interfaces/services/ITenantService';
-import { IUnitService } from '@/interfaces/services/IUnitService';
-import { IUnitTenantService } from '@/interfaces/services/IUnitTenantService';
-import { ILeaseService } from '@/interfaces/services/ILeaseService';
+// import { ILeaseService } from '@/interfaces/services/ILeaseService';
 import { IRentPaymentService } from '@/interfaces/services/IRentPaymentService';
 import { IRentTransactionService } from '@/interfaces/services/IRentTransactionService';
 import { IReceiptRepository } from '@/interfaces/repositories/IReceiptRepository';
@@ -32,8 +29,7 @@ import { TenantRepository } from '@/repositories/TenantRepository';
 import { PasswordResetMethodRepository } from '@/repositories/PasswordResetMethodRepository';
 import { SecurityQuestionRepository } from '@/repositories/SecurityQuestionRepository';
 import { RecoveryCodeRepository } from '@/repositories/RecoveryCodeRepository';
-import { UnitRepository } from '@/repositories/UnitRepository';
-import { UnitTenantRepository } from '@/repositories/UnitTenantRepository';
+import { UnitRepository } from '@/features/properties/unit/data/repository/UnitRepository';
 import { LeaseRepository } from '@/repositories/LeaseRepository';
 import { RentPaymentRepository } from '@/repositories/RentPaymentRepository';
 import { RentTransactionRepository } from '@/repositories/RentTransactionRepository';
@@ -45,11 +41,9 @@ import { RentTransactionMeterReadingRepository, IRentTransactionMeterReadingRepo
 import { UnitUtilityRepository } from '@/repositories/UnitUtilityRepository';
 import { ExpenseRepository } from '@/repositories/ExpenseRepository';
 import { UserService } from '@/services/UserService';
-import { TenantService } from '@/services/TenantService';
+// import { TenantService } from '@/services/TenantService';
 import { PasswordResetService } from '@/services/PasswordResetService';
-import { UnitService } from '@/services/UnitService';
-import { UnitTenantService } from '@/services/UnitTenantService';
-import { LeaseService } from '@/services/LeaseService';
+// import { LeaseService } from '@/services/LeaseService';
 import { RentPaymentService } from '@/services/RentPaymentService';
 import { RentTransactionService } from '@/services/RentTransactionService';
 import { MeterService } from '@/services/MeterService';
@@ -73,7 +67,6 @@ export class DependencyContainer {
   private _userRepository: IUserRepository | null = null;
   private _tenantRepository: ITenantRepository | null = null;
   private _unitRepository: IUnitRepository | null = null;
-  private _unitTenantRepository: IUnitTenantRepository | null = null;
   private _leaseRepository: ILeaseRepository | null = null;
   private _rentPaymentRepository: IRentPaymentRepository | null = null;
   private _rentTransactionRepository: IRentTransactionRepository | null = null;
@@ -92,10 +85,8 @@ export class DependencyContainer {
 
   // Services
   private _userService: IUserService | null = null;
-  private _tenantService: ITenantService | null = null;
-  private _unitService: IUnitService | null = null;
-  private _unitTenantService: IUnitTenantService | null = null;
-  private _leaseService: ILeaseService | null = null;
+  // private _tenantService: ITenantService | null = null;
+  // private _leaseService: ILeaseService | null = null;
   private _rentPaymentService: IRentPaymentService | null = null;
   private _rentTransactionService: IRentTransactionService | null = null;
   private _meterService: IMeterService | null = null;
@@ -177,13 +168,6 @@ export class DependencyContainer {
       this._unitRepository = new UnitRepository(this.pool);
     }
     return this._unitRepository;
-  }
-
-  public get unitTenantRepository(): IUnitTenantRepository {
-    if (!this._unitTenantRepository) {
-      this._unitTenantRepository = new UnitTenantRepository(this.pool);
-    }
-    return this._unitTenantRepository;
   }
 
   public get leaseRepository(): ILeaseRepository {
@@ -281,10 +265,13 @@ export class DependencyContainer {
   }
 
   public get tenantService(): ITenantService {
+    throw new Error('TenantService is deprecated. Use TenantModule instead.');
+    /*
     if (!this._tenantService) {
       this._tenantService = new TenantService(this.tenantRepository);
     }
     return this._tenantService;
+    */
   }
 
   public get passwordResetService(): PasswordResetService {
@@ -299,25 +286,14 @@ export class DependencyContainer {
     return this._passwordResetService;
   }
 
-  public get unitService(): IUnitService {
-    if (!this._unitService) {
-      this._unitService = new UnitService(this.unitRepository, this.rentPaymentService, this.meterService, this.meterReadingService, this.unitUtilityService);
-    }
-    return this._unitService;
-  }
-
-  public get unitTenantService(): IUnitTenantService {
-    if (!this._unitTenantService) {
-      this._unitTenantService = new UnitTenantService(this.unitTenantRepository);
-    }
-    return this._unitTenantService;
-  }
-
   public get leaseService(): ILeaseService {
+    throw new Error('LeaseService is deprecated. Use LeaseModule instead.');
+    /*
     if (!this._leaseService) {
       this._leaseService = new LeaseService(this.leaseRepository);
     }
     return this._leaseService;
+    */
   }
 
   public get rentPaymentService(): IRentPaymentService {
@@ -452,24 +428,14 @@ export class DependencyContainer {
     this._userService = service;
   }
 
+  /*
   public registerTenantService(service: ITenantService): void {
     this._tenantService = service;
   }
+  */
 
   public registerUnitRepository(repository: IUnitRepository): void {
     this._unitRepository = repository;
-  }
-
-  public registerUnitTenantRepository(repository: IUnitTenantRepository): void {
-    this._unitTenantRepository = repository;
-  }
-
-  public registerUnitService(service: IUnitService): void {
-    this._unitService = service;
-  }
-
-  public registerUnitTenantService(service: IUnitTenantService): void {
-    this._unitTenantService = service;
   }
 
   public registerLeaseRepository(repository: ILeaseRepository): void {
@@ -477,7 +443,7 @@ export class DependencyContainer {
   }
 
   public registerLeaseService(service: ILeaseService): void {
-    this._leaseService = service;
+    // this._leaseService = service;
   }
 
   public registerRentPaymentRepository(repository: IRentPaymentRepository): void {
@@ -546,7 +512,6 @@ export class DependencyContainer {
     this._userRepository = null;
     this._tenantRepository = null;
     this._unitRepository = null;
-    this._unitTenantRepository = null;
     this._leaseRepository = null;
     this._rentPaymentRepository = null;
     this._rentTransactionRepository = null;
@@ -561,10 +526,8 @@ export class DependencyContainer {
     this._unitUtilityRepository = null;
     this._expenseRepository = null;
     this._userService = null;
-    this._tenantService = null;
-    this._unitService = null;
-    this._unitTenantService = null;
-    this._leaseService = null;
+    // this._tenantService = null;
+    // this._leaseService = null;
     this._rentPaymentService = null;
     this._rentTransactionService = null;
     this._meterService = null;

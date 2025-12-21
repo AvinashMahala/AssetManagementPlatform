@@ -7,6 +7,14 @@ export class LeaseRepository extends BaseRepository<Lease> {
     super(pool, 'leases');
   }
 
+  async create(data: Partial<Lease>): Promise<Lease> {
+    return super.add(data);
+  }
+
+  async update(id: string, data: Partial<Lease>): Promise<Lease | null> {
+    return super.updateById(id, data);
+  }
+
   async findActiveByTenantId(tenantId: string): Promise<Lease[]> {
     const sql = `
       SELECT * FROM ${this.tableName}

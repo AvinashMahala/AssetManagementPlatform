@@ -1,3 +1,8 @@
+/**
+ * @deprecated This repository is deprecated. Use the new LeaseRepository in src/features/leases/data/repository/LeaseRepository.ts
+ * This file is kept only because RentPaymentService, RentTransactionService, etc. still depend on it.
+ * Once those features are migrated, this file should be deleted.
+ */
 import { Pool } from 'pg';
 import { Lease, LeaseInput, LeaseStatus } from '../models/Lease.js';
 import { TABLES, COLUMNS } from '@/shared/constants/database.js';

@@ -1,38 +1,50 @@
 # 🤝 Context Handoff: AssetManagementPlatform
 
 **Date:** December 21, 2025
-**Current Phase:** Backend Refactoring - Phase 3.1 (Properties Feature)
+**Current Phase:** Backend Refactoring - Phase 3.3 (Finance Feature)
 
 ## 🎯 Current Mission
 We are migrating the backend from a Layered Architecture (Controllers/Services/Repositories) to a **Vertical Slice Architecture** (`src/features/{domain}/{feature}`). We are using the **Strangler Fig Pattern** to incrementally replace legacy code.
 
-## 🚧 Status: Phase 3.1 (Properties) - IN PROGRESS
+## 🚧 Status: Phase 3.3 (Finance) - READY TO START
 
 ### ✅ Completed
 1.  **Infrastructure:** `src/shared/` is established (BaseRepository, EventBus, etc.).
-2.  **Leases Feature:** Fully migrated to `src/features/leases/`.
-3.  **Properties Feature (Partial):**
-    *   `Property` core logic migrated to `src/features/properties/property/`.
-    *   `Unit` core logic migrated to `src/features/properties/unit/`.
-    *   **CRITICAL:** `PropertyFileController` and `PropertyReceiptTemplateController` have been **decoupled** from the legacy `PropertyService`. They now reside in `src/features/properties/property/api/` but temporarily inject legacy services (`PropertyFileService`, `PropertyReceiptTemplateService`) via `DependencyContainer`.
-    *   `server.ts` is updated to use the new controllers.
-    *   `npm run build` passes.
+2.  **Leases Feature:**
+    *   Fully migrated to `src/features/leases/`.
+    *   Legacy `LeaseController`, `LeaseService`, `leaseRoutes` **DELETED**.
+    *   Legacy `LeaseRepository` marked as **DEPRECATED** (kept for dependencies).
+3.  **Properties Feature:**
+    *   `Property` fully migrated and legacy files deleted.
+    *   `Unit` fully migrated and legacy files deleted.
+    *   `Meter` migrated to `src/features/properties/meter/` and active in `server.ts`.
+4.  **Tenants Feature:**
+    *   `UnitTenant` (Lease Association) fully migrated and legacy files deleted.
+    *   `Tenant` migrated to `src/features/tenants/tenant/` and active in `server.ts`.
+    *   Legacy `TenantController`, `TenantService`, `tenantRoutes` **DELETED**.
+    *   Legacy `TenantRepository` marked as **DEPRECATED** (kept for dependencies).
+5.  **Build Status:** `npm run build` passes.
 
 ### ⏳ Pending / Next Steps
-1.  **Migrate Meters:** Move `Meter` logic from `src/controllers/MeterController.ts` and `src/services/MeterService.ts` to `src/features/properties/meter/`.
-2.  **Manual Verification:** User needs to verify Property, Unit, and Meter endpoints.
-3.  **Phase 3.2 (Tenants):** Begin migration of Tenant feature.
+1.  **Phase 3.3 (Finance):** Begin migration of Finance features.
+    *   **Expense:** Migrate `src/features/finance/expense/`.
+    *   **RentPayment:** Migrate `src/features/finance/rent-payment/`.
+    *   **RentTransaction:** Migrate `src/features/finance/rent-transaction/`.
+2.  **Meter Cleanup (BLOCKED):**
+    *   Legacy `MeterService` and `MeterRepository` **cannot be deleted yet**.
+    *   **Blocker:** `UnitUtilityService` and `RentTransactionService` depend on the legacy Meter service/repo.
+3.  **Legacy Repository Cleanup:**
+    *   `TenantRepository` and `LeaseRepository` are deprecated but still used by Finance services. Once Finance is migrated, these can be deleted.
 
-## 🏗️ Architecture Notes
-*   **Hybrid State:** The application is currently running in a hybrid state.
-    *   **New:** `src/features/` (Leases, Properties, Units).
-    *   **Legacy:** `src/controllers/`, `src/services/` (Tenants, Finance, Auth, etc.).
-*   **Dependency Injection:** We are using `DependencyContainer.ts` to manage legacy services. New features use manual dependency injection in `server.ts` (Composition Root).
-*   **Goal:** Empty out `src/controllers/` and `src/services/` completely so they can be deleted in Phase 5.
+## ��️ Architecture Notes
+*   **Hybrid State:**
+    *   **New:** `src/features/` (Leases, Properties, Units, Meters, UnitTenants, Tenants).
+    *   **Legacy:** `src/controllers/`, `src/services/` (Finance, Auth, UnitUtility, etc.).
+*   **Dependency Injection:** New features use manual DI in `server.ts`. Legacy services use `DependencyContainer.ts`.
+*   **Deprecated Repositories:** `TenantRepository` and `LeaseRepository` in `src/repositories/` are deprecated. Do not use them in new code. Use the ones in `src/features/...`.
 
 ## 🚀 How to Resume
-1.  **Read:** `BACKEND_REFACTORING_ROADMAP.md` to see the full plan.
-2.  **Action:** Start the **Meter Migration**.
-    *   Create `src/features/properties/meter/` structure.
-    *   Migrate `Meter` model, repository, use cases, and controller.
-    *   Update `server.ts` to use the new `MeterController`.
+1.  **Read:** `BACKEND_REFACTORING_ROADMAP.md`.
+2.  **Action:** Start Phase 3.3.1 (Expense Feature).
+    *   Scaffold `src/features/finance/expense/`.
+    *   Migrate logic from `ExpenseController` and `ExpenseService`.

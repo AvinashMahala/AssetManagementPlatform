@@ -2,7 +2,7 @@ import { IRentTransactionService } from '../interfaces/services/IRentTransaction
 import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';
-import { IUnitRepository } from '../interfaces/repositories/IUnitRepository';
+import { IUnitRepository } from '@/features/properties/unit/core/interfaces/IUnitRepository';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IRentTransactionRepository } from '../interfaces/repositories/IRentTransactionRepository';

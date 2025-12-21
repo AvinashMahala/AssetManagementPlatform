@@ -27,7 +27,7 @@ export class UnitRepository extends BaseRepository<Unit, UnitInput> implements I
     return result.rows.map(row => this.mapToDomain(row));
   }
 
-  override async create(data: UnitInput): Promise<Unit> {
+  async create(data: UnitInput): Promise<Unit> {
     const id = uuidv4();
     const now = new Date();
     
@@ -50,7 +50,7 @@ export class UnitRepository extends BaseRepository<Unit, UnitInput> implements I
     return this.mapToDomain(result.rows[0]);
   }
 
-  override async update(id: string, data: Partial<UnitInput>): Promise<Unit | null> {
+  async update(id: string, data: Partial<UnitInput>): Promise<Unit | null> {
     const unitInput: any = { ...data, updatedAt: new Date() };
     const row = UnitMapper.toPersistence(unitInput);
     

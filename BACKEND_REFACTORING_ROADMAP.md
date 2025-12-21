@@ -74,7 +74,7 @@
 - [x] **Action:** Implement `LeaseController` and `lease.routes.ts`.
 - [x] **Action:** Register new routes in `server.ts`.
 - [x] **Manual Test:** Use Postman/Curl to `POST /api/leases` and verify console log from Handler.
-- [ ] **Cleanup:** Delete legacy `LeaseController`, `LeaseService`, `leaseRoutes`.
+- [x] **Cleanup:** Delete legacy `LeaseController`, `LeaseService`, `leaseRoutes`. (Note: `LeaseRepository` kept for dependencies).
 - [x] **Update Doc:** Mark 2.4 as complete.
 
 ---
@@ -157,14 +157,14 @@ src/features/{domain}/{sub-feature}/
 
 #### 3.1.2 Unit
 - [x] **Action:** Migrate `Unit` logic to `src/features/properties/unit/`.
-- [ ] **Switch:** Update `server.ts` to use `UnitModule` exclusively (remove legacy `createUnitRoutes`).
-- [ ] **Manual Test:** Verify Unit CRUD endpoints.
-- [ ] **Cleanup:** Delete legacy `UnitController`, `UnitService`, `unitRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Switch:** Update `server.ts` to use `UnitModule` exclusively (remove legacy `createUnitRoutes`).
+- [x] **Manual Test:** Verify Unit CRUD endpoints.
+- [x] **Cleanup:** Delete legacy `UnitController`, `UnitService`, `unitRoutes`.
+- [x] **Verification:** Run `npm run build`.
 
 #### 3.1.3 Meter
-- [ ] **Action:** Migrate `Meter` logic to `src/features/properties/meter/`.
-- [ ] **Switch:** Update `server.ts` to use `MeterModule`.
+- [x] **Action:** Migrate `Meter` logic to `src/features/properties/meter/`.
+- [x] **Switch:** Update `server.ts` to use `MeterModule`.
 - [ ] **Manual Test:** Verify Meter CRUD endpoints.
 - [ ] **Cleanup:** Delete legacy `MeterController`, `MeterService`, `meterRoutes`.
 - [ ] **Verification:** Run `npm run build`.
@@ -173,18 +173,18 @@ src/features/{domain}/{sub-feature}/
 **Structure:** `src/features/tenants/{tenant, unit-tenant}/{api, core, data}`
 
 #### 3.2.1 Tenant
-- [ ] **Action:** Migrate `Tenant` logic to `src/features/tenants/tenant/`.
-- [ ] **Switch:** Update `server.ts` to use `TenantModule`.
-- [ ] **Manual Test:** Verify Tenant CRUD endpoints.
-- [ ] **Cleanup:** Delete legacy `TenantController`, `TenantService`, `tenantRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Action:** Migrate `Tenant` logic to `src/features/tenants/tenant/`.
+- [x] **Switch:** Update `server.ts` to use `TenantModule`.
+- [x] **Manual Test:** Verify Tenant CRUD endpoints.
+- [x] **Cleanup:** Delete legacy `TenantController`, `TenantService`, `tenantRoutes`. (Note: `TenantRepository` kept for dependencies).
+- [x] **Verification:** Run `npm run build`.
 
 #### 3.2.2 UnitTenant (Lease Association)
-- [ ] **Action:** Migrate `UnitTenant` logic to `src/features/tenants/unit-tenant/`.
-- [ ] **Switch:** Update `server.ts` to use `UnitTenantModule`.
-- [ ] **Manual Test:** Verify Unit-Tenant association flows.
-- [ ] **Cleanup:** Delete legacy `UnitTenantController`, `UnitTenantService`, `unitTenantRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Action:** Migrate `UnitTenant` logic to `src/features/tenants/unit-tenant/`.
+- [x] **Switch:** Update `server.ts` to use `UnitTenantModule`.
+- [x] **Manual Test:** Verify Unit-Tenant association flows.
+- [x] **Cleanup:** Delete legacy `UnitTenantController`, `UnitTenantService`, `unitTenantRoutes`.
+- [x] **Verification:** Run `npm run build`.
 
 ### 3.3 Finance Feature
 **Structure:** `src/features/finance/{expense, rent-payment, rent-transaction}/{api, core, data}`

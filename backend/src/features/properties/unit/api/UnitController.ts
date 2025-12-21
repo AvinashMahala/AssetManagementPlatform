@@ -4,6 +4,7 @@ import { GetUnitByIdUseCase } from '../core/use-cases/GetUnitById.usecase.js';
 import { CreateUnitUseCase } from '../core/use-cases/CreateUnit.usecase.js';
 import { UpdateUnitUseCase } from '../core/use-cases/UpdateUnit.usecase.js';
 import { DeleteUnitUseCase } from '../core/use-cases/DeleteUnit.usecase.js';
+import { GetUnitAnalyticsUseCase } from '../core/use-cases/GetUnitAnalytics.usecase.js';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 
@@ -13,7 +14,8 @@ export class UnitController {
     private getUnitByIdUseCase: GetUnitByIdUseCase,
     private createUnitUseCase: CreateUnitUseCase,
     private updateUnitUseCase: UpdateUnitUseCase,
-    private deleteUnitUseCase: DeleteUnitUseCase
+    private deleteUnitUseCase: DeleteUnitUseCase,
+    private getUnitAnalyticsUseCase: GetUnitAnalyticsUseCase
   ) {}
 
   async getAll(req: Request, res: Response) {
@@ -79,6 +81,16 @@ export class UnitController {
       ResponseUtils.success(res, unit);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to update unit status');
+    }
+  }
+
+  async getAnalytics(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const analytics = await this.getUnitAnalyticsUseCase.execute(id);
+      ResponseUtils.success(res, analytics);
+    } catch (err) {
+      ErrorUtils.handleGenericError(res, err, 'Failed to fetch unit analytics');
     }
   }
 }

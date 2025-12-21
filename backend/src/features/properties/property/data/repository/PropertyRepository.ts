@@ -21,7 +21,7 @@ export class PropertyRepository extends BaseRepository<Property, PropertyInput> 
     return result.rows.map(row => this.mapToDomain(row));
   }
 
-  override async create(data: PropertyInput): Promise<Property> {
+  async create(data: PropertyInput): Promise<Property> {
     const id = uuidv4();
     const now = new Date();
     
@@ -44,7 +44,7 @@ export class PropertyRepository extends BaseRepository<Property, PropertyInput> 
     return this.mapToDomain(result.rows[0]);
   }
 
-  override async update(id: string, data: Partial<PropertyInput>): Promise<Property | null> {
+  async update(id: string, data: Partial<PropertyInput>): Promise<Property | null> {
     const propertyInput: any = { ...data, updatedAt: new Date() };
     const row = PropertyMapper.toPersistence(propertyInput);
     
