@@ -2,6 +2,14 @@
 
 **Objective:** Transform the backend into a **Scalable, Event-Driven, Multi-Organization (Database-per-Org)** system using **Vertical Slice Architecture**.
 
+## 🧠 Context Handoff (Read This First)
+**Current Status (Dec 21, 2025):**
+*   **Active Task:** Migrating **Unit** feature (Phase 3.1.2).
+*   **Recent Wins:**
+    *   **Property** feature is fully migrated and legacy files deleted.
+    *   **Lease** feature is migrated to `src/features/leases`, but legacy files (`LeaseController`, `LeaseService`) **still exist** and need deletion.
+*   **Critical Note:** `server.ts` currently uses a hybrid approach for Units. `UnitModule` handles `/api/units` (CRUD), but legacy `createUnitRoutes` handles `/api/units/:id/tenants`. This needs to be consolidated before deleting legacy Unit files.
+
 **Context for AI Agents:**
 *   **Architecture:** Vertical Slices (Features isolated in `src/features/`).
 *   **Data Access:** `BaseRepository` (Generic SQL generation) + `OrganizationConnectionManager` (Dynamic DB Switching).
@@ -66,6 +74,7 @@
 - [x] **Action:** Implement `LeaseController` and `lease.routes.ts`.
 - [x] **Action:** Register new routes in `server.ts`.
 - [x] **Manual Test:** Use Postman/Curl to `POST /api/leases` and verify console log from Handler.
+- [ ] **Cleanup:** Delete legacy `LeaseController`, `LeaseService`, `leaseRoutes`.
 - [x] **Update Doc:** Mark 2.4 as complete.
 
 ---
