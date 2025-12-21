@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentRepository';
 import { RentPayment, RentPaymentInput, PaymentStatus, PaymentMethod } from '../models/RentPayment';
-import { TABLES, COLUMNS } from '../constants/database';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 import crypto from 'crypto';
 
 export class RentPaymentRepository implements IRentPaymentRepository {

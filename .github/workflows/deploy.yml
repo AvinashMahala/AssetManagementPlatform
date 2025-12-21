@@ -57,8 +57,8 @@ jobs:
       - name: Build backend
         run: |
           cd backend
-          npm ci
-          npm run build
+          if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm ci; fi
+          if [ -f yarn.lock ]; then yarn build; else npm run build; fi
 
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v5
@@ -87,18 +87,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Install frontend dependencies
         run: |
           cd frontend
-          npm ci
+          if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm ci; fi
 
       - name: Build frontend
         run: |
           cd frontend
-          npm run build
+          if [ -f yarn.lock ]; then yarn build; else npm run build; fi
         env:
           VITE_API_URL: ${{ inputs.backend_url || 'https://your-backend-service.onrender.com/api' }}
 

@@ -12,9 +12,10 @@ import type {
   PasswordResetViaSecurityQuestions,
   PasswordResetViaRecoveryCode,
   AdminPasswordReset
-} from '../services/authService';
-import { authService, ApiException } from '../services/authService';
-import { apiClient } from '../services/apiClient';
+} from '@/features/auth/types/auth';
+import { authService } from '@/features/auth/services/authService';
+import { ApiException } from '../utils/ApiException';
+import { apiClient } from '@/lib/apiClient';
 
 /* eslint-disable react-refresh/only-export-components */
 
@@ -329,15 +330,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const googleAuth = async (profile: GoogleUserProfile): Promise<boolean> => {
     try {
-      console.log('[AuthContext.googleAuth] Starting Google auth with profile:', profile);
       const authResponse = await authService.googleAuth(profile);
-      console.log('[AuthContext.googleAuth] Auth response received:', authResponse);
       setUser(authResponse.user);
       setIsAuthenticated(true);
       apiClient.setAuthToken(authResponse.tokens.accessToken);
       sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
       sessionStorage.setItem('user', JSON.stringify(authResponse.user));
-      console.log('[AuthContext.googleAuth] Success! User:', authResponse.user);
       return true;
     } catch (error) {
       console.error('[AuthContext.googleAuth] Error:', error);

@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { IMeterService, IMeterReadingService } from '../interfaces/services/IMeterService.js';
 import { MeterInput, MeterReadingInput } from '../models/Meter.js';
-import { ResponseUtils } from '../utils/response.js';
-import { ErrorUtils } from '../utils/error.js';
-import { createModuleLogger } from '../utils/logger.js';
-import { PaginationOptions, MeterFilters } from '../types/pagination.js';
+import { ResponseUtils } from '@/shared/utils/response.js';
+import { ErrorUtils } from '@/shared/utils/error.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
+import { PaginationOptions, MeterFilters } from '@/shared/types/pagination.js';
 
 const logger = createModuleLogger('MeterController');
 

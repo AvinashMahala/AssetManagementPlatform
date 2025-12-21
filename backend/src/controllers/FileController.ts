@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { FileStorageService, FileMetadata } from '../services/FileStorageService.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('FileController');
 
@@ -70,7 +70,19 @@ export class FileController {
         return res.status(404).json({ error: 'File not found' });
       }
 
-      const fileBuffer = await this.fileStorageService.downloadFile(fileId);
+      // @ts-ignore - req.user might be added by auth middleware if present
+      const userId = req.user?.id;
+      // If userId is missing and DB requires it, this will fail. 
+      // Assuming for now this controller might be used in auth context or we need to handle it.
+      // If this route is public, we might need a system user ID or change DB schema.
+      // For now, passing userId if available, or throwing if not to avoid DB error with better message.
+      if (!userId) {
+         // If this is intended to be public, we need a strategy. 
+         // But to fix the crash, let's assume it requires auth or we fail gracefully.
+         return res.status(401).json({ error: 'Authentication required for download' });
+      }
+
+      const fileBuffer = await this.fileStorageService.downloadFile(fileId, userId);
 
       res.setHeader('Content-Type', metadata.mimeType);
       res.setHeader('Content-Disposition', `attachment; filename="${metadata.originalName}"`);

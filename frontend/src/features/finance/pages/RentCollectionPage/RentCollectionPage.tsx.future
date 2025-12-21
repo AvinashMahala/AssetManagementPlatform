@@ -1,0 +1,474 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Save, FileText, Receipt as ReceiptIcon, Calendar, AlertCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
+import { Button } from '@/componentDesignLibrary';
+import { Badge } from '@/componentDesignLibrary';
+import { AppLayout } from '../../../../components/layout';
+import { MeterReadingStep } from '../../components/RentCollection/steps/MeterReadingStep';
+import { ExpenseManagementStep } from '../../components/RentCollection/steps/ExpenseManagementStep';
+import { ReviewStep } from '../../components/RentCollection/steps/ReviewStep';
+import { PaymentRecordingStep } from '../../components/RentCollection/steps/PaymentRecordingStep';
+import { 
+  useUnit, 
+  useCurrentMonthTransaction, 
+  useLastMeterReadings,
+  useCreateRentTransaction,
+  useUpdateRentTransaction,
+  useGenerateInvoice,
+  useGenerateReceipt
+} from '../../../../hooks';
+import type { RentCollectionState, MeterReadingInput, ExpenseItem, PaymentEntry } from '../../../../types/rentTransaction';
+import { getCurrentBillingPeriod, calculateTotalMeterCharges, calculateTotalExpenses, calculateGrandTotal } from '../../../../utils/billingCalculations';
+
+export const RentCollectionPage: React.FC = () => {
+  const { unitId } = useParams<{ unitId: string }>();
+  const navigate = useNavigate();
+
+  // Fetch data
+  const { data: unit, loading: unitLoading } = useUnit(unitId!);
+  const { transaction: existingTransaction, loading: transactionLoading, refetch: refetchTransaction } = useCurrentMonthTransaction(unitId!);
+  const { data: lastReadings, loading: readingsLoading } = useLastMeterReadings(unitId!);
+
+  // Mutations
+  const { mutate: createTransaction, loading: creating } = useCreateRentTransaction();
+  const { mutate: updateTransaction, loading: updating } = useUpdateRentTransaction();
+  const { mutate: generateInvoice, loading: generatingInvoice } = useGenerateInvoice();
+  const { mutate: generateReceipt, loading: generatingReceipt } = useGenerateReceipt();
+
+  // Wizard state
+  const [state, setState] = useState<RentCollectionState>({
+    currentStep: 1,
+    totalSteps: 4,
+    transaction: {},
+    meterReadings: [],
+    expenses: [],
+    payments: [],
+    validationErrors: {},
+    isSubmitting: false,
+  });
+
+  // Initialize state when data loads
+  useEffect(() => {
+    if (unit && !transactionLoading && !readingsLoading) {
+      const billingPeriod = getCurrentBillingPeriod();
+      
+      // Initialize meter readings from last readings
+      const initialMeterReadings: MeterReadingInput[] = (lastReadings || []).map(reading => ({
+        meterId: reading.meterId,
+        meterName: reading.meterName,
+        meterType: reading.meterType,
+        meterNumber: reading.meterNumber,
+        previousReading: reading.lastReading,
+        currentReading: reading.lastReading, // Will be updated by user
+        unitsConsumed: 0,
+        costPerUnit: reading.costPerUnit,
+        fixedCharge: reading.fixedCharge || 0,
+        totalCost: 0,
+        readingDate: new Date().toISOString().split('T')[0],
+      }));
+
+      if (existingTransaction) {
+        // Load existing transaction
+        setState(prev => ({
+          ...prev,
+          transaction: {
+            ...existingTransaction,
+            billingPeriodStart: existingTransaction.billingPeriodStart,
+            billingPeriodEnd: existingTransaction.billingPeriodEnd,
+          },
+          meterReadings: existingTransaction.meterReadings || initialMeterReadings,
+          expenses: existingTransaction.expenses || [],
+          payments: existingTransaction.payments || [],
+        }));
+      } else {
+        // Initialize new transaction
+        setState(prev => ({
+          ...prev,
+          transaction: {
+            unitId: unitId!,
+            propertyId: unit.propertyId,
+            leaseId: unit.leaseId || '', // TODO: Get from active lease
+            tenantId: unit.tenantId || '', // TODO: Get from active lease
+            billingPeriodStart: billingPeriod.start,
+            billingPeriodEnd: billingPeriod.end,
+            billingMethod: 'monthly',
+            baseRent: unit.monthlyRent || 0,
+            maintenanceCharges: unit.maintenanceCharges || 0,
+            previousBalance: 0, // TODO: Get from last transaction
+            status: 'draft',
+            totalMeterCharges: 0,
+            totalExpenses: 0,
+            totalAmount: 0,
+            amountPaid: 0,
+            newBalance: 0,
+            meterReadings: [],
+            expenses: [],
+            payments: [],
+          },
+          meterReadings: initialMeterReadings,
+          expenses: [],
+          payments: [],
+        }));
+      }
+    }
+  }, [unit, existingTransaction, lastReadings, unitId, transactionLoading, readingsLoading]);
+
+  // Calculate totals whenever readings or expenses change
+  useEffect(() => {
+    const totalMeterCharges = calculateTotalMeterCharges(state.meterReadings);
+    const totalExpenses = calculateTotalExpenses(state.expenses);
+    const totalAmount = calculateGrandTotal(
+      state.transaction.baseRent || 0,
+      state.transaction.maintenanceCharges || 0,
+      totalMeterCharges,
+      totalExpenses,
+      state.transaction.previousBalance || 0
+    );
+    const totalPaid = state.payments.reduce((sum, p) => sum + p.amount, 0);
+    const newBalance = totalAmount - totalPaid;
+
+    setState(prev => ({
+      ...prev,
+      transaction: {
+        ...prev.transaction,
+        totalMeterCharges,
+        totalExpenses,
+        totalAmount,
+        amountPaid: totalPaid,
+        newBalance,
+      },
+    }));
+  }, [state.meterReadings, state.expenses, state.payments, state.transaction.baseRent, state.transaction.maintenanceCharges, state.transaction.previousBalance]);
+
+  const handleNext = () => {
+    if (state.currentStep < state.totalSteps) {
+      setState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
+    }
+  };
+
+  const handleBack = () => {
+    if (state.currentStep > 1) {
+      setState(prev => ({ ...prev, currentStep: prev.currentStep - 1 }));
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      setState(prev => ({ ...prev, isSubmitting: true }));
+
+      const transactionData = {
+        ...state.transaction,
+        meterReadings: state.meterReadings,
+        expenses: state.expenses,
+        payments: state.payments,
+        status: 'draft' as const,
+      };
+
+      if (existingTransaction?.id) {
+        await updateTransaction({ id: existingTransaction.id, data: transactionData });
+      } else {
+        await createTransaction(transactionData);
+      }
+
+      await refetchTransaction();
+      alert('Draft saved successfully!');
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+      alert('Failed to save draft. Please try again.');
+    } finally {
+      setState(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  const handleGenerateInvoice = async () => {
+    try {
+      setState(prev => ({ ...prev, isSubmitting: true }));
+
+      // First save the transaction
+      let transactionId = existingTransaction?.id;
+      
+      if (!transactionId) {
+        const transactionData = {
+          ...state.transaction,
+          meterReadings: state.meterReadings,
+          expenses: state.expenses,
+          payments: state.payments,
+          status: 'pending' as const,
+        };
+        const created = await createTransaction(transactionData);
+        transactionId = created.id;
+      } else {
+        await updateTransaction({ 
+          id: transactionId, 
+          data: { 
+            ...state.transaction,
+            meterReadings: state.meterReadings,
+            expenses: state.expenses,
+            status: 'pending' as const,
+          } 
+        });
+      }
+
+      // Generate invoice
+      const result = await generateInvoice({
+        transactionId: transactionId!,
+        includePropertyLogo: true,
+        includePaymentQR: false,
+      });
+
+      alert(`Invoice generated successfully! Invoice #${result.invoiceNumber}`);
+      
+      // Move to payment step
+      setState(prev => ({ ...prev, currentStep: 4 }));
+      await refetchTransaction();
+    } catch (error) {
+      console.error('Failed to generate invoice:', error);
+      alert('Failed to generate invoice. Please try again.');
+    } finally {
+      setState(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  const handleGenerateReceipt = async () => {
+    if (!existingTransaction?.id) {
+      alert('Please save the transaction first');
+      return;
+    }
+
+    try {
+      setState(prev => ({ ...prev, isSubmitting: true }));
+
+      const result = await generateReceipt({
+        transactionId: existingTransaction.id,
+        includePropertyLogo: true,
+        includeDigitalSignature: true,
+      });
+
+      alert(`Receipt generated successfully! Receipt #${result.receiptNumber}`);
+      
+      // Open PDF in new tab
+      if (result.pdfUrl) {
+        window.open(result.pdfUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Failed to generate receipt:', error);
+      alert('Failed to generate receipt. Please try again.');
+    } finally {
+      setState(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  const updateMeterReadings = (readings: MeterReadingInput[]) => {
+    setState(prev => ({ ...prev, meterReadings: readings }));
+  };
+
+  const updateExpenses = (expenses: ExpenseItem[]) => {
+    setState(prev => ({ ...prev, expenses }));
+  };
+
+  const updatePayments = (payments: PaymentEntry[]) => {
+    setState(prev => ({ ...prev, payments }));
+  };
+
+  if (unitLoading || transactionLoading || readingsLoading) {
+    return (
+      <AppLayout title="Rent Collection">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-gray-600">Loading...</div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!unit) {
+    return (
+      <AppLayout title="Rent Collection">
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <p className="text-red-800">Unit not found</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const billingPeriod = getCurrentBillingPeriod();
+
+  return (
+    <AppLayout title="Rent Collection">
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-start">
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="mb-2"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">Collect Rent</h1>
+            <p className="mt-2 text-gray-600">
+              Unit {unit.unitNumber} - {billingPeriod.month}/{billingPeriod.year}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleSaveDraft}
+              disabled={state.isSubmitting}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Draft
+            </Button>
+            {existingTransaction?.status !== 'draft' && (
+              <Badge variant={existingTransaction?.status === 'paid' ? 'default' : 'secondary'}>
+                {existingTransaction?.status || 'New'}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Progress Steps */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              {[
+                { step: 1, label: 'Meter Readings', icon: Calendar },
+                { step: 2, label: 'Expenses', icon: FileText },
+                { step: 3, label: 'Review', icon: AlertCircle },
+                { step: 4, label: 'Payment', icon: ReceiptIcon },
+              ].map(({ step, label, icon: Icon }) => (
+                <div key={step} className="flex-1 flex items-center">
+                  <div className={`flex flex-col items-center ${step < state.currentStep ? 'text-green-600' : step === state.currentStep ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      step < state.currentStep ? 'bg-green-100' : 
+                      step === state.currentStep ? 'bg-blue-100' : 
+                      'bg-gray-100'
+                    }`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs mt-2 font-medium">{label}</span>
+                  </div>
+                  {step < 4 && (
+                    <div className={`flex-1 h-0.5 mx-2 ${step < state.currentStep ? 'bg-green-600' : 'bg-gray-200'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Summary Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Transaction Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Base Rent</p>
+                <p className="text-lg font-bold">₹{state.transaction.baseRent?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Meter Charges</p>
+                <p className="text-lg font-bold text-blue-600">₹{state.transaction.totalMeterCharges?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Expenses</p>
+                <p className="text-lg font-bold text-orange-600">₹{state.transaction.totalExpenses?.toLocaleString() || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Due</p>
+                <p className="text-lg font-bold text-green-600">₹{state.transaction.totalAmount?.toLocaleString() || 0}</p>
+              </div>
+            </div>
+            {state.transaction.previousBalance && state.transaction.previousBalance > 0 && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-sm text-yellow-800">
+                  Previous balance of ₹{state.transaction.previousBalance.toLocaleString()} is included in the total.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Step Content */}
+        {state.currentStep === 1 && (
+          <MeterReadingStep
+            meterReadings={state.meterReadings}
+            onUpdate={updateMeterReadings}
+            validationErrors={state.validationErrors}
+          />
+        )}
+
+        {state.currentStep === 2 && (
+          <ExpenseManagementStep
+            expenses={state.expenses}
+            onUpdate={updateExpenses}
+          />
+        )}
+
+        {state.currentStep === 3 && (
+          <ReviewStep
+            transaction={state.transaction}
+            meterReadings={state.meterReadings}
+            expenses={state.expenses}
+            unit={unit}
+          />
+        )}
+
+        {state.currentStep === 4 && (
+          <PaymentRecordingStep
+            transaction={state.transaction}
+            payments={state.payments}
+            onUpdate={updatePayments}
+            onGenerateReceipt={handleGenerateReceipt}
+          />
+        )}
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            disabled={state.currentStep === 1 || state.isSubmitting}
+          >
+            Previous
+          </Button>
+          <div className="flex gap-2">
+            {state.currentStep < 3 && (
+              <Button
+                onClick={handleNext}
+                disabled={state.isSubmitting}
+              >
+                Next
+              </Button>
+            )}
+            {state.currentStep === 3 && (
+              <Button
+                onClick={handleGenerateInvoice}
+                disabled={state.isSubmitting || generatingInvoice}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                {generatingInvoice ? 'Generating...' : 'Generate Invoice'}
+              </Button>
+            )}
+            {state.currentStep === 4 && state.transaction.status === 'paid' && (
+              <Button
+                onClick={handleGenerateReceipt}
+                disabled={state.isSubmitting || generatingReceipt}
+              >
+                <ReceiptIcon className="h-4 w-4 mr-2" />
+                {generatingReceipt ? 'Generating...' : 'Generate Receipt'}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
+};

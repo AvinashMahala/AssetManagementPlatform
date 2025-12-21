@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { IRentPaymentService } from '../interfaces/services/IRentPaymentService';
 import { RentPaymentInput, PaymentStatus } from '../models/RentPayment';
-import { ResponseUtils } from '../utils/response';
-import { ErrorUtils } from '../utils/error';
-import { createModuleLogger } from '../utils/logger.js';
+import { ResponseUtils } from '@/shared/utils/response';
+import { ErrorUtils } from '@/shared/utils/error';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('RentPaymentController');
 
@@ -475,6 +475,9 @@ export class RentPaymentController {
           errorMessage.includes('Lease not found') ||
           errorMessage.includes('Property not found') ||
           errorMessage.includes('Tenant not found')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
+      if (errorMessage.includes('Created by') || errorMessage.includes('Created by user')) {
         return ResponseUtils.badRequest(res, errorMessage);
       }
       ErrorUtils.handleGenericError(res, err, 'Failed to create payment');

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '../common/button';
 import { FileX, Search, Database, Plus } from 'lucide-react';
 
 export interface EmptyStateProps {

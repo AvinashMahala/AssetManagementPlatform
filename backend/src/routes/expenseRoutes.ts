@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ExpenseController } from '../controllers/ExpenseController';
-import { conditionalAuth } from '../middlewares/authMiddleware';
+import { conditionalAuth } from '@/shared/middleware/authMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 
 export const createExpenseRoutes = (controller: ExpenseController, userService: IUserService) => {

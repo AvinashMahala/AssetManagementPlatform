@@ -1,0 +1,137 @@
+/* Files Page Enhanced Styles - Scoped to FilesPage only */
+
+/* Scoped mixins for FilesPage only */
+@mixin files-glass-morphism {
+  background: var(--files-glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--files-glass-border);
+}
+
+@mixin files-gradient-text($color1, $color2) {
+  background: linear-gradient(135deg, $color1, $color2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin files-hover-lift {
+  transition: var(--files-transition);
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@mixin files-hover-scale {
+  transition: var(--files-transition);
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+@mixin files-slide-in-from-top {
+  animation: files-slideInFromTop 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+@mixin files-fade-in {
+  animation: files-fadeIn 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+@mixin files-icon-glow {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--files-primary), var(--files-secondary));
+    opacity: 0.3;
+    filter: blur(8px);
+    z-index: -1;
+  }
+}
+
+.root {
+  --files-primary: #6366f1;
+  --files-secondary: #8b5cf6;
+  --files-accent: #ef4444;
+  --files-glass-bg: rgba(255, 255, 255, 0.1);
+  --files-glass-border: rgba(255, 255, 255, 0.2);
+  --files-hover-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+  --files-card-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
+  --files-border-radius: 0.75rem;
+  --files-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &[data-theme="dark"] {
+    --files-primary: #818cf8;
+    --files-secondary: #a78bfa;
+    --files-accent: #f87171;
+    --files-glass-bg: rgba(255, 255, 255, 0.05);
+    --files-glass-border: rgba(255, 255, 255, 0.1);
+    --files-hover-shadow: 0 10px 25px rgba(129, 140, 248, 0.2);
+    --files-card-shadow: 0 4px 6px rgba(129, 140, 248, 0.15);
+  }
+
+  /* Basic test style */
+  .test {
+    color: var(--files-primary);
+  }
+
+  /* Legacy header section - for backwards compatibility */
+  .header-section {
+    @include files-glass-morphism;
+    @include files-slide-in-from-top;
+    border-radius: var(--files-border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--files-glass-bg), rgba(99, 102, 241, 0.02));
+    animation-delay: 0.1s;
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .header-title {
+      @include files-gradient-text(var(--files-primary), var(--files-secondary));
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+    }
+
+    .header-description {
+      color: hsl(var(--muted-foreground));
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .btn {
+      @include files-hover-lift;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--files-hover-shadow);
+      }
+    }
+  }
+}

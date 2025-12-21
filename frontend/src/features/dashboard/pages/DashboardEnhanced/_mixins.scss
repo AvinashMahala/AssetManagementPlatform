@@ -1,0 +1,22 @@
+// Mixins for DashboardEnhanced
+
+@mixin glass-effect {
+  background: var(--dashboard-glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--dashboard-glass-border);
+}
+
+@mixin button-base {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--dashboard-transition-fast);
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+@mixin focus-styles {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 8px;
+}

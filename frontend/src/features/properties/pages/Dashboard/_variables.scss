@@ -1,0 +1,38 @@
+// Variables for Property Dashboard
+// Extracted from PropertyDashboard.scss
+
+:root {
+  // CSS Custom Properties for theming
+  --property-primary: #059669;
+  --property-secondary: #0d9488;
+  --property-accent: #0891b2;
+  --property-success: #16a34a;
+  --property-warning: #ca8a04;
+  --property-error: #dc2626;
+  --property-info: #2563eb;
+
+  --property-glass-bg: rgba(255, 255, 255, 0.8);
+  --property-glass-border: rgba(255, 255, 255, 0.2);
+  --property-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --property-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  --property-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --property-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --property-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // High contrast mode variables
+  --property-high-contrast-bg: #ffffff;
+  --property-high-contrast-border: #000000;
+  --property-high-contrast-text: #000000;
+  --property-high-contrast-hover: #f0f0f0;
+  --property-high-contrast-skeleton: #cccccc;
+  --property-high-contrast-error-bg: #ffcccc;
+  --property-high-contrast-error-border: #cc0000;
+}
+
+[data-theme="dark"] {
+  --property-glass-bg: rgba(17, 24, 39, 0.8);
+  --property-glass-border: rgba(55, 65, 81, 0.3);
+  --property-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --property-shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.4);
+}

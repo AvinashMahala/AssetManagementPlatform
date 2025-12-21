@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { Lease, LeaseInput, LeaseStatus } from '../models/Lease.js';
-import { TABLES, COLUMNS } from '../constants/database.js';
+import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository.js';
 
 export class LeaseRepository implements ILeaseRepository {

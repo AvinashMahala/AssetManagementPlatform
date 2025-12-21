@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { IReceiptService } from '../interfaces/repositories/IReceiptRepository';
 import { ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '../models/Receipt';
-import { createModuleLogger, PerformanceLogger } from '../utils/logger.js';
-import { AppError } from '../middlewares/errorHandler.js';
+import { createModuleLogger, PerformanceLogger } from '@/shared/utils/logger.js';
+import { AppError } from '@/shared/middleware/errorHandler.js';
 
 const logger = createModuleLogger('ReceiptController');
 

@@ -1,8 +1,8 @@
 import { IPropertyFileRepository } from '../interfaces/repositories/IPropertyFileRepository';
 import { IPropertyFileService } from '../interfaces/services/IPropertyFileService';
 import { PropertyFile } from '../models/Property';
-import { ValidationUtils } from '../utils/validation';
-import { ERROR_MESSAGES } from '../constants/validation';
+import { ValidationUtils } from '@/shared/utils/validation';
+import { ERROR_MESSAGES } from '@/shared/constants/validation';
 
 export class PropertyFileService implements IPropertyFileService {
   private repository: IPropertyFileRepository;

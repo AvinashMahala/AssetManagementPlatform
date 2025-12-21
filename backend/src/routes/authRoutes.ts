@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/userController';
-import { conditionalAuth, devAuthBypass } from '../middlewares/authMiddleware';
-import { validateRequest } from '../middlewares/validationMiddleware';
+import { conditionalAuth, devAuthBypass } from '@/shared/middleware/authMiddleware';
+import { validateRequest } from '@/shared/middleware/validationMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 import { PasswordResetService } from '../services/PasswordResetService';
 

@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { Property, PropertyInput, PropertyStatus } from '../models/Property';
-import { TABLES, COLUMNS } from '../constants/database.js';
+import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('PropertyRepository');
 

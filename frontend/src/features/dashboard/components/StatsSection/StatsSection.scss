@@ -1,0 +1,113 @@
+// StatsSection.scss
+// Styles for StatsSection component
+
+.stats-grid {
+  animation: fadeInUp 0.6s ease-out;
+
+  .stat-card {
+    animation: fadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.1}s;
+      }
+    }
+  }
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b);
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease-in-out infinite;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  .stat-icon {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: rotate(5deg) scale(1.1);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+  }
+
+  &.priority-high {
+    animation: pulse 2s infinite;
+  }
+}
+
+.stat-card:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    gap: 1rem;
+
+    .stat-card {
+      padding: 1rem;
+
+      .stat-icon {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  }
+}
+
+@media (min-width: 1440px) {
+  .stats-grid {
+    .stat-card {    
+      .stat-value {
+        font-size: 2.5rem;
+      }
+    }
+  }
+}
+
+@media (prefers-contrast: high) {
+  .stat-card {
+    border: 2px solid;
+
+    &::before {
+      height: 4px;
+    }
+  }
+}
+
+@media print {
+  .stat-card::before,
+  .stat-card::after {
+    display: none;
+  }
+}

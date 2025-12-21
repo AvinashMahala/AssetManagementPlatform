@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend-debug:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run dev:debug
+    ports:
+      - "5000:5000"
+      - "9229:9229"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    # Ensure you have a .env file in the backend directory
+    env_file:
+      - .env

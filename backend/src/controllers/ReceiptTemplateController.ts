@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { ReceiptTemplateService } from '../services/ReceiptTemplateService';
 import { ReceiptTemplateInput, ReceiptTemplateType } from '../models/ReceiptTemplate';
-import { ResponseUtils } from '../utils/response';
-import { ErrorUtils } from '../utils/error';
+import { ResponseUtils } from '@/shared/utils/response';
+import { ErrorUtils } from '@/shared/utils/error';
 
 export class ReceiptTemplateController {
   constructor(private templateService: ReceiptTemplateService) {}

@@ -1,0 +1,64 @@
+// Activities section styles
+.activities-section {
+  // Custom activities section container
+  .activity-card {
+    // Custom activity card
+    .activity-header {
+      // Custom activity header
+      .activity-title {
+        // Custom activity title
+      }
+
+      .activity-description {
+        // Custom activity description
+      }
+
+      .activity-icon {
+        // Custom activity icon
+      }
+    }
+
+    .activity-content {
+      // Custom activity content
+      .activity-list {
+        // Custom activity list
+      }
+    }
+  }
+}
+
+.activity-item {
+  // Enhanced hover effects with ripple
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.1);
+    transition: width 0.6s, height 0.6s;
+    transform: translate(-50%, -50%);
+  }
+
+  &:hover {
+    background-color: rgba(var(--muted), 0.5);
+    border-radius: 8px;
+    transform: translateX(4px);
+
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  &:active {
+    transform: translateX(4px) scale(0.98);
+    transition-duration: 0.1s;
+  }
+}

@@ -1,0 +1,49 @@
+@use '../../pages/MeterListPageEnhanced/MeterList.scss' as *;
+
+.stats-section {
+  animation: slideInFromTop 0.5s ease-out 0.2s both;
+
+  .stats-card {
+    @include hover-lift;
+    transition: all var(--meter-transition-normal);
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity var(--meter-transition-normal);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+
+    .stats-icon {
+      transition: transform var(--meter-transition-normal);
+
+      &:hover {
+        transform: scale(1.1) rotate(5deg);
+      }
+    }
+
+    .stats-value {
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}

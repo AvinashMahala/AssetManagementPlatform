@@ -1,0 +1,55 @@
+// Mixins for Property Dashboard
+// Extracted from PropertyDashboard.scss
+
+@mixin glass-morphism-enhanced {
+  background: var(--property-glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--property-glass-border);
+  box-shadow:
+    var(--property-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+@mixin gradient-text-enhanced {
+  background: linear-gradient(135deg, var(--property-primary), var(--property-secondary), var(--property-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+@mixin hover-lift {
+  transition: all var(--property-transition-normal);
+  transform-origin: center;
+
+  &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow:
+      var(--property-shadow-heavy),
+      0 0 0 1px rgba(5, 150, 105, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+@mixin shimmer-effect {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    animation: shimmer 2.5s infinite;
+  }
+}

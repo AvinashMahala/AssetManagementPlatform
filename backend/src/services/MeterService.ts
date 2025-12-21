@@ -1,9 +1,9 @@
 import { IMeterRepository } from '../interfaces/repositories/IMeterRepository.js';
 import { Meter, MeterInput, MeterType } from '../models/Meter.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 import { IMeterService } from '../interfaces/services/IMeterService.js';
-import { PaginationOptions, PaginationResult, MeterFilters } from '../types/pagination.js';
+import { PaginationOptions, PaginationResult, MeterFilters } from '@/shared/types/pagination.js';
 
 export class MeterService implements IMeterService {
   private repository: IMeterRepository;

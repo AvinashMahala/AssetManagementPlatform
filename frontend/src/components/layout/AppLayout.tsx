@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { Header } from './Header';
-import { Breadcrumbs } from '../ui';
+import { Sidebar } from './sidebar';
+import { Header } from './header';
+import { MobileSidebar } from './mobile-sidebar';
+import { Breadcrumbs } from '@/componentDesignLibrary';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -24,20 +25,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, showBread
       </aside>
 
       {/* Mobile Sidebar */}
-      {mobileSidebarOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          
-          {/* Sidebar */}
-          <aside className="fixed inset-y-0 left-0 z-50 lg:hidden">
-            <Sidebar />
-          </aside>
-        </>
-      )}
+      <MobileSidebar 
+        isOpen={mobileSidebarOpen} 
+        onClose={() => setMobileSidebarOpen(false)} 
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -47,8 +38,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children, title, showBread
         />
         
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {showBreadcrumbs && <Breadcrumbs className="mb-6" items={[]} />}
+          <div className="px-4 lg:px-6 py-3">
+            {showBreadcrumbs && <Breadcrumbs className="mb-2" items={[]} />}
             {children}
           </div>
         </main>

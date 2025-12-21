@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { ReceiptTemplateService } from '../src/services/ReceiptTemplateService';
 import { ReceiptTemplateInput, ReceiptTemplateType } from '../src/models/ReceiptTemplate';
-import { DependencyContainer } from '../src/utils/DependencyContainer';
+import { DependencyContainer } from '../src/shared/utils/DependencyContainer';
 
 // Predefined receipt templates
 const PREDEFINED_TEMPLATES: Omit<ReceiptTemplateInput, 'isActive' | 'isDefault' | 'sortOrder'>[] = [

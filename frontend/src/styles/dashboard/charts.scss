@@ -1,0 +1,61 @@
+// Charts section styles
+.charts-carousel-container {
+  .charts-carousel {
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE and Edge
+
+    &::-webkit-scrollbar {
+      display: none; // Chrome, Safari, and Opera
+    }
+
+    .chart-container {
+      .chart-header {
+        .chart-title {
+          // Custom chart title
+        }
+
+        .chart-description {
+          // Custom chart description
+        }
+      }
+
+      .chart-content {
+        // Custom chart content area - smooth animations
+        transition: opacity 0.3s ease;
+      }
+    }
+  }
+
+  .carousel-nav-btn {
+    transition: var(--dashboard-transition-fast);
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: var(--dashboard-shadow-light);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+.chart-container {
+  // Custom chart styling with glassmorphism effect
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  @include glassmorphism;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  // Chart content animations
+  .chart-content {
+    animation: slideInFromBottom 0.8s ease-out 0.3s both;
+  }
+}

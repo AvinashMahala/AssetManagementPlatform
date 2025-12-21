@@ -340,10 +340,10 @@ NODE_ENV=production
 
 ```bash
 # Build for production
-npm run build
+yarn build
 
 # Preview production build
-npm run preview
+yarn preview
 ```
 
 ---

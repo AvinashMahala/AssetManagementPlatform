@@ -1,0 +1,54 @@
+@use '../../pages/MeterListPageEnhanced/MeterList.scss' as *;
+
+.filters-section {
+  animation: slideInFromTop 0.5s ease-out 0.3s both;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  position: relative;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  .search-input {
+    border-radius: 6px;
+    transition: all var(--meter-transition-fast);
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+      transform: translateY(-1px);
+    }
+  }
+
+  .filter-select {
+    border-radius: 6px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible;
+
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+      transform: translateY(-1px);
+      border-color: var(--meter-primary);
+    }
+
+    svg {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &[data-state="open"] svg {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

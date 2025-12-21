@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { IPropertyService } from '../interfaces/services/IPropertyService.js';
 import { PropertyInput } from '../models/Property.js';
-import { ResponseUtils } from '../utils/response.js';
-import { ErrorUtils } from '../utils/error.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { ResponseUtils } from '@/shared/utils/response.js';
+import { ErrorUtils } from '@/shared/utils/error.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('PropertyController');
 

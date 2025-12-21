@@ -128,6 +128,4 @@ export const featureFlags = FeatureFlagManager.getInstance();
 // Expose to window for debugging
 if (import.meta.env.DEV) {
   (window as any).__featureFlags = featureFlags;
-  console.log('[Feature Flags] Available at window.__featureFlags');
-  console.log('[Feature Flags] Current settings:', featureFlags.getFlags());
 }

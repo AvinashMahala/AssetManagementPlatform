@@ -13,7 +13,7 @@ import { UserService } from './UserService';
 import { LeaseService } from './LeaseService';
 import { ReceiptTemplateService } from './ReceiptTemplateService';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate';
-import { PDFGenerator } from '../utils/pdfGenerator';
+import { PDFGenerator } from '@/shared/utils/pdfGenerator';
 import { RentPayment } from '../models/RentPayment';
 
 export class ReceiptService implements IReceiptService {

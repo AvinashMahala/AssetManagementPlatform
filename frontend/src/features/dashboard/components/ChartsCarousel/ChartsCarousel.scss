@@ -1,0 +1,124 @@
+// ChartsCarousel.scss
+// Styles for ChartsCarousel component
+
+.chart-container {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  .chart-content {
+    animation: slideInFromBottom 0.8s ease-out 0.3s both;
+  }
+}
+
+.charts-row-1,
+.charts-row-2 {
+  .chart-container {
+    .chart-header {
+      .chart-title {
+        font-weight: 700;
+        background: linear-gradient(135deg, #1f2937, #374151);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .chart-description {
+        color: rgba(var(--foreground), 0.7);
+        font-size: 0.875rem;
+      }
+    }
+
+    .chart-content {
+      transition: opacity 0.3s ease;
+    }
+  }
+}
+
+.charts-carousel-container {
+  .charts-carousel {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chart-container {
+      .chart-header {
+        .chart-title {
+          font-weight: 700;
+          background: linear-gradient(135deg, #1f2937, #374151);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .chart-description {
+          color: rgba(var(--foreground), 0.7);
+          font-size: 0.875rem;
+        }
+      }
+
+      .chart-content {
+        transition: opacity 0.3s ease;
+      }
+    }
+  }
+
+  .carousel-nav-btn {
+    transition: all var(--dashboard-transition-fast);
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: var(--dashboard-shadow-light);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    margin-bottom: 1rem;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .charts-row-1,
+  .charts-row-2 {
+    .chart-container {
+      min-height: 300px;
+    }
+  }
+}
+
+@media (min-width: 1440px) {
+  .chart-container {
+    &:hover {
+      transform: translateY(-6px) scale(1.03);
+    }
+  }
+}
+
+@media print {
+  .chart-container {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}

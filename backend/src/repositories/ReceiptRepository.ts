@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '../models/Receipt';
 import { IReceiptRepository } from '../interfaces/repositories/IReceiptRepository';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate';
-import { TABLES, COLUMNS } from '../constants/database';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class ReceiptRepository implements IReceiptRepository {
   constructor(private db: Pool) {}

@@ -1,0 +1,116 @@
+/* FileFilters Component Styles */
+
+@use '../shared-mixins.scss' as *;
+
+.filters-section {
+  @include files-glass-morphism;
+  @include files-slide-in-from-top;
+  border: 1px solid var(--files-glass-border);
+  background: var(--files-glass-bg);
+  backdrop-filter: blur(10px);
+  animation-delay: 0.4s;
+  border-radius: var(--files-border-radius);
+  overflow: hidden;
+
+  .filters-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+    background: linear-gradient(135deg, var(--files-glass-bg), rgba(99, 102, 241, 0.02));
+
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+  }
+
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .filter-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .filter-badge {
+      @include files-hover-scale;
+      transition: all 0.2s ease;
+    }
+
+    .clear-all-btn {
+      @include files-hover-lift;
+      font-size: 0.875rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+
+  .filters-content {
+    padding: 0.75rem 1rem;
+
+    .search-container {
+      position: relative;
+      flex: 1;
+
+      .search-icon {
+        position: absolute;
+        left: 0.625rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: hsl(var(--muted-foreground));
+      }
+
+      .search-input {
+        padding-left: 2rem;
+        border-radius: 0.5rem;
+        border: 1px solid hsl(var(--border));
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+
+        &:focus {
+          border-color: var(--files-primary);
+          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+        }
+      }
+    }
+
+    .filter-select {
+      border-radius: 0.5rem;
+      border: 1px solid hsl(var(--border));
+      transition: all 0.2s ease;
+      height: 2.25rem;
+      font-size: 0.875rem;
+
+      &:focus {
+        border-color: var(--files-primary);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+      }
+    }
+
+    .advanced-filters {
+      border-top: 1px solid hsl(var(--border));
+      padding-top: 1.5rem;
+      margin-top: 1.5rem;
+
+      .filter-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+
+        .filter-input {
+          border-radius: 0.5rem;
+          border: 1px solid hsl(var(--border));
+          transition: all 0.2s ease;
+
+          &:focus {
+            border-color: var(--files-primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+          }
+        }
+      }
+    }
+  }
+}

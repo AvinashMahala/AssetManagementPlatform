@@ -6,8 +6,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../../../components/ui/dialog';
-import { Button } from '../../../components/ui/button';
+} from '../common/dialog';
+import { Button } from '../common/button';
 import { AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react';
 
 export type ConfirmDialogVariant = 'default' | 'destructive' | 'warning' | 'success';

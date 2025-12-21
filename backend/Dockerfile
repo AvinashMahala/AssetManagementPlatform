@@ -1,8 +1,9 @@
 FROM node:18-alpine
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+# copy package.json and yarn.lock (if present)
+COPY package.json yarn.lock* ./
+RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm install; fi
 COPY . .
-RUN npm run build
+RUN if [ -f yarn.lock ]; then yarn build; else npm run build; fi
 EXPOSE 5000
-CMD ["npm", "start"]
+CMD if [ -f yarn.lock ]; then yarn start; else npm start; fi

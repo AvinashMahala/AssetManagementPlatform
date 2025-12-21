@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { ReceiptTemplate, ReceiptTemplateInput } from '../models/ReceiptTemplate';
-import { TABLES, COLUMNS } from '../constants/database';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class ReceiptTemplateRepository {
   constructor(private pool: Pool) {}

@@ -18,11 +18,11 @@ echo "📦 Building frontend for GitHub Pages..."
 cd frontend
 
 # Install dependencies
-npm ci
+yarn install
 
 # Build with demo backend URL
 export VITE_API_URL="https://your-backend-service.onrender.com/api"
-npm run build
+yarn build
 
 echo "✅ Frontend built successfully!"
 echo "� Build output in: frontend/dist/"

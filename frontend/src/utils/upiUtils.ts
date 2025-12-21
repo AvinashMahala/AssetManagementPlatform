@@ -1,4 +1,4 @@
-import type { WalletDetails } from '../types/property';
+import type { WalletDetails } from '@/features/properties/types';
 
 /**
  * Generate UPI payment link for a wallet

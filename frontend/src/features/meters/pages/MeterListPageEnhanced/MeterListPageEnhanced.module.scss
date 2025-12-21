@@ -1,0 +1,131 @@
+@use './MeterList.scss' as *;
+
+// Root container with enhanced styling
+.meter-list-page-enhanced {
+  position: relative;
+  overflow-x: hidden;
+
+  // Enhanced Meter Grid (if used elsewhere or legacy)
+  .meter-grid {
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .meter-card {
+    @include hover-lift;
+    @include shimmer-effect;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    animation: fadeInScale 0.5s ease-out;
+    animation-fill-mode: both;
+
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.05}s;
+      }
+    }
+
+    .meter-status-bar {
+      height: 2px;
+      border-radius: 8px 8px 0 0;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        animation: shimmer 2s infinite;
+      }
+    }
+
+    .meter-content {
+      .meter-checkbox {
+        transition: all var(--meter-transition-fast);
+
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+
+      .meter-title {
+        font-weight: 600;
+        transition: color var(--meter-transition-fast);
+      }
+
+      .meter-actions {
+        .action-button {
+          transition: all var(--meter-transition-fast);
+          border-radius: 4px;
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 0.4s, height 0.4s;
+            transform: translate(-50%, -50%);
+          }
+
+          &:hover::before {
+            width: 100px;
+            height: 100px;
+          }
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+        }
+      }
+    }
+  }
+
+  // Enhanced Pagination
+  .pagination-section {
+    animation: slideInFromBottom 0.5s ease-out;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+}
+
+// Responsive enhancements
+@media (max-width: 768px) {
+  .meter-list-page-enhanced {
+    .meter-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .meter-card {
+      .meter-actions {
+        flex-wrap: wrap;
+      }
+    }
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .meter-list-page-enhanced {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
