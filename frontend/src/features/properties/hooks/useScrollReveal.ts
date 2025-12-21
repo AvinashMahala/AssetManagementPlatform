@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, RefObject } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export const useScrollReveal = (sectionIds: string[]) => {
+export const useScrollReveal = (_sectionIds: string[]) => {
   const [revealedSections, setRevealedSections] = useState<Set<string>>(new Set());
   const refs = useRef<Record<string, HTMLElement | null>>({});
 
