@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import navigateBackOrFallback from '@/utils/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { useExpense, useUpdateExpense } from '@/hooks';
+import { useExpense, useUpdateExpense } from '@/features/finance/hooks/useExpenses';
 import { Button } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout/AppLayout';
 import ExpenseFormTabbed from '@/features/finance/components/forms/ExpenseFormTabbed';

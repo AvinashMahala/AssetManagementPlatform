@@ -23,11 +23,11 @@ import {
   Loader2,
   Building2,
 } from 'lucide-react';
-import { bulkOperationsService } from '@/services';
+import { bulkOperationsService } from '@/features/bulkOperations/services/bulkOperationsService';
 import { useNotifications } from '@/contexts';
 import type { BulkRentCollectionInput, BulkOperationResult } from '@/features/bulkOperations/types';
-import { propertyService } from '@/services';
-import unitService from '@/services/unitService';
+import { propertyService } from '@/features/properties/services/propertyService';
+import unitService from '@/features/units/services/unitService';
 
 interface Unit {
   id: string;

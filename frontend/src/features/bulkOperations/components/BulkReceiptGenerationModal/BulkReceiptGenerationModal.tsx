@@ -20,7 +20,7 @@ import {
   Loader2,
   FileText,
 } from 'lucide-react';
-import { bulkOperationsService } from '@/services';
+import { bulkOperationsService } from '@/features/bulkOperations/services/bulkOperationsService';
 import { useNotifications } from '@/contexts';
 import type { BulkReceiptGenerationInput, BulkOperationResult } from '@/features/bulkOperations/types';
 import rentTransactionService from '@/features/finance/services/rentTransactionService';

@@ -13,8 +13,8 @@ import {
 import { Pagination } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { useLeases, useDeleteLease } from '@/features/leases/hooks/useLeases';
-import { useTenants } from '@/hooks';
-import { useUnits } from '@/hooks/useUnits';
+import { useTenants } from '@/features/tenants/hooks/useTenants';
+import { useUnits } from '@/features/units/hooks/useUnits';
 import { AppLayout } from '@/components/layout';
 import { format, isWithinInterval } from 'date-fns';
 import type { Lease } from '@/features/leases/types/lease';

@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import navigateBackOrFallback from '@/utils/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { useUnit, useUpdateUnit } from '@/hooks';
+import { useUnit, useUpdateUnit } from '@/features/units/hooks/useUnits';
 import { Button } from '@/componentDesignLibrary';
 import { PageLoadingSpinner } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout/AppLayout';

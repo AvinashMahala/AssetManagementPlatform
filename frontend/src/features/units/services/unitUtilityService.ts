@@ -1,5 +1,5 @@
 import type { UnitUtility, UnitUtilityInput } from '@/features/units/types';
-import type { ApiResponse } from '../types/api';
+import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 
 class UnitUtilityService {

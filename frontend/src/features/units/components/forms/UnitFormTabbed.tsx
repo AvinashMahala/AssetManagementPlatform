@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { useProperties, useProperty } from '@/hooks';
+import { useProperties, useProperty } from '@/features/properties/hooks/useProperties';
 import type { UnitInput } from '@/features/units/types';
 import { UnitStatus, UnitType } from '@/features/units/types';
 

@@ -1,84 +1,96 @@
-# 🗺️ Frontend Architecture Refactoring Roadmap: The "Vertical Slice" Evolution
+# 🗺️ Frontend Architecture Refactoring Roadmap: The Final Consolidation
 
-**Objective:** Transition from a Layered Architecture (Components/Hooks/Services) to a strict **Vertical Slice Architecture (Features)**.
-**Goal:** Eliminate "Split Brain" logic, enforce strict boundaries, and achieve "God-Level" modularity.
-**Current State:** Hybrid (Features exist, but shared folders are polluted).
-
----
-
-## 🏗️ Phase 1: The Great Migration (Components) ✅ COMPLETED
-**Goal:** Purge `src/components` of domain-specific logic. Move "Smart" components to their respective features.
-**Rule:** `src/components` must ONLY contain generic, business-agnostic UI (e.g., `AppLayout`, `DateRangePicker`).
-
-- [x] **Properties Migration**
-    - Move `src/components/forms/EnhancedAmenitiesForm.tsx` -> `src/features/properties/components/forms/`
-    - Move `src/components/forms/PropertyFileUpload.tsx` -> `src/features/properties/components/forms/`
-    - Move `src/components/forms/UnitFormTabbed.tsx` -> `src/features/units/components/forms/`
-- [x] **Finance Migration**
-    - Move `src/components/receipts/*` -> `src/features/finance/components/receipts/`
-    - Move `src/components/forms/ExpenseFormTabbed.tsx` -> `src/features/finance/components/forms/`
-    - Move `src/components/forms/PaymentFormTabbed.tsx` -> `src/features/finance/components/forms/`
-- [x] **Tenants Migration**
-    - Move `src/components/forms/TenantFormTabbed.tsx` -> `src/features/tenants/components/forms/`
-    - Move `src/components/forms/OwnerContactForm.tsx` -> `src/features/tenants/components/forms/` (or properties depending on usage)
-- [x] **Auth Migration**
-    - Move `src/components/forms/PasswordResetForm.tsx` -> `src/features/auth/components/forms/`
-    - Move `src/components/ConsentDialog.tsx` -> `src/features/auth/components/` (if auth specific) or `src/components/common` (if generic).
+**Objective:** Complete the transition to a strict **Vertical Slice Architecture**.
+**Current Status:** `src/components` is clean. `src/hooks` and `src/services` still contain domain logic that must be moved.
 
 ---
 
-## 🧠 Phase 2: The Logic Relocation (Hooks & Services) ✅ COMPLETED
-**Goal:** Empty `src/hooks` and `src/services` of domain logic.
-**Rule:** If a hook/service mentions "Tenant", "Property", or "Expense", it belongs in a feature.
+## 🚀 Phase 1: The Service Migration (Critical) ✅ COMPLETED
+**Goal:** Empty `src/services` completely. All logic must live in `src/features/[feature]/services`.
 
-- [x] **Service Migration**
-    - Move `src/services/propertyService.ts` -> `src/features/properties/services/`
-    - Move `src/services/tenantService.ts` -> `src/features/tenants/services/`
-    - Move `src/services/expenseService.ts` -> `src/features/finance/services/`
-    - Move `src/services/paymentService.ts` -> `src/features/finance/services/`
-    - Move `src/services/receiptService.ts` -> `src/features/finance/services/`
-    - Move `src/services/authService.ts` -> `src/features/auth/services/`
-- [x] **Hook Migration**
-    - Move `src/hooks/useProperties.ts` -> `src/features/properties/hooks/`
-    - Move `src/hooks/useTenants.ts` -> `src/features/tenants/hooks/`
-    - Move `src/hooks/useExpenses.ts` -> `src/features/finance/hooks/`
-    - Move `src/hooks/usePayments.ts` -> `src/features/finance/hooks/`
-
----
-
-## 🔌 Phase 3: The API Unification ✅ COMPLETED
-**Goal:** Resolve the "Split Brain" API layer.
-**Problem:** `src/utils/apiService.ts` (Logging) vs `src/services/apiClient.ts` (Class-based).
-
-- [x] **Merge Logic:** Refactor `src/services/apiClient.ts` to include the logging and error handling capabilities of `src/utils/apiService.ts`.
-- [x] **Update Usages:** Find all usages of `apiService` and replace with `apiClient`.
-- [x] **Delete:** Remove `src/utils/apiService.ts`.
-- [x] **Move:** Move `src/services/apiClient.ts` to `src/lib/apiClient.ts` (It is a core library, not a service).
+- [x] **Units Feature**
+    - Move `src/services/unitService.ts` -> `src/features/units/services/`
+    - Move `src/services/unitUtilityService.ts` -> `src/features/units/services/`
+- [x] **Meters Feature**
+    - Move `src/services/meterService.ts` -> `src/features/meters/services/`
+- [x] **Assets Feature** (Check if feature exists, if not create `src/features/assets`)
+    - Move `src/services/assetService.ts` -> `src/features/assets/services/`
+- [x] **Templates Feature**
+    - Move `src/services/templateService.ts` -> `src/features/templates/services/`
+- [x] **Bulk Operations Feature**
+    - Move `src/services/bulkOperationsService.ts` -> `src/features/bulkOperations/services/`
+- [x] **Files Feature**
+    - Move `src/services/fileService.ts` -> `src/features/files/services/`
 
 ---
 
-## 📦 Phase 4: Type Colocation
-**Goal:** Move domain types closer to their usage.
+## 🎣 Phase 2: The Hook Migration ✅ COMPLETED
+**Goal:** Empty `src/hooks` of domain logic.
 
-- [ ] Move `src/types/property.ts` -> `src/features/properties/types/index.ts`
-- [ ] Move `src/types/tenant.ts` -> `src/features/tenants/types/index.ts`
-- [ ] Move `src/types/expense.ts` -> `src/features/finance/types/index.ts`
-- [ ] Update all imports to point to the new locations.
+- [x] **Units Feature**
+    - Move `src/hooks/useUnits.ts` -> `src/features/units/hooks/`
+    - Move `src/hooks/useUnitUtilities.ts` -> `src/features/units/hooks/`
+- [x] **Meters Feature**
+    - Move `src/hooks/useMeters.ts` -> `src/features/meters/hooks/`
+- [x] **Assets Feature**
+    - Move `src/hooks/useAssets.ts` -> `src/features/assets/hooks/`
+- [x] **Dashboard Feature**
+    - Move `src/hooks/useDashboardStats.ts` -> `src/features/dashboard/hooks/`
+    - Move `src/hooks/useChartCarousel.ts` -> `src/features/dashboard/hooks/`
+    - Move `src/hooks/useActivityItems.ts` -> `src/features/dashboard/hooks/`
+- [x] **Admin/Navigation Feature**
+    - Move `src/hooks/useNavigationConfig.ts` -> `src/features/admin/hooks/` (or appropriate feature)
 
 ---
 
-## 🎨 Phase 5: Style & Convention Cleanup
-**Goal:** Enforce naming conventions and clean up orphaned styles.
+## 📦 Phase 3: Type Colocation ✅ COMPLETED
+**Goal:** Move domain types to their features.
 
-- [ ] **Styles:** Move `src/styles/dashboard/*` -> `src/features/dashboard/styles/` or colocate as modules.
-- [ ] **Naming:** Rename `src/features/bulkOperations` -> `src/features/bulk-operations`.
-- [ ] **Naming:** Ensure all Page components end with `Page.tsx`.
-- [ ] **Naming:** Ensure all boolean props start with `is`, `has`, or `should`.
+- [x] **Assets Feature**
+    - Move `src/types/asset.ts` -> `src/features/assets/types/`
+- [x] **Review Shared Types**
+    - Analyze `src/types/index.ts` and `src/types/common.ts` to ensure no hidden domain logic.
 
 ---
 
-## 🏁 Definition of Done
-1. `src/components` only contains truly generic UI.
-2. `src/hooks` only contains generic React hooks (e.g., `useDebounce`).
-3. `src/services` is empty or deleted (replaced by `src/lib` and feature services).
-4. `src/features` is self-contained (Logic, UI, Styles, Types all together).
+## 🏰 Phase 4: Feature Standardization ("God-Level" Hygiene) ✅ COMPLETED
+**Goal:** Ensure every feature follows the strict folder structure.
+
+**Standard Structure:**
+```text
+src/features/[feature]/
+├── components/
+├── hooks/
+├── pages/
+├── services/
+├── types/
+└── index.ts (Public API)
+```
+
+- [x] **Dashboard:** Create `types/` folder.
+- [x] **Admin:** Create `hooks/`, `services/`, `types/` folders if needed, or verify they are truly not needed.
+- [x] **Templates:** Standardize structure.
+- [x] **Barrel Files:** Ensure every feature has an `index.ts` exporting only what is necessary.
+
+---
+
+## 🧹 Phase 5: The Final Purge ✅ COMPLETED
+**Goal:** Remove empty directories and unused files.
+
+- [x] **Refactor Bulk Operations Feature:** Remove dependencies on `@/services`.
+- [x] **Refactor Files Feature:** Remove dependencies on `@/services`.
+- [x] **Refactor Meters Feature:** Remove dependencies on `@/hooks`.
+- [x] **Refactor Finance Feature:** Remove dependencies on `@/services` and `@/hooks`.
+- [x] **Refactor Properties Feature:** Remove dependencies on `@/services` and `@/hooks`.
+- [x] **Refactor Remaining Features:** Dashboard, Leases, Units, Tenants, Auth, Admin.
+- [x] **Deprecate Central Indexes:** Add `@deprecated` to `src/services/index.ts` and `src/hooks/index.ts`.
+- [x] Delete `src/services` (Empty).
+- [x] Delete `src/hooks/index.ts`.
+- [x] Verify no circular dependencies between features.
+
+## 🎉 Refactoring Complete!
+The codebase now follows a strict **Vertical Slice Architecture**.
+- All domain logic is in `src/features`.
+- `src/components` contains only dumb UI components.
+- `src/hooks` contains only generic hooks (`useApi`, `useDragAndDrop`).
+- `src/services` is gone.

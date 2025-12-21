@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UtilityType, UtilityBillingMethod } from '@/features/units/types';
 import type { UnitUtility } from '@/features/units/types';
-import { useUnitUtilities, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility, useLastMeterReadings } from '@/hooks';
+import { useUnitUtilities, useUpdateUnitUtility, useDeleteUnitUtility, useToggleUnitUtility } from '@/features/units/hooks/useUnitUtilities';
+import { useLastMeterReadings } from '@/features/finance/hooks/useRentTransactions';
 
 export const useUnitUtilitiesManager = (unitId: string, propertyId: string) => {
   const navigate = useNavigate();

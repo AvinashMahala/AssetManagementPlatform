@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { templateService } from '../../../services/templateService';
+import { templateService } from '@/features/templates/services/templateService';
 import { Button, PageLoadingSpinner } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { Save } from 'lucide-react';

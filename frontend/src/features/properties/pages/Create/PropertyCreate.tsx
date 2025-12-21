@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCreateProperty } from '@/hooks';
+import { useCreateProperty } from '@/features/properties/hooks/useProperties';
 import { useNavigate } from 'react-router-dom';
 import navigateBackOrFallback from '@/utils/navigation';
 import PropertyFormTabbed from '@/features/properties/components/forms/PropertyFormTabbed';

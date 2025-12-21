@@ -3,7 +3,7 @@ import { FileText, Image, Download } from 'lucide-react';
 import { Card, CardContent } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
-import { fileService } from '@/services';
+import fileService from '@/features/files/services/fileService';
 import type { FileMetadata } from '@/features/files/types';
 
 interface RecentFilesWidgetProps {

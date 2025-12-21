@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fileService } from '@/services';
+import fileService from '@/features/files/services/fileService';
 import type { FileMetadata } from '@/features/files/types';
 import type { FileFilters } from '../components/FileFilters/FileFilters.types';
 

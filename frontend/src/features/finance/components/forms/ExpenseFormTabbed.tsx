@@ -8,7 +8,8 @@ import { Textarea } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { useProperties, useUnits } from '@/hooks';
+import { useProperties } from '@/features/properties/hooks/useProperties';
+import { useUnits } from '@/features/units/hooks/useUnits';
 import type { ExpenseInput, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue, ExpenseStatusValue } from '@/features/finance/types';
 import { ExpenseType, ExpenseFrequency, ExpenseDistribution, ExpenseStatus } from '@/features/finance/types';
 

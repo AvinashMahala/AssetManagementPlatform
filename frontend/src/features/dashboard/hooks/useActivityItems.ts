@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useLeases, usePayments } from './index';
+import { useLeases } from '@/features/leases/hooks/useLeases';
+import { usePayments } from '@/features/finance/hooks/usePayments';
 
 export const useActivityItems = () => {
   const { leases } = useLeases();

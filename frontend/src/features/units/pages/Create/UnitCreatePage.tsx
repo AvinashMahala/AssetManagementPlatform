@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import navigateBackOrFallback from '@/utils/navigation';
-import { useCreateUnit } from '@/hooks';
+import { useCreateUnit } from '@/features/units/hooks/useUnits';
 import { useNotifications } from '@/contexts';
 import UnitFormTabbed from '@/features/units/components/forms/UnitFormTabbed';
 import type { UnitInput } from '@/features/units/types';

@@ -7,7 +7,9 @@ import { AppLayout } from '../../../components/layout';
 import { NavigationItem } from '../components/navigation';
 import { NavigationPreview } from '../components/navigation';
 import { InstructionsCard } from '../components/navigation';
-import { useNavigationConfig, useDragAndDrop, type NavItem } from '../../../hooks';
+import { useNavigationConfig } from '@/features/admin/hooks/useNavigationConfig';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
+import type { NavItem } from '@/features/admin/types';
 
 const NavigationConfigPage: React.FC = () => {
   const navigate = useNavigate();

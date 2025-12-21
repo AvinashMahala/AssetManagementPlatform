@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/componentDesignLibrary';
 import { Pagination } from '@/componentDesignLibrary';
-import { useTenants, useDeleteTenant } from '@/hooks';
+import { useTenants, useDeleteTenant } from '@/features/tenants/hooks/useTenants';
 import { useNotifications } from '@/contexts';
 import { AppLayout } from '@/components/layout';
 import './TenantListPage.module.scss';

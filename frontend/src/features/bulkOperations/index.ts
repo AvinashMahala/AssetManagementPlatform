@@ -5,3 +5,5 @@ export * from './components/BulkReceiptGenerationModal';
 export * from './components/BulkCommunicationModal';
 export * from './components/BulkExportModal';
 export * from './pages/ReceiptValidationDashboard';
+export * from './services/bulkOperationsService';
+export * from './types';

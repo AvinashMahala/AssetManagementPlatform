@@ -6,7 +6,9 @@ import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout';
-import { useProperty, useUnits, useRentTransactions } from '@/hooks';
+import { useProperty } from '@/features/properties/hooks/useProperties';
+import { useUnits } from '@/features/units/hooks/useUnits';
+import { useRentTransactions } from '@/features/finance/hooks/useRentTransactions';
 import { formatCurrency, formatMonthYear, deriveTransactionDisplayStatus } from '@/utils/billingCalculations';
 import { RentCollectionCalendar } from '@/features/finance/components/RentCollection/RentCollectionCalendar';
 

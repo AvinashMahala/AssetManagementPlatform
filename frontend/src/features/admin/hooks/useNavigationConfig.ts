@@ -11,20 +11,7 @@ import {
   FileImage,
   Wrench,
 } from 'lucide-react';
-
-export interface NavItem {
-  id: string;
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  path: string;
-  badge?: number;
-  enabled: boolean;
-}
-
-export interface NavigationConfig {
-  items: NavItem[];
-  version: number;
-}
+import type { NavItem, NavigationConfig } from '../types';
 
 // Default navigation items
 const defaultNavItems: NavItem[] = [

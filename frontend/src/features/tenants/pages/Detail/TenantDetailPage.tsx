@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useTenant, useDeleteTenant } from '@/hooks';
+import { useTenant, useDeleteTenant } from '@/features/tenants/hooks/useTenants';
 import navigateBackOrFallback from '@/utils/navigation';
 import { Button } from '@/componentDesignLibrary';
 import { Card } from '@/componentDesignLibrary';

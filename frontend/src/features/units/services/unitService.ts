@@ -1,7 +1,7 @@
 import type { Unit, UnitInput } from '@/features/units/types';
-import type { ApiResponse } from '../types/api';
+import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
-import { API_ENDPOINTS } from '../constants/api';
+import { API_ENDPOINTS } from '@/constants/api';
 
 class UnitService {
   async getAll(propertyId?: string): Promise<ApiResponse<Unit[]>> {

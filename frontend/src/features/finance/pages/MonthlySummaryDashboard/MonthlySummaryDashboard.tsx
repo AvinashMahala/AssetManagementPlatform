@@ -24,7 +24,10 @@ import { Badge } from '@/componentDesignLibrary';
 import { calculateTotalAmount, calculateTotalPaid, calculateTotalExpected } from '@/features/finance/utils/calculations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout';
-import { useProperty, useUnits, useRentTransactions, useTenants } from '@/hooks';
+import { useProperty } from '@/features/properties/hooks/useProperties';
+import { useUnits } from '@/features/units/hooks/useUnits';
+import { useRentTransactions } from '@/features/finance/hooks/useRentTransactions';
+import { useTenants } from '@/features/tenants/hooks/useTenants';
 import { formatCurrency } from '@/utils/formatters';
 
 export const MonthlySummaryDashboard: React.FC = () => {

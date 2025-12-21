@@ -23,10 +23,10 @@ import {
   Users,
   Send,
 } from 'lucide-react';
-import { bulkOperationsService } from '@/services';
+import { bulkOperationsService } from '@/features/bulkOperations/services/bulkOperationsService';
 import { useNotifications } from '@/contexts';
 import type { BulkCommunicationInput, BulkOperationResult } from '@/features/bulkOperations/types';
-import { tenantService } from '@/services';
+import { tenantService } from '@/features/tenants/services/tenantService';
 
 interface Tenant {
   id: string;

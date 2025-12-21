@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import navigateBackOrFallback from '@/utils/navigation';
-import { useMeter, useUpdateMeter } from '@/hooks';
+import { useMeter, useUpdateMeter } from '@/features/meters/hooks/useMeters';
 import { AppLayout } from '@/components/layout/AppLayout';
 import MeterFormTabbed from '@/features/meters/components/forms/MeterFormTabbed';
 import type { MeterInput } from '@/features/meters/types';

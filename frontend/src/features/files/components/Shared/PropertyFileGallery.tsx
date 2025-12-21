@@ -5,7 +5,7 @@ import { Card } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/componentDesignLibrary';
 import { ConfirmDialog } from '@/componentDesignLibrary';
-import { propertyFileService } from '@/services';
+import propertyFileService from '@/features/properties/services/propertyFileService';
 import type { PropertyFile } from '@/features/properties/types';
 import { format } from 'date-fns';
 

@@ -1,7 +1,7 @@
-import type { Asset, AssetInput, AssetFilters } from '../types/asset';
-import type { ApiResponse } from '../types/api';
+import type { Asset, AssetInput, AssetFilters } from '@/features/assets/types/asset';
+import type { ApiResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
-import { API_ENDPOINTS } from '../constants/api';
+import { API_ENDPOINTS } from '@/constants/api';
 
 class AssetService {
   async getAll(filters?: AssetFilters): Promise<ApiResponse<Asset[]>> {

@@ -18,7 +18,11 @@ import {
   Building2,
   Settings
 } from 'lucide-react';
-import { useTenant, useLeases, usePayments, useProperties, useUnits } from '@/hooks';
+import { useTenant } from '@/features/tenants/hooks/useTenants';
+import { useLeases } from '@/features/leases/hooks/useLeases';
+import { usePayments } from '@/features/finance/hooks/usePayments';
+import { useProperties } from '@/features/properties/hooks/useProperties';
+import { useUnits } from '@/features/units/hooks/useUnits';
 import navigateBackOrFallback from '@/utils/navigation';
 import {
   Card,

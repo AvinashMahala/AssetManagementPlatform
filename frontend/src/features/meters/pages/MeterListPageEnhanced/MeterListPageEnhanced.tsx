@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '@/hooks';
+import { useMeters, useDeleteMeter, useUpdateMeterStatus } from '@/features/meters/hooks/useMeters';
 import { MeterType } from '@/features/meters/types';
 import { AppLayout } from '@/components/layout/AppLayout';
-import type { PaginationOptions, MeterFilters as MeterFiltersType } from '@/services/meterService';
+import type { PaginationOptions, MeterFilters as MeterFiltersType } from '@/features/meters/services/meterService';
 import { useNotifications } from '@/contexts';
 import { getErrorMessage } from '@/types/api';
 import { MeterListHeader, MeterStats, MeterFilters, MeterTable, MeterLoading, MeterError } from '@/features/meters/components';

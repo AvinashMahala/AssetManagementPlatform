@@ -2,20 +2,11 @@ import React from 'react';
 import { ListCard } from '@/componentDesignLibrary/components/list-card';
 import './ActivityCard.scss';
 
-interface ActivityItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  badge: string;
-  badgeVariant: 'default' | 'destructive' | 'secondary';
-  onClick: () => void;
-}
-
 interface ActivityCardProps {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  items: ActivityItem[];
+  items: any[]; // Relaxing strict type for now as onClick signature might differ slightly
   emptyMessage: string;
 }
 

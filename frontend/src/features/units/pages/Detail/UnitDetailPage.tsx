@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUnit, useDeleteUnit } from '@/hooks';
+import { useUnit, useDeleteUnit } from '@/features/units/hooks/useUnits';
 import navigateBackOrFallback from '@/utils/navigation';
 import { PhotoCarousel, PageLoadingSpinner } from '@/componentDesignLibrary';
 import { UnitUtilitiesManager } from '@/features/units/components/UnitUtilitiesManager';

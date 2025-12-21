@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreatePayment } from '@/hooks';
+import { useCreatePayment } from '@/features/finance/hooks/usePayments';
 import { useNotifications } from '@/contexts';
 import PaymentFormTabbed from '@/features/finance/components/forms/PaymentFormTabbed';
 import type { RentPaymentInput } from '@/features/finance/types';

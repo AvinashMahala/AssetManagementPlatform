@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProperty, useUpdateProperty } from '@/hooks';
+import { useProperty, useUpdateProperty } from '@/features/properties/hooks/useProperties';
 import navigateBackOrFallback from '@/utils/navigation';
 import PropertyFormTabbed from '@/features/properties/components/forms/PropertyFormTabbed';
 import { AppLayout } from '@/components/layout/AppLayout';

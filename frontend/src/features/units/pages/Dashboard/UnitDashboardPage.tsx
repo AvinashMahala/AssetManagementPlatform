@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUnitAnalytics } from '@/hooks';
+import { useUnitAnalytics } from '@/features/units/hooks/useUnits';
 import { Card } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { RevenueTrendChart } from '@/componentDesignLibrary';

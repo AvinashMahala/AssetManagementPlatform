@@ -21,7 +21,7 @@ import {
   FileText,
   DollarSign,
 } from 'lucide-react';
-import { bulkOperationsService } from '@/services';
+import { bulkOperationsService } from '@/features/bulkOperations/services/bulkOperationsService';
 import { useNotifications } from '@/contexts';
 import type { BulkPaymentInput, BulkOperationResult } from '@/features/bulkOperations/types';
 import rentTransactionService from '@/features/finance/services/rentTransactionService';

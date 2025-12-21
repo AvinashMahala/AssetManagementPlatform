@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import navigateBackOrFallback from '@/utils/navigation';
 import { Edit, Building2, MapPin, Home, FileImage, Receipt, FileText } from 'lucide-react';
-import { useProperty } from '@/hooks';
+import { useProperty } from '@/features/properties/hooks/useProperties';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';

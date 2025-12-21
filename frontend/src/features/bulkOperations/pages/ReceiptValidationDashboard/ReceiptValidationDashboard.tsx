@@ -18,10 +18,10 @@ import {
   RefreshCw,
   Eye,
 } from 'lucide-react';
-import { bulkOperationsService } from '@/services';
+import { bulkOperationsService } from '@/features/bulkOperations/services/bulkOperationsService';
 import { useNotifications } from '@/contexts';
 import type { ReceiptValidationResult } from '@/features/bulkOperations/types';
-import { propertyService } from '@/services';
+import { propertyService } from '@/features/properties/services/propertyService';
 
 interface Property {
   id: string;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { templateService } from '../../../services/templateService';
+import { templateService } from '@/features/templates/services/templateService';
 import { Button, PageLoadingSpinner } from '@/componentDesignLibrary';
 import { Search, Edit, Eye, Sparkles } from 'lucide-react';
 import { Badge } from '@/componentDesignLibrary';

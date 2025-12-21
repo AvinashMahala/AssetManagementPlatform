@@ -8,7 +8,8 @@ import { Textarea } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { useLeases, useTenants } from '@/hooks';
+import { useLeases } from '@/features/leases/hooks/useLeases';
+import { useTenants } from '@/features/tenants/hooks/useTenants';
 import type { RentPaymentInput, PaymentMethodValue } from '@/features/finance/types';
 import { PaymentMethod } from '@/features/finance/types';
 

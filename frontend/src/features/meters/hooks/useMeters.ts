@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { Meter, MeterInput, MeterReading, MeterReadingInput } from '@/features/meters/types';
-import { meterService, type PaginationOptions, type PaginationResult, type MeterFilters } from '../services/meterService';
-import { useApi, useApiMutation } from './useApi';
+import { meterService, type PaginationOptions, type PaginationResult, type MeterFilters } from '@/features/meters/services/meterService';
+import { useApi, useApiMutation } from '@/hooks/useApi';
 
 /**
  * Get all meters with optional filtering and pagination

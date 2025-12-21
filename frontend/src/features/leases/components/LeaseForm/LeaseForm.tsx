@@ -8,7 +8,9 @@ import { Textarea } from '@/componentDesignLibrary';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
-import { useUnits, useTenants, useUnit, useProperty, useProperties } from '../../../../hooks';
+import { useUnits, useUnit } from '@/features/units/hooks/useUnits';
+import { useTenants } from '@/features/tenants/hooks/useTenants';
+import { useProperties, useProperty } from '@/features/properties/hooks/useProperties';
 import type { LeaseInput } from '../../types/lease';
 
 interface LeaseFormTabbedProps {

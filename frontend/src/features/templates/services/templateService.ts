@@ -1,12 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
-
-export interface TemplatePreviewRequest {
-  templateId: string;
-  propertyId?: string;
-  sampleData?: any;
-  customizations?: any;
-  format?: 'html' | 'pdf' | 'both';
-}
+import type { TemplatePreviewRequest } from '../types';
 
 export const templateService = {
   // Template CRUD

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreateTenant } from '@/hooks';
+import { useCreateTenant } from '@/features/tenants/hooks/useTenants';
 import { useNotifications } from '@/contexts';
 import TenantFormTabbed from '@/features/tenants/components/forms/TenantFormTabbed';
 import type { TenantInput } from '@/features/tenants/types';

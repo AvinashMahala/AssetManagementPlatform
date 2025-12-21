@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { templateService } from '@/services/templateService';
+import { templateService } from '@/features/templates/services/templateService';
 import { Button } from '@/componentDesignLibrary';
 import { X, Download } from 'lucide-react';
 

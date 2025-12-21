@@ -2,7 +2,9 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/componentDesignLibrary';
 import { useLease, useDeleteLease } from '@/features/leases/hooks/useLeases';
-import { useUnit, useTenant, useProperty } from '@/hooks';
+import { useUnit } from '@/features/units/hooks/useUnits';
+import { useTenant } from '@/features/tenants/hooks/useTenants';
+import { useProperty } from '@/features/properties/hooks/useProperties';
 import navigateBackOrFallback from '@/utils/navigation';
 import { getErrorMessage } from '@/types/api';
 

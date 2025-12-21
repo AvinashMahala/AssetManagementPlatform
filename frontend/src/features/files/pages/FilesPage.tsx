@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppLayout } from '../../../components/layout/AppLayout';
-import { fileService } from '@/services';
+import fileService from '@/features/files/services/fileService';
 import type { FileMetadata } from '@/features/files/types';
 import { FileStats } from '../components/FileStats';
 import { FileTable } from '../components/FileTable';

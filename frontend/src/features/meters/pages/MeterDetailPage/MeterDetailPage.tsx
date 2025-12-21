@@ -6,7 +6,7 @@ import {
   useMeterTrend,
   useMeterStatistics,
   useDeleteMeter
-} from '@/hooks';
+} from '@/features/meters/hooks/useMeters';
 import navigateBackOrFallback from '@/utils/navigation';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';

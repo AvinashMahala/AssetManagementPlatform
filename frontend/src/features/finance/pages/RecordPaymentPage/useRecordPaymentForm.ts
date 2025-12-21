@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { useRecordPayment } from '@/hooks';
+import { useRecordPayment } from '@/features/finance/hooks/useRentTransactions';
 import { useNotifications } from '@/contexts';
 
 export const useRecordPaymentForm = () => {

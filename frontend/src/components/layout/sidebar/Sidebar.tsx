@@ -8,7 +8,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useAuthContext } from '../../../contexts';
-import { useNavigationConfig } from '../../../hooks';
+import { useNavigationConfig } from '@/features/admin/hooks/useNavigationConfig';
 import type { SidebarProps } from './Sidebar.types';
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggle }) => {

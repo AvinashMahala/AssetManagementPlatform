@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibra
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout';
-import { useExpense, useProperties, useUnits } from '@/hooks';
+import { useExpense } from '@/features/finance/hooks/useExpenses';
+import { useProperties } from '@/features/properties/hooks/useProperties';
+import { useUnits } from '@/features/units/hooks/useUnits';
 import type { Property } from '@/features/properties/types';
 import type { Unit } from '@/features/units/types';
 import { getErrorMessage } from '@/types/api';

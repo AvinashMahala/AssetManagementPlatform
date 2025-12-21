@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Building2, FileImage } from 'lucide-react';
-import { useProperties, useDeleteProperty } from '@/hooks';
+import { useProperties, useDeleteProperty } from '@/features/properties/hooks/useProperties';
 import { useNotifications } from '@/contexts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';

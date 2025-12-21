@@ -18,8 +18,7 @@ import {
 import StatusCurrencyPanel from './components/StatusCurrencyPanel';
 import { Tabs, TabsContent } from '@/componentDesignLibrary';
 // PropertyStatus and currency options are used inside StatusCurrencyPanel
-import { useUser, useUsers } from '@/hooks';
-import { useAuth } from '@/hooks';
+import { useUser, useUsers, useAuth } from '@/features/auth/hooks/useUsers';
 import DetailsTab from './tabs/DetailsTab';
 import OwnerTab from './tabs/OwnerTab';
 import AmenitiesTab from './tabs/AmenitiesTab';

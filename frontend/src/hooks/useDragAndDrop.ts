@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { NavItem } from '../hooks/useNavigationConfig';
+import type { NavItem } from '@/features/admin/types';
 
 interface DragState {
   draggedItem: NavItem | null;

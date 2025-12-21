@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { UnitUtility, UnitUtilityInput } from '@/features/units/types';
-import { useApi, useApiMutation } from './useApi';
-import { unitUtilityService } from '../services/unitUtilityService';
+import { useApi, useApiMutation } from '@/hooks/useApi';
+import { unitUtilityService } from '@/features/units/services/unitUtilityService';
 
 export function useUnitUtilities(unitId?: string, propertyId?: string) {
   const query = useCallback(() => unitUtilityService.getAll(unitId, propertyId), [unitId, propertyId]);

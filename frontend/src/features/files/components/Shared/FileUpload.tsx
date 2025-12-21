@@ -5,7 +5,7 @@ import { Card } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Alert, AlertDescription } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
-import { fileService } from '@/services';
+import fileService from '@/features/files/services/fileService';
 import type { FileUploadRequest, FileMetadata } from '@/features/files/types';
 
 interface FileUploadProps {

@@ -4,7 +4,9 @@ import {
   FileText,
   CreditCard,
 } from 'lucide-react';
-import { useDashboardStats, useActivityItems, useChartCarousel } from '@/hooks';
+import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats';
+import { useActivityItems } from '@/features/dashboard/hooks/useActivityItems';
+import { useChartCarousel } from '@/features/dashboard/hooks/useChartCarousel';
 import { ActivityCard, StatsSection, AlertsSection } from '../../components';
 const ChartsCarousel = React.lazy(() => import('../../components/ChartsCarousel/ChartsCarousel'));
 import { ErrorBoundary } from '@/componentDesignLibrary';

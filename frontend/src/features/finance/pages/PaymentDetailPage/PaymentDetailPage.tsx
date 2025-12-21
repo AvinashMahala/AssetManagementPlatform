@@ -1,6 +1,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { usePayment, useDeletePayment, useLease, useTenant } from '@/hooks';
+import { usePayment, useDeletePayment } from '@/features/finance/hooks/usePayments';
+import { useLease } from '@/features/leases/hooks/useLeases';
+import { useTenant } from '@/features/tenants/hooks/useTenants';
 import navigateBackOrFallback from '@/utils/navigation';
 import { ReceiptGenerator } from '@/features/finance/components/receipts/ReceiptGenerator';
 import { getErrorMessage } from '@/types/api';

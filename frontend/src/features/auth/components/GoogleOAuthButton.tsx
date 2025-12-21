@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { useGoogleOAuth } from '@/hooks';
-import type { GoogleCredentialResponse } from '@/hooks';
+import { useGoogleOAuth } from '@/features/auth/hooks/useGoogleOAuth';
+import type { GoogleCredentialResponse } from '@/features/auth/hooks/useGoogleOAuth';
 
 interface GoogleOAuthButtonProps {
   clientId: string;

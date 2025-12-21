@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import type { Asset, AssetInput, AssetFilters } from '../types/asset';
-import { useApi, useApiMutation } from './useApi';
-import { assetService } from '../services/assetService';
+import type { Asset, AssetInput, AssetFilters } from '@/features/assets/types/asset';
+import { useApi, useApiMutation } from '@/hooks/useApi';
+import { assetService } from '@/features/assets/services/assetService';
 
 export function useAssets(filters?: AssetFilters) {
   const [currentFilters, setCurrentFilters] = useState<AssetFilters>(filters || {});

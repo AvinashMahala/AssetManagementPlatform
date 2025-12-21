@@ -1,5 +1,9 @@
 import { useMemo } from 'react';
-import { useProperties, useTenants, useUnits, useLeases, usePayments } from './index';
+import { useProperties } from '@/features/properties/hooks/useProperties';
+import { useTenants } from '@/features/tenants/hooks/useTenants';
+import { useUnits } from '@/features/units/hooks/useUnits';
+import { useLeases } from '@/features/leases/hooks/useLeases';
+import { usePayments } from '@/features/finance/hooks/usePayments';
 
 export const useDashboardStats = () => {
   const { properties, loading: propertiesLoading } = useProperties();

@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
-import { API_BASE_URL } from '../constants/api';
+import { API_BASE_URL } from '@/constants/api';
 import type {
   FileMetadata,
   FileUploadRequest,
@@ -7,7 +7,7 @@ import type {
   FileListResponse,
   FileStorageStats
 } from '@/features/files/types';
-import type { ApiResponse } from '../types/api';
+import type { ApiResponse } from '@/types/api';
 
 class FileService {
   /**
