@@ -1,7 +1,7 @@
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository.js';
 import { Tenant, TenantInput, TenantDocument, TenantStatus, DocumentType } from '../models/Tenant.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 import { ITenantService } from '../interfaces/services/ITenantService.js';
 
 export class TenantService implements ITenantService {

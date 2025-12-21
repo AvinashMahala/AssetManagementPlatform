@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ReceiptController } from '../controllers/ReceiptController';
-import { conditionalAuth } from '../middlewares/authMiddleware';
+import { conditionalAuth } from '@/shared/middleware/authMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 
 export const createReceiptRoutes = (controller: ReceiptController, userService: IUserService) => {

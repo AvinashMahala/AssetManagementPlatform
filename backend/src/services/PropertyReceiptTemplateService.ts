@@ -1,7 +1,7 @@
 import { IPropertyReceiptTemplateRepository } from '../interfaces/repositories/IPropertyReceiptTemplateRepository';
 import { IPropertyReceiptTemplateService } from '../interfaces/services/IPropertyReceiptTemplateService';
 import { PropertyReceiptTemplate } from '../models/Property';
-import { ERROR_MESSAGES } from '../constants/validation';
+import { ERROR_MESSAGES } from '@/shared/constants/validation';
 
 export class PropertyReceiptTemplateService implements IPropertyReceiptTemplateService {
   private repository: IPropertyReceiptTemplateRepository;

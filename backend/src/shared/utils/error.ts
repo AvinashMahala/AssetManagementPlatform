@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { ResponseUtils } from './response';
-import { HTTP_STATUS } from '../constants/http';
+import { HTTP_STATUS } from '@/shared/constants/http';
 
 export class ErrorUtils {
   /**

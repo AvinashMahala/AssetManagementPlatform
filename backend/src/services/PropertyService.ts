@@ -1,13 +1,13 @@
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository.js';
 import { Property, PropertyInput, PropertyStatus } from '../models/Property.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 import { IPropertyService } from '../interfaces/services/IPropertyService.js';
 import { ReceiptTemplateService } from './ReceiptTemplateService.js';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate.js';
 import { IPropertyFileService } from '../interfaces/services/IPropertyFileService.js';
 import { IPropertyReceiptTemplateService } from '../interfaces/services/IPropertyReceiptTemplateService.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('PropertyService');
 

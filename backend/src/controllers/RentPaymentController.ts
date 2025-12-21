@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { IRentPaymentService } from '../interfaces/services/IRentPaymentService';
 import { RentPaymentInput, PaymentStatus } from '../models/RentPayment';
-import { ResponseUtils } from '../utils/response';
-import { ErrorUtils } from '../utils/error';
-import { createModuleLogger } from '../utils/logger.js';
+import { ResponseUtils } from '@/shared/utils/response';
+import { ErrorUtils } from '@/shared/utils/error';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('RentPaymentController');
 

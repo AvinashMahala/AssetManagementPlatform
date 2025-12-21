@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { DEFAULTS } from '../constants/database';
+import { DEFAULTS } from '@/shared/constants/database';
 
 export class PasswordUtils {
   /**

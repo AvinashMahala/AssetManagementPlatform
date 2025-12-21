@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { IPropertyService } from '../interfaces/services/IPropertyService.js';
 import { FileStorageService } from '../services/FileStorageService.js';
-import { ResponseUtils } from '../utils/response.js';
-import { ErrorUtils } from '../utils/error.js';
+import { ResponseUtils } from '@/shared/utils/response.js';
+import { ErrorUtils } from '@/shared/utils/error.js';
 
 export class PropertyFileController {
   private propertyService: IPropertyService;

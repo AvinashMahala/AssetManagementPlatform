@@ -1,4 +1,4 @@
-import { emailService } from '../utils/email';
+import { emailService } from '@/shared/utils/email';
 import { RentTransaction } from '../models/RentTransaction';
 
 export interface NotificationOptions {

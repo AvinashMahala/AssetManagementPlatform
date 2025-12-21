@@ -1,5 +1,5 @@
 import { Meter, MeterInput, MeterReading, MeterReadingInput, MeterTrendData, MeterStatistics } from '../../models/Meter';
-import { PaginationOptions, PaginationResult, MeterFilters } from '../../types/pagination';
+import { PaginationOptions, PaginationResult, MeterFilters } from '@/shared/types/pagination';
 
 export interface IMeterRepository {
   findAll(): Promise<Meter[]>;

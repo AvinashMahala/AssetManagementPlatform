@@ -12,7 +12,7 @@ import {
   PasswordResetOptions,
   SecurityQuestionSetup
 } from '../models/User.js';
-import { PasswordUtils } from '../utils/password.js';
+import { PasswordUtils } from '@/shared/utils/password.js';
 
 export class PasswordResetService {
   private passwordResetMethodRepo: PasswordResetMethodRepository;

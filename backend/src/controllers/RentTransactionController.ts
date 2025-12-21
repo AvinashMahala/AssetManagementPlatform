@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { IRentTransactionService } from '../interfaces/services/IRentTransactionService';
 import { RentTransactionInput, RentTransactionStatus, BillingMethod } from '../models/RentTransaction';
-import { ResponseUtils } from '../utils/response';
-import { ErrorUtils } from '../utils/error';
-import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { ResponseUtils } from '@/shared/utils/response';
+import { ErrorUtils } from '@/shared/utils/error';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 
 export class RentTransactionController {
   private service: IRentTransactionService;

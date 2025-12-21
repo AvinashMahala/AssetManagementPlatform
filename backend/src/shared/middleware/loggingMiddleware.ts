@@ -10,7 +10,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { createRequestLogger, PerformanceLogger } from '../utils/logger.js';
+import { createRequestLogger, PerformanceLogger } from '@/shared/utils/logger.js';
 
 // Extend Express Request type to include our custom properties
 declare global {

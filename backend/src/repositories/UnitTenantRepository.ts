@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { UnitTenant, UnitTenantInput } from '../models/Unit.js';
-import { TABLES, COLUMNS } from '../constants/database.js';
+import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { IUnitTenantRepository } from '../interfaces/repositories/IUnitTenantRepository.js';
 
 export class UnitTenantRepository implements IUnitTenantRepository {

@@ -6,7 +6,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger.js';
+import { logger } from '@/shared/utils/logger.js';
 
 /**
  * Custom error class with additional properties

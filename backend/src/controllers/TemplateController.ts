@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import { Pool } from 'pg';
 import { TemplateCustomizationService } from '../services/TemplateCustomizationService';
-import { HTTP_STATUS } from '../constants/http';
-import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { HTTP_STATUS } from '@/shared/constants/http';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 
 export class TemplateController {
   private service: TemplateCustomizationService;

@@ -1,8 +1,8 @@
 import { IRentPaymentRepository } from '../interfaces/repositories/IRentPaymentRepository';
 import { IRentPaymentService } from '../interfaces/services/IRentPaymentService';
 import { RentPayment, RentPaymentInput, PaymentStatus, PaymentMethod } from '../models/RentPayment';
-import { ValidationUtils } from '../utils/validation';
-import { ERROR_MESSAGES } from '../constants/validation';
+import { ValidationUtils } from '@/shared/utils/validation';
+import { ERROR_MESSAGES } from '@/shared/constants/validation';
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';

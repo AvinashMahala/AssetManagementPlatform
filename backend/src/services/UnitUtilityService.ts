@@ -2,8 +2,8 @@ import { IUnitUtilityRepository } from '../interfaces/repositories/IUnitUtilityR
 import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService.js';
 import { IMeterService } from '../interfaces/services/IMeterService.js';
 import { UnitUtility, UnitUtilityInput, UtilityType, UtilityBillingMethod } from '../models/Unit.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 
 export class UnitUtilityService implements IUnitUtilityService {
   private repository: IUnitUtilityRepository;

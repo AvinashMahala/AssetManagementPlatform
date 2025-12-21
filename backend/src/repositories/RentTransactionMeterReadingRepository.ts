@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { TABLES, COLUMNS } from '../constants/database';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export interface RentTransactionMeterReading {
   id: string;

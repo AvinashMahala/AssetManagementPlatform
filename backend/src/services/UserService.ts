@@ -12,13 +12,13 @@ import {
   AuthResponse,
   AuthTokens
 } from '../models/User.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { PasswordUtils } from '../utils/password.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { PasswordUtils } from '@/shared/utils/password.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 import { IUserService } from '../interfaces/services/IUserService.js';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import * as crypto from 'crypto';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('UserService');
 

@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { ITenantService } from '../interfaces/services/ITenantService.js';
 import { TenantInput, TenantDocument, DocumentType } from '../models/Tenant.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ResponseUtils } from '../utils/response.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ResponseUtils } from '@/shared/utils/response.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('TenantController');
 

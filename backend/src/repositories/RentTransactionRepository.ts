@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { IRentTransactionRepository } from '../interfaces/repositories/IRentTransactionRepository';
 import { RentTransaction, RentTransactionInput, RentTransactionStatus, BillingMethod, ExpenseAction } from '../models/RentTransaction';
-import { TABLES, COLUMNS } from '../constants/database';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 import crypto from 'crypto';
 
 export class RentTransactionRepository implements IRentTransactionRepository {

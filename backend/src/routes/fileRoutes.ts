@@ -78,7 +78,7 @@ const createFileRoutes = (mainPool: Pool, filesPool: Pool) => {
    *       500:
    *         description: Server error
    */
-  router.post('/upload', upload.single('file'), fileController.uploadFile.bind(fileController));
+  router.post('/upload', upload.single('file') as any, fileController.uploadFile.bind(fileController) as any);
 
   /**
    * @swagger

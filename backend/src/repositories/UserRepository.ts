@@ -1,9 +1,9 @@
 import { Pool } from 'pg';
 import { User, UserInput, PhoneVerificationCode } from '../models/User.js';
-import { TABLES, COLUMNS, DEFAULTS } from '../constants/database';
-import { PasswordUtils } from '../utils/password';
+import { TABLES, COLUMNS, DEFAULTS } from '@/shared/constants/database';
+import { PasswordUtils } from '@/shared/utils/password';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('UserRepository');
 

@@ -16,14 +16,16 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Pool } from 'pg';
-import { logger } from './src/utils/logger.js';
-import { requestLoggingMiddleware, requestIdMiddleware } from './src/middlewares/loggingMiddleware.js';
-import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from './src/middlewares/errorHandler.js';
+import { logger } from './src/shared/utils/logger.js';
+import { requestLoggingMiddleware, requestIdMiddleware } from './src/shared/middleware/loggingMiddleware.js';
+import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from './src/shared/middleware/errorHandler.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { specs } from './src/config/swagger/index.js';
-import { swaggerUiOptions } from './src/config/swagger/index.js';
-// import { initializeDatabase } from './src/config/database/init/index.js';
+import { specs } from './src/shared/config/swagger/index.js';
+import { swaggerUiOptions } from './src/shared/config/swagger/index.js';
+import { createLeaseRoutes as createNewLeaseRoutes } from '@/features/leases/api/lease.routes';
+import { authMiddleware } from '@/shared/middleware/authMiddleware';
+// import { initializeDatabase } from './src/shared/config/database/init/index.js';
 import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
 import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
 import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
@@ -65,7 +67,7 @@ import { ExpenseController } from './src/controllers/ExpenseController.js';
 import { createExpenseRoutes } from './src/routes/expenseRoutes.js';
 import { BulkOperationsController } from './src/controllers/BulkOperationsController.js';
 import { createBulkOperationsRoutes } from './src/routes/bulkOperations.js';
-import { DependencyContainer } from './src/utils/DependencyContainer.js';
+import { DependencyContainer } from './src/shared/utils/DependencyContainer.js';
 import { FileStorageService } from './src/services/FileStorageService.js';
 
 // Setup global process error handlers
@@ -167,7 +169,7 @@ const startServer = async () => {
   app.use(requestIdMiddleware);
   app.use(requestLoggingMiddleware);
 
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
+  app.use('/api-docs', swaggerUi.serve as any, swaggerUi.setup(specs, swaggerUiOptions) as any);
 
   // Initialize database tables
   // await initializeDatabase(mainPool, filesPool);
@@ -245,7 +247,7 @@ const startServer = async () => {
   app.use('/api', createTenantRoutes(tenantController, userService));
   app.use('/api', createUnitRoutes(unitController, userService));
   app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
-  app.use('/api/leases', createLeaseRoutes(leaseController, userService));
+  app.use('/api/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
   app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
   app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionController, userService));
   app.use('/api/meters', createMeterRoutes(meterController, userService));

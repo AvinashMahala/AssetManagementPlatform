@@ -1,4 +1,4 @@
-import { PreviewSampleData, DEFAULT_SAMPLE_DATA } from '../models/TemplatePreview';
+import { PreviewSampleData, DEFAULT_SAMPLE_DATA } from '@/models/TemplatePreview';
 
 export class SampleDataGenerator {
   static generateDefault(): PreviewSampleData {

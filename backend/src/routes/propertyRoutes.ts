@@ -3,7 +3,7 @@ import multer from 'multer';
 import { PropertyController } from '../controllers/propertyController';
 import { PropertyFileController } from '../controllers/PropertyFileController';
 import { PropertyReceiptTemplateController } from '../controllers/PropertyReceiptTemplateController';
-import { conditionalAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { conditionalAuth, AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 
 export const createPropertyRoutes = (
@@ -56,7 +56,7 @@ export const createPropertyRoutes = (
   router.delete('/:id/template', auth, controller.removePropertyTemplate.bind(controller));
 
   // File management routes
-  router.post('/:propertyId/files', auth, propertyFileUpload.single('file'), fileController.uploadFile.bind(fileController));
+  router.post('/:propertyId/files', auth, propertyFileUpload.single('file') as any, fileController.uploadFile.bind(fileController) as any);
   router.get('/:propertyId/files', auth, fileController.getPropertyFiles.bind(fileController));
   router.get('/:propertyId/files/:fileId/download', auth, fileController.downloadFile.bind(fileController));
   router.put('/files/:fileId', auth, fileController.updateFile.bind(fileController));

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { TenantController } from '../controllers/TenantController.js';
-import { conditionalAuth } from '../middlewares/authMiddleware.js';
+import { conditionalAuth } from '@/shared/middleware/authMiddleware.js';
 import { IUserService } from '../interfaces/services/IUserService.js';
 
 export const createTenantRoutes = (controller: TenantController, userService: IUserService) => {

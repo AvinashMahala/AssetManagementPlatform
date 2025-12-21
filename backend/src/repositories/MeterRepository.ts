@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { Meter, MeterInput } from '../models/Meter.js';
-import { TABLES, COLUMNS } from '../constants/database.js';
+import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { IMeterRepository } from '../interfaces/repositories/IMeterRepository.js';
-import { PaginationOptions, PaginationResult, MeterFilters } from '../types/pagination.js';
+import { PaginationOptions, PaginationResult, MeterFilters } from '@/shared/types/pagination.js';
 
 export class MeterRepository implements IMeterRepository {
   private pool: Pool;

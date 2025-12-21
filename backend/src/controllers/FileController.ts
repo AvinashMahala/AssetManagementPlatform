@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { FileStorageService, FileMetadata } from '../services/FileStorageService.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('FileController');
 
