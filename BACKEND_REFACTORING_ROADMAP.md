@@ -71,28 +71,105 @@
 ## 📦 Phase 3: The Great Migration (Core Features)
 **Goal:** Move remaining domains into the new structure. *Execute one by one.*
 
+**Architectural Pattern for Features (The "Hybrid" Standard):**
+
+**Prerequisite:** Shared Use Case Interface
+```typescript
+// src/shared/core/IUseCase.ts
+export interface IUseCase<IRequest, IResponse> {
+  execute(request: IRequest): Promise<IResponse> | IResponse;
+}
+```
+
+Each sub-feature (e.g., `property`, `unit`) must follow this strict structure:
+```text
+src/features/{domain}/{sub-feature}/
+├── index.ts                    # Public API Gatekeeper (Exports Module & Interfaces)
+├── {name}.module.ts            # Composition Root (Wires Controller, Use Cases, Repo)
+├── README.md                   # Feature Documentation
+├── __tests__/                  # Co-located Tests
+│   ├── use-cases/
+│   └── api/
+│
+├── api/                        # HTTP Layer (The "Air Gap")
+│   ├── dtos/                   # Network Contracts (Request/Response)
+│   │   ├── Create{Name}Req.ts
+│   │   └── {Name}Response.ts
+│   ├── mappers/                # Domain Entity -> API Response Mappers
+│   │   └── {Name}ApiMapper.ts
+│   ├── validation/             # Input Validation (Zod Schemas)
+│   │   └── {name}.schema.ts
+│   ├── {Name}Controller.ts
+│   └── {name}.routes.ts
+│
+├── core/                       # Domain Layer (Pure Business Logic)
+│   ├── use-cases/              # 👈 Atomic Business Logic (Commands)
+│   │   ├── Create{Name}.usecase.ts
+│   │   ├── Update{Name}.usecase.ts
+│   │   ├── Delete{Name}.usecase.ts
+│   │   └── {BusinessAction}.usecase.ts (e.g. Archive, Publish)
+│   ├── interfaces/             # Contracts (Dependency Inversion)
+│   │   └── I{Name}Repository.ts
+│   ├── types/                  # Domain Entities & Value Objects
+│   │   ├── {name}.types.ts
+│   │   └── {name}.events.ts
+│   └── errors/                 # Feature-specific Domain Errors
+│       └── {Name}NotFoundError.ts
+│
+└── data/                       # Data Access Layer (The "Shield")
+    ├── repository/             # ✍️ WRITES (Repository Pattern)
+    │   └── {Name}Repository.ts # Implements I{Name}Repository
+    ├── queries/                # ⚡️ READS (CQRS Pattern)
+    │   ├── Get{Name}ById.query.ts
+    │   ├── List{Name}s.query.ts      # Handles filtering/sorting/pagination
+    │   └── Get{Name}Dashboard.query.ts
+    ├── interfaces/             # DB Row Interfaces (snake_case)
+    │   └── I{Name}Row.ts
+    ├── schema/                 # DB Definitions
+    │   └── {name}.jsonb.ts     # Zod Schemas for JSONB columns
+    ├── validators/             # Runtime Row Validation (Zod)
+    │   └── {Name}RowValidator.ts
+    ├── errors/                 # DB Error Translation
+    │   └── {Name}DbErrorMapper.ts
+    └── mappers/                # DB Row -> Domain Entity Mappers
+        └── {Name}Mapper.ts
+```
+
 ### 3.1 Properties Feature
-- [ ] **Action:** Migrate `Property`, `Unit`, `Meter` to `src/features/properties/`.
-- [ ] **Manual Test:** Verify Property CRUD endpoints.
+**Structure:** `src/features/properties/{property, unit, meter}/{api, core, data}`
+- [ ] **Action:** Migrate `Property` logic to `src/features/properties/property/`.
+- [ ] **Action:** Migrate `Unit` logic to `src/features/properties/unit/`.
+- [ ] **Action:** Migrate `Meter` logic to `src/features/properties/meter/`.
+- [ ] **Manual Test:** Verify Property, Unit, and Meter CRUD endpoints.
 - [ ] **Update Doc:** Mark 3.1 as complete.
 
 ### 3.2 Tenants Feature
-- [ ] **Action:** Migrate `Tenant`, `UnitTenant` to `src/features/tenants/`.
+**Structure:** `src/features/tenants/{tenant, unit-tenant}/{api, core, data}`
+- [ ] **Action:** Migrate `Tenant` logic to `src/features/tenants/tenant/`.
+- [ ] **Action:** Migrate `UnitTenant` (Lease Association) logic to `src/features/tenants/unit-tenant/`.
 - [ ] **Manual Test:** Verify Tenant CRUD endpoints.
 - [ ] **Update Doc:** Mark 3.2 as complete.
 
 ### 3.3 Finance Feature
-- [ ] **Action:** Migrate `Expense`, `RentPayment`, `RentTransaction` to `src/features/finance/`.
+**Structure:** `src/features/finance/{expense, rent-payment, rent-transaction}/{api, core, data}`
+- [ ] **Action:** Migrate `Expense` logic to `src/features/finance/expense/`.
+- [ ] **Action:** Migrate `RentPayment` logic to `src/features/finance/rent-payment/`.
+- [ ] **Action:** Migrate `RentTransaction` logic to `src/features/finance/rent-transaction/`.
 - [ ] **Manual Test:** Verify Payment recording.
 - [ ] **Update Doc:** Mark 3.3 as complete.
 
 ### 3.4 Auth Feature
-- [ ] **Action:** Migrate `User`, `Auth`, `Role` to `src/features/auth/`.
+**Structure:** `src/features/auth/{auth, user, role}/{api, core, data}`
+- [ ] **Action:** Migrate `Auth` (Login/Register) logic to `src/features/auth/auth/`.
+- [ ] **Action:** Migrate `User` logic to `src/features/auth/user/`.
+- [ ] **Action:** Migrate `Role` logic to `src/features/auth/role/`.
 - [ ] **Manual Test:** Verify Login/Register flows.
 - [ ] **Update Doc:** Mark 3.4 as complete.
 
 ### 3.5 Files Feature
-- [ ] **Action:** Migrate `FileStorage`, `PropertyFile` to `src/features/files/`.
+**Structure:** `src/features/files/{file-storage, property-file}/{api, core, data}`
+- [ ] **Action:** Migrate `FileStorage` logic to `src/features/files/file-storage/`.
+- [ ] **Action:** Migrate `PropertyFile` logic to `src/features/files/property-file/`.
 - [ ] **Manual Test:** Verify File Upload/Download.
 - [ ] **Update Doc:** Mark 3.5 as complete.
 
