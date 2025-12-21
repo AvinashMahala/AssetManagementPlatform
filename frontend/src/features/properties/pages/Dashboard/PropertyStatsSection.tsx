@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
 import { StatsCard } from '@/componentDesignLibrary/components/stats-card/StatsCard';
+import styles from './PropertyStatsSection.module.scss';
 
 interface PropertyStatsSectionProps {
   metrics: {
@@ -21,13 +22,14 @@ export const PropertyStatsSection: React.FC<PropertyStatsSectionProps> = ({
   formatCurrency,
 }) => {
   return (
-    <div className="key-metrics grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+    <div className={styles.keyMetrics}>
       <StatsCard
         title="Total Units"
         value={metrics.totalUnits.toString()}
         description={`${metrics.occupiedUnits} occupied • ${metrics.availableUnits} available`}
         icon={<Home className="h-4 w-4" />}
         variant="default"
+        className={styles.metricCard}
       />
       <StatsCard
         title="Occupancy Rate"
@@ -35,6 +37,7 @@ export const PropertyStatsSection: React.FC<PropertyStatsSectionProps> = ({
         description={`${metrics.activeLeases} active tenants`}
         icon={<TrendingUp className="h-4 w-4" />}
         variant="success"
+        className={styles.metricCard}
       />
       <StatsCard
         title="Monthly Revenue"
@@ -42,6 +45,7 @@ export const PropertyStatsSection: React.FC<PropertyStatsSectionProps> = ({
         description={`From ${metrics.activeLeases} active leases`}
         icon={<DollarSign className="h-4 w-4" />}
         variant="default"
+        className={styles.metricCard}
       />
       <StatsCard
         title="Total Revenue"
@@ -49,6 +53,7 @@ export const PropertyStatsSection: React.FC<PropertyStatsSectionProps> = ({
         description={`${metrics.paidPayments} payments collected`}
         icon={<BarChart3 className="h-4 w-4" />}
         variant="default"
+        className={styles.metricCard}
       />
     </div>
   );

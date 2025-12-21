@@ -1,0 +1,584 @@
+@use 'mixins' as *;
+@use 'variables' as *;
+@use 'animations' as *;
+
+.propertyTabs {
+  animation: fadeIn 1s ease-out 1s both;
+}
+
+.tabsList {
+  @include glass-morphism-enhanced;
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: var(--property-shadow-light);
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+  }
+}
+
+.tabTrigger {
+  transition: all var(--property-transition-normal);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(5, 150, 105, 0.1);
+    transition: width 0.6s, height 0.6s;
+    transform: translate(-50%, -50%);
+  }
+
+  &:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  &[data-state="active"] {
+    background: linear-gradient(135deg, var(--property-primary), var(--property-secondary));
+    color: white;
+    box-shadow:
+      var(--property-shadow-light),
+      0 0 0 1px rgba(5, 150, 105, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+
+    .tabIcon {
+      filter: brightness(0) invert(1);
+      transform: scale(1.1);
+    }
+  }
+
+  .tabIcon {
+    transition: all var(--property-transition-fast);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  }
+}
+
+.tabContent {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+// Units Section
+.unitsHeader {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--property-shadow-light);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--property-primary), var(--property-secondary), var(--property-accent));
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease-in-out infinite;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+.unitsTitle {
+  @include gradient-text-enhanced;
+  font-weight: 700;
+}
+
+.unitsDescription {
+  color: rgba(var(--foreground), 0.7);
+}
+
+.addUnitBtn {
+  background: linear-gradient(135deg, var(--property-primary), var(--property-secondary));
+  color: white;
+  transition: all var(--property-transition-normal);
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 15px rgba(5, 150, 105, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: width 0.6s, height 0.6s;
+    transform: translate(-50%, -50%);
+  }
+
+  &:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 25px rgba(5, 150, 105, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+.unitsGrid {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.unitCard {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  @include shimmer-effect;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 1.5rem;
+  animation: fadeInUp 0.6s ease-out both;
+  animation-delay: calc(var(--unit-index, 0) * 0.1s);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.1), transparent);
+    animation: shimmer 3s infinite;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity var(--property-transition-normal);
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+
+  .unitTitle {
+    @include gradient-text-enhanced;
+    font-weight: 700;
+  }
+
+  .unitType {
+    color: rgba(var(--foreground), 0.7);
+    font-size: 0.875rem;
+  }
+
+  .unitStatus {
+    animation: fadeIn 0.5s ease-out 0.3s both;
+  }
+
+  .unitDetails {
+    animation: slideInFromBottom 0.6s ease-out 0.4s both;
+  }
+
+  .unitDetailLabel {
+    font-size: 0.8rem;
+    color: rgba(var(--foreground), 0.6);
+  }
+
+  .unitDetailValue {
+    font-weight: 600;
+    color: rgba(var(--foreground), 0.9);
+  }
+
+  .unitAction {
+    transition: all var(--property-transition-fast);
+    border: 1px solid var(--property-glass-border);
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(5, 150, 105, 0.1);
+      transition: width 0.6s, height 0.6s;
+      transform: translate(-50%, -50%);
+    }
+
+    &:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    &:hover {
+      background: var(--property-primary);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: var(--property-shadow-light);
+    }
+  }
+}
+
+// Leases Section
+.leasesInfo {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--property-shadow-light);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--property-warning), var(--property-error), var(--property-info));
+    background-size: 200% 100%;
+    animation: gradientShift 4s ease-in-out infinite;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+.leasesTitle {
+  @include gradient-text-enhanced;
+  font-weight: 700;
+}
+
+.leasesDescription {
+  color: rgba(var(--foreground), 0.7);
+}
+
+.leasesList {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.leaseCard {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  @include shimmer-effect;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 1.5rem;
+  animation: fadeInUp 0.6s ease-out both;
+  animation-delay: calc(var(--lease-index, 0) * 0.1s);
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity var(--property-transition-normal);
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+
+  &.leaseExpiring {
+    border-left: 4px solid var(--property-warning);
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02));
+    box-shadow:
+      var(--property-shadow-light),
+      0 0 0 1px rgba(249, 115, 22, 0.1);
+  }
+
+  .leaseTitle {
+    @include gradient-text-enhanced;
+    font-weight: 600;
+  }
+
+  .leaseTenant {
+    color: rgba(var(--foreground), 0.7);
+    font-size: 0.875rem;
+  }
+
+  .leaseStatus {
+    animation: fadeIn 0.5s ease-out 0.3s both;
+  }
+
+  .leaseDetails {
+    animation: slideInFromBottom 0.6s ease-out 0.4s both;
+  }
+
+  .leaseDetailLabel {
+    font-size: 0.8rem;
+    color: rgba(var(--foreground), 0.6);
+  }
+
+  .leaseDetailValue {
+    font-weight: 600;
+    color: rgba(var(--foreground), 0.9);
+  }
+
+  .leaseExpiryNotice {
+    background: rgba(249, 115, 22, 0.1);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+    border-radius: 8px;
+    padding: 0.75rem;
+    animation: pulse 2s infinite;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.1), transparent);
+      animation: shimmer 2s infinite;
+    }
+  }
+
+  .leaseExpiryIcon {
+    color: var(--property-warning);
+    filter: drop-shadow(0 2px 4px rgba(249, 115, 22, 0.3));
+  }
+
+  .leaseExpiryText {
+    color: var(--property-warning);
+    font-weight: 500;
+  }
+
+  .leaseAction {
+    transition: all var(--property-transition-fast);
+    border: 1px solid var(--property-glass-border);
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(5, 150, 105, 0.1);
+      transition: width 0.6s, height 0.6s;
+      transform: translate(-50%, -50%);
+    }
+
+    &:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    &:hover {
+      background: var(--property-primary);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: var(--property-shadow-light);
+    }
+  }
+}
+
+// Payments Section
+.paymentSummary {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.paymentSummaryCard {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  @include shimmer-effect;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 1.5rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--property-success), var(--property-warning), var(--property-error), var(--property-info));
+    background-size: 200% 100%;
+    animation: gradientShift 4s ease-in-out infinite;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity var(--property-transition-normal);
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+
+  .paymentSummaryIcon {
+    transition: all var(--property-transition-normal);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+
+    &:hover {
+      transform: scale(1.1);
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+  }
+
+  .paymentSummaryAmount {
+    @include gradient-text-enhanced;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+
+  .paymentSummaryDescription {
+    opacity: 0.8;
+    transition: opacity var(--property-transition-fast);
+  }
+
+  &:hover .paymentSummaryDescription {
+    opacity: 1;
+  }
+}
+
+.recentPaymentsTitle {
+  @include gradient-text-enhanced;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.paymentsList {
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.paymentCard {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  @include shimmer-effect;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 1.5rem;
+  animation: fadeInUp 0.6s ease-out both;
+  animation-delay: calc(var(--payment-index, 0) * 0.1s);
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity var(--property-transition-normal);
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+
+  .paymentTitle {
+    @include gradient-text-enhanced;
+    font-weight: 600;
+  }
+
+  .paymentAmount {
+    font-weight: 700;
+    color: var(--property-primary);
+  }
+
+  .paymentStatus {
+    animation: fadeIn 0.5s ease-out 0.3s both;
+  }
+
+  .paymentDetails {
+    animation: slideInFromBottom 0.6s ease-out 0.4s both;
+  }
+
+  .paymentDetailLabel {
+    font-size: 0.8rem;
+    color: rgba(var(--foreground), 0.6);
+  }
+
+  .paymentDetailValue {
+    font-weight: 600;
+    color: rgba(var(--foreground), 0.9);
+  }
+
+  .paymentAction {
+    transition: all var(--property-transition-fast);
+    border: 1px solid var(--property-glass-border);
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(5, 150, 105, 0.1);
+      transition: width 0.6s, height 0.6s;
+      transform: translate(-50%, -50%);
+    }
+
+    &:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    &:hover {
+      background: var(--property-primary);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: var(--property-shadow-light);
+    }
+  }
+}

@@ -1,0 +1,127 @@
+@use 'mixins' as *;.alertsSection {  animation: slideInFromBottom 0.6s ease-out 0.6s both;  display: grid;  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));  gap: 1.5rem;
+}
+
+.alertCard {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 1.5rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--property-warning), var(--property-error));
+    border-radius: 16px 0 0 16px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  &.alertWarning {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05));
+    border: 1px solid rgba(249, 115, 22, 0.2);
+    box-shadow:
+      var(--property-shadow-light),
+      0 0 0 1px rgba(249, 115, 22, 0.1);
+  }
+
+  &.alertError {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    box-shadow:
+      var(--property-shadow-light),
+      0 0 0 1px rgba(239, 68, 68, 0.1);
+  }
+
+  .alertHeaderContent {
+    animation: fadeInLeft 0.5s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .alertIcon {
+    filter: drop-shadow(0 2px 4px rgba(249, 115, 22, 0.3));
+    animation: pulse 2s infinite;
+    transition: all var(--property-transition-normal);
+
+    &:hover {
+      transform: scale(1.1);
+      filter: drop-shadow(0 4px 8px rgba(249, 115, 22, 0.4));
+    }
+  }
+
+  .alertTitle {
+    font-weight: 600;
+    color: rgba(var(--foreground), 0.9);
+    margin: 0;
+  }
+
+  .alertMessage {
+    line-height: 1.6;
+    color: rgba(var(--foreground), 0.8);
+    margin-bottom: 1rem;
+  }
+
+  .alertAction {
+    transition: all var(--property-transition-fast);
+    color: var(--property-primary);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      color: var(--property-secondary);
+      transform: translateX(4px);
+      text-shadow: 0 1px 2px rgba(5, 150, 105, 0.3);
+    }
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

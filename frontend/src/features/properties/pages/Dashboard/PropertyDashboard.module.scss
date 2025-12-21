@@ -1,0 +1,117 @@
+@use 'mixins' as *;
+@use 'variables' as *;
+@use 'animations' as *;
+
+.dashboardContainer {
+  // Container styles
+}
+
+.scrollReveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Loading state
+.loadingContainer {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  border-color: transparent;
+  border-top-color: var(--property-primary);
+}
+
+// Error state
+.errorCard {
+  animation: slideInFromTop 0.4s ease-out;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.errorTitle {
+  color: var(--property-error);
+  font-weight: 600;
+}
+
+// Enhanced Property Header Section
+.propertyHeader {
+  @include glass-morphism-enhanced;
+  @include hover-lift;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--property-primary), var(--property-secondary), var(--property-accent));
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease-in-out infinite;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(0, 0, 0, 0.02) 100%);
+    pointer-events: none;
+  }
+}
+
+.propertyTitle {
+  @include gradient-text-enhanced;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.propertyAddress {
+  animation: fadeIn 0.6s ease-out 0.4s both;
+}
+
+.propertyBadges {
+  animation: fadeIn 0.6s ease-out 0.6s both;
+}
+
+.propertyActions {
+  animation: slideInFromRight 0.6s ease-out 0.3s both;
+
+  .btn {
+    transition: all var(--property-transition-normal);
+    border-radius: 8px;
+    font-weight: 500;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--property-shadow-heavy);
+    }
+  }
+}
+
+.backButton {
+  transition: all var(--property-transition-fast);
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: scale(1.05);
+  }
+}
