@@ -9,7 +9,7 @@ export interface QueryOptions {
   relations?: string[]; // e.g., ['tenant', 'property']
 }
 
-export abstract class BaseRepository<T> {
+export abstract class BaseRepository<T, CreateDTO = Partial<T>> {
   constructor(
     protected readonly pool: Pool,
     protected readonly tableName: string,
@@ -58,9 +58,9 @@ export abstract class BaseRepository<T> {
    * Create a new record.
    * Automatically handles columns based on the input object.
    */
-  async create(data: Partial<T>): Promise<T> {
-    const keys = Object.keys(data);
-    const values = Object.values(data);
+  async create(data: CreateDTO): Promise<T> {
+    const keys = Object.keys(data as any);
+    const values = Object.values(data as any);
     
     const columns = keys.map(k => this.toSnakeCase(k)).join(', ');
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');

@@ -19,23 +19,15 @@ import { Pool } from 'pg';
 import { logger } from './src/shared/utils/logger.js';
 import { requestLoggingMiddleware, requestIdMiddleware } from './src/shared/middleware/loggingMiddleware.js';
 import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from './src/shared/middleware/errorHandler.js';
-import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './src/shared/config/swagger/index.js';
 import { swaggerUiOptions } from './src/shared/config/swagger/index.js';
 import { createLeaseRoutes as createNewLeaseRoutes } from '@/features/leases/api/lease.routes';
+import { PropertyModule } from '@/features/properties/property/index.js';
+import { UnitModule } from '@/features/properties/unit/unit.module.js';
 import { authMiddleware } from '@/shared/middleware/authMiddleware';
 // import { initializeDatabase } from './src/shared/config/database/init/index.js';
-import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
-import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
-import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
-import { IUnitRepository } from './src/interfaces/repositories/IUnitRepository.js';
-import { ILeaseRepository } from './src/interfaces/repositories/ILeaseRepository.js';
-import { ILeaseService } from './src/interfaces/services/ILeaseService.js';
-import { LeaseRepository } from './src/repositories/LeaseRepository.js';
-import { LeaseService } from './src/services/LeaseService.js';
 import { LeaseController } from './src/controllers/leaseController.js';
-import { createLeaseRoutes } from './src/routes/leaseRoutes.js';
 import { RentPaymentController } from './src/controllers/RentPaymentController.js';
 import { createRentPaymentRoutes } from './src/routes/rentPaymentRoutes.js';
 import { RentTransactionController } from './src/controllers/RentTransactionController.js';
@@ -47,14 +39,19 @@ import { createReceiptRoutes } from './src/routes/receiptRoutes.js';
 import { ReceiptTemplateController } from './src/controllers/ReceiptTemplateController.js';
 import { createReceiptTemplateRoutes } from './src/routes/receiptTemplateRoutes.js';
 import createTemplateRoutes from './src/routes/templateRoutes.js';
-import { PropertyController } from './src/controllers/propertyController.js';
-import { PropertyFileController } from './src/controllers/PropertyFileController.js';
-import { PropertyReceiptTemplateController } from './src/controllers/PropertyReceiptTemplateController.js';
+import { PropertyController } from '@/features/properties/property/api/PropertyController.js';
+import { PropertyFileController } from '@/features/properties/property/api/PropertyFileController.js';
+import { PropertyReceiptTemplateController } from '@/features/properties/property/api/PropertyReceiptTemplateController.js';
+import { GetPropertiesUseCase } from '@/features/properties/property/core/use-cases/GetProperties.usecase.js';
+import { GetPropertyByIdUseCase } from '@/features/properties/property/core/use-cases/GetPropertyById.usecase.js';
+import { CreatePropertyUseCase } from '@/features/properties/property/core/use-cases/CreateProperty.usecase.js';
+import { UpdatePropertyUseCase } from '@/features/properties/property/core/use-cases/UpdateProperty.usecase.js';
+import { DeletePropertyUseCase } from '@/features/properties/property/core/use-cases/DeleteProperty.usecase.js';
+import { PropertyRepository as NewPropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository.js';
 import { UserController } from './src/controllers/userController.js';
 import { TenantController } from './src/controllers/TenantController.js';
 import { UnitController } from './src/controllers/UnitController.js';
 import { UnitTenantController } from './src/controllers/UnitTenantController.js';
-import { createPropertyRoutes } from './src/routes/propertyRoutes.js';
 import { createAuthRoutes } from './src/routes/authRoutes.js';
 import { createUserRoutes } from './src/routes/userRoutes.js';
 import { createTenantRoutes } from './src/routes/tenantRoutes.js';
@@ -112,7 +109,6 @@ const startServer = async () => {
   const container = DependencyContainer.initialize(mainPool);
 
   // Get services from container
-  const propertyService = container.propertyService;
   const userService = container.userService;
   const tenantService = container.tenantService;
   const unitService = container.unitService;
@@ -129,10 +125,34 @@ const startServer = async () => {
   const expenseService = container.expenseService;
   const bulkOperationsService = container.bulkOperationsService;
 
+  // Initialize Property Feature
+  const newPropertyRepository = new NewPropertyRepository(mainPool);
+  const getPropertiesUseCase = new GetPropertiesUseCase(newPropertyRepository);
+  const getPropertyByIdUseCase = new GetPropertyByIdUseCase(newPropertyRepository);
+  const createPropertyUseCase = new CreatePropertyUseCase(newPropertyRepository);
+  const updatePropertyUseCase = new UpdatePropertyUseCase(newPropertyRepository);
+  const deletePropertyUseCase = new DeletePropertyUseCase(newPropertyRepository);
+
   // Create controllers with injected services
-  const propertyController = new PropertyController(propertyService);
-  const propertyFileController = new PropertyFileController(propertyService, fileStorageService);
-  const propertyReceiptTemplateController = new PropertyReceiptTemplateController(propertyService);
+  const propertyController = new PropertyController(
+    getPropertiesUseCase,
+    getPropertyByIdUseCase,
+    createPropertyUseCase,
+    updatePropertyUseCase,
+    deletePropertyUseCase
+  );
+  
+  const propertyFileController = new PropertyFileController(
+    getPropertyByIdUseCase,
+    fileStorageService,
+    container.propertyFileService
+  );
+  
+  const propertyReceiptTemplateController = new PropertyReceiptTemplateController(
+    getPropertyByIdUseCase,
+    container.propertyReceiptTemplateService
+  );
+
   const userController = new UserController(userService, passwordResetService);
   const tenantController = new TenantController(tenantService);
   const unitController = new UnitController(unitService);
@@ -241,11 +261,17 @@ const startServer = async () => {
   });
 
   // Mount routes
-  app.use('/api/properties', createPropertyRoutes(propertyController, propertyFileController, propertyReceiptTemplateController, userService));
+  app.use('/api/properties', PropertyModule.create(mainPool, userService, { fileController: propertyFileController, receiptTemplateController: propertyReceiptTemplateController }));
   app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
   app.use('/api/users', createUserRoutes(userController, userService));
   app.use('/api', createTenantRoutes(tenantController, userService));
+  
+  // New Unit Module (Handles /api/units CRUD)
+  app.use('/api/units', UnitModule.create(mainPool, userService));
+  
+  // Legacy Unit Routes (Handles /api/units/:id/tenants, etc.)
   app.use('/api', createUnitRoutes(unitController, userService));
+  
   app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
   app.use('/api/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
   app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));

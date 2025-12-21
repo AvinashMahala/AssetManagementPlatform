@@ -6,7 +6,6 @@ import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository';
 import { IUserRepository } from '../interfaces/repositories/IUserRepository';
-import { PropertyService } from './PropertyService';
 import { TenantService } from './TenantService';
 import { RentPaymentService } from './RentPaymentService';
 import { UserService } from './UserService';

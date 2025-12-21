@@ -1,32 +1,38 @@
 # 🤝 Context Handoff: AssetManagementPlatform
 
-**Date:** December 18, 2025
-**Status:** Active Development / Agent Configuration
+**Date:** December 21, 2025
+**Current Phase:** Backend Refactoring - Phase 3.1 (Properties Feature)
 
 ## 🎯 Current Mission
-We are building a suite of **"God-Level" AI Agents** to automate development, refactoring, and architecture enforcement for the Asset Management Platform.
+We are migrating the backend from a Layered Architecture (Controllers/Services/Repositories) to a **Vertical Slice Architecture** (`src/features/{domain}/{feature}`). We are using the **Strangler Fig Pattern** to incrementally replace legacy code.
 
-## 🤖 Created Agents (Capabilities)
-These files contain the system prompts for specialized tasks. Reference them to activate the agent.
+## 🚧 Status: Phase 3.1 (Properties) - IN PROGRESS
 
-| Agent Name | File Path | Capability |
-| :--- | :--- | :--- |
-| **Frontend Architect** | `.github/agents/FrontendArchitect.agent.md` | "God-Level" refactoring, cleanup, centralization, SOLID enforcement, style migration. |
-| **Backend Refactor** | `.github/agents/Refactor.backend.agent.md` | Layered architecture enforcement, DTOs, Service extraction. |
-| **Frontend Refactor** | `.github/agents/Refactor.frontend.agent.md` | Component composition, hooks extraction, performance. |
-| **Feature Scaffolder** | `.github/agents/Feature.scaffolder.agent.md` | Generates full-stack vertical slices (Entity -> UI). |
-| **Bug Hunter** | `.github/agents/BugHunter.agent.md` | Root cause analysis, reproduction scripts, log analysis. |
-| **Performance Profiler** | `.github/agents/PerformanceProfiler.agent.md` | React re-render analysis, SQL query optimization. |
-| **Architectural Guardian** | `.github/agents/ArchitecturalGuardian.agent.md` | Enforces boundaries, prevents circular deps. |
-| **Code Archaeologist** | `.github/agents/CodeArchaeologist.agent.md` | Git history analysis, context recovery. |
-| **Learning Partner** | `.github/agents/LearningPartner.agent.md` | Teaches advanced concepts while coding. |
-| **Documentation** | `.github/agents/Documentation.agent.md` | JSDoc, READMEs, Swagger updates. |
-| **ASCII Diagram** | `.github/agents/AsciiDiagram.agent.md` | Visualizes flows and architecture in text. |
+### ✅ Completed
+1.  **Infrastructure:** `src/shared/` is established (BaseRepository, EventBus, etc.).
+2.  **Leases Feature:** Fully migrated to `src/features/leases/`.
+3.  **Properties Feature (Partial):**
+    *   `Property` core logic migrated to `src/features/properties/property/`.
+    *   `Unit` core logic migrated to `src/features/properties/unit/`.
+    *   **CRITICAL:** `PropertyFileController` and `PropertyReceiptTemplateController` have been **decoupled** from the legacy `PropertyService`. They now reside in `src/features/properties/property/api/` but temporarily inject legacy services (`PropertyFileService`, `PropertyReceiptTemplateService`) via `DependencyContainer`.
+    *   `server.ts` is updated to use the new controllers.
+    *   `npm run build` passes.
 
-## ⏳ Pending Tasks
-1.  **Execute Refactoring:** The user wants to clean up unused code and centralize components in `frontend/src`.
-2.  **Protocol:** User has explicitly stated they will perform **MANUAL TESTING** and confirmation for all changes. Agents should not block on missing automated tests.
+### ⏳ Pending / Next Steps
+1.  **Migrate Meters:** Move `Meter` logic from `src/controllers/MeterController.ts` and `src/services/MeterService.ts` to `src/features/properties/meter/`.
+2.  **Manual Verification:** User needs to verify Property, Unit, and Meter endpoints.
+3.  **Phase 3.2 (Tenants):** Begin migration of Tenant feature.
+
+## 🏗️ Architecture Notes
+*   **Hybrid State:** The application is currently running in a hybrid state.
+    *   **New:** `src/features/` (Leases, Properties, Units).
+    *   **Legacy:** `src/controllers/`, `src/services/` (Tenants, Finance, Auth, etc.).
+*   **Dependency Injection:** We are using `DependencyContainer.ts` to manage legacy services. New features use manual dependency injection in `server.ts` (Composition Root).
+*   **Goal:** Empty out `src/controllers/` and `src/services/` completely so they can be deleted in Phase 5.
 
 ## 🚀 How to Resume
-1.  **To Refactor:** "Read `.github/agents/FrontendArchitect.agent.md` and `CONTEXT_HANDOFF.md`. Start Phase 1 (The Purge) on `frontend/src/components`."
-2.  **To Build Testing Agent:** "Read `CONTEXT_HANDOFF.md`. Create the missing Testing Agent."
+1.  **Read:** `BACKEND_REFACTORING_ROADMAP.md` to see the full plan.
+2.  **Action:** Start the **Meter Migration**.
+    *   Create `src/features/properties/meter/` structure.
+    *   Migrate `Meter` model, repository, use cases, and controller.
+    *   Update `server.ts` to use the new `MeterController`.

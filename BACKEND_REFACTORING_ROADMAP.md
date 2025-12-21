@@ -11,11 +11,13 @@
 *   **Events:** `EventBus` decouples core logic from side effects (emails, logs).
 *   **Terminology:** "Organization" = SaaS Customer. "Tenant" = Property Renter.
 
-**Protocol for Each Step:**
-1.  **Execute:** Copilot performs the code changes.
-2.  **Test:** User performs the specified Manual Test.
-3.  **Confirm:** User confirms "Test Passed".
-4.  **Update:** Copilot marks the step as `[x]` in this document.
+**Protocol for Each Feature Migration (Strangler Fig Pattern):**
+1.  **Scaffold & Migrate:** Copilot creates the new Vertical Slice structure (`src/features/...`) and migrates logic.
+2.  **Switch:** Copilot updates `server.ts` to point to the new Feature Module, bypassing legacy routes.
+3.  **Verify:** User performs Manual Test to confirm the new implementation works.
+4.  **Cleanup:** Copilot deletes the specific legacy files (Controller, Service, Repository, Routes) for *that feature only*.
+5.  **Final Check:** Copilot runs `npm run build` to ensure no dangling dependencies.
+6.  **Update Doc:** Copilot marks the feature as complete in this roadmap.
 
 ---
 
@@ -137,41 +139,88 @@ src/features/{domain}/{sub-feature}/
 
 ### 3.1 Properties Feature
 **Structure:** `src/features/properties/{property, unit, meter}/{api, core, data}`
-- [ ] **Action:** Migrate `Property` logic to `src/features/properties/property/`.
-- [ ] **Action:** Migrate `Unit` logic to `src/features/properties/unit/`.
+
+#### 3.1.1 Property (Completed)
+- [x] **Action:** Migrate `Property` logic to `src/features/properties/property/`.
+- [x] **Action:** Decouple Property Dependencies (File & Receipt Template Controllers).
+- [x] **Cleanup:** Delete legacy `PropertyController`, `PropertyService`, `propertyRoutes`.
+- [x] **Verification:** Build passed.
+
+#### 3.1.2 Unit
+- [x] **Action:** Migrate `Unit` logic to `src/features/properties/unit/`.
+- [ ] **Switch:** Update `server.ts` to use `UnitModule` exclusively (remove legacy `createUnitRoutes`).
+- [ ] **Manual Test:** Verify Unit CRUD endpoints.
+- [ ] **Cleanup:** Delete legacy `UnitController`, `UnitService`, `unitRoutes`.
+- [ ] **Verification:** Run `npm run build`.
+
+#### 3.1.3 Meter
 - [ ] **Action:** Migrate `Meter` logic to `src/features/properties/meter/`.
-- [ ] **Manual Test:** Verify Property, Unit, and Meter CRUD endpoints.
-- [ ] **Update Doc:** Mark 3.1 as complete.
+- [ ] **Switch:** Update `server.ts` to use `MeterModule`.
+- [ ] **Manual Test:** Verify Meter CRUD endpoints.
+- [ ] **Cleanup:** Delete legacy `MeterController`, `MeterService`, `meterRoutes`.
+- [ ] **Verification:** Run `npm run build`.
 
 ### 3.2 Tenants Feature
 **Structure:** `src/features/tenants/{tenant, unit-tenant}/{api, core, data}`
+
+#### 3.2.1 Tenant
 - [ ] **Action:** Migrate `Tenant` logic to `src/features/tenants/tenant/`.
-- [ ] **Action:** Migrate `UnitTenant` (Lease Association) logic to `src/features/tenants/unit-tenant/`.
+- [ ] **Switch:** Update `server.ts` to use `TenantModule`.
 - [ ] **Manual Test:** Verify Tenant CRUD endpoints.
-- [ ] **Update Doc:** Mark 3.2 as complete.
+- [ ] **Cleanup:** Delete legacy `TenantController`, `TenantService`, `tenantRoutes`.
+- [ ] **Verification:** Run `npm run build`.
+
+#### 3.2.2 UnitTenant (Lease Association)
+- [ ] **Action:** Migrate `UnitTenant` logic to `src/features/tenants/unit-tenant/`.
+- [ ] **Switch:** Update `server.ts` to use `UnitTenantModule`.
+- [ ] **Manual Test:** Verify Unit-Tenant association flows.
+- [ ] **Cleanup:** Delete legacy `UnitTenantController`, `UnitTenantService`, `unitTenantRoutes`.
+- [ ] **Verification:** Run `npm run build`.
 
 ### 3.3 Finance Feature
 **Structure:** `src/features/finance/{expense, rent-payment, rent-transaction}/{api, core, data}`
+
+#### 3.3.1 Expense
 - [ ] **Action:** Migrate `Expense` logic to `src/features/finance/expense/`.
+- [ ] **Switch:** Update `server.ts` to use `ExpenseModule`.
+- [ ] **Manual Test:** Verify Expense CRUD.
+- [ ] **Cleanup:** Delete legacy `ExpenseController`, `ExpenseService`, `expenseRoutes`.
+- [ ] **Verification:** Run `npm run build`.
+
+#### 3.3.2 RentPayment
 - [ ] **Action:** Migrate `RentPayment` logic to `src/features/finance/rent-payment/`.
-- [ ] **Action:** Migrate `RentTransaction` logic to `src/features/finance/rent-transaction/`.
+- [ ] **Switch:** Update `server.ts` to use `RentPaymentModule`.
 - [ ] **Manual Test:** Verify Payment recording.
-- [ ] **Update Doc:** Mark 3.3 as complete.
+- [ ] **Cleanup:** Delete legacy `RentPaymentController`, `RentPaymentService`, `rentPaymentRoutes`.
+- [ ] **Verification:** Run `npm run build`.
+
+#### 3.3.3 RentTransaction
+- [ ] **Action:** Migrate `RentTransaction` logic to `src/features/finance/rent-transaction/`.
+- [ ] **Switch:** Update `server.ts` to use `RentTransactionModule`.
+- [ ] **Manual Test:** Verify Transaction logs.
+- [ ] **Cleanup:** Delete legacy `RentTransactionController`, `RentTransactionService`, `rentTransactionRoutes`.
+- [ ] **Verification:** Run `npm run build`.
 
 ### 3.4 Auth Feature
 **Structure:** `src/features/auth/{auth, user, role}/{api, core, data}`
+
+#### 3.4.1 Auth & User
 - [ ] **Action:** Migrate `Auth` (Login/Register) logic to `src/features/auth/auth/`.
 - [ ] **Action:** Migrate `User` logic to `src/features/auth/user/`.
-- [ ] **Action:** Migrate `Role` logic to `src/features/auth/role/`.
+- [ ] **Switch:** Update `server.ts` to use `AuthModule` and `UserModule`.
 - [ ] **Manual Test:** Verify Login/Register flows.
-- [ ] **Update Doc:** Mark 3.4 as complete.
+- [ ] **Cleanup:** Delete legacy `UserController`, `UserService`, `authRoutes`, `userRoutes`.
+- [ ] **Verification:** Run `npm run build`.
 
 ### 3.5 Files Feature
 **Structure:** `src/features/files/{file-storage, property-file}/{api, core, data}`
+
+#### 3.5.1 File Storage
 - [ ] **Action:** Migrate `FileStorage` logic to `src/features/files/file-storage/`.
-- [ ] **Action:** Migrate `PropertyFile` logic to `src/features/files/property-file/`.
+- [ ] **Switch:** Update `server.ts` to use `FileModule`.
 - [ ] **Manual Test:** Verify File Upload/Download.
-- [ ] **Update Doc:** Mark 3.5 as complete.
+- [ ] **Cleanup:** Delete legacy `FileController`, `FileStorageService`, `fileRoutes`.
+- [ ] **Verification:** Run `npm run build`.
 
 ---
 
@@ -199,8 +248,8 @@ src/features/{domain}/{sub-feature}/
 
 ---
 
-## 🧹 Phase 5: Cleanup & Legacy Removal
-**Goal:** Remove the scaffolding of the old architecture.
+## 🏁 Phase 5: Final Polish
+**Goal:** Final system-wide cleanup and verification.
 
 ### 5.1 Server & DI Cleanup
 - [ ] **Action:** Refactor `server.ts` to simply register Feature Routes.
@@ -208,7 +257,7 @@ src/features/{domain}/{sub-feature}/
 - [ ] **Manual Test:** Run full test suite to ensure no regressions.
 - [ ] **Update Doc:** Mark 5.1 as complete.
 
-### 5.2 Delete Old Folders
-- [ ] **Action:** Remove top-level `controllers/`, `services/`, `repositories/`.
-- [ ] **Manual Test:** Verify clean build and directory structure.
+### 5.2 Final Verification
+- [ ] **Action:** Verify no legacy folders (`controllers/`, `services/`, `repositories/`) exist.
+- [ ] **Manual Test:** Run `npm run build` and `npm test`.
 - [ ] **Update Doc:** Mark 5.2 as complete.

@@ -16,7 +16,6 @@ import { IUnitTenantService } from '@/interfaces/services/IUnitTenantService';
 import { ILeaseService } from '@/interfaces/services/ILeaseService';
 import { IRentPaymentService } from '@/interfaces/services/IRentPaymentService';
 import { IRentTransactionService } from '@/interfaces/services/IRentTransactionService';
-import { IPropertyService } from '@/interfaces/services/IPropertyService';
 import { IReceiptRepository } from '@/interfaces/repositories/IReceiptRepository';
 import { IReceiptService } from '@/interfaces/repositories/IReceiptRepository';
 import { IUnitUtilityRepository } from '@/interfaces/repositories/IUnitUtilityRepository';
@@ -45,7 +44,6 @@ import { ReceiptTemplateRepository } from '@/repositories/ReceiptTemplateReposit
 import { RentTransactionMeterReadingRepository, IRentTransactionMeterReadingRepository } from '@/repositories/RentTransactionMeterReadingRepository';
 import { UnitUtilityRepository } from '@/repositories/UnitUtilityRepository';
 import { ExpenseRepository } from '@/repositories/ExpenseRepository';
-import { PropertyService } from '@/services/PropertyService';
 import { UserService } from '@/services/UserService';
 import { TenantService } from '@/services/TenantService';
 import { PasswordResetService } from '@/services/PasswordResetService';
@@ -93,7 +91,6 @@ export class DependencyContainer {
   private _propertyReceiptTemplateRepository: IPropertyReceiptTemplateRepository | null = null;
 
   // Services
-  private _propertyService: IPropertyService | null = null;
   private _userService: IUserService | null = null;
   private _tenantService: ITenantService | null = null;
   private _unitService: IUnitService | null = null;
@@ -131,6 +128,8 @@ export class DependencyContainer {
   }
 
   // Repository getters with lazy initialization
+
+
   public get propertyRepository(): IPropertyRepository {
     if (!this._propertyRepository) {
       this._propertyRepository = new PropertyRepository(this.pool);
@@ -272,17 +271,7 @@ export class DependencyContainer {
   }
 
   // Service getters with lazy initialization
-  public get propertyService(): IPropertyService {
-    if (!this._propertyService) {
-      this._propertyService = new PropertyService(
-        this.propertyRepository,
-        this.receiptTemplateService,
-        this.propertyFileService,
-        this.propertyReceiptTemplateService
-      );
-    }
-    return this._propertyService;
-  }
+
 
   public get userService(): IUserService {
     if (!this._userService) {
@@ -459,10 +448,6 @@ export class DependencyContainer {
     this._tenantRepository = repository;
   }
 
-  public registerPropertyService(service: IPropertyService): void {
-    this._propertyService = service;
-  }
-
   public registerUserService(service: IUserService): void {
     this._userService = service;
   }
@@ -575,7 +560,6 @@ export class DependencyContainer {
     this._receiptTemplateRepository = null;
     this._unitUtilityRepository = null;
     this._expenseRepository = null;
-    this._propertyService = null;
     this._userService = null;
     this._tenantService = null;
     this._unitService = null;
