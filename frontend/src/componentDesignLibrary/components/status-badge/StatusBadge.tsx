@@ -1,4 +1,4 @@
-import { Badge } from '../../../components/ui/badge';
+import { Badge } from '../common/badge';
 import { CheckCircle, XCircle, Clock, AlertTriangle, Pause, Play } from 'lucide-react';
 
 export type StatusType =

@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { IRentTransactionService } from '../interfaces/services/IRentTransactionService';
 import { RentTransactionInput, RentTransactionStatus, BillingMethod } from '../models/RentTransaction';
-import { ResponseUtils } from '../utils/response';
-import { ErrorUtils } from '../utils/error';
-import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { ResponseUtils } from '@/shared/utils/response';
+import { ErrorUtils } from '@/shared/utils/error';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 
 export class RentTransactionController {
   private service: IRentTransactionService;
@@ -526,7 +526,8 @@ export class RentTransactionController {
     try {
       const transactionData: RentTransactionInput = {
         ...req.body,
-        createdBy: req.user?.id
+        // fallback to configured env vars if req.user id isn't set
+        createdBy: req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID
       };
       const transaction = await this.service.createTransaction(transactionData);
       ResponseUtils.created(res, transaction);
@@ -536,6 +537,9 @@ export class RentTransactionController {
           errorMessage.includes('Lease not found') ||
           errorMessage.includes('Property not found') ||
           errorMessage.includes('Tenant not found')) {
+        return ResponseUtils.badRequest(res, errorMessage);
+      }
+      if (errorMessage.includes('Created by user ID is required') || errorMessage.includes('Created by user not found')) {
         return ResponseUtils.badRequest(res, errorMessage);
       }
       ErrorUtils.handleGenericError(res, err, 'Failed to create transaction');

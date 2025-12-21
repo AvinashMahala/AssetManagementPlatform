@@ -1,3 +1,4 @@
-export { Sidebar } from './Sidebar';
-export { Header } from './Header';
+export { Sidebar } from './sidebar';
+export { Header } from './header';
+export { MobileSidebar } from './mobile-sidebar';
 export { AppLayout } from './AppLayout';

@@ -4,6 +4,7 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   message?: string;
   error?: ApiError;
+  requestId?: string;
 }
 
 export interface ApiError {
@@ -19,13 +20,6 @@ export function getErrorMessage(error: string | ApiError | null | undefined): st
   return error.message;
 }
 
-export interface AuthResponse {
-  user: any; // TODO: Define proper user type
-  tokens: {
-    accessToken: string;
-    refreshToken: string;
-  };
-}
 
 export interface PaginationParams {
   page?: number;

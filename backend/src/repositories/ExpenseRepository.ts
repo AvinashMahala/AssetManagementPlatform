@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
 import { Expense, ExpenseInput, ExpenseFilters } from '../models/Expense';
 import { IExpenseRepository } from '../interfaces/repositories/IExpenseRepository';
-import { TABLES, COLUMNS } from '../constants/database';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class ExpenseRepository implements IExpenseRepository {
   constructor(private db: Pool) {}

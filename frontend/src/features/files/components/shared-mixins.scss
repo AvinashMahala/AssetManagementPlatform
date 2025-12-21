@@ -1,0 +1,56 @@
+/* Shared mixins for FilesPage components */
+
+@mixin files-glass-morphism {
+  background: var(--files-glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--files-glass-border);
+}
+
+@mixin files-gradient-text($color1, $color2) {
+  background: linear-gradient(135deg, $color1, $color2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin files-hover-lift {
+  transition: var(--files-transition);
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@mixin files-hover-scale {
+  transition: var(--files-transition);
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+@mixin files-slide-in-from-top {
+  animation: files-slideInFromTop 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+@mixin files-fade-in {
+  animation: files-fadeIn 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+@mixin files-icon-glow {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--files-primary), var(--files-secondary));
+    opacity: 0.3;
+    filter: blur(8px);
+    z-index: -1;
+  }
+}

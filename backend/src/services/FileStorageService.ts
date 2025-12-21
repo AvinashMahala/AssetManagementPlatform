@@ -94,7 +94,7 @@ export class FileStorageService {
   /**
    * Download a file from storage
    */
-  async downloadFile(fileId: string): Promise<Buffer> {
+  async downloadFile(fileId: string, userId: string): Promise<Buffer> {
     const client = await this.filesPool.connect();
 
     try {
@@ -102,7 +102,7 @@ export class FileStorageService {
       await client.query(`
         INSERT INTO file_access_log (file_id, user_id, access_type)
         VALUES ($1, $2, 'download')
-      `, [fileId, null]); // TODO: Get from context
+      `, [fileId, userId]);
 
       // Update last accessed
       await client.query(`

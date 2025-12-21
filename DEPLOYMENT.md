@@ -113,11 +113,11 @@ Most free hosting services provide PostgreSQL databases. For initial data setup:
 2. **Run the initialization scripts**:
    ```bash
    # Install dependencies
-   npm install
+   yarn install
 
    # Initialize database schema
    cd scripts
-   npm run init-db
+   yarn workspace backend init-db
 
    # Seed with sample data
    python3 simple_db_seed.py

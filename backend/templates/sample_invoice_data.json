@@ -1,0 +1,124 @@
+{
+  "company": {
+    "name": "Green Valley Apartments",
+    "address": "123 Green Valley Road, Sector 15, Gurgaon, Haryana 122001",
+    "phone": "+91-98765-43210",
+    "email": "admin@greenvalley.com",
+    "logo": "🏢",
+    "website": "www.greenvalley.com"
+  },
+  "receipt": {
+    "number": "RCP-2025-001",
+    "date": "18 Nov 2025",
+    "period": "November 2025",
+    "generatedDate": "18 Nov 2025"
+  },
+  "customer": {
+    "name": "Rajesh Kumar Sharma",
+    "phone": "+91-98765-12345",
+    "email": "rajesh.sharma@email.com"
+  },
+  "property": {
+    "name": "Green Valley Apartments",
+    "unit": "A-101",
+    "type": "2BHK Apartment",
+    "address": "Tower A, Green Valley Apartments"
+  },
+  "billing": {
+    "items": [
+      {
+        "description": "Monthly Rent",
+        "period": "November 2025",
+        "amount": 22000
+      },
+      {
+        "description": "Electricity Charges",
+        "details": "Meter: ELEC-GV-001 | Units: 130 | Rate: ₹9.23/unit",
+        "amount": 1200
+      },
+      {
+        "description": "Maintenance Fee",
+        "details": "Monthly maintenance charges",
+        "amount": 800
+      },
+      {
+        "description": "Previous Balance",
+        "details": "Outstanding from previous month",
+        "amount": 0
+      }
+    ],
+    "subtotal": 24000,
+    "adjustments": [
+      {
+        "description": "Late Fee",
+        "details": "Payment delay charges",
+        "amount": 0
+      },
+      {
+        "description": "Discount",
+        "details": "Early payment discount",
+        "amount": -500
+      }
+    ],
+    "total": 23500
+  },
+  "payment": {
+    "date": "15 Nov 2025",
+    "amount": 23500,
+    "method": "UPI Transfer",
+    "transactionId": "UPI/AXI123456789/TXN123",
+    "balance": 0,
+    "status": "FULLY PAID"
+  },
+  "meter": {
+    "number": "ELEC-GV-001",
+    "previousReading": 1250,
+    "currentReading": 1380,
+    "unitsConsumed": 130,
+    "ratePerUnit": 9.23
+  },
+  "paymentMethods": [
+    {
+      "type": "Bank Transfer",
+      "icon": "🏦",
+      "details": {
+        "bankName": "State Bank of India",
+        "accountNumber": "123456789012",
+        "ifscCode": "SBIN0001234",
+        "accountHolder": "Green Valley Apartments"
+      }
+    },
+    {
+      "type": "UPI Payment",
+      "icon": "📱",
+      "details": {
+        "upiId": "admin@greenvalley@sbi",
+        "apps": ["PhonePe", "GPay", "Paytm"]
+      }
+    }
+  ],
+  "terms": [
+    "Payment is due within 7 days of invoice date.",
+    "Late payments may incur additional charges.",
+    "This receipt is computer-generated and valid without signature.",
+    "For any disputes, please contact management within 30 days.",
+    "All amounts are in Indian Rupees (INR)."
+  ],
+  "security": {
+    "watermark": "OFFICIAL RECEIPT",
+    "printProtection": true
+  },
+  "customization": {
+    "theme": "default",
+    "colors": {
+      "primary": "#3182ce",
+      "secondary": "#e2e8f0",
+      "accent": "#38a169",
+      "text": "#2d3748",
+      "muted": "#718096"
+    },
+    "fonts": {
+      "primary": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    }
+  }
+}

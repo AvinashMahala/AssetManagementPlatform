@@ -39,7 +39,35 @@ DEV_USER_ROLE=admin
 With this configuration:
 - All API endpoints are accessible without authentication tokens
 - Requests are automatically attributed to the dev user
+### Quick checklist to avoid FK errors when creating data as dev user
+
+1. Make sure `DEV_USER_ID` is set in your `.env` to a seeded user's id (preferably the admin user from the seeding file):
+
+```bash
+DEV_USER_ID=f40a33a6-8f4c-4a1d-bd26-857920024739
+DEV_USER_EMAIL=admin@example.com
+DEV_USER_ROLE=admin
+```
+
+2. If you use a custom `DEV_USER_ID` value, seed the DB using `scripts/seed_to_db.py` so the user exists:
+
+```bash
+python3 scripts/seed_to_db.py
+```
+
+3. Alternatively, run a quick query against your DB to verify the user id exists:
+
+```psql
+SELECT id, email, username FROM users WHERE id = '<DEV_USER_ID>' LIMIT 1;
+```
+
+4. If you're generating background transactions (`generateMonthlyTransactions`) or payments, set `SYSTEM_USER_ID` to a valid user id and seed it similarly; otherwise, the background create functions will fail with `Created by user not found`.
+
+5. If you still see `Created by user not found` errors, enable the server logs and check for `DEV_USER_ID is set but not present in DB` warnings emitted by the `conditionalAuth` middleware.
+
 - No JWT token validation is performed
+
+Note: If you set `DEV_USER_ID` and run the seed script (`scripts/seed_to_db.py`), the seeder will create the admin user using the provided `DEV_USER_ID` so that the dev bypass user exists in the database and FK constraints are satisfied.
 
 ### Production Mode (Auth Enabled)
 
@@ -116,7 +144,7 @@ router.get('/properties', devAuthBypass, controller.getAll);
 DISABLE_AUTH=false
 
 # Restart server
-npm run dev
+yarn dev
 ```
 
 ### Disable Authentication
@@ -126,7 +154,7 @@ npm run dev
 DISABLE_AUTH=true
 
 # Restart server
-npm run dev
+yarn dev
 ```
 
 ## Troubleshooting

@@ -3,7 +3,7 @@
  * Helper functions for rent collection calculations
  */
 
-import type { MeterReadingInput, ExpenseItem, LateFeeConfig } from '../types/rentTransaction';
+import type { BillingMeterReadingInput as MeterReadingInput, ExpenseItem, LateFeeConfig } from '@/features/finance/types';
 import { formatCurrency } from './formatters';
 
 // Re-export formatCurrency for backward compatibility

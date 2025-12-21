@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/userController';
-import { conditionalAuth } from '../middlewares/authMiddleware';
+import { conditionalAuth } from '@/shared/middleware/authMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 
 export const createUserRoutes = (controller: UserController, userService: IUserService) => {

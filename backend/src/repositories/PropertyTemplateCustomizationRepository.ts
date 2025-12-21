@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { PropertyTemplateCustomization } from '../models/TemplateCustomization';
-import { TABLES, COLUMNS } from '../constants/database';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class PropertyTemplateCustomizationRepository {
   constructor(private pool: Pool) {}

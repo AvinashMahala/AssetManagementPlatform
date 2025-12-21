@@ -1,0 +1,948 @@
+// Property List Page Enhanced Styles
+// Compact design with smooth animations
+
+// Mixins for effects
+@mixin hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@mixin shimmer-effect {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    animation: shimmer 2.5s infinite;
+  }
+}
+
+// Root container with enhanced styling
+.property-list-page-enhanced {
+  // CSS Custom Properties for theming
+  --property-primary: #059669;
+  --property-secondary: #0d9488;
+  --property-accent: #0891b2;
+  --property-success: #16a34a;
+  --property-warning: #ca8a04;
+  --property-error: #dc2626;
+  --property-info: #2563eb;
+
+  --property-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --property-transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: relative;
+  overflow-x: hidden;
+
+  // Enhanced Header Section
+  .property-list-header {
+    animation: fadeInUp 0.6s ease-out;
+    position: relative;
+
+    .header-title {
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.025em;
+      position: relative;
+      animation: slideInFromLeft 0.6s ease-out;
+
+      .header-subtitle {
+        display: inline-block;
+        animation: fadeIn 0.8s ease-out 0.4s both;
+        opacity: 0.8;
+        font-weight: 400;
+      }
+    }
+
+    .header-description {
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      animation: fadeIn 0.8s ease-out 0.2s both;
+    }
+
+    .header-actions {
+      animation: slideInFromRight 0.6s ease-out 0.3s both;
+
+      .action-button {
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          transition: width 0.5s, height 0.5s;
+          transform: translate(-50%, -50%);
+        }
+
+        &:hover::before {
+          width: 200px;
+          height: 200px;
+        }
+      }
+    }
+  }
+
+  // Enhanced Stats Cards Section
+  .stats-section {
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stats-card {
+    @include hover-lift;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    animation: fadeInScale 0.5s ease-out;
+    animation-fill-mode: both;
+
+    // Staggered animation for stats cards
+    @for $i from 1 through 4 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.1}s;
+      }
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--property-primary), var(--property-secondary));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+
+    .stats-icon {
+      transition: transform var(--property-transition-normal);
+
+      &:hover {
+        transform: scale(1.1) rotate(5deg);
+      }
+    }
+
+    .stats-value {
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+  }
+
+  // Enhanced Filters Section
+  .filters-section {
+    animation: slideInFromTop 0.5s ease-out 0.3s both;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    position: relative;
+    padding-left: 0.20vw;
+    padding-right: 0.20vw;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .search-input {
+      border-radius: 6px;
+      transition: all var(--property-transition-fast);
+
+      &:focus-within {
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        transform: translateY(-1px);
+      }
+    }
+
+    .filter-select {
+      border-radius: 6px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: visible;
+
+      &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+      }
+
+      &:focus-within {
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        transform: translateY(-1px);
+        border-color: var(--property-primary);
+      }
+
+      // Chevron icon animation
+      svg {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      &[data-state="open"] svg {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // Enhanced Filter Dropdown Animations (Drawer-like effect)
+  .filter-dropdown {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top center;
+    backdrop-filter: blur(8px);
+    box-shadow: 
+      0 10px 40px rgba(0, 0, 0, 0.12),
+      0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+
+    // Drawer slide down animation
+    &[data-state="open"] {
+      animation: drawerSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    &[data-state="closed"] {
+      animation: drawerSlideUp 0.2s cubic-bezier(0.4, 0, 1, 1);
+    }
+
+    // Enhanced scrollable area
+    [data-radix-select-viewport] {
+      max-height: 300px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+        
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+
+    // Enhanced items with staggered animation
+    [role="option"] {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: var(--property-primary);
+        transform: scaleY(0);
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      &:hover::before,
+      &[data-state="checked"]::before {
+        transform: scaleY(1);
+      }
+
+      &:hover {
+        background: rgba(5, 150, 105, 0.1);
+        transform: translateX(4px);
+      }
+
+      &[data-state="checked"] {
+        background: rgba(5, 150, 105, 0.15);
+        font-weight: 600;
+      }
+
+      // Staggered entrance animation
+      @for $i from 1 through 15 {
+        &:nth-child(#{$i}) {
+          animation: fadeInItem 0.3s ease-out #{$i * 0.03}s both;
+        }
+      }
+    }
+  }
+
+    .view-toggle {
+      .toggle-button {
+        border-radius: 6px;
+        transition: all var(--property-transition-fast);
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(5, 150, 105, 0.1);
+          transition: width 0.4s, height 0.4s;
+          transform: translate(-50%, -50%);
+        }
+
+        &:hover::before {
+          width: 40px;
+          height: 40px;
+        }
+      }
+    }
+  }
+
+  // Enhanced Bulk Actions Toolbar
+  .bulk-actions-toolbar {
+    animation: slideInFromBottom 0.4s ease-out;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.1), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    .bulk-action-button {
+      transition: all var(--property-transition-fast);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transition: width 0.5s, height 0.5s;
+        transform: translate(-50%, -50%);
+      }
+
+      &:hover::before {
+        width: 200px;
+        height: 200px;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+
+  // Enhanced Property Cards (Grid View)
+  .property-grid {
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .property-card {
+    @include hover-lift;
+    @include shimmer-effect;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    animation: fadeInScale 0.5s ease-out;
+    animation-fill-mode: both;
+
+    // Staggered animation for property cards
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.05}s;
+      }
+    }
+
+    .property-status-bar {
+      height: 2px;
+      border-radius: 8px 8px 0 0;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        animation: shimmer 2s infinite;
+      }
+    }
+
+    .property-content {
+      .property-checkbox {
+        transition: all var(--property-transition-fast);
+
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+
+      .property-title {
+        font-weight: 600;
+        transition: color var(--property-transition-fast);
+      }
+
+      .property-location {
+        .location-icon {
+          transition: transform var(--property-transition-fast);
+        }
+
+        &:hover .location-icon {
+          transform: scale(1.1);
+        }
+      }
+
+      .property-type-badge,
+      .property-status-badge {
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        transition: all var(--property-transition-fast);
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+
+      .property-actions {
+        .action-button {
+          transition: all var(--property-transition-fast);
+          border-radius: 4px;
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 0.4s, height 0.4s;
+            transform: translate(-50%, -50%);
+          }
+
+          &:hover::before {
+            width: 100px;
+            height: 100px;
+          }
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+        }
+      }
+    }
+  }
+
+  // Enhanced Table View
+  .property-table-container {
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+    border-radius: 8px;
+    overflow: visible;
+    position: relative;
+
+    // Remove the overlay gradient
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+      
+      // Enable word wrapping with minimal padding
+      td, th {
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        vertical-align: middle;
+        padding: 0.5rem 0.75rem;
+        line-height: 1.4;
+      }
+
+      th {
+        font-weight: 600;
+        text-align: left;
+        white-space: nowrap;
+        font-size: 0.875rem;
+      }
+    }
+
+    .table-header {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.08) 100%);
+      border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+      
+      th {
+        color: rgba(30, 58, 138, 1);
+        font-weight: 600;
+        
+        .dark & {
+          color: rgba(147, 197, 253, 1);
+        }
+      }
+    }
+
+    .table-row {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      height: auto;
+      min-height: 40px;
+
+      &:hover {
+        background: rgba(249, 115, 22, 0.08) !important;
+        box-shadow: 0 1px 4px rgba(249, 115, 22, 0.15);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      // Enhanced styling for available properties
+      &.bg-green-50 {
+        background: rgba(16, 185, 129, 0.08);
+        
+        &:hover {
+          background: rgba(16, 185, 129, 0.18) !important;
+          box-shadow: 0 1px 4px rgba(16, 185, 129, 0.2);
+        }
+      }
+
+      .property-name-link {
+        display: inline-block;
+        max-width: 100%;
+        word-wrap: break-word;
+        white-space: normal;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+      }
+
+      .table-actions {
+        display: flex;
+        gap: 0.25rem;
+        opacity: 0.7;
+        transition: opacity var(--property-transition-fast);
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+
+        &:hover {
+          opacity: 1;
+        }
+
+        .table-action-button {
+          transition: all var(--property-transition-fast);
+          border-radius: 4px;
+          padding: 0.25rem;
+
+          &:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          }
+        }
+      }
+    }
+  }
+
+  // Enhanced Empty State
+  .empty-state {
+    animation: fadeInScale 0.6s ease-out;
+    text-align: center;
+    padding: 3rem 1.5rem;
+    border-radius: 8px;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .empty-icon {
+      width: 3rem;
+      height: 3rem;
+      margin: 0 auto 1rem;
+      transition: all var(--property-transition-normal);
+      animation: pulse 2s ease-in-out infinite;
+
+      &:hover {
+        transform: scale(1.1) rotate(5deg);
+        color: var(--property-primary);
+      }
+    }
+
+    .empty-title {
+      font-weight: 600;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      animation: fadeIn 0.8s ease-out 0.3s both;
+    }
+
+    .empty-description {
+      margin-bottom: 1.5rem;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      animation: fadeIn 0.8s ease-out 0.5s both;
+    }
+  }
+
+  // Enhanced Pagination
+  .pagination-container {
+    animation: slideInFromBottom 0.5s ease-out;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  // Enhanced Loading State
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    animation: fadeIn 0.3s ease-out;
+
+    .loading-spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 3px solid rgba(5, 150, 105, 0.1);
+      border-top: 3px solid var(--property-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 20px rgba(5, 150, 105, 0.2);
+    }
+
+    .loading-text {
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .loading-subtext {
+      font-size: 0.875rem;
+      animation: fadeIn 0.8s ease-out 0.3s both;
+    }
+  }
+
+  // Enhanced Dialog/Modal
+  .delete-dialog {
+    .dialog-title {
+      font-weight: 600;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .dialog-description {
+      line-height: 1.5;
+      animation: fadeIn 0.5s ease-out 0.1s both;
+    }
+
+    .dialog-actions {
+      animation: fadeIn 0.6s ease-out 0.2s both;
+
+      .cancel-button,
+      .delete-button {
+        transition: all var(--property-transition-fast);
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.3);
+          transition: width 0.4s, height 0.4s;
+          transform: translate(-50%, -50%);
+        }
+
+        &:hover::before {
+          width: 200px;
+          height: 200px;
+        }
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+      }
+    }
+  }
+
+// Advanced micro-interactions
+.property-list-page-enhanced {
+  // Focus states for accessibility
+  .property-card:focus-within,
+  .stats-card:focus-within,
+  .filter-select:focus,
+  .search-input:focus-within {
+    outline: 2px solid var(--property-primary);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  // Error state styling
+  .error-state {
+    border: 2px solid var(--property-error);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+
+    .error-message {
+      color: var(--property-error);
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+
+    .retry-button {
+      background: var(--property-error);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all var(--property-transition-fast);
+
+      &:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+// Keyframe animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Drawer-like animation for filter dropdowns
+@keyframes drawerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes drawerSlideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.95);
+  }
+}
+
+// Staggered fade-in for dropdown items
+@keyframes fadeInItem {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Responsive enhancements
+@media (max-width: 768px) {
+  .property-list-page-enhanced {
+    .property-list-header {
+      flex-direction: column;
+      gap: 0.75rem;
+      text-align: center;
+    }
+
+    .stats-section {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    .filters-section {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .property-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .property-card {
+      .property-actions {
+        flex-wrap: wrap;
+      }
+    }
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .property-list-page-enhanced {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

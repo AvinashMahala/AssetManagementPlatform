@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Pool } from 'pg';
 import { TemplateController } from '../controllers/TemplateController';
-import { conditionalAuth } from '../middlewares/authMiddleware';
+import { conditionalAuth } from '@/shared/middleware/authMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 
 export default (pool: Pool, userService: IUserService) => {

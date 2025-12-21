@@ -86,7 +86,7 @@ The backend follows a **Layered Architecture** pattern with **Dependency Injecti
 cd backend
 
 # Install dependencies
-npm install
+yarn install
 
 # Copy environment file
 cp .env.example .env
@@ -98,13 +98,13 @@ cp .env.example .env
 
 ```bash
 # Start development server with hot reload
-npm run dev
+yarn dev
 
 # Build for production
-npm run build
+yarn build
 
 # Start production server
-npm start
+yarn start
 ```
 
 ### Database Setup
@@ -570,13 +570,13 @@ export const authValidation = {
 
 ```bash
 # Run unit tests
-npm test
+yarn test
 
 # Run with coverage
 npm run test:coverage
 
 # Run specific test file
-npm test -- authService.test.ts
+yarn test -- authService.test.ts
 ```
 
 ### Test Structure
@@ -702,12 +702,13 @@ CREATE TABLE password_reset_methods (
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
+# copy package.json and yarn.lock (if present)
+COPY package.json yarn.lock* ./
+RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile --production=true; else npm ci --only=production; fi
 COPY . .
-RUN npm run build
+RUN if [ -f yarn.lock ]; then yarn build; else npm run build; fi
 EXPOSE 5000
-CMD ["npm", "start"]
+CMD if [ -f yarn.lock ]; then yarn start; else npm start; fi
 ```
 
 ### Environment Variables

@@ -1,8 +1,9 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { PropertyController } from '../controllers/propertyController';
 import { PropertyFileController } from '../controllers/PropertyFileController';
 import { PropertyReceiptTemplateController } from '../controllers/PropertyReceiptTemplateController';
-import { conditionalAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { conditionalAuth, AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 
 export const createPropertyRoutes = (
@@ -15,6 +16,32 @@ export const createPropertyRoutes = (
 
   // Apply conditional auth to all property routes
   const auth = conditionalAuth(userService);
+
+  // Configure multer for property file uploads
+  const propertyFileUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit
+    },
+    fileFilter: (req: any, file: any, cb: any) => {
+      // Allow common file types for properties
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error(`File type ${file.mimetype} not allowed`));
+      }
+    }
+  });
 
   router.get('/', auth, controller.getAll.bind(controller));
   router.get('/:id', auth, controller.getById.bind(controller));
@@ -29,10 +56,11 @@ export const createPropertyRoutes = (
   router.delete('/:id/template', auth, controller.removePropertyTemplate.bind(controller));
 
   // File management routes
-  router.post('/:propertyId/files', auth, fileController.uploadFile.bind(fileController));
+  router.post('/:propertyId/files', auth, propertyFileUpload.single('file') as any, fileController.uploadFile.bind(fileController) as any);
   router.get('/:propertyId/files', auth, fileController.getPropertyFiles.bind(fileController));
+  router.get('/:propertyId/files/:fileId/download', auth, fileController.downloadFile.bind(fileController));
   router.put('/files/:fileId', auth, fileController.updateFile.bind(fileController));
-  router.delete('/files/:fileId', auth, fileController.deleteFile.bind(fileController));
+  router.delete('/:propertyId/files/:fileId', auth, fileController.deleteFile.bind(fileController));
 
   // Receipt template routes
   router.post('/:propertyId/receipt-template', auth, receiptTemplateController.createTemplate.bind(receiptTemplateController));

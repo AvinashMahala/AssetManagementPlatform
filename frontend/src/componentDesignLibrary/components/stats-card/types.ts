@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type TrendDirection = 'up' | 'down' | 'neutral';
 
 export interface StatsCardProps {
@@ -9,6 +11,10 @@ export interface StatsCardProps {
     value: number;
     direction: TrendDirection;
     label?: string;
+  };
+  action?: {
+    label: string;
+    onClick: () => void;
   };
   variant?: 'default' | 'success' | 'warning' | 'error';
   className?: string;

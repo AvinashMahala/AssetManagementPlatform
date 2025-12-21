@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { PreviewRequest, PreviewResponse, PreviewSampleData, DEFAULT_PREVIEW_OPTIONS } from '../models/TemplatePreview';
-import { SampleDataGenerator } from '../utils/sampleDataGenerator';
-import { PDFGenerator } from '../utils/pdfGenerator';
-import { TABLES, COLUMNS } from '../constants/database';
+import { SampleDataGenerator } from '@/shared/utils/sampleDataGenerator';
+import { PDFGenerator } from '@/shared/utils/pdfGenerator';
+import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class TemplatePreviewService {
   constructor(private pool: Pool) {}

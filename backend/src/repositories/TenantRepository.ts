@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { Tenant, TenantDocument } from '../models/Tenant.js';
-import { TABLES, COLUMNS } from '../constants/database.js';
+import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { ITenantRepository } from '../interfaces/repositories/ITenantRepository.js';
 
 export class TenantRepository implements ITenantRepository {

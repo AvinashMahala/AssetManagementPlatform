@@ -44,8 +44,8 @@ export interface PropertyAmenities {
 export interface PropertyFile {
   id: string; // UUID
   propertyId: string; // UUID reference to properties table
+  fileId: string; // Reference to file in FileStorageService
   fileName: string;
-  fileUrl: string;
   fileType: 'photo' | 'document';
   description?: string;
   uploadedAt: Date;

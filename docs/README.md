@@ -65,7 +65,7 @@ A complete property management solution for landlords and property managers to:
 
 ### Prerequisites
 ```bash
-- Node.js 18+ and npm
+- Node.js 18+ and yarn
 - PostgreSQL 15+
 - Docker & Docker Compose (optional)
 ```
@@ -103,19 +103,19 @@ VITE_API_URL=http://localhost:5001
 **4. Initialize database:**
 ```bash
 cd backend
-npm run db:init
-npm run db:seed  # Optional: Load sample data
+yarn workspace backend init-db
+yarn workspace backend seed:db  # Optional: Load sample data (if scripts exist)
 ```
 
 **5. Start development servers:**
 ```bash
 # Terminal 1 - Backend
 cd backend
-npm run dev
+yarn dev
 
 # Terminal 2 - Frontend
 cd frontend
-npm run dev
+yarn dev
 ```
 
 **6. Access the application:**
@@ -544,10 +544,10 @@ meter_readings (0..1) ──── (N) rent_transaction_meter_readings
 
 ```bash
 # Initialize database (create tables)
-cd backend && npm run db:init
+          cd backend && yarn workspace backend init-db
 
 # Seed sample data
-npm run db:seed
+          yarn workspace backend seed:db
 
 # Reset database (drop and recreate)
 python3 scripts/seed_to_db.py
@@ -698,8 +698,8 @@ npm start
 
 **Frontend:**
 ```bash
-cd frontend
-npm run build
+          cd frontend
+          yarn build
 # Serve dist/ folder with nginx or similar
 ```
 

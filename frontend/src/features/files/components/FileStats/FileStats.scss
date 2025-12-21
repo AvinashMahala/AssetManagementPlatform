@@ -1,0 +1,56 @@
+/* FileStats Component Styles */
+
+@use '../shared-mixins.scss' as *;
+
+.stats-section {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  @include files-glass-morphism;
+  @include files-slide-in-from-top;
+  border: 1px solid var(--files-glass-border);
+  background: var(--files-glass-bg);
+  backdrop-filter: blur(10px);
+  transition: var(--files-transition);
+  cursor: pointer;
+  animation-delay: calc(var(--index, 0) * 0.1s + 0.2s);
+  border-radius: var(--files-border-radius);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--files-hover-shadow);
+    border-color: rgba(99, 102, 241, 0.2);
+  }
+
+  .stat-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stat-icon {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+
+  .stat-value {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  .stat-label {
+  }
+
+  .stat-subtext {
+  }
+}

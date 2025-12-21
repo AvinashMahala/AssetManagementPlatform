@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { MeterReading, MeterReadingInput, MeterTrendData, MeterStatistics } from '../models/Meter.js';
-import { TABLES, COLUMNS } from '../constants/database.js';
+import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { IMeterReadingRepository } from '../interfaces/repositories/IMeterRepository.js';
 
 export class MeterReadingRepository implements IMeterReadingRepository {

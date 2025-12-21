@@ -1,0 +1,1 @@
+export { RecordPaymentPage } from './RecordPaymentPage';

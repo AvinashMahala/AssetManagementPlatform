@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { Unit, UnitInput, UnitTenant, UnitTenantInput, UnitStatus } from '../models/Unit.js';
-import { TABLES, COLUMNS } from '../constants/database.js';
+import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { IUnitRepository } from '../interfaces/repositories/IUnitRepository.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('UnitRepository');
 
@@ -218,6 +218,16 @@ export class UnitRepository implements IUnitRepository {
 
   async delete(id: string): Promise<boolean> {
     try {
+      // Prevent deleting a unit that is referenced by leases
+      const leaseCheck = await this.pool.query(
+        `SELECT COUNT(*) AS count FROM ${TABLES.LEASES} WHERE unit_id = $1`,
+        [id]
+      );
+      const dependentLeases = parseInt(leaseCheck.rows[0]?.count || '0', 10);
+      if (dependentLeases > 0) {
+        throw new Error('Cannot delete unit: existing leases reference this unit');
+      }
+
       const result = await this.pool.query(
         `DELETE FROM ${TABLES.UNITS} WHERE ${COLUMNS.UNITS.ID} = $1`,
         [id]

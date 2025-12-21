@@ -7,7 +7,7 @@ import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { IRentTransactionRepository } from '../interfaces/repositories/IRentTransactionRepository';
 import { RentTransaction, RentTransactionStatus } from '../models/RentTransaction';
-import { PDFGenerator } from '../utils/pdfGenerator';
+import { PDFGenerator } from '@/shared/utils/pdfGenerator';
 import { ReceiptData } from '../models/Receipt';
 import * as fs from 'fs';
 import * as path from 'path';

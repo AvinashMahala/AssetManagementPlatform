@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/Users/avinashmahala/Desktop/githubRepos/AssetManagementPlatform/backend/logs/backend/.fb714d1b18f9f01bd283de91314dd7241c3ae851-audit.json",
+    "files": [
+        {
+            "date": 1766313260879,
+            "name": "/Users/avinashmahala/Desktop/githubRepos/AssetManagementPlatform/backend/logs/backend/combined-2025-12-21.log",
+            "hash": "d8cd297c03579c94e090b0d52acd3fafec11a40cd61c5cb54a988b467200fa95"
+        }
+    ],
+    "hashType": "sha256"
+}

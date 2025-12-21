@@ -1,0 +1,51 @@
+// AlertsSection.scss
+// Styles for AlertsSection component
+
+.alert-card {
+  .alert-header {
+    .alert-icon {
+      filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+      transition: filter 0.3s ease;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+  }
+
+  .alert-content {
+    .alert-item {
+      .alert-text {
+        line-height: 1.6;
+        color: rgba(var(--foreground), 0.9);
+      }
+
+      .alert-action-btn {
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: scale(1.02);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .alert-card {
+    .alert-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .alert-content {
+      .alert-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
+  }
+}

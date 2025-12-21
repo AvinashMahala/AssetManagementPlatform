@@ -1,18 +1,31 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' });
+import path from 'path';
+import fs from 'fs';
+
+// Try to load .env from current directory first (for Docker/local), then parent (original setup)
+const localEnv = path.resolve(process.cwd(), '.env');
+const parentEnv = path.resolve(process.cwd(), '../.env');
+
+if (fs.existsSync(localEnv)) {
+  dotenv.config({ path: localEnv });
+} else {
+  dotenv.config({ path: parentEnv });
+}
 
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Pool } from 'pg';
-import { logger } from './src/utils/logger.js';
-import { requestLoggingMiddleware, requestIdMiddleware } from './src/middlewares/loggingMiddleware.js';
-import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from './src/middlewares/errorHandler.js';
+import { logger } from './src/shared/utils/logger.js';
+import { requestLoggingMiddleware, requestIdMiddleware } from './src/shared/middleware/loggingMiddleware.js';
+import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from './src/shared/middleware/errorHandler.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { specs } from './src/config/swagger/index.js';
-import { swaggerUiOptions } from './src/config/swagger/index.js';
-// import { initializeDatabase } from './src/config/database/init/index.js';
+import { specs } from './src/shared/config/swagger/index.js';
+import { swaggerUiOptions } from './src/shared/config/swagger/index.js';
+import { createLeaseRoutes as createNewLeaseRoutes } from '@/features/leases/api/lease.routes';
+import { authMiddleware } from '@/shared/middleware/authMiddleware';
+// import { initializeDatabase } from './src/shared/config/database/init/index.js';
 import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
 import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
 import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
@@ -54,7 +67,8 @@ import { ExpenseController } from './src/controllers/ExpenseController.js';
 import { createExpenseRoutes } from './src/routes/expenseRoutes.js';
 import { BulkOperationsController } from './src/controllers/BulkOperationsController.js';
 import { createBulkOperationsRoutes } from './src/routes/bulkOperations.js';
-import { DependencyContainer } from './src/utils/DependencyContainer.js';
+import { DependencyContainer } from './src/shared/utils/DependencyContainer.js';
+import { FileStorageService } from './src/services/FileStorageService.js';
 
 // Setup global process error handlers
 setupProcessErrorHandlers();
@@ -63,25 +77,36 @@ logger.info('🚀 Starting Asset Management Platform Backend...', {
   nodeEnv: process.env.NODE_ENV,
   emailProvider: process.env.EMAIL_PROVIDER,
   hasResendApiKey: !!process.env.RESEND_API_KEY,
-});
-
-// Setup global process error handlers
-setupProcessErrorHandlers();
-
-logger.info('🚀 Starting Asset Management Platform Backend...', {
-  nodeEnv: process.env.NODE_ENV,
-  emailProvider: process.env.EMAIL_PROVIDER,
-  hasResendApiKey: !!process.env.RESEND_API_KEY,
+  dbConfig: process.env.MAIN_DATABASE_URL ? 'url' : 'env_vars',
 });
 
 const startServer = async () => {
-  const mainPool = new Pool({
-    connectionString: process.env.MAIN_DATABASE_URL,
-  });
+  const mainDbConfig = process.env.MAIN_DATABASE_URL
+    ? { connectionString: process.env.MAIN_DATABASE_URL }
+    : {
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+      };
 
-  const filesPool = new Pool({
-    connectionString: process.env.FILES_DATABASE_URL,
-  });
+  const mainPool = new Pool(mainDbConfig);
+
+  const filesDbConfig = process.env.FILES_DATABASE_URL
+    ? { connectionString: process.env.FILES_DATABASE_URL }
+    : {
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: process.env.DB_FILES_NAME || process.env.DB_NAME, // Fallback to main DB if not specified
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+      };
+
+  const filesPool = new Pool(filesDbConfig);
+
+  // Initialize file storage service
+  const fileStorageService = new FileStorageService(mainPool, filesPool);
 
   // Initialize dependency injection container
   const container = DependencyContainer.initialize(mainPool);
@@ -106,7 +131,7 @@ const startServer = async () => {
 
   // Create controllers with injected services
   const propertyController = new PropertyController(propertyService);
-  const propertyFileController = new PropertyFileController(propertyService);
+  const propertyFileController = new PropertyFileController(propertyService, fileStorageService);
   const propertyReceiptTemplateController = new PropertyReceiptTemplateController(propertyService);
   const userController = new UserController(userService, passwordResetService);
   const tenantController = new TenantController(tenantService);
@@ -144,7 +169,7 @@ const startServer = async () => {
   app.use(requestIdMiddleware);
   app.use(requestLoggingMiddleware);
 
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
+  app.use('/api-docs', swaggerUi.serve as any, swaggerUi.setup(specs, swaggerUiOptions) as any);
 
   // Initialize database tables
   // await initializeDatabase(mainPool, filesPool);
@@ -222,7 +247,7 @@ const startServer = async () => {
   app.use('/api', createTenantRoutes(tenantController, userService));
   app.use('/api', createUnitRoutes(unitController, userService));
   app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
-  app.use('/api/leases', createLeaseRoutes(leaseController, userService));
+  app.use('/api/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
   app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
   app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionController, userService));
   app.use('/api/meters', createMeterRoutes(meterController, userService));

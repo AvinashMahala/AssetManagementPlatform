@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { IUnitTenantService } from '../interfaces/services/IUnitTenantService.js';
 import { UnitTenantInput } from '../models/Unit.js';
-import { ResponseUtils } from '../utils/response.js';
-import { ErrorUtils } from '../utils/error.js';
+import { ResponseUtils } from '@/shared/utils/response.js';
+import { ErrorUtils } from '@/shared/utils/error.js';
 
 export class UnitTenantController {
   private service: IUnitTenantService;

@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, Search, MoreHorizontal } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { Button } from '../common/button';
+import { Input } from '../common/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../common/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../common/select';
 
 export interface Column<T> {
   key: keyof T | string;

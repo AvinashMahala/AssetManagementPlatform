@@ -1,7 +1,7 @@
 import { ILeaseRepository } from '../interfaces/repositories/ILeaseRepository';
 import { Lease, LeaseInput, LeaseStatus } from '../models/Lease';
-import { ValidationUtils } from '../utils/validation';
-import { ERROR_MESSAGES } from '../constants/validation';
+import { ValidationUtils } from '@/shared/utils/validation';
+import { ERROR_MESSAGES } from '@/shared/constants/validation';
 import { ILeaseService } from '../interfaces/services/ILeaseService';
 
 export class LeaseService implements ILeaseService {

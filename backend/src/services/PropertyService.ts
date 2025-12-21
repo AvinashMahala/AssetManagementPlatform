@@ -1,13 +1,13 @@
 import { IPropertyRepository } from '../interfaces/repositories/IPropertyRepository.js';
 import { Property, PropertyInput, PropertyStatus } from '../models/Property.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 import { IPropertyService } from '../interfaces/services/IPropertyService.js';
 import { ReceiptTemplateService } from './ReceiptTemplateService.js';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate.js';
 import { IPropertyFileService } from '../interfaces/services/IPropertyFileService.js';
 import { IPropertyReceiptTemplateService } from '../interfaces/services/IPropertyReceiptTemplateService.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('PropertyService');
 
@@ -279,7 +279,7 @@ export class PropertyService implements IPropertyService {
   async uploadPropertyFile(
     propertyId: string,
     fileName: string,
-    fileUrl: string,
+    fileId: string,
     fileType: 'photo' | 'document',
     description?: string
   ) {
@@ -293,7 +293,7 @@ export class PropertyService implements IPropertyService {
       throw new Error('Property not found');
     }
 
-    return await this.fileService.uploadFile(propertyId, fileName, fileUrl, fileType, description);
+    return await this.fileService.uploadFile(propertyId, fileName, fileId, fileType, description);
   }
 
   async getPropertyFiles(propertyId: string) {

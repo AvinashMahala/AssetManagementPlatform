@@ -18,7 +18,7 @@ export interface IPropertyService {
   removePropertyTemplate(propertyId: string): Promise<boolean>;
 
   // File management methods
-  uploadPropertyFile(propertyId: string, fileName: string, fileUrl: string, fileType: 'photo' | 'document', description?: string): Promise<PropertyFile>;
+  uploadPropertyFile(propertyId: string, fileName: string, fileId: string, fileType: 'photo' | 'document', description?: string): Promise<PropertyFile>;
   getPropertyFiles(propertyId: string): Promise<PropertyFile[]>;
   getPropertyFilesByType(propertyId: string, fileType: 'photo' | 'document'): Promise<PropertyFile[]>;
   updatePropertyFile(id: string, updates: { fileName?: string; description?: string }): Promise<PropertyFile | null>;

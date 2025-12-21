@@ -1,7 +1,7 @@
 import { IUnitTenantRepository } from '../interfaces/repositories/IUnitTenantRepository.js';
 import { UnitTenant, UnitTenantInput } from '../models/Unit.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 import { IUnitTenantService } from '../interfaces/services/IUnitTenantService.js';
 
 export class UnitTenantService implements IUnitTenantService {

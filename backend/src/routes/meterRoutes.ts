@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { MeterController } from '../controllers/MeterController';
-import { conditionalAuth, AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { conditionalAuth, AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { IUserService } from '../interfaces/services/IUserService';
 
 export const createMeterRoutes = (controller: MeterController, userService: IUserService) => {

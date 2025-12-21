@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   RECEIPTS: '/api/receipts',
   EXPENSES: '/api/expenses',
   USERS: '/api/users',
+  USER_BY_ID: (id: string) => `/api/users/${id}`,
   AUTH: {
     LOGIN: '/api/auth/login',
     REGISTER: '/api/auth/register',
@@ -27,7 +28,12 @@ export const API_ENDPOINTS = {
   HEALTH: '/api/health',
 } as const;
 
-export const API_TIMEOUT = 30000; // 30 seconds
+// API timeout in milliseconds. Derive from environment via Vite (VITE_API_TIMEOUT),
+// falling back to 30000 (30s) when not set or invalid.
+const parsedApiTimeout = parseInt(import.meta.env.VITE_API_TIMEOUT ?? '', 10);
+export const API_TIMEOUT = (!Number.isNaN(parsedApiTimeout) && parsedApiTimeout > 0)
+  ? parsedApiTimeout
+  : 30000; // ms
 
 export const HTTP_STATUS = {
   OK: 200,

@@ -15,7 +15,7 @@ export class PropertyFileRepository implements IPropertyFileRepository {
     try {
       const query = `
         INSERT INTO property_files (
-          property_id, file_name, file_url, file_type, description, uploaded_at
+          property_id, file_name, file_id, file_type, description, uploaded_at
         )
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
@@ -24,7 +24,7 @@ export class PropertyFileRepository implements IPropertyFileRepository {
       const values = [
         fileData.propertyId,
         fileData.fileName,
-        fileData.fileUrl,
+        fileData.fileId,
         fileData.fileType,
         fileData.description,
         fileData.uploadedAt
@@ -170,7 +170,7 @@ export class PropertyFileRepository implements IPropertyFileRepository {
       id: row.id,
       propertyId: row.property_id,
       fileName: row.file_name,
-      fileUrl: row.file_url,
+      fileId: row.file_id,
       fileType: row.file_type,
       description: row.description,
       uploadedAt: new Date(row.uploaded_at),

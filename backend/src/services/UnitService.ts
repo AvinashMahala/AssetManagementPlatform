@@ -1,13 +1,13 @@
 import { IUnitRepository } from '../interfaces/repositories/IUnitRepository.js';
 import { Unit, UnitInput, UnitTenant, UnitTenantInput, UnitStatus } from '../models/Unit.js';
-import { ValidationUtils } from '../utils/validation.js';
-import { ERROR_MESSAGES } from '../constants/validation.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 import { IUnitService } from '../interfaces/services/IUnitService.js';
 import { IRentPaymentService } from '../interfaces/services/IRentPaymentService.js';
 import { IMeterService } from '../interfaces/services/IMeterService.js';
 import { IMeterReadingService } from '../interfaces/services/IMeterService.js';
 import { IUnitUtilityService } from '../interfaces/services/IUnitUtilityService.js';
-import { createModuleLogger } from '../utils/logger.js';
+import { createModuleLogger } from '@/shared/utils/logger.js';
 
 const logger = createModuleLogger('UnitService');
 
