@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' });
 
 import { Pool } from 'pg';
-import { ReceiptTemplateRepository } from '../src/repositories/ReceiptTemplateRepository.js';
-import { PropertyRepository } from '../src/repositories/PropertyRepository.js';
-import { ReceiptTemplateService } from '../src/services/ReceiptTemplateService.js';
+import { ReceiptTemplateRepository } from '../src/features/finance/receipt-template/data/repository/ReceiptTemplateRepository.js';
+import { PropertyRepository } from '../src/features/legacy/repositories/PropertyRepository.js';
+import { ReceiptTemplateService } from '../src/features/finance/receipt-template/core/services/ReceiptTemplateService.js';
 import { ReceiptTemplateType } from '../src/models/ReceiptTemplate.js';
 
 // Database configuration

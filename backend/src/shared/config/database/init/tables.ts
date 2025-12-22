@@ -33,7 +33,8 @@ export const initializeTables = async (pool: Pool) => {
       'security_questions',
       'password_reset_methods',
       'phone_verification_codes',
-      'users'
+      'users',
+      'organizations'
     ];
 
     for (const table of dropTables) {
@@ -47,6 +48,7 @@ export const initializeTables = async (pool: Pool) => {
 
     // List of schema files in order
     const schemaFiles = [
+      '000_organizations.sql',
       '001_users.sql',
       '002_phone_verification_codes.sql',
       '003_password_reset_methods.sql',

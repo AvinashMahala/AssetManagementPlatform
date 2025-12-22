@@ -52,31 +52,41 @@ export class OrganizationConnectionManager {
     }
 
     // 1. Fetch Org DB config from Master DB
-    // In a real app, you'd query the 'organizations' table in the master DB
-    // const orgConfig = await this.masterPool.query('SELECT db_name, db_host... FROM organizations WHERE id = $1', [orgId]);
-    
-    // For this phase, we'll assume a naming convention: org_{id}_db
-    const dbName = `org_${orgId}_db`; 
+    try {
+      const result = await this.masterPool.query(
+        'SELECT db_name FROM organizations WHERE slug = $1 OR id::text = $1',
+        [orgId]
+      );
 
-    console.log(`[ConnectionManager] Initializing pool for organization: ${orgId} (DB: ${dbName})`);
+      if (result.rows.length === 0) {
+        throw new Error(`Organization '${orgId}' not found.`);
+      }
 
-    const newPool = new Pool({
-      host: process.env.DB_HOST, // Usually same host, different DB
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: dbName,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      max: 10, // Smaller pool size per org to save connections
-      idleTimeoutMillis: 30000,
-    });
+      const dbName = result.rows[0].db_name;
 
-    // Handle pool errors
-    newPool.on('error', (err) => {
-      console.error(`[ConnectionManager] Unexpected error on idle client for org ${orgId}`, err);
-    });
+      console.log(`[ConnectionManager] Initializing pool for organization: ${orgId} (DB: ${dbName})`);
 
-    this.orgPools.set(orgId, newPool);
-    return newPool;
+      const newPool = new Pool({
+        host: process.env.DB_HOST, // Usually same host, different DB
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: dbName,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        max: 10, // Smaller pool size per org to save connections
+        idleTimeoutMillis: 30000,
+      });
+
+      // Handle pool errors
+      newPool.on('error', (err) => {
+        console.error(`[ConnectionManager] Unexpected error on idle client for org ${orgId}`, err);
+      });
+
+      this.orgPools.set(orgId, newPool);
+      return newPool;
+    } catch (error) {
+      console.error(`[ConnectionManager] Failed to connect to organization ${orgId}:`, error);
+      throw error;
+    }
   }
 
   /**

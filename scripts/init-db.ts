@@ -2,7 +2,7 @@
 
 import { config } from 'dotenv';
 import { Pool } from 'pg';
-import { initializeDatabase } from '../backend/src/config/database/init/index.ts';
+import { initializeDatabase } from '../backend/src/shared/config/database/init/index.ts';
 
 // Load environment variables
 config({ path: '../.env' });
