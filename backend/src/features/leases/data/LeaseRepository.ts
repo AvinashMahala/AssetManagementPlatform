@@ -40,4 +40,35 @@ export class LeaseRepository extends BaseRepository<Lease> {
       where: { property_id: propertyId } 
     });
   }
+
+  // Legacy Interface Implementation
+  async findByProperty(propertyId: string): Promise<Lease[]> {
+    return this.findByPropertyId(propertyId);
+  }
+
+  async findByTenant(tenantId: string): Promise<Lease[]> {
+    return this.findAll({ where: { tenant_id: tenantId } });
+  }
+
+  async findActiveLeases(): Promise<Lease[]> {
+    return this.findAll({ 
+      where: { 
+        status: LeaseStatus.ACTIVE 
+      } 
+    });
+  }
+
+  async terminateLease(id: string, terminationReason: string): Promise<boolean> {
+    const result = await this.updateById(id, { 
+      status: LeaseStatus.TERMINATED
+    });
+    return !!result;
+  }
+
+  async renewLease(id: string, newEndDate: Date): Promise<Lease | null> {
+    return this.updateById(id, { 
+      endDate: newEndDate, 
+      status: LeaseStatus.ACTIVE 
+    });
+  }
 }

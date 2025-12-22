@@ -17,8 +17,6 @@ import { IReceiptRepository } from '@/interfaces/repositories/IReceiptRepository
 import { IReceiptService } from '@/interfaces/repositories/IReceiptRepository';
 import { IUnitUtilityRepository } from '@/interfaces/repositories/IUnitUtilityRepository';
 import { IUnitUtilityService } from '@/interfaces/services/IUnitUtilityService';
-import { IExpenseRepository } from '@/interfaces/repositories/IExpenseRepository';
-import { IExpenseService } from '@/interfaces/services/IExpenseService';
 import { IPropertyFileRepository } from '@/interfaces/repositories/IPropertyFileRepository';
 import { IPropertyReceiptTemplateRepository } from '@/interfaces/repositories/IPropertyReceiptTemplateRepository';
 import { IPropertyFileService } from '@/interfaces/services/IPropertyFileService';
@@ -39,7 +37,6 @@ import { ReceiptRepository } from '@/repositories/ReceiptRepository';
 import { ReceiptTemplateRepository } from '@/repositories/ReceiptTemplateRepository';
 import { RentTransactionMeterReadingRepository, IRentTransactionMeterReadingRepository } from '@/repositories/RentTransactionMeterReadingRepository';
 import { UnitUtilityRepository } from '@/repositories/UnitUtilityRepository';
-import { ExpenseRepository } from '@/repositories/ExpenseRepository';
 import { UserService } from '@/services/UserService';
 // import { TenantService } from '@/services/TenantService';
 import { PasswordResetService } from '@/services/PasswordResetService';
@@ -51,7 +48,6 @@ import { MeterReadingService } from '@/services/MeterReadingService';
 import { ReceiptService } from '@/services/ReceiptService';
 import { ReceiptTemplateService } from '@/services/ReceiptTemplateService';
 import { UnitUtilityService } from '@/services/UnitUtilityService';
-import { ExpenseService } from '@/services/ExpenseService';
 import { PropertyFileRepository } from '@/repositories/PropertyFileRepository';
 import { PropertyReceiptTemplateRepository } from '@/repositories/PropertyReceiptTemplateRepository';
 import { PropertyFileService } from '@/services/PropertyFileService';
@@ -79,7 +75,6 @@ export class DependencyContainer {
   private _recoveryCodeRepository: RecoveryCodeRepository | null = null;
   private _receiptTemplateRepository: ReceiptTemplateRepository | null = null;
   private _unitUtilityRepository: IUnitUtilityRepository | null = null;
-  private _expenseRepository: IExpenseRepository | null = null;
   private _propertyFileRepository: IPropertyFileRepository | null = null;
   private _propertyReceiptTemplateRepository: IPropertyReceiptTemplateRepository | null = null;
 
@@ -95,7 +90,6 @@ export class DependencyContainer {
   private _passwordResetService: PasswordResetService | null = null;
   private _receiptTemplateService: ReceiptTemplateService | null = null;
   private _unitUtilityService: IUnitUtilityService | null = null;
-  private _expenseService: IExpenseService | null = null;
   private _bulkOperationsService: BulkOperationsService | null = null;
   private _propertyFileService: IPropertyFileService | null = null;
   private _propertyReceiptTemplateService: IPropertyReceiptTemplateService | null = null;
@@ -226,13 +220,6 @@ export class DependencyContainer {
     return this._unitUtilityRepository;
   }
 
-  public get expenseRepository(): IExpenseRepository {
-    if (!this._expenseRepository) {
-      this._expenseRepository = new ExpenseRepository(this.pool);
-    }
-    return this._expenseRepository;
-  }
-
   public get propertyFileRepository(): IPropertyFileRepository {
     if (!this._propertyFileRepository) {
       this._propertyFileRepository = new PropertyFileRepository(this.pool);
@@ -284,16 +271,6 @@ export class DependencyContainer {
       );
     }
     return this._passwordResetService;
-  }
-
-  public get leaseService(): ILeaseService {
-    throw new Error('LeaseService is deprecated. Use LeaseModule instead.');
-    /*
-    if (!this._leaseService) {
-      this._leaseService = new LeaseService(this.leaseRepository);
-    }
-    return this._leaseService;
-    */
   }
 
   public get rentPaymentService(): IRentPaymentService {
@@ -374,13 +351,6 @@ export class DependencyContainer {
     return this._unitUtilityService;
   }
 
-  public get expenseService(): IExpenseService {
-    if (!this._expenseService) {
-      this._expenseService = new ExpenseService(this.expenseRepository, this.propertyRepository, this.unitRepository);
-    }
-    return this._expenseService;
-  }
-
   public get bulkOperationsService(): BulkOperationsService {
     if (!this._bulkOperationsService) {
       this._bulkOperationsService = new BulkOperationsService(
@@ -442,10 +412,6 @@ export class DependencyContainer {
     this._leaseRepository = repository;
   }
 
-  public registerLeaseService(service: ILeaseService): void {
-    // this._leaseService = service;
-  }
-
   public registerRentPaymentRepository(repository: IRentPaymentRepository): void {
     this._rentPaymentRepository = repository;
   }
@@ -494,14 +460,6 @@ export class DependencyContainer {
     this._unitUtilityService = service;
   }
 
-  public registerExpenseRepository(repository: IExpenseRepository): void {
-    this._expenseRepository = repository;
-  }
-
-  public registerExpenseService(service: IExpenseService): void {
-    this._expenseService = service;
-  }
-
   public registerBulkOperationsService(service: BulkOperationsService): void {
     this._bulkOperationsService = service;
   }
@@ -524,7 +482,6 @@ export class DependencyContainer {
     this._recoveryCodeRepository = null;
     this._receiptTemplateRepository = null;
     this._unitUtilityRepository = null;
-    this._expenseRepository = null;
     this._userService = null;
     // this._tenantService = null;
     // this._leaseService = null;
@@ -536,7 +493,6 @@ export class DependencyContainer {
     this._passwordResetService = null;
     this._receiptTemplateService = null;
     this._unitUtilityService = null;
-    this._expenseService = null;
     this._bulkOperationsService = null;
   }
 }

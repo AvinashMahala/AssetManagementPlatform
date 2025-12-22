@@ -31,10 +31,10 @@ import { MeterModule } from '@/features/properties/meter/meter.module.js';
 import { authMiddleware } from '@/shared/middleware/authMiddleware';
 // import { initializeDatabase } from './src/shared/config/database/init/index.js';
 // import { LeaseController } from './src/controllers/leaseController.js';
-import { RentPaymentController } from './src/controllers/RentPaymentController.js';
-import { createRentPaymentRoutes } from './src/routes/rentPaymentRoutes.js';
-import { RentTransactionController } from './src/controllers/RentTransactionController.js';
-import { createRentTransactionRoutes } from './src/routes/rentTransactionRoutes.js';
+// import { RentPaymentController } from './src/controllers/RentPaymentController.js';
+// import { createRentPaymentRoutes } from './src/routes/rentPaymentRoutes.js';
+// import { RentTransactionController } from './src/controllers/RentTransactionController.js';
+// import { createRentTransactionRoutes } from './src/routes/rentTransactionRoutes.js';
 // import { MeterController } from './src/controllers/MeterController.js';
 // import { createMeterRoutes } from './src/routes/meterRoutes.js';
 import { ReceiptController } from './src/controllers/ReceiptController.js';
@@ -51,23 +51,26 @@ import { CreatePropertyUseCase } from '@/features/properties/property/core/use-c
 import { UpdatePropertyUseCase } from '@/features/properties/property/core/use-cases/UpdateProperty.usecase.js';
 import { DeletePropertyUseCase } from '@/features/properties/property/core/use-cases/DeleteProperty.usecase.js';
 import { PropertyRepository as NewPropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository.js';
-import { UserController } from './src/controllers/userController.js';
+// import { UserController } from './src/controllers/userController.js';
 // import { UnitController } from './src/controllers/UnitController.js';
 // import { UnitTenantController } from './src/controllers/UnitTenantController.js';
-import { createAuthRoutes } from './src/routes/authRoutes.js';
-import { createUserRoutes } from './src/routes/userRoutes.js';
+// import { createAuthRoutes } from './src/routes/authRoutes.js';
+// import { createUserRoutes } from './src/routes/userRoutes.js';
 // import { createTenantRoutes } from './src/routes/tenantRoutes.js';
 // import { createUnitRoutes } from './src/routes/unitRoutes.js';
 // import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
 import { UnitUtilityController } from './src/controllers/UnitUtilityController.js';
 import { createUnitUtilityRoutes } from './src/routes/unitUtilityRoutes.js';
-import { createFileRoutes } from './src/routes/fileRoutes.js';
-import { ExpenseController } from './src/controllers/ExpenseController.js';
-import { createExpenseRoutes } from './src/routes/expenseRoutes.js';
+import { FileStorageModule } from '@/features/files/file-storage/file-storage.module';
+import { ExpenseModule } from '@/features/finance/expense/expense.module';
+import { AuthModule } from '@/features/auth/auth/auth.module';
+import { UserModule } from '@/features/auth/user/user.module';
+import { RentPaymentModule } from '@/features/finance/rent-payment/rent-payment.module';
+import { RentTransactionModule } from '@/features/finance/rent-transaction/rent-transaction.module';
+import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
 import { BulkOperationsController } from './src/controllers/BulkOperationsController.js';
 import { createBulkOperationsRoutes } from './src/routes/bulkOperations.js';
 import { DependencyContainer } from './src/shared/utils/DependencyContainer.js';
-import { FileStorageService } from './src/services/FileStorageService.js';
 
 // Setup global process error handlers
 setupProcessErrorHandlers();
@@ -104,24 +107,25 @@ const startServer = async () => {
 
   const filesPool = new Pool(filesDbConfig);
 
-  // Initialize file storage service
-  const fileStorageService = new FileStorageService(mainPool, filesPool);
-
   // Initialize dependency injection container
   const container = DependencyContainer.initialize(mainPool);
 
   // Get services from container
   const userService = container.userService;
+
+  // Initialize file storage service
+  const fileStorageModule = new FileStorageModule(filesPool, authMiddleware(userService));
+  const fileStorageService = fileStorageModule.service;
   // const leaseService = container.leaseService;
-  const rentPaymentService = container.rentPaymentService;
-  const rentTransactionService = container.rentTransactionService;
+  // const rentPaymentService = container.rentPaymentService;
+  // const rentTransactionService = container.rentTransactionService;
   const passwordResetService = container.passwordResetService;
   const meterService = container.meterService;
   const meterReadingService = container.meterReadingService;
   const receiptService = container.receiptService;
   const receiptTemplateService = container.receiptTemplateService;
   const unitUtilityService = container.unitUtilityService;
-  const expenseService = container.expenseService;
+  // const expenseService = container.expenseService;
   const bulkOperationsService = container.bulkOperationsService;
 
   // Initialize Property Feature
@@ -152,17 +156,17 @@ const startServer = async () => {
     container.propertyReceiptTemplateService
   );
 
-  const userController = new UserController(userService, passwordResetService);
+  // const userController = new UserController(userService, passwordResetService);
   // const unitController = new UnitController(unitService);
   // const unitTenantController = new UnitTenantController(unitTenantService);
   // const leaseController = new LeaseController(leaseService);
-  const rentPaymentController = new RentPaymentController(rentPaymentService);
-  const rentTransactionController = new RentTransactionController(rentTransactionService);
+  // const rentPaymentController = new RentPaymentController(rentPaymentService);
+  // const rentTransactionController = new RentTransactionController(rentTransactionService);
   // const meterController = new MeterController(meterService, meterReadingService);
   const receiptController = new ReceiptController(receiptService);
   const receiptTemplateController = new ReceiptTemplateController(receiptTemplateService);
   const unitUtilityController = new UnitUtilityController(unitUtilityService);
-  const expenseController = new ExpenseController(expenseService);
+  // const expenseController = new ExpenseController(expenseService);
   const bulkOperationsController = new BulkOperationsController(bulkOperationsService);
 
   const app = express();
@@ -260,8 +264,8 @@ const startServer = async () => {
 
   // Mount routes
   app.use('/api/properties', PropertyModule.create(mainPool, userService, { fileController: propertyFileController, receiptTemplateController: propertyReceiptTemplateController }));
-  app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
-  app.use('/api/users', createUserRoutes(userController, userService));
+  app.use('/api/auth', new AuthModule(mainPool).router);
+  app.use('/api/users', new UserModule(mainPool).router);
   // app.use('/api', createTenantRoutes(tenantController, userService));
   app.use('/api/tenants', TenantModule.create(mainPool, userService));
   
@@ -276,15 +280,17 @@ const startServer = async () => {
   
   // app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
   app.use('/api/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
-  app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
-  app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionController, userService));
+  // app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
+  app.use('/api/rent-payments', new RentPaymentModule(mainPool, EventBus.getInstance()).router);
+  app.use('/api/rent-transactions', new RentTransactionModule(mainPool, EventBus.getInstance()).router);
   app.use('/api/meters', MeterModule.create(mainPool, userService));
   app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
   app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
   app.use('/api', createTemplateRoutes(mainPool, userService));
   app.use('/api', createUnitUtilityRoutes(unitUtilityController, userService));
-  app.use('/api/expenses', createExpenseRoutes(expenseController, userService));
-  app.use('/api/files', createFileRoutes(mainPool, filesPool));
+  // app.use('/api/expenses', createExpenseRoutes(expenseController, userService));
+  app.use('/api/expenses', new ExpenseModule(mainPool).getRoutes(authMiddleware(userService)));
+  app.use('/api/files', fileStorageModule.router);
   app.use('/api/bulk', createBulkOperationsRoutes(bulkOperationsController, userService));
 
   // Error handling middleware (must be last)

@@ -9,7 +9,6 @@ import { IUserRepository } from '../interfaces/repositories/IUserRepository';
 // import { TenantService } from './TenantService';
 import { RentPaymentService } from './RentPaymentService';
 import { UserService } from './UserService';
-import { LeaseService } from './LeaseService';
 import { ReceiptTemplateService } from './ReceiptTemplateService';
 import { ReceiptTemplateSettings } from '../models/ReceiptTemplate';
 import { PDFGenerator } from '@/shared/utils/pdfGenerator';

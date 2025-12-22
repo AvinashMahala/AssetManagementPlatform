@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { GetPropertyByIdUseCase } from '../core/use-cases/GetPropertyById.usecase.js';
-import { FileStorageService } from '@/services/FileStorageService.js';
+import { FileStorageService } from '@/features/files/file-storage/core/services/FileStorageService';
 import { IPropertyFileService } from '@/interfaces/services/IPropertyFileService.js';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';

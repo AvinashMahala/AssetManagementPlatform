@@ -23,13 +23,27 @@ We are migrating the backend from a Layered Architecture (Controllers/Services/R
     *   `Tenant` migrated to `src/features/tenants/tenant/` and active in `server.ts`.
     *   Legacy `TenantController`, `TenantService`, `tenantRoutes` **DELETED**.
     *   Legacy `TenantRepository` marked as **DEPRECATED** (kept for dependencies).
-5.  **Build Status:** `npm run build` passes.
+5.  **Finance Feature:**
+    *   `Expense` fully migrated and legacy files deleted.
+    *   `RentPayment` migrated to `src/features/finance/rent-payment/`.
+    *   `RentTransaction` migrated to `src/features/finance/rent-transaction/`.
+    *   Legacy `RentPaymentController`, `rentPaymentRoutes` **DELETED**.
+    *   Legacy `RentTransactionController`, `rentTransactionRoutes` **DELETED**.
+    *   Legacy Services kept for dependencies.
+6.  **Auth Feature:**
+    *   `Auth` migrated to `src/features/auth/auth/`.
+    *   `User` migrated to `src/features/auth/user/`.
+    *   Legacy `UserController`, `authRoutes`, `userRoutes` **DELETED**.
+    *   Legacy `UserService` kept for dependencies.
+7.  **Files Feature:**
+    *   `FileStorage` migrated to `src/features/files/file-storage/`.
+    *   Legacy `FileController`, `FileStorageService`, `fileRoutes` **DELETED**.
+8.  **Build Status:** `npm run build` passes.
 
 ### ⏳ Pending / Next Steps
-1.  **Phase 3.3 (Finance):** Begin migration of Finance features.
-    *   **Expense:** Migrate `src/features/finance/expense/`.
-    *   **RentPayment:** Migrate `src/features/finance/rent-payment/`.
-    *   **RentTransaction:** Migrate `src/features/finance/rent-transaction/`.
+1.  **Phase 4 (Multi-Org):** Start Multi-Organization implementation.
+    *   **Master DB:** Setup `organizations` table.
+    *   **Middleware:** Implement `OrganizationMiddleware`.
 2.  **Meter Cleanup (BLOCKED):**
     *   Legacy `MeterService` and `MeterRepository` **cannot be deleted yet**.
     *   **Blocker:** `UnitUtilityService` and `RentTransactionService` depend on the legacy Meter service/repo.

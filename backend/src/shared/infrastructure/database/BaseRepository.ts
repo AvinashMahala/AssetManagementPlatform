@@ -212,6 +212,29 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
     return { query, values };
   }
 
+  async count(where?: Record<string, any>): Promise<number> {
+    let whereClause = '';
+    const values: any[] = [];
+    let valueIndex = 1;
+
+    if (where && Object.keys(where).length > 0) {
+      const conditions = Object.keys(where).map(key => {
+        values.push(where[key]);
+        return `${this.tableName}.${this.toSnakeCase(key)} = $${valueIndex++}`;
+      });
+      whereClause = `WHERE ${conditions.join(' AND ')}`;
+    }
+
+    const query = `SELECT COUNT(*) FROM ${this.tableName} ${whereClause}`;
+    const result = await this.pool.query(query, values);
+    return parseInt(result.rows[0].count);
+  }
+
+  async exists(where: Record<string, any>): Promise<boolean> {
+    const count = await this.count(where);
+    return count > 0;
+  }
+
   protected toSnakeCase(str: string): string {
     return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
   }

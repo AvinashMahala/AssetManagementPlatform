@@ -190,46 +190,46 @@ src/features/{domain}/{sub-feature}/
 **Structure:** `src/features/finance/{expense, rent-payment, rent-transaction}/{api, core, data}`
 
 #### 3.3.1 Expense
-- [ ] **Action:** Migrate `Expense` logic to `src/features/finance/expense/`.
-- [ ] **Switch:** Update `server.ts` to use `ExpenseModule`.
-- [ ] **Manual Test:** Verify Expense CRUD.
-- [ ] **Cleanup:** Delete legacy `ExpenseController`, `ExpenseService`, `expenseRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Action:** Migrate `Expense` logic to `src/features/finance/expense/`.
+- [x] **Switch:** Update `server.ts` to use `ExpenseModule`.
+- [x] **Manual Test:** Verify Expense CRUD (Fixed runtime bug with `affectedUnitIds`).
+- [x] **Cleanup:** Delete legacy `ExpenseController`, `ExpenseService`, `expenseRoutes`.
+- [x] **Verification:** Run `npm run build`.
 
 #### 3.3.2 RentPayment
-- [ ] **Action:** Migrate `RentPayment` logic to `src/features/finance/rent-payment/`.
-- [ ] **Switch:** Update `server.ts` to use `RentPaymentModule`.
-- [ ] **Manual Test:** Verify Payment recording.
-- [ ] **Cleanup:** Delete legacy `RentPaymentController`, `RentPaymentService`, `rentPaymentRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Action:** Migrate `RentPayment` logic to `src/features/finance/rent-payment/`.
+- [x] **Switch:** Update `server.ts` to use `RentPaymentModule`.
+- [x] **Manual Test:** Verify Payment recording.
+- [x] **Cleanup:** Delete legacy `RentPaymentController`, `rentPaymentRoutes`. (`RentPaymentService` kept for `ReceiptService` dependency).
+- [x] **Verification:** Run `npm run build`.
 
 #### 3.3.3 RentTransaction
-- [ ] **Action:** Migrate `RentTransaction` logic to `src/features/finance/rent-transaction/`.
-- [ ] **Switch:** Update `server.ts` to use `RentTransactionModule`.
-- [ ] **Manual Test:** Verify Transaction logs.
-- [ ] **Cleanup:** Delete legacy `RentTransactionController`, `RentTransactionService`, `rentTransactionRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Action:** Migrate `RentTransaction` logic to `src/features/finance/rent-transaction/`.
+- [x] **Switch:** Update `server.ts` to use `RentTransactionModule`.
+- [x] **Manual Test:** Verify Transaction logs.
+- [x] **Cleanup:** Delete legacy `RentTransactionController`, `rentTransactionRoutes`. (`RentTransactionService` kept for dependencies).
+- [x] **Verification:** Run `npm run build`.
 
 ### 3.4 Auth Feature
 **Structure:** `src/features/auth/{auth, user, role}/{api, core, data}`
 
 #### 3.4.1 Auth & User
-- [ ] **Action:** Migrate `Auth` (Login/Register) logic to `src/features/auth/auth/`.
-- [ ] **Action:** Migrate `User` logic to `src/features/auth/user/`.
-- [ ] **Switch:** Update `server.ts` to use `AuthModule` and `UserModule`.
-- [ ] **Manual Test:** Verify Login/Register flows.
-- [ ] **Cleanup:** Delete legacy `UserController`, `UserService`, `authRoutes`, `userRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Action:** Migrate `Auth` (Login/Register) logic to `src/features/auth/auth/`.
+- [x] **Action:** Migrate `User` logic to `src/features/auth/user/`.
+- [x] **Switch:** Update `server.ts` to use `AuthModule` and `UserModule`.
+- [x] **Manual Test:** Verify Login/Register flows.
+- [x] **Cleanup:** Delete legacy `UserController`, `authRoutes`, `userRoutes`. (`UserService` kept for dependencies).
+- [x] **Verification:** Run `npm run build`.
 
 ### 3.5 Files Feature
 **Structure:** `src/features/files/{file-storage, property-file}/{api, core, data}`
 
 #### 3.5.1 File Storage
-- [ ] **Action:** Migrate `FileStorage` logic to `src/features/files/file-storage/`.
-- [ ] **Switch:** Update `server.ts` to use `FileModule`.
-- [ ] **Manual Test:** Verify File Upload/Download.
-- [ ] **Cleanup:** Delete legacy `FileController`, `FileStorageService`, `fileRoutes`.
-- [ ] **Verification:** Run `npm run build`.
+- [x] **Action:** Migrate `FileStorage` logic to `src/features/files/file-storage/`.
+- [x] **Switch:** Update `server.ts` to use `FileModule`.
+- [x] **Manual Test:** Verify File Upload/Download.
+- [x] **Cleanup:** Delete legacy `FileController`, `FileStorageService`, `fileRoutes`.
+- [x] **Verification:** Run `npm run build`.
 
 ---
 
