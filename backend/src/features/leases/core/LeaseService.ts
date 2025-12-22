@@ -35,10 +35,7 @@ export class LeaseService {
   }
 
   async updateLease(id: string, data: UpdateLeaseDTO): Promise<Lease | null> {
-    const updatedLease = await this.leaseRepository.update(id, {
-      ...data,
-      updatedAt: new Date()
-    });
+    const updatedLease = await this.leaseRepository.update(id, data);
 
     if (updatedLease) {
       await this.eventBus.publish(LEASE_EVENTS.UPDATED, {
@@ -52,12 +49,13 @@ export class LeaseService {
   }
 
   async terminateLease(id: string, terminationDate: Date, reason?: string): Promise<Lease | null> {
-    const updatedLease = await this.leaseRepository.update(id, {
+    const updateData: UpdateLeaseDTO = {
       status: LeaseStatus.TERMINATED,
       terminatedAt: terminationDate,
-      terminationReason: reason,
-      updatedAt: new Date()
-    });
+      terminationReason: reason
+    };
+
+    const updatedLease = await this.leaseRepository.update(id, updateData);
 
     if (updatedLease) {
       await this.eventBus.publish(LEASE_EVENTS.TERMINATED, {

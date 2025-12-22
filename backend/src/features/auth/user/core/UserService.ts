@@ -1,11 +1,12 @@
-
 import { IUserRepository } from './IUserRepository';
 import { User, CreateUserParams, UpdateUserParams } from './user.types';
 import { ValidationUtils } from '@/shared/utils/validation';
 import { ERROR_MESSAGES } from '@/shared/constants/validation';
 import { PasswordUtils } from '@/shared/utils/password';
+import { IUserService } from '@/interfaces/services/IUserService';
+import { UserCredentials, UserRegistrationInput, GoogleUserProfile, AuthResponse } from '@/models/User';
 
-export class UserService {
+export class UserService implements IUserService {
   constructor(private readonly repository: IUserRepository) {}
 
   async getAllUsers(): Promise<User[]> {
@@ -72,4 +73,23 @@ export class UserService {
   async deleteUser(id: string): Promise<boolean> {
     return this.repository.delete(id);
   }
+
+  // Stubs for legacy IUserService
+  async authenticateUser(credentials: UserCredentials): Promise<User | null> { throw new Error('Method not implemented. Use AuthService.'); }
+  async registerUser(userData: UserRegistrationInput): Promise<User> { throw new Error('Method not implemented. Use AuthService.'); }
+  async loginUser(credentials: UserCredentials): Promise<AuthResponse | null> { throw new Error('Method not implemented. Use AuthService.'); }
+  async logoutUser(userId: string): Promise<boolean> { throw new Error('Method not implemented. Use AuthService.'); }
+  async requestEmailVerification(userId: string): Promise<string> { throw new Error('Method not implemented. Use AuthService.'); }
+  async verifyEmail(token: string): Promise<boolean> { throw new Error('Method not implemented. Use AuthService.'); }
+  async resendEmailVerification(email: string): Promise<boolean> { throw new Error('Method not implemented. Use AuthService.'); }
+  async requestPhoneVerification(userId: string, phone: string): Promise<string> { throw new Error('Method not implemented. Use AuthService.'); }
+  async verifyPhone(userId: string, code: string): Promise<boolean> { throw new Error('Method not implemented. Use AuthService.'); }
+  async findOrCreateGoogleUser(profile: GoogleUserProfile): Promise<User> { throw new Error('Method not implemented. Use AuthService.'); }
+  async linkGoogleAccount(userId: string, googleId: string): Promise<boolean> { throw new Error('Method not implemented. Use AuthService.'); }
+  async generateAuthTokens(user: User): Promise<AuthResponse> { throw new Error('Method not implemented. Use AuthService.'); }
+  async refreshAuthTokens(refreshToken: string): Promise<AuthResponse | null> { throw new Error('Method not implemented. Use AuthService.'); }
+  async validateRefreshToken(token: string): Promise<User | null> { throw new Error('Method not implemented. Use AuthService.'); }
+  async getUserProfile(userId: string): Promise<User | null> { return this.getUserById(userId); }
+  async updateUserProfile(userId: string, profileData: Partial<User>): Promise<User | null> { return this.updateUser(userId, profileData); }
+  async updateLastLogin(userId: string): Promise<boolean> { return true; }
 }

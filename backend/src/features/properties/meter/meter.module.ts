@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { Pool } from 'pg';
 import { MeterRepository } from './data/repository/MeterRepository.js';
+import { MeterReadingRepository } from './data/repository/MeterReadingRepository.js';
+import { MeterReadingService } from './core/services/MeterReadingService.js';
+import { MeterReadingController } from './presentation/controllers/MeterReadingController.js';
+import { createMeterReadingRoutes } from './presentation/routes/meter-reading.routes.js';
 import { GetMetersByProperty } from './core/use-cases/GetMetersByProperty.usecase.js';
 import { GetMetersByUnit } from './core/use-cases/GetMetersByUnit.usecase.js';
 import { CreateMeter } from './core/use-cases/CreateMeter.usecase.js';
@@ -14,6 +18,9 @@ import { authMiddleware } from '@/shared/middleware/authMiddleware.js';
 export class MeterModule {
   static create(pool: Pool, userService: any): Router {
     const repository = new MeterRepository(pool);
+    const readingRepository = new MeterReadingRepository(pool);
+    const readingService = new MeterReadingService(readingRepository, repository);
+    const readingController = new MeterReadingController(readingService);
 
     const getMetersByProperty = new GetMetersByProperty(repository);
     const getMetersByUnit = new GetMetersByUnit(repository);
@@ -32,6 +39,12 @@ export class MeterModule {
     );
 
     const auth = authMiddleware(userService);
-    return createMeterRoutes(controller, auth);
+    const router = Router();
+
+    // Mount reading routes first to avoid conflicts with meter routes (e.g. /:id)
+    router.use('/readings', createMeterReadingRoutes(readingController, auth));
+    router.use('/', createMeterRoutes(controller, auth));
+
+    return router;
   }
 }

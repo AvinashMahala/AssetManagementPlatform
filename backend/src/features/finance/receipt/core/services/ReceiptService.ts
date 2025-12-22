@@ -8,7 +8,7 @@ import { ITenantRepository } from '@/interfaces/repositories/ITenantRepository';
 import { IUserRepository } from '@/interfaces/repositories/IUserRepository';
 // import { TenantService } from '@/features/legacy/services/TenantService';
 import { RentPaymentService } from '@/features/legacy/services/RentPaymentService';
-import { UserService } from '@/features/legacy/services/UserService';
+import { UserService } from '@/features/auth/user/core/UserService';
 import { ReceiptTemplateService } from '@/features/finance/receipt-template/core/services/ReceiptTemplateService';
 import { ReceiptTemplateSettings } from '@/models/ReceiptTemplate';
 import { PDFGenerator } from '@/shared/utils/pdfGenerator';

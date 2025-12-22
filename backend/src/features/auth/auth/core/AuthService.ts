@@ -111,4 +111,117 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  // Email Verification
+  async requestEmailVerification(userId: string): Promise<string> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      throw new Error('Email already verified');
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await this.userRepository.updateEmailVerificationToken(userId, token, expiresAt);
+
+    // Email functionality is disabled - log for development
+    console.log('Email verification requested for user:', user.email, '- email functionality disabled');
+    
+    return token;
+  }
+
+  async verifyEmail(token: string): Promise<boolean> {
+    const user = await this.userRepository.findByEmailVerificationToken(token);
+    if (!user || !user.emailVerificationExpires || user.emailVerificationExpires < new Date()) {
+      return false;
+    }
+
+    await this.userRepository.verifyEmail(user.id);
+    return true;
+  }
+
+  async resendEmailVerification(email: string): Promise<boolean> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      throw new Error('Email already verified');
+    }
+
+    await this.requestEmailVerification(user.id);
+    return true;
+  }
+
+  // Phone Verification
+  async requestPhoneVerification(userId: string, phone: string): Promise<string> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const phoneValidation = ValidationUtils.validatePhone(phone);
+    if (!phoneValidation.isValid) {
+      throw new Error(phoneValidation.message);
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await this.userRepository.storePhoneVerificationCode(userId, phone, code, expiresAt);
+
+    return code;
+  }
+
+  async verifyPhone(userId: string, code: string): Promise<boolean> {
+    const isValid = await this.userRepository.verifyPhoneCode(userId, code);
+    if (isValid) {
+      await this.userRepository.verifyPhone(userId);
+    }
+    return isValid;
+  }
+
+  // Google OAuth
+  async findOrCreateGoogleUser(profile: { id: string; email: string; name: string; picture?: string; verified_email: boolean }): Promise<AuthResponse> {
+    let user = await this.userRepository.findByGoogleId(profile.id);
+
+    if (!user) {
+      user = await this.userRepository.findByEmail(profile.email);
+      if (user) {
+        await this.userRepository.linkGoogleAccount(user.id, profile.id, profile.picture);
+        user = await this.userRepository.findById(user.id);
+      } else {
+        const username = profile.name.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random() * 1000);
+        user = await this.userService.createUser({
+          username,
+          name: profile.name,
+          email: profile.email,
+          password: crypto.randomBytes(32).toString('hex'),
+          googleId: profile.id,
+          profilePicture: profile.picture,
+          isEmailVerified: profile.verified_email,
+          isPhoneVerified: false,
+          role: 'user'
+        });
+      }
+    }
+
+    if (!user) throw new Error('Failed to create or find user');
+
+    const tokens = this.generateTokens(user.id, user.role);
+    return {
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      },
+      tokens
+    };
+  }
 }

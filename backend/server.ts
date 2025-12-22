@@ -56,25 +56,27 @@ import { BulkOperationsService } from '@/features/admin/bulk-operations/core/ser
 
 // Legacy Repositories & Services (for DI)
 import { PropertyRepository } from '@/features/legacy/repositories/PropertyRepository';
-import { UserRepository } from '@/features/legacy/repositories/UserRepository';
-import { TenantRepository } from '@/features/legacy/repositories/TenantRepository';
-import { LeaseRepository } from '@/features/legacy/repositories/LeaseRepository';
+import { UserRepository } from '@/features/auth/user/data/UserRepository';
+import { TenantRepository } from '@/features/tenants/tenant/data/repository/TenantRepository';
+import { LeaseRepository } from '@/features/leases/data/LeaseRepository';
 import { RentPaymentRepository } from '@/features/legacy/repositories/RentPaymentRepository';
 import { RentTransactionRepository } from '@/features/legacy/repositories/RentTransactionRepository';
-import { MeterRepository } from '@/features/legacy/repositories/MeterRepository';
-import { MeterReadingRepository } from '@/features/legacy/repositories/MeterReadingRepository';
 import { RentTransactionMeterReadingRepository } from '@/features/legacy/repositories/RentTransactionMeterReadingRepository';
-import { PropertyFileRepository } from '@/features/legacy/repositories/PropertyFileRepository';
-import { PropertyReceiptTemplateRepository } from '@/features/legacy/repositories/PropertyReceiptTemplateRepository';
 import { UnitRepository } from '@/features/properties/unit/data/repository/UnitRepository';
 
-import { UserService } from '@/features/legacy/services/UserService';
+import { UserService } from '@/features/auth/user/core/UserService';
 import { RentPaymentService } from '@/features/legacy/services/RentPaymentService';
 import { RentTransactionService } from '@/features/legacy/services/RentTransactionService';
-import { MeterService } from '@/features/legacy/services/MeterService';
-import { MeterReadingService } from '@/features/legacy/services/MeterReadingService';
-import { PropertyFileService } from '@/features/legacy/services/PropertyFileService';
-import { PropertyReceiptTemplateService } from '@/features/legacy/services/PropertyReceiptTemplateService';
+
+// New Feature Services & Repositories (Migrated from Legacy)
+import { MeterRepository } from '@/features/properties/meter/data/repository/MeterRepository';
+import { MeterReadingRepository } from '@/features/properties/meter/data/repository/MeterReadingRepository';
+import { MeterService } from '@/features/properties/meter/core/services/MeterService';
+import { MeterReadingService } from '@/features/properties/meter/core/services/MeterReadingService';
+import { PropertyFileRepository } from '@/features/properties/property/data/repository/PropertyFileRepository';
+import { PropertyReceiptTemplateRepository } from '@/features/properties/property/data/repository/PropertyReceiptTemplateRepository';
+import { PropertyFileService } from '@/features/properties/property/core/services/PropertyFileService';
+import { PropertyReceiptTemplateService } from '@/features/properties/property/core/services/PropertyReceiptTemplateService';
 
 import { PropertyController } from '@/features/properties/property/api/PropertyController.js';
 import { PropertyFileController } from '@/features/properties/property/api/PropertyFileController.js';
@@ -151,7 +153,7 @@ const startServer = async () => {
   // Services
   const userService = new UserService(userRepository);
   const meterService = new MeterService(meterRepository);
-  const meterReadingService = new MeterReadingService(meterReadingRepository);
+  const meterReadingService = new MeterReadingService(meterReadingRepository, meterRepository);
   const propertyFileService = new PropertyFileService(propertyFileRepository);
   const propertyReceiptTemplateService = new PropertyReceiptTemplateService(propertyReceiptTemplateRepository);
   

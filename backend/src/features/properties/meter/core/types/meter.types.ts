@@ -36,3 +36,25 @@ export interface MeterInput {
   status?: string;
   isActive?: boolean;
 }
+
+export interface MeterReading {
+  id: string;
+  meterId: string;
+  readingDate: Date;
+  previousReading: number;
+  currentReading: number;
+  unitsConsumed: number;
+  totalCost: number;
+  meterPhotoUrl?: string;
+  rentTransactionId?: string;
+  recordedBy: string;
+  createdAt: Date;
+}
+
+export interface MeterReadingInput {
+  meterId: string;
+  readingDate: Date;
+  currentReading: number;
+  meterPhotoUrl?: string;
+  recordedBy: string;
+}

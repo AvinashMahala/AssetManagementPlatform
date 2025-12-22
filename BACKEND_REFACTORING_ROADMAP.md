@@ -3,9 +3,11 @@
 **Objective:** Transform the backend into a **Scalable, Event-Driven, Multi-Organization (Database-per-Org)** system using **Vertical Slice Architecture**.
 
 ## 🧠 Context Handoff (Read This First)
-**Current Status (Dec 21, 2025):**
+**Current Status (Feb 24, 2025):**
 *   **Active Task:** Phase 6 (Legacy Elimination).
 *   **Recent Wins:**
+    *   **Phase 6.3 Complete:** Tenant & Lease repositories migrated and legacy files deleted.
+    *   **Phase 6.2 (Partial):** Meter & MeterReading migrated and legacy files deleted.
     *   **Phase 5 Complete:** Server refactored, DI container removed, legacy folders moved to `src/features/legacy`.
     *   **Multi-Organization** feature (Phase 4) activated.
 
@@ -49,20 +51,20 @@
 **Goal:** Completely remove `src/features/legacy` by migrating all remaining logic to Feature Modules.
 
 ### 6.1 Auth & User Consolidation
-- [ ] **Action:** Migrate `PasswordResetService`, `SecurityQuestionRepository`, `RecoveryCodeRepository` to `src/features/auth`.
-- [ ] **Action:** Ensure `features/auth/user` covers all `legacy/UserService` functionality.
-- [ ] **Cleanup:** Delete legacy Auth files.
+- [x] **Action:** Migrate `PasswordResetService`, `SecurityQuestionRepository`, `RecoveryCodeRepository` to `src/features/auth`.
+- [x] **Action:** Ensure `features/auth/user` covers all `legacy/UserService` functionality.
+- [x] **Cleanup:** Delete legacy Auth files.
 
 ### 6.2 Property & Meter Consolidation
 - [ ] **Action:** Migrate `PropertyFile*` and `PropertyReceiptTemplate*` to `src/features/properties/property` (or `files` / `receipt-template`).
 - [ ] **Action:** Verify `features/properties/property/data/PropertyRepository` covers all legacy queries.
-- [ ] **Action:** Verify `features/properties/meter` covers all legacy Meter logic.
-- [ ] **Cleanup:** Delete legacy Property & Meter files.
+- [x] **Action:** Verify `features/properties/meter` covers all legacy Meter logic.
+- [ ] **Cleanup:** Delete legacy Property & Meter files. (Meter files deleted)
 
 ### 6.3 Tenant & Lease Consolidation
-- [ ] **Action:** Verify `features/tenants/tenant` covers all legacy Tenant logic.
-- [ ] **Action:** Verify `features/leases` covers all legacy Lease logic.
-- [ ] **Cleanup:** Delete legacy Tenant & Lease repositories.
+- [x] **Action:** Verify `features/tenants/tenant` covers all legacy Tenant logic.
+- [x] **Action:** Verify `features/leases` covers all legacy Lease logic.
+- [x] **Cleanup:** Delete legacy Tenant & Lease repositories.
 
 ### 6.4 Finance Consolidation (The Big One)
 - [ ] **Action:** Analyze `legacy/RentTransactionService` (1400 lines) and break it down into Use Cases in `features/finance/rent-transaction`.

@@ -78,5 +78,5 @@ export interface Tenant {
   updatedAt: Date;
 }
 
-export type CreateTenantDTO = Omit<Tenant, 'id' | 'createdAt' | 'updatedAt' | 'documents' | 'totalRentals' | 'currentPropertyId'>;
+export type CreateTenantDTO = Omit<Tenant, 'id' | 'createdAt' | 'updatedAt' | 'documents' | 'totalRentals'>;
 export type UpdateTenantDTO = Partial<CreateTenantDTO>;

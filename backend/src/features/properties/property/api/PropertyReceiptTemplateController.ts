@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { GetPropertyByIdUseCase } from '../core/use-cases/GetPropertyById.usecase.js';
-import { IPropertyReceiptTemplateService } from '@/interfaces/services/IPropertyReceiptTemplateService.js';
+import { PropertyReceiptTemplateService } from '../core/services/PropertyReceiptTemplateService';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 
 export class PropertyReceiptTemplateController {
   constructor(
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,
-    private propertyReceiptTemplateService: IPropertyReceiptTemplateService
+    private propertyReceiptTemplateService: PropertyReceiptTemplateService
   ) {}
 
   async createTemplate(req: Request, res: Response) {

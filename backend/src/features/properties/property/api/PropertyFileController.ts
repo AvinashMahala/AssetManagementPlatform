@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { GetPropertyByIdUseCase } from '../core/use-cases/GetPropertyById.usecase.js';
 import { FileStorageService } from '@/features/files/file-storage/core/services/FileStorageService';
-import { IPropertyFileService } from '@/interfaces/services/IPropertyFileService.js';
+import { PropertyFileService } from '../core/services/PropertyFileService';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 
@@ -9,7 +9,7 @@ export class PropertyFileController {
   constructor(
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,
     private fileStorageService: FileStorageService,
-    private propertyFileService: IPropertyFileService
+    private propertyFileService: PropertyFileService
   ) {}
 
   async uploadFile(req: Request, res: Response) {
@@ -77,9 +77,9 @@ export class PropertyFileController {
 
       let files;
       if (type && ['photo', 'document'].includes(type as string)) {
-        files = await this.propertyFileService.getFilesByPropertyAndType(propertyId, type as 'photo' | 'document');
+        files = await this.propertyFileService.getFilesByPropertyIdAndType(propertyId, type as 'photo' | 'document');
       } else {
-        files = await this.propertyFileService.getFilesByProperty(propertyId);
+        files = await this.propertyFileService.getFilesByPropertyId(propertyId);
       }
 
       ResponseUtils.success(res, files);

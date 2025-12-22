@@ -18,6 +18,10 @@ export const TABLES = {
   TEMPLATE_PREVIEW_CACHE: 'template_preview_cache',
   EXPENSES: 'expenses',
   USERS: 'users',
+  PASSWORD_RESET_METHODS: 'password_reset_methods',
+  SECURITY_QUESTIONS: 'security_questions',
+  RECOVERY_CODES: 'recovery_codes',
+  PHONE_VERIFICATION_CODES: 'phone_verification_codes',
 } as const;
 
 export const COLUMNS = {
