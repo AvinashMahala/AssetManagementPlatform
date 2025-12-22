@@ -1,3 +1,4 @@
+
 import { Meter, MeterInput } from '../types/meter.types';
 import { PaginationOptions, PaginationResult } from '@/shared/types/pagination';
 
@@ -17,7 +18,9 @@ export interface IMeterRepository {
   findByUnit(unitId: string): Promise<Meter[]>;
   findActiveByUnit(unitId: string): Promise<Meter[]>;
   create(meterData: MeterInput): Promise<Meter>;
-  update(id: string, updates: Partial<Meter>): Promise<Meter | null>;
+  update(id: string, meterData: Partial<MeterInput>): Promise<Meter | null>;
   delete(id: string): Promise<boolean>;
+  updateStatus(id: string, isActive: boolean): Promise<boolean>;
+}
   updateStatus(id: string, isActive: boolean): Promise<boolean>;
 }

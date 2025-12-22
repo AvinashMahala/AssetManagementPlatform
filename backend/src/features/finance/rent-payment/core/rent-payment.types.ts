@@ -39,6 +39,7 @@ export interface RentPayment {
   penaltyAmount?: number;
   rentAmount?: number;
   maintenanceCharges?: number;
+  otherCharges?: number;
   notes?: string;
   receiptUrl?: string;
   isRecurring?: boolean;
@@ -65,6 +66,7 @@ export interface CreateRentPaymentParams {
   penaltyAmount?: number;
   rentAmount?: number;
   maintenanceCharges?: number;
+  otherCharges?: number;
   notes?: string;
   receiptUrl?: string;
   isRecurring?: boolean;
@@ -85,6 +87,7 @@ export interface UpdateRentPaymentParams {
   penaltyAmount?: number;
   rentAmount?: number;
   maintenanceCharges?: number;
+  otherCharges?: number;
   notes?: string;
   receiptUrl?: string;
   isRecurring?: boolean;
@@ -101,3 +104,5 @@ export interface RentPaymentFilters {
   startDate?: Date;
   endDate?: Date;
 }
+
+export type RentPaymentInput = CreateRentPaymentParams;

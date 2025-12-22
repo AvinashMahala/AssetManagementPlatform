@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { v4 as uuidv4 } from 'uuid';
-import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '@/models/Receipt';
+import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '@/features/finance/receipt/core/receipt.types';
 import { IReceiptRepository } from '../../core/interfaces/IReceiptRepository';
-import { ReceiptTemplateSettings } from '@/models/ReceiptTemplate';
+import { ReceiptTemplateSettings } from '@/features/finance/receipt-template/core/receipt-template.types';
 import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class ReceiptRepository implements IReceiptRepository {

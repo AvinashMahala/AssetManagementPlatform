@@ -2,7 +2,7 @@
 import { IRentPaymentRepository } from './IRentPaymentRepository';
 import { RentPayment, CreateRentPaymentParams, UpdateRentPaymentParams, PaymentStatus } from './rent-payment.types';
 import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
-import { ILeaseRepository } from '@/interfaces/repositories/ILeaseRepository';
+import { ILeaseRepository } from '@/features/leases/core/interfaces/ILeaseRepository';
 import { ITenantRepository } from '@/features/tenants/tenant/core/interfaces/ITenantRepository';
 // Property repository might be needed if we validate propertyId, but it's optional in the schema.
 // I'll skip PropertyRepository for now unless strictly needed, to reduce coupling.

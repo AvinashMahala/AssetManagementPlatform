@@ -1,7 +1,7 @@
 import { IUnitUtilityRepository } from '../interfaces/IUnitUtilityRepository.js';
 import { IUnitUtilityService } from '../interfaces/IUnitUtilityService.js';
-import { IMeterService } from '@/interfaces/services/IMeterService.js';
-import { UnitUtility, UnitUtilityInput, UtilityType, UtilityBillingMethod } from '@/models/Unit.js';
+import { IMeterService } from '@/features/properties/meter/core/interfaces/IMeterService';
+import { UnitUtility, UnitUtilityInput, UtilityType, UtilityBillingMethod } from '@/features/properties/unit/core/types/unit.types';
 import { ValidationUtils } from '@/shared/utils/validation.js';
 import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
 

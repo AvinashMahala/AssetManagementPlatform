@@ -1,3 +1,4 @@
+
 import { Property, PropertyInput } from '../types/property.types.js';
 
 export interface IPropertyRepository {
@@ -7,4 +8,8 @@ export interface IPropertyRepository {
   create(data: PropertyInput): Promise<Property>;
   update(id: string, data: Partial<PropertyInput>): Promise<Property | null>;
   delete(id: string): Promise<boolean>;
+  
+  // Legacy methods
+  updateStatus(id: string, status: string): Promise<boolean>;
+  updateReceiptSettings(id: string, settings: any): Promise<boolean>;
 }

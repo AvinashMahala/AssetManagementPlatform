@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { UnitUtilityController } from './UnitUtilityController';
 import { conditionalAuth } from '@/shared/middleware/authMiddleware';
-import { IUserService } from '@/interfaces/services/IUserService';
+import { IUserService } from '@/features/auth/user/core/IUserService';
 
 export const createUnitUtilityRoutes = (controller: UnitUtilityController, userService: IUserService) => {
   const router = Router();

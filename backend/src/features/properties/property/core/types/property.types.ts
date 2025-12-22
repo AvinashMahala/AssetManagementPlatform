@@ -1,4 +1,4 @@
-import { ReceiptTemplateSettings } from '@/models/ReceiptTemplate';
+import { ReceiptTemplateSettings } from '@/features/finance/receipt-template/core/receipt-template.types';
 
 export enum PropertyType {
   APARTMENT = 'apartment',

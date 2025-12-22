@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { ReceiptTemplate, ReceiptTemplateInput } from '@/models/ReceiptTemplate';
+import { ReceiptTemplate, ReceiptTemplateInput } from '@/features/finance/receipt-template/core/receipt-template.types';
 import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class ReceiptTemplateRepository {

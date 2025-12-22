@@ -1,6 +1,6 @@
 import { ReceiptTemplateRepository } from '../../data/repository/ReceiptTemplateRepository';
-import { PropertyRepository } from '@/features/legacy/repositories/PropertyRepository';
-import { ReceiptTemplate, ReceiptTemplateInput, ReceiptTemplateType, ReceiptTemplateSettings, PropertyTemplateSelection } from '@/models/ReceiptTemplate';
+import { PropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository';
+import { ReceiptTemplate, ReceiptTemplateInput, ReceiptTemplateType, ReceiptTemplateSettings, PropertyTemplateSelection } from '@/features/finance/receipt-template/core/receipt-template.types';
 
 export class ReceiptTemplateService {
   constructor(

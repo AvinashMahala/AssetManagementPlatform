@@ -1,10 +1,10 @@
 import { IUserRepository } from './IUserRepository';
-import { User, CreateUserParams, UpdateUserParams } from './user.types';
+import { User, CreateUserParams, UpdateUserParams, UserCredentials, UserRegistrationInput, GoogleUserProfile, AuthResponse } from './user.types';
 import { ValidationUtils } from '@/shared/utils/validation';
 import { ERROR_MESSAGES } from '@/shared/constants/validation';
 import { PasswordUtils } from '@/shared/utils/password';
-import { IUserService } from '@/interfaces/services/IUserService';
-import { UserCredentials, UserRegistrationInput, GoogleUserProfile, AuthResponse } from '@/models/User';
+import { IUserService } from './IUserService';
+
 
 export class UserService implements IUserService {
   constructor(private readonly repository: IUserRepository) {}

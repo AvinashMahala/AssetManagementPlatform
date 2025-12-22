@@ -1,3 +1,4 @@
+
 export enum MeterType {
   ELECTRICITY = 'electricity',
   WATER = 'water',
@@ -54,7 +55,15 @@ export interface MeterReading {
 export interface MeterReadingInput {
   meterId: string;
   readingDate: Date;
+  previousReading: number;
   currentReading: number;
   meterPhotoUrl?: string;
+  rentTransactionId?: string;
   recordedBy: string;
+}
+
+export interface MeterTrendData {
+  month: string;
+  unitsConsumed: number;
+  totalCost: number;
 }

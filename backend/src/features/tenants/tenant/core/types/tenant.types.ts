@@ -80,3 +80,5 @@ export interface Tenant {
 
 export type CreateTenantDTO = Omit<Tenant, 'id' | 'createdAt' | 'updatedAt' | 'documents' | 'totalRentals'>;
 export type UpdateTenantDTO = Partial<CreateTenantDTO>;
+
+export type TenantInput = Omit<CreateTenantDTO, 'status'> & { status?: TenantStatus };

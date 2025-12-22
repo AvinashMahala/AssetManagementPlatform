@@ -135,4 +135,45 @@ export class RentTransactionRepository extends BaseRepository<RentTransaction, C
       orderBy: { billing_period_start: 'DESC' }
     });
   }
+
+  async findByBillingPeriod(start: Date, end: Date): Promise<RentTransaction[]> {
+    const query = `
+      SELECT * FROM ${this.tableName}
+      WHERE billing_period_start >= $1 AND billing_period_end <= $2
+      ORDER BY billing_period_start DESC
+    `;
+    const result = await this.pool.query(query, [start, end]);
+    return result.rows.map(row => this.mapToDomain(row));
+  }
+
+  async findPendingTransactions(): Promise<RentTransaction[]> {
+    const query = `
+      SELECT * FROM ${this.tableName}
+      WHERE status IN ('PENDING', 'PARTIALLY_PAID')
+      ORDER BY billing_period_start ASC
+    `;
+    const result = await this.pool.query(query);
+    return result.rows.map(row => this.mapToDomain(row));
+  }
+
+  async findOverdueTransactions(): Promise<RentTransaction[]> {
+    const query = `
+      SELECT * FROM ${this.tableName}
+      WHERE status IN ('PENDING', 'PARTIALLY_PAID')
+      AND billing_period_end < CURRENT_DATE
+      ORDER BY billing_period_start ASC
+    `;
+    const result = await this.pool.query(query);
+    return result.rows.map(row => this.mapToDomain(row));
+  }
+
+  async findTransactionsByDateRange(start: Date, end: Date): Promise<RentTransaction[]> {
+    const query = `
+      SELECT * FROM ${this.tableName}
+      WHERE created_at >= $1 AND created_at <= $2
+      ORDER BY created_at DESC
+    `;
+    const result = await this.pool.query(query, [start, end]);
+    return result.rows.map(row => this.mapToDomain(row));
+  }
 }

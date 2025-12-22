@@ -1,18 +1,18 @@
-import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest, ReceiptStatus, ReceiptData } from '@/models/Receipt';
+import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest, ReceiptStatus, ReceiptData } from '@/features/finance/receipt/core/receipt.types';
 import { IReceiptRepository, IReceiptService } from '../interfaces/IReceiptRepository';
-import { IRentTransactionRepository } from '@/interfaces/repositories/IRentTransactionRepository';
-import { IRentPaymentRepository } from '@/interfaces/repositories/IRentPaymentRepository';
-import { ILeaseRepository } from '@/interfaces/repositories/ILeaseRepository';
-import { IPropertyRepository } from '@/interfaces/repositories/IPropertyRepository';
-import { ITenantRepository } from '@/interfaces/repositories/ITenantRepository';
-import { IUserRepository } from '@/interfaces/repositories/IUserRepository';
-// import { TenantService } from '@/features/legacy/services/TenantService';
-import { RentPaymentService } from '@/features/legacy/services/RentPaymentService';
+import { IRentTransactionRepository } from '@/features/finance/rent-transaction/core/IRentTransactionRepository';
+import { IRentPaymentRepository } from '@/features/finance/rent-payment/core/IRentPaymentRepository';
+import { ILeaseRepository } from '@/features/leases/core/interfaces/ILeaseRepository';
+import { IPropertyRepository } from '@/features/properties/property/core/interfaces/IPropertyRepository';
+import { ITenantRepository } from '@/features/tenants/tenant/core/interfaces/ITenantRepository';
+import { IUserRepository } from '@/features/auth/user/core/IUserRepository';
+// import { TenantService } from '@/features/tenants/tenant/core/services/TenantService';
+import { RentPaymentService } from '@/features/finance/rent-payment/core/RentPaymentService';
 import { UserService } from '@/features/auth/user/core/UserService';
 import { ReceiptTemplateService } from '@/features/finance/receipt-template/core/services/ReceiptTemplateService';
-import { ReceiptTemplateSettings } from '@/models/ReceiptTemplate';
+import { ReceiptTemplateSettings } from '@/features/finance/receipt-template/core/receipt-template.types';
 import { PDFGenerator } from '@/shared/utils/pdfGenerator';
-import { RentPayment } from '@/models/RentPayment';
+import { RentPayment } from '@/features/finance/rent-payment/core/rent-payment.types';
 
 export class ReceiptService implements IReceiptService {
   constructor(

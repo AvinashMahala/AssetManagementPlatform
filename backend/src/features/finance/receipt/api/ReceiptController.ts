@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IReceiptService } from '@/features/finance/receipt/core/interfaces/IReceiptRepository';
-import { ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '@/models/Receipt';
+import { ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '@/features/finance/receipt/core/receipt.types';
 import { createModuleLogger, PerformanceLogger } from '@/shared/utils/logger.js';
 import { AppError } from '@/shared/middleware/errorHandler.js';
 

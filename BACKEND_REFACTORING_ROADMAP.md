@@ -56,10 +56,10 @@
 - [x] **Cleanup:** Delete legacy Auth files.
 
 ### 6.2 Property & Meter Consolidation
-- [ ] **Action:** Migrate `PropertyFile*` and `PropertyReceiptTemplate*` to `src/features/properties/property` (or `files` / `receipt-template`).
-- [ ] **Action:** Verify `features/properties/property/data/PropertyRepository` covers all legacy queries.
+- [x] **Action:** Migrate `PropertyFile*` and `PropertyReceiptTemplate*` to `src/features/properties/property` (or `files` / `receipt-template`).
+- [x] **Action:** Verify `features/properties/property/data/PropertyRepository` covers all legacy queries.
 - [x] **Action:** Verify `features/properties/meter` covers all legacy Meter logic.
-- [ ] **Cleanup:** Delete legacy Property & Meter files. (Meter files deleted)
+- [x] **Cleanup:** Delete legacy Property & Meter files.
 
 ### 6.3 Tenant & Lease Consolidation
 - [x] **Action:** Verify `features/tenants/tenant` covers all legacy Tenant logic.
@@ -67,11 +67,23 @@
 - [x] **Cleanup:** Delete legacy Tenant & Lease repositories.
 
 ### 6.4 Finance Consolidation (The Big One)
-- [ ] **Action:** Analyze `legacy/RentTransactionService` (1400 lines) and break it down into Use Cases in `features/finance/rent-transaction`.
-- [ ] **Action:** Migrate `RentPaymentService` logic.
-- [ ] **Cleanup:** Delete legacy Finance files.
+- [x] **Action:** Analyze `legacy/RentTransactionService` (1400 lines) and break it down into Use Cases in `features/finance/rent-transaction`.
+- [x] **Action:** Migrate `RentPaymentService` logic.
+- [x] **Cleanup:** Delete legacy Finance files.
 
 ### 6.5 Templates & Notifications
-- [ ] **Action:** Move `NotificationService` to `src/shared/infrastructure/notifications`.
-- [ ] **Action:** Integrate `Template*` services into `features/finance/receipt-template`.
-- [ ] **Cleanup:** Delete remaining legacy files and the `src/features/legacy` folder.
+- [x] **Action:** Move `NotificationService` to `src/shared/infrastructure/notifications`.
+- [x] **Action:** Integrate `Template*` services into `features/finance/receipt-template`.
+- [x] **Cleanup:** Delete remaining legacy files and the `src/features/legacy` folder.
+
+### 6.6 Global Types & Interfaces Consolidation
+- [x] **Action:** Migrate Finance types (`RentTransaction`, `Payment`, `Receipt`) to `features/finance`.
+- [x] **Action:** Migrate Property types (`Property`, `Unit`, `Meter`) to `features/properties`.
+- [x] **Action:** Migrate Tenant/Lease types to `features/tenants` & `features/leases`.
+- [x] **Action:** Migrate Auth types (`User`) to `features/auth`.
+- [x] **Cleanup:** Delete `src/models` and `src/interfaces`.
+
+## 🏁 Phase 7: Final Verification
+- [ ] **Action:** Run all tests.
+- [ ] **Action:** Verify application startup.
+- [ ] **Action:** Check for any broken imports.

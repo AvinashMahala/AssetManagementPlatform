@@ -55,11 +55,11 @@ export class PropertyReceiptTemplateService {
    * Update receipt template
    */
   async updateTemplate(
-    id: string,
+    propertyId: string,
     updates: Partial<Omit<PropertyReceiptTemplate, 'id' | 'propertyId' | 'createdAt' | 'updatedAt'>>
   ): Promise<PropertyReceiptTemplate | null> {
-    if (!id || id.trim().length === 0) {
-      throw new Error('Template ID is required');
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
     }
 
     // Validate bank details if provided
@@ -72,17 +72,17 @@ export class PropertyReceiptTemplateService {
       this.validateWallets(updates.wallets);
     }
 
-    return await this.repository.update(id, updates);
+    return await this.repository.update(propertyId, updates);
   }
 
   /**
    * Delete receipt template
    */
-  async deleteTemplate(id: string): Promise<boolean> {
-    if (!id || id.trim().length === 0) {
-      throw new Error('Template ID is required');
+  async deleteTemplate(propertyId: string): Promise<boolean> {
+    if (!propertyId || propertyId.trim().length === 0) {
+      throw new Error(ERROR_MESSAGES.PROPERTY.INVALID_ID);
     }
-    return await this.repository.delete(id);
+    return await this.repository.delete(propertyId);
   }
 
   /**

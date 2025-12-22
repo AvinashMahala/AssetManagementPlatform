@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IUnitUtilityService } from '@/features/properties/unit-utility/core/interfaces/IUnitUtilityService.js';
-import { UnitUtilityInput } from '@/models/Unit.js';
+import { UnitUtilityInput } from '@/features/properties/unit/core/types/unit.types';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 

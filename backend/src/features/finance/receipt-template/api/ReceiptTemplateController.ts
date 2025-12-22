@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { ReceiptTemplateService } from '@/features/finance/receipt-template/core/services/ReceiptTemplateService';
-import { ReceiptTemplateInput, ReceiptTemplateType } from '@/models/ReceiptTemplate';
+import { ReceiptTemplateInput, ReceiptTemplateType } from '@/features/finance/receipt-template/core/receipt-template.types';
 import { ResponseUtils } from '@/shared/utils/response';
 import { ErrorUtils } from '@/shared/utils/error';
 

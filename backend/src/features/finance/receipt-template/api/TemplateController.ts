@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { Pool } from 'pg';
-import { TemplateCustomizationService } from '@/features/legacy/services/TemplateCustomizationService';
+import { TemplateCustomizationService } from '../core/services/TemplateCustomizationService';
 import { HTTP_STATUS } from '@/shared/constants/http';
 import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 

@@ -55,7 +55,7 @@ export class PropertyReceiptTemplateRepository implements IPropertyReceiptTempla
     }
   }
 
-  async update(id: string, updates: Partial<Omit<PropertyReceiptTemplate, 'id' | 'propertyId' | 'createdAt' | 'updatedAt'>>): Promise<PropertyReceiptTemplate | null> {
+  async update(propertyId: string, updates: Partial<Omit<PropertyReceiptTemplate, 'id' | 'propertyId' | 'createdAt' | 'updatedAt'>>): Promise<PropertyReceiptTemplate | null> {
     try {
       const setClause: string[] = [];
       const values: any[] = [];
@@ -106,14 +106,14 @@ export class PropertyReceiptTemplateRepository implements IPropertyReceiptTempla
       }
 
       if (setClause.length === 0) {
-        return this.getById(id);
+        return this.getByPropertyId(propertyId);
       }
 
-      values.push(id);
+      values.push(propertyId);
       const query = `
         UPDATE property_receipt_templates
         SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $${paramIndex}
+        WHERE property_id = $${paramIndex}
         RETURNING *
       `;
 
@@ -129,10 +129,10 @@ export class PropertyReceiptTemplateRepository implements IPropertyReceiptTempla
     }
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(propertyId: string): Promise<boolean> {
     try {
-      const query = `DELETE FROM property_receipt_templates WHERE id = $1`;
-      const result = await this.pool.query(query, [id]);
+      const query = `DELETE FROM property_receipt_templates WHERE property_id = $1`;
+      const result = await this.pool.query(query, [propertyId]);
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
       throw new Error(`Failed to delete property receipt template: ${(error as Error).message || 'Database delete failed'}`);

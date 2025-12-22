@@ -6,9 +6,14 @@
     "auditLog": "/Users/avinashmahala/Desktop/githubRepos/AssetManagementPlatform/backend/logs/backend/.33c066ff87c140ce9ba15dbb68471f309ac069fa-audit.json",
     "files": [
         {
-            "date": 1766313260889,
+            "date": 1766388777411,
             "name": "/Users/avinashmahala/Desktop/githubRepos/AssetManagementPlatform/backend/logs/backend/error-2025-12-21.log",
-            "hash": "d0fb27a5d6e35645e69c693df7eea889f67525581aa3f5ff6c2f33dd4d5310fc"
+            "hash": "8bccfb79656115192d51dced4be1f704b4c5f563b06c790702cc5db0d5b5058d"
+        },
+        {
+            "date": 1766390446266,
+            "name": "/Users/avinashmahala/Desktop/githubRepos/AssetManagementPlatform/backend/logs/backend/error-2025-12-22.log",
+            "hash": "f657184552621cef09655aad18103a9bb7248d62f93203f71f877ada7c2a75ad"
         }
     ],
     "hashType": "sha256"

@@ -1,4 +1,4 @@
-import { UnitUtility, UnitUtilityInput } from '@/models/Unit';
+import { UnitUtility, UnitUtilityInput } from '@/features/properties/unit/core/types/unit.types';
 
 export interface IUnitUtilityService {
   // CRUD operations

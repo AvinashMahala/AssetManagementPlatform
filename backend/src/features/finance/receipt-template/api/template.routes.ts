@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Pool } from 'pg';
 import { TemplateController } from './TemplateController';
 import { conditionalAuth } from '@/shared/middleware/authMiddleware';
-import { IUserService } from '@/interfaces/services/IUserService';
+import { IUserService } from '@/features/auth/user/core/IUserService';
 
 export default (pool: Pool, userService: IUserService) => {
   const router = Router();

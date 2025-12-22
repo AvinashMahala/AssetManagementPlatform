@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { TenantController } from './TenantController';
 import { authMiddleware } from '@/shared/middleware/authMiddleware';
-import { IUserService } from '@/interfaces/services/IUserService';
+import { IUserService } from '@/features/auth/user/core/IUserService';
 
 export const createTenantRoutes = (controller: TenantController, userService: IUserService): Router => {
   const router = Router();

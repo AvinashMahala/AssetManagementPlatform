@@ -1,4 +1,4 @@
-import { UnitUtility, UnitUtilityInput, UtilityType } from '@/models/Unit.js';
+import { UnitUtility, UnitUtilityInput, UtilityType } from '@/features/properties/unit/core/types/unit.types';
 
 export interface IUnitUtilityRepository {
   create(data: UnitUtilityInput): Promise<UnitUtility>;

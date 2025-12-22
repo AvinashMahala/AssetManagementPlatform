@@ -8,7 +8,7 @@ import { ListTenantsUseCase } from './core/use-cases/ListTenants.usecase';
 import { DeleteTenantUseCase } from './core/use-cases/DeleteTenant.usecase';
 import { TenantController } from './api/TenantController';
 import { createTenantRoutes } from './api/tenant.routes';
-import { IUserService } from '@/interfaces/services/IUserService';
+import { IUserService } from '@/features/auth/user/core/IUserService';
 
 export class TenantModule {
   static create(pool: Pool, userService: IUserService): Router {

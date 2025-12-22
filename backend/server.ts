@@ -55,18 +55,18 @@ import { createBulkOperationsRoutes } from '@/features/admin/bulk-operations/api
 import { BulkOperationsService } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
 
 // Legacy Repositories & Services (for DI)
-import { PropertyRepository } from '@/features/legacy/repositories/PropertyRepository';
+import { PropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository';
 import { UserRepository } from '@/features/auth/user/data/UserRepository';
 import { TenantRepository } from '@/features/tenants/tenant/data/repository/TenantRepository';
 import { LeaseRepository } from '@/features/leases/data/LeaseRepository';
-import { RentPaymentRepository } from '@/features/legacy/repositories/RentPaymentRepository';
-import { RentTransactionRepository } from '@/features/legacy/repositories/RentTransactionRepository';
-import { RentTransactionMeterReadingRepository } from '@/features/legacy/repositories/RentTransactionMeterReadingRepository';
+import { RentPaymentRepository } from '@/features/finance/rent-payment/data/RentPaymentRepository';
+import { RentTransactionRepository } from '@/features/finance/rent-transaction/data/RentTransactionRepository';
+import { RentTransactionMeterReadingRepository } from '@/features/finance/rent-transaction/data/RentTransactionMeterReadingRepository';
 import { UnitRepository } from '@/features/properties/unit/data/repository/UnitRepository';
 
 import { UserService } from '@/features/auth/user/core/UserService';
-import { RentPaymentService } from '@/features/legacy/services/RentPaymentService';
-import { RentTransactionService } from '@/features/legacy/services/RentTransactionService';
+import { RentPaymentService } from '@/features/finance/rent-payment/core/RentPaymentService';
+import { RentTransactionService } from '@/features/finance/rent-transaction/core/RentTransactionService';
 
 // New Feature Services & Repositories (Migrated from Legacy)
 import { MeterRepository } from '@/features/properties/meter/data/repository/MeterRepository';

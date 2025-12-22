@@ -1,5 +1,5 @@
-import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '@/models/Receipt';
-import { ReceiptTemplateSettings } from '@/models/ReceiptTemplate';
+import { Receipt, ReceiptInput, ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '@/features/finance/receipt/core/receipt.types';
+import { ReceiptTemplateSettings } from '@/features/finance/receipt-template/core/receipt-template.types';
 
 export interface IReceiptRepository {
   findAll(): Promise<Receipt[]>;

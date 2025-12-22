@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { UnitUtility, UnitUtilityInput, UtilityType, UtilityBillingMethod } from '@/models/Unit.js';
+import { UnitUtility, UnitUtilityInput, UtilityType, UtilityBillingMethod } from '@/features/properties/unit/core/types/unit.types';
 import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { IUnitUtilityRepository } from '../../core/interfaces/IUnitUtilityRepository';
 

@@ -2,8 +2,8 @@
 import { Pool } from 'pg';
 import { BaseRepository } from '@/shared/infrastructure/database/BaseRepository';
 import { IUserRepository } from '../core/IUserRepository';
-import { User, CreateUserParams, UpdateUserParams } from '../core/user.types';
-import { PhoneVerificationCode } from '@/models/User';
+import { User, CreateUserParams, UpdateUserParams, PhoneVerificationCode } from '../core/user.types';
+
 import { TABLES, COLUMNS } from '@/shared/constants/database';
 
 export class UserRepository extends BaseRepository<User, CreateUserParams, UpdateUserParams> implements IUserRepository {
