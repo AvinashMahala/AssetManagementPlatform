@@ -176,4 +176,143 @@ export class RentTransactionRepository extends BaseRepository<RentTransaction, C
     const result = await this.pool.query(query, [start, end]);
     return result.rows.map(row => this.mapToDomain(row));
   }
+
+  // Legacy methods
+  async findByPropertyAndPeriod(propertyId: string, month: number, year: number): Promise<RentTransaction[]> {
+    const query = `
+      SELECT * FROM ${this.tableName}
+      WHERE property_id = $1
+      AND EXTRACT(MONTH FROM billing_period_start) = $2
+      AND EXTRACT(YEAR FROM billing_period_start) = $3
+    `;
+    const result = await this.pool.query(query, [propertyId, month, year]);
+    return result.rows.map(row => this.mapToDomain(row));
+  }
+
+  async findTransactionsByStatus(status: string): Promise<RentTransaction[]> {
+    const query = `SELECT * FROM ${this.tableName} WHERE status = $1`;
+    const result = await this.pool.query(query, [status]);
+    return result.rows.map(row => this.mapToDomain(row));
+  }
+
+  async markAsPaid(id: string, paidDate: Date, paymentMethod?: string, transactionId?: string): Promise<boolean> {
+    const query = `
+      UPDATE ${this.tableName}
+      SET status = 'PAID', paid_date = $2, updated_at = NOW()
+      WHERE id = $1
+    `;
+    const result = await this.pool.query(query, [id, paidDate]);
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async markAsOverdue(id: string): Promise<boolean> {
+    const query = `
+      UPDATE ${this.tableName}
+      SET status = 'OVERDUE', updated_at = NOW()
+      WHERE id = $1
+    `;
+    const result = await this.pool.query(query, [id]);
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async calculateLateFees(id: string): Promise<number> {
+    // Placeholder implementation
+    return 0;
+  }
+
+  // Financial summaries
+  async getTotalRevenueByProperty(propertyId: string, startDate?: Date, endDate?: Date): Promise<number> {
+    let query = `SELECT SUM(amount_paid) as total FROM ${this.tableName} WHERE property_id = $1`;
+    const params: any[] = [propertyId];
+    
+    if (startDate) {
+      query += ` AND paid_date >= $${params.length + 1}`;
+      params.push(startDate);
+    }
+    if (endDate) {
+      query += ` AND paid_date <= $${params.length + 1}`;
+      params.push(endDate);
+    }
+
+    const result = await this.pool.query(query, params);
+    return parseFloat(result.rows[0]?.total || '0');
+  }
+
+  async getTotalRevenueByLease(leaseId: string, startDate?: Date, endDate?: Date): Promise<number> {
+    let query = `SELECT SUM(amount_paid) as total FROM ${this.tableName} WHERE lease_id = $1`;
+    const params: any[] = [leaseId];
+    
+    if (startDate) {
+      query += ` AND paid_date >= $${params.length + 1}`;
+      params.push(startDate);
+    }
+    if (endDate) {
+      query += ` AND paid_date <= $${params.length + 1}`;
+      params.push(endDate);
+    }
+
+    const result = await this.pool.query(query, params);
+    return parseFloat(result.rows[0]?.total || '0');
+  }
+
+  async getOutstandingTransactionsByProperty(propertyId: string): Promise<number> {
+    const query = `
+      SELECT SUM(total_amount - amount_paid) as total 
+      FROM ${this.tableName} 
+      WHERE property_id = $1 AND status != 'PAID'
+    `;
+    const result = await this.pool.query(query, [propertyId]);
+    return parseFloat(result.rows[0]?.total || '0');
+  }
+
+  async getOutstandingTransactionsByTenant(tenantId: string): Promise<number> {
+    const query = `
+      SELECT SUM(total_amount - amount_paid) as total 
+      FROM ${this.tableName} 
+      WHERE tenant_id = $1 AND status != 'PAID'
+    `;
+    const result = await this.pool.query(query, [tenantId]);
+    return parseFloat(result.rows[0]?.total || '0');
+  }
+
+  async getMonthlyRevenueReport(propertyId?: string, year?: number, month?: number): Promise<any> {
+    // Placeholder
+    return {};
+  }
+
+  async getTransactionStatistics(startDate?: Date, endDate?: Date): Promise<any> {
+    // Placeholder
+    return {};
+  }
+
+  // Balance tracking
+  async getCurrentBalanceByLease(leaseId: string): Promise<number> {
+    const query = `
+      SELECT SUM(total_amount - amount_paid) as balance 
+      FROM ${this.tableName} 
+      WHERE lease_id = $1
+    `;
+    const result = await this.pool.query(query, [leaseId]);
+    return parseFloat(result.rows[0]?.balance || '0');
+  }
+
+  async getCurrentBalanceByTenant(tenantId: string): Promise<number> {
+    const query = `
+      SELECT SUM(total_amount - amount_paid) as balance 
+      FROM ${this.tableName} 
+      WHERE tenant_id = $1
+    `;
+    const result = await this.pool.query(query, [tenantId]);
+    return parseFloat(result.rows[0]?.balance || '0');
+  }
+
+  async getCurrentBalanceByProperty(propertyId: string): Promise<number> {
+    const query = `
+      SELECT SUM(total_amount - amount_paid) as balance 
+      FROM ${this.tableName} 
+      WHERE property_id = $1
+    `;
+    const result = await this.pool.query(query, [propertyId]);
+    return parseFloat(result.rows[0]?.balance || '0');
+  }
 }

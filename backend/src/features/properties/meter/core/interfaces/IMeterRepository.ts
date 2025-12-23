@@ -22,5 +22,3 @@ export interface IMeterRepository {
   delete(id: string): Promise<boolean>;
   updateStatus(id: string, isActive: boolean): Promise<boolean>;
 }
-  updateStatus(id: string, isActive: boolean): Promise<boolean>;
-}

@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { ReceiptTemplateInput, ReceiptTemplateType } from '../src/models/ReceiptTemplate';
+import { ReceiptTemplateInput, ReceiptTemplateType } from '../src/features/finance/receipt-template/core/receipt-template.types';
 import * as crypto from 'crypto';
 
 // Predefined receipt templates

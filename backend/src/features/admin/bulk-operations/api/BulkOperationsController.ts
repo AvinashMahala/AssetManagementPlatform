@@ -13,6 +13,10 @@ export class BulkOperationsController {
     try {
       const input: BulkRentCollectionInput = req.body;
       const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
 
       const result = await this.bulkOperationsService.bulkRentCollection(input, userId);
 
@@ -37,6 +41,10 @@ export class BulkOperationsController {
     try {
       const input: BulkPaymentInput = req.body;
       const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
 
       const result = await this.bulkOperationsService.bulkPaymentRecording(input, userId);
 
@@ -61,6 +69,10 @@ export class BulkOperationsController {
     try {
       const input: BulkReceiptGenerationInput = req.body;
       const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
 
       const result = await this.bulkOperationsService.bulkReceiptGeneration(input, userId);
 
@@ -85,6 +97,10 @@ export class BulkOperationsController {
     try {
       const input: BulkCommunicationInput = req.body;
       const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
 
       const result = await this.bulkOperationsService.bulkTenantCommunication(input, userId);
 
@@ -109,6 +125,10 @@ export class BulkOperationsController {
     try {
       const input = req.body;
       const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
 
       const result = await this.bulkOperationsService.bulkDataExport(input, userId);
 

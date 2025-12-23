@@ -148,8 +148,8 @@ export class BulkOperationsService {
           // Generate transaction for this unit
           const transactions = await this.rentTransactionService.generateMonthlyTransactions(
             currentLease.id,
-            input.billingPeriodStart,
-            input.billingPeriodEnd
+            input.billingPeriodStart.getTime(),
+            input.billingPeriodEnd.getTime()
           );
 
           if (transactions && transactions.length > 0) {
@@ -257,11 +257,14 @@ export class BulkOperationsService {
           // Generate receipt
           const receiptResult = await this.rentTransactionService.generateReceipt(transactionId);
 
+          // Fetch updated transaction to get receipt details
+          const updatedTransaction = await this.rentTransactionService.getTransactionById(transactionId);
+
           results.processed++;
           results.results!.push({
             transactionId,
-            receiptNumber: receiptResult.receiptNumber,
-            pdfUrl: receiptResult.pdfUrl
+            receiptNumber: updatedTransaction?.receiptNumber || receiptResult,
+            pdfUrl: typeof receiptResult === 'string' ? receiptResult : undefined
           });
 
         } catch (error) {

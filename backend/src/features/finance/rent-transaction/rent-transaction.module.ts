@@ -7,6 +7,9 @@ import { RentTransactionController } from './api/RentTransactionController';
 import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
 import { LeaseRepository } from '@/features/leases/data/LeaseRepository';
 import { TenantRepository } from '@/features/tenants/tenant/data/repository/TenantRepository';
+import { PropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository';
+import { UserRepository } from '@/features/auth/user/data/UserRepository';
+import { RentTransactionMeterReadingRepository } from './data/RentTransactionMeterReadingRepository';
 
 export class RentTransactionModule {
   public router: Router;
@@ -23,11 +26,17 @@ export class RentTransactionModule {
     // We need to instantiate external repositories here
     const leaseRepository = new LeaseRepository(pool);
     const tenantRepository = new TenantRepository(pool);
+    const propertyRepository = new PropertyRepository(pool);
+    const userRepository = new UserRepository(pool);
+    const meterReadingRepository = new RentTransactionMeterReadingRepository(pool);
 
     this.service = new RentTransactionService(
       this.repository,
       leaseRepository,
       tenantRepository,
+      propertyRepository,
+      userRepository,
+      meterReadingRepository,
       eventBus
     );
     

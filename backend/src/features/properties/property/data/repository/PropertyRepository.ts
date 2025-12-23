@@ -67,4 +67,24 @@ export class PropertyRepository extends BaseRepository<Property, PropertyInput> 
     const result = await this.pool.query(query, [id, ...values]);
     return result.rows[0] ? this.mapToDomain(result.rows[0]) : null;
   }
+
+  async updateStatus(id: string, status: string): Promise<boolean> {
+    const query = `
+      UPDATE ${this.tableName}
+      SET status = $2, updated_at = NOW()
+      WHERE id = $1
+    `;
+    const result = await this.pool.query(query, [id, status]);
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async updateReceiptSettings(id: string, settings: any): Promise<boolean> {
+    const query = `
+      UPDATE ${this.tableName}
+      SET receipt_settings = $2, updated_at = NOW()
+      WHERE id = $1
+    `;
+    const result = await this.pool.query(query, [id, settings]);
+    return (result.rowCount ?? 0) > 0;
+  }
 }

@@ -3,11 +3,7 @@ import jwt from 'jsonwebtoken';
 import { IUserService } from '@/features/auth/user/core/IUserService';
 
 export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
+  user?: any;
 }
 
 export const authMiddleware = (userService: IUserService) => {

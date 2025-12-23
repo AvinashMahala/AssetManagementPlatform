@@ -211,4 +211,33 @@ export class RentTransactionService {
     const lateFeePerDay = 50;
     return daysLate * lateFeePerDay;
   }
+
+  async generateMonthlyTransactions(propertyId?: string, month?: number, year?: number): Promise<RentTransaction[]> {
+    // Placeholder
+    return [];
+  }
+
+  async generateReceipt(transactionId: string): Promise<string> {
+    // Placeholder
+    return 'receipt_url';
+  }
+
+  async getCurrentMonthTransaction(leaseId: string): Promise<RentTransaction | null> {
+    // Placeholder
+    return null;
+  }
+
+  async getUnitHistory(unitId: string): Promise<RentTransaction[]> {
+    return this.repository.findByUnit(unitId);
+  }
+
+  async recordPayment(transactionId: string, amountPaid: number, paymentMethod: string, paymentDate: Date, paymentReference?: string): Promise<RentTransaction | null> {
+    // Placeholder
+    return null;
+  }
+
+  async getLastMeterReadings(unitId: string): Promise<any[]> {
+    // Placeholder
+    return [];
+  }
 }

@@ -19,8 +19,6 @@ export interface IRentTransactionRepository extends IBaseRepository<RentTransact
   findTransactionsByStatus(status: string): Promise<RentTransaction[]>;
   markAsPaid(id: string, paidDate: Date, paymentMethod?: string, transactionId?: string): Promise<boolean>;
   markAsOverdue(id: string): Promise<boolean>;
-}
-  markAsOverdue(id: string): Promise<boolean>;
   calculateLateFees(id: string): Promise<number>;
 
   // Financial summaries

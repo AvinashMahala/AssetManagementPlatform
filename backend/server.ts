@@ -31,6 +31,7 @@ import { MeterModule } from '@/features/properties/meter/meter.module.js';
 import { authMiddleware } from '@/shared/middleware/authMiddleware';
 import { organizationMiddleware } from '@/shared/middleware/OrganizationMiddleware.js';
 import { createMultiTenantPool } from '@/shared/infrastructure/database/MultiTenantPool.js';
+import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
 
 // Legacy Imports (Moved to Features)
 import { ReceiptController } from '@/features/finance/receipt/api/ReceiptController';
@@ -94,7 +95,6 @@ import { AuthModule } from '@/features/auth/auth/auth.module';
 import { UserModule } from '@/features/auth/user/user.module';
 import { RentPaymentModule } from '@/features/finance/rent-payment/rent-payment.module';
 import { RentTransactionModule } from '@/features/finance/rent-transaction/rent-transaction.module';
-import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
 
 // Setup global process error handlers
 setupProcessErrorHandlers();
@@ -151,6 +151,7 @@ const startServer = async () => {
   const unitUtilityRepository = new UnitUtilityRepository(mainPool);
 
   // Services
+  const eventBus = EventBus.getInstance();
   const userService = new UserService(userRepository);
   const meterService = new MeterService(meterRepository);
   const meterReadingService = new MeterReadingService(meterReadingRepository, meterRepository);
@@ -162,9 +163,8 @@ const startServer = async () => {
   const rentPaymentService = new RentPaymentService(
     rentPaymentRepository,
     leaseRepository,
-    propertyRepository,
     tenantRepository,
-    userRepository
+    eventBus
   );
 
   const receiptService = new ReceiptService(
@@ -183,14 +183,11 @@ const startServer = async () => {
   const rentTransactionService = new RentTransactionService(
     rentTransactionRepository,
     leaseRepository,
-    propertyRepository,
     tenantRepository,
-    meterRepository,
-    meterReadingRepository,
-    receiptService,
-    transactionMeterReadingRepository,
+    propertyRepository,
     userRepository,
-    unitUtilityService
+    transactionMeterReadingRepository,
+    eventBus
   );
 
   const bulkOperationsService = new BulkOperationsService(
