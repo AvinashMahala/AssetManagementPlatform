@@ -11,7 +11,11 @@ const options = {
       securitySchemes: allSecuritySchemes,
     },
   },
-  apis: ['./src/controllers/*.ts', './src/routes/*.ts'],
+  apis: [
+    './src/features/**/api/*.ts',
+    './src/features/**/api/*.routes.ts',
+    './src/shared/config/swagger/apis/**/*.ts'
+  ],
 } as swaggerJSDoc.Options;
 
 export default options;

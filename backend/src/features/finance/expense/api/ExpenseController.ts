@@ -9,6 +9,12 @@ import { GetExpensesByUnitQuery } from '../data/queries/GetExpensesByUnit.query'
 import { CreateExpenseParams, UpdateExpenseParams } from '../core/types/expense.params';
 import { ExpenseFilters } from '../core/types/expense.types';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Expenses
+ *   description: Expense management endpoints
+ */
 export class ExpenseController {
   constructor(
     private createExpenseUseCase: CreateExpenseUseCase,
@@ -20,6 +26,45 @@ export class ExpenseController {
     private getExpensesByUnitQuery: GetExpensesByUnitQuery
   ) {}
 
+  /**
+   * @swagger
+   * /expenses:
+   *   post:
+   *     summary: Create a new expense
+   *     tags: [Expenses]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - propertyId
+   *               - amount
+   *               - date
+   *               - category
+   *             properties:
+   *               propertyId:
+   *                 type: string
+   *               unitId:
+   *                 type: string
+   *               amount:
+   *                 type: number
+   *               date:
+   *                 type: string
+   *                 format: date
+   *               category:
+   *                 type: string
+   *               description:
+   *                 type: string
+   *               vendor:
+   *                 type: string
+   *     responses:
+   *       201:
+   *         description: Expense created successfully
+   *       400:
+   *         description: Bad request
+   */
   async createExpense(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
@@ -34,6 +79,45 @@ export class ExpenseController {
     }
   }
 
+  /**
+   * @swagger
+   * /expenses/{id}:
+   *   put:
+   *     summary: Update an expense
+   *     tags: [Expenses]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Expense ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               amount:
+   *                 type: number
+   *               date:
+   *                 type: string
+   *                 format: date
+   *               category:
+   *                 type: string
+   *               description:
+   *                 type: string
+   *               vendor:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Expense updated successfully
+   *       404:
+   *         description: Expense not found
+   *       400:
+   *         description: Bad request
+   */
   async updateExpense(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
@@ -53,6 +137,27 @@ export class ExpenseController {
     }
   }
 
+  /**
+   * @swagger
+   * /expenses/{id}:
+   *   delete:
+   *     summary: Delete an expense
+   *     tags: [Expenses]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Expense ID
+   *     responses:
+   *       200:
+   *         description: Expense deleted successfully
+   *       404:
+   *         description: Expense not found
+   *       500:
+   *         description: Internal server error
+   */
   async deleteExpense(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
@@ -67,6 +172,27 @@ export class ExpenseController {
     }
   }
 
+  /**
+   * @swagger
+   * /expenses/{id}:
+   *   get:
+   *     summary: Get an expense by ID
+   *     tags: [Expenses]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Expense ID
+   *     responses:
+   *       200:
+   *         description: Expense details
+   *       404:
+   *         description: Expense not found
+   *       500:
+   *         description: Internal server error
+   */
   async getExpenseById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
@@ -81,6 +207,41 @@ export class ExpenseController {
     }
   }
 
+  /**
+   * @swagger
+   * /expenses:
+   *   get:
+   *     summary: List expenses
+   *     tags: [Expenses]
+   *     parameters:
+   *       - in: query
+   *         name: propertyId
+   *         schema:
+   *           type: string
+   *         description: Filter by Property ID
+   *       - in: query
+   *         name: unitId
+   *         schema:
+   *           type: string
+   *         description: Filter by Unit ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Filter by start date
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Filter by end date
+   *     responses:
+   *       200:
+   *         description: List of expenses
+   *       500:
+   *         description: Internal server error
+   */
   async getAllExpenses(req: Request, res: Response): Promise<void> {
     try {
       const filters: ExpenseFilters = req.query as any;
@@ -91,6 +252,25 @@ export class ExpenseController {
     }
   }
 
+  /**
+   * @swagger
+   * /expenses/property/{propertyId}:
+   *   get:
+   *     summary: Get expenses by Property ID
+   *     tags: [Expenses]
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     responses:
+   *       200:
+   *         description: List of expenses for the property
+   *       500:
+   *         description: Internal server error
+   */
   async getExpensesByProperty(req: Request, res: Response): Promise<void> {
     try {
       const { propertyId } = req.params;
@@ -101,6 +281,25 @@ export class ExpenseController {
     }
   }
 
+  /**
+   * @swagger
+   * /expenses/unit/{unitId}:
+   *   get:
+   *     summary: Get expenses by Unit ID
+   *     tags: [Expenses]
+   *     parameters:
+   *       - in: path
+   *         name: unitId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Unit ID
+   *     responses:
+   *       200:
+   *         description: List of expenses for the unit
+   *       500:
+   *         description: Internal server error
+   */
   async getExpensesByUnit(req: Request, res: Response): Promise<void> {
     try {
       const { unitId } = req.params;

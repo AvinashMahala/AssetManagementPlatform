@@ -721,6 +721,15 @@ CMD if [ -f yarn.lock ]; then yarn start; else npm start; fi
 - [ ] Database migrations
 - [ ] Multi-factor authentication (MFA)
 
+## 📋 Production Readiness
+
+We are actively working on making the backend production-ready. See our [Implementation Plan](./docs/PRODUCTION_READINESS_PLAN.md) for details on:
+- Input Validation
+- Typed Configuration
+- Security Hardening
+- Automated Testing
+- Database Migrations
+
 ## 📚 Additional Resources
 
 - [Express.js Documentation](https://expressjs.com/)

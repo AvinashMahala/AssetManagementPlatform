@@ -2,12 +2,46 @@ import { Request, Response } from 'express';
 import { BulkOperationsService } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
 import { BulkRentCollectionInput, BulkPaymentInput, BulkReceiptGenerationInput, BulkCommunicationInput } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Bulk Operations
+ *   description: Bulk operation endpoints
+ */
 export class BulkOperationsController {
   constructor(private bulkOperationsService: BulkOperationsService) {}
 
   /**
-   * POST /api/bulk/rent-collection
-   * Bulk rent collection for multiple units
+   * @swagger
+   * /bulk/rent-collection:
+   *   post:
+   *     summary: Bulk rent collection for multiple units
+   *     tags: [Bulk Operations]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - unitIds
+   *             properties:
+   *               unitIds:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *               dueDate:
+   *                 type: string
+   *                 format: date
+   *     responses:
+   *       200:
+   *         description: Bulk rent collection completed
+   *       207:
+   *         description: Bulk rent collection completed with errors
+   *       401:
+   *         description: Unauthorized
+   *       500:
+   *         description: Internal server error
    */
   async bulkRentCollection(req: Request, res: Response): Promise<void> {
     try {
@@ -34,8 +68,41 @@ export class BulkOperationsController {
   }
 
   /**
-   * POST /api/bulk/payments
-   * Bulk payment recording for multiple transactions
+   * @swagger
+   * /bulk/payments:
+   *   post:
+   *     summary: Bulk payment recording for multiple transactions
+   *     tags: [Bulk Operations]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - payments
+   *             properties:
+   *               payments:
+   *                 type: array
+   *                 items:
+   *                   type: object
+   *                   properties:
+   *                     transactionId:
+   *                       type: string
+   *                     amount:
+   *                       type: number
+   *                     paymentDate:
+   *                       type: string
+   *                       format: date
+   *     responses:
+   *       200:
+   *         description: Bulk payment recording completed
+   *       207:
+   *         description: Bulk payment recording completed with errors
+   *       401:
+   *         description: Unauthorized
+   *       500:
+   *         description: Internal server error
    */
   async bulkPaymentRecording(req: Request, res: Response): Promise<void> {
     try {
@@ -62,8 +129,33 @@ export class BulkOperationsController {
   }
 
   /**
-   * POST /api/bulk/receipts
-   * Bulk receipt generation for multiple transactions
+   * @swagger
+   * /bulk/receipts:
+   *   post:
+   *     summary: Bulk receipt generation for multiple transactions
+   *     tags: [Bulk Operations]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - transactionIds
+   *             properties:
+   *               transactionIds:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *     responses:
+   *       200:
+   *         description: Bulk receipt generation completed
+   *       207:
+   *         description: Bulk receipt generation completed with errors
+   *       401:
+   *         description: Unauthorized
+   *       500:
+   *         description: Internal server error
    */
   async bulkReceiptGeneration(req: Request, res: Response): Promise<void> {
     try {
@@ -90,8 +182,38 @@ export class BulkOperationsController {
   }
 
   /**
-   * POST /api/bulk/communication
-   * Bulk communication to tenants
+   * @swagger
+   * /bulk/communication:
+   *   post:
+   *     summary: Bulk communication to tenants
+   *     tags: [Bulk Operations]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - tenantIds
+   *               - message
+   *             properties:
+   *               tenantIds:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *               message:
+   *                 type: string
+   *               subject:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Bulk communication completed
+   *       207:
+   *         description: Bulk communication completed with errors
+   *       401:
+   *         description: Unauthorized
+   *       500:
+   *         description: Internal server error
    */
   async bulkTenantCommunication(req: Request, res: Response): Promise<void> {
     try {

@@ -20,6 +20,28 @@ export class PropertyController {
     private deletePropertyUseCase: DeletePropertyUseCase
   ) {}
 
+  /**
+   * @swagger
+   * /api/v1/properties:
+   *   get:
+   *     summary: Get all properties
+   *     tags: [Properties]
+   *     parameters:
+   *       - in: query
+   *         name: ownerId
+   *         schema:
+   *           type: string
+   *         description: Filter by owner ID
+   *     responses:
+   *       200:
+   *         description: List of properties
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/Property'
+   */
   async getAll(req: Request, res: Response) {
     try {
       const { ownerId } = req.query;
@@ -30,6 +52,29 @@ export class PropertyController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/v1/properties/{id}:
+   *   get:
+   *     summary: Get property by ID
+   *     tags: [Properties]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     responses:
+   *       200:
+   *         description: Property details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Property'
+   *       404:
+   *         description: Property not found
+   */
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -40,6 +85,28 @@ export class PropertyController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/v1/properties:
+   *   post:
+   *     summary: Create a new property
+   *     tags: [Properties]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/PropertyInput'
+   *     responses:
+   *       201:
+   *         description: Property created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Property'
+   *       400:
+   *         description: Invalid input
+   */
   async create(req: Request, res: Response) {
     try {
       const propertyData: PropertyInput = req.body;
@@ -152,6 +219,37 @@ export class PropertyController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/v1/properties/{id}:
+   *   put:
+   *     summary: Update a property
+   *     tags: [Properties]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/PropertyInput'
+   *     responses:
+   *       200:
+   *         description: Property updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Property'
+   *       404:
+   *         description: Property not found
+   *       400:
+   *         description: Invalid input
+   */
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -170,11 +268,30 @@ export class PropertyController {
     }
   }
 
+  /**
+   * @swagger
+   * /api/v1/properties/{id}:
+   *   delete:
+   *     summary: Delete a property
+   *     tags: [Properties]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     responses:
+   *       204:
+   *         description: Property deleted successfully
+   *       404:
+   *         description: Property not found
+   */
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
       await this.deletePropertyUseCase.execute(id);
-      ResponseUtils.success(res, { message: 'Property deleted successfully' });
+      res.status(204).send();
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to delete property');
     }
