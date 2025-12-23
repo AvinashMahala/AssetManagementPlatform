@@ -18,6 +18,5 @@ export interface IRentTransactionService {
   markTransactionAsPaid(id: string, paidDate: Date, paymentMethod?: string, transactionId?: string): Promise<boolean>;
   recordPayment(transactionId: string, amountPaid: number, paymentMethod: string, paymentDate: Date, paymentReference?: string): Promise<RentTransaction | null>;
   getLastMeterReadings(unitId: string): Promise<any[]>;
-  generateMonthlyTransactions(propertyId?: string, month?: number, year?: number): Promise<RentTransaction[]>;
-  generateReceipt(transactionId: string): Promise<string>;
+  generateMonthlyTransactions(leaseId: string, startDate: Date, endDate: Date): Promise<RentTransaction[]>;
 }

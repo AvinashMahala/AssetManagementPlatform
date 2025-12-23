@@ -6,6 +6,7 @@ import { IUnitRepository } from '@/features/properties/unit/core/interfaces/IUni
 import { IUserRepository } from '@/features/auth/user/core/IUserRepository';
 import { ILeaseRepository } from '@/features/leases/core/interfaces/ILeaseRepository';
 import { IRentTransactionRepository } from '@/features/finance/rent-transaction/core/IRentTransactionRepository';
+import { IRentPaymentRepository } from '@/features/finance/rent-payment/core/IRentPaymentRepository';
 import { RentTransaction, RentTransactionStatus } from '@/features/finance/rent-transaction/core/rent-transaction.types';
 import { PDFGenerator } from '@/shared/utils/pdfGenerator';
 import { ReceiptData } from '@/features/finance/receipt/core/receipt.types';
@@ -75,6 +76,7 @@ export class BulkOperationsService {
   private userRepository: IUserRepository;
   private leaseRepository: ILeaseRepository;
   private rentTransactionRepository: IRentTransactionRepository;
+  private rentPaymentRepository: IRentPaymentRepository;
 
   constructor(
     rentTransactionService: IRentTransactionService,
@@ -84,7 +86,8 @@ export class BulkOperationsService {
     unitRepository: IUnitRepository,
     userRepository: IUserRepository,
     leaseRepository: ILeaseRepository,
-    rentTransactionRepository: IRentTransactionRepository
+    rentTransactionRepository: IRentTransactionRepository,
+    rentPaymentRepository: IRentPaymentRepository
   ) {
     this.rentTransactionService = rentTransactionService;
     this.receiptService = receiptService;
@@ -94,6 +97,7 @@ export class BulkOperationsService {
     this.userRepository = userRepository;
     this.leaseRepository = leaseRepository;
     this.rentTransactionRepository = rentTransactionRepository;
+    this.rentPaymentRepository = rentPaymentRepository;
   }
 
   /**
@@ -148,8 +152,8 @@ export class BulkOperationsService {
           // Generate transaction for this unit
           const transactions = await this.rentTransactionService.generateMonthlyTransactions(
             currentLease.id,
-            input.billingPeriodStart.getTime(),
-            input.billingPeriodEnd.getTime()
+            input.billingPeriodStart,
+            input.billingPeriodEnd
           );
 
           if (transactions && transactions.length > 0) {
@@ -254,8 +258,23 @@ export class BulkOperationsService {
             continue;
           }
 
+          // Find payments for this transaction
+          const payments = await this.rentPaymentRepository.findByTransaction(transactionId);
+          if (payments.length === 0) {
+            results.failed++;
+            results.errors.push(`Transaction ${transactionId}: No payment found`);
+            continue;
+          }
+          
+          // Use the most recent payment
+          const payment = payments[0];
+
           // Generate receipt
-          const receiptResult = await this.rentTransactionService.generateReceipt(transactionId);
+          const receipt = await this.receiptService.generateReceipt({
+            paymentId: payment.id
+          });
+          
+          const receiptResult = receipt.receiptNumber;
 
           // Fetch updated transaction to get receipt details
           const updatedTransaction = await this.rentTransactionService.getTransactionById(transactionId);

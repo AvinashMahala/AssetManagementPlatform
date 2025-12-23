@@ -8,6 +8,7 @@ export interface IRentPaymentRepository extends IBaseRepository<RentPayment, Cre
   findByLease(leaseId: string): Promise<RentPayment[]>;
   findByProperty(propertyId: string): Promise<RentPayment[]>;
   findByTenant(tenantId: string): Promise<RentPayment[]>;
+  findByTransaction(transactionId: string): Promise<RentPayment[]>;
   findPendingPayments(): Promise<RentPayment[]>;
   findOverduePayments(): Promise<RentPayment[]>;
   findPaymentsByDateRange(startDate: Date, endDate: Date): Promise<RentPayment[]>;

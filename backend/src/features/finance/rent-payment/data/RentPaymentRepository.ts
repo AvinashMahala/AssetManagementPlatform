@@ -120,6 +120,13 @@ export class RentPaymentRepository extends BaseRepository<RentPayment, CreateRen
     });
   }
 
+  async findByTransaction(transactionId: string): Promise<RentPayment[]> {
+    return this.findAll({
+      where: { transaction_id: transactionId },
+      orderBy: { created_at: 'DESC' }
+    });
+  }
+
   async findPendingPayments(): Promise<RentPayment[]> {
     return this.findAll({
       where: { status: PaymentStatus.PENDING },

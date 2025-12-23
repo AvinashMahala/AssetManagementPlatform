@@ -212,14 +212,9 @@ export class RentTransactionService {
     return daysLate * lateFeePerDay;
   }
 
-  async generateMonthlyTransactions(propertyId?: string, month?: number, year?: number): Promise<RentTransaction[]> {
+  async generateMonthlyTransactions(leaseId: string, startDate: Date, endDate: Date): Promise<RentTransaction[]> {
     // Placeholder
     return [];
-  }
-
-  async generateReceipt(transactionId: string): Promise<string> {
-    // Placeholder
-    return 'receipt_url';
   }
 
   async getCurrentMonthTransaction(leaseId: string): Promise<RentTransaction | null> {

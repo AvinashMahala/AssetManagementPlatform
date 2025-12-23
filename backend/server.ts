@@ -198,7 +198,8 @@ const startServer = async () => {
     unitRepository,
     userRepository,
     leaseRepository,
-    rentTransactionRepository
+    rentTransactionRepository,
+    rentPaymentRepository
   );
 
   // Initialize file storage service
