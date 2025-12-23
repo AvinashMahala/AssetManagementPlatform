@@ -7,6 +7,7 @@ import { UserRepository } from '@/features/auth/user/data/UserRepository';
 import { UserService } from '@/features/auth/user/core/UserService';
 import { validateZodRequest } from '@/shared/middleware/validationMiddleware';
 import { registerSchema, loginSchema, refreshTokenSchema } from './api/auth.validation';
+import { authLimiter } from '@/shared/middleware/rateLimitMiddleware';
 
 export class AuthModule {
   public router: Router;
@@ -29,8 +30,8 @@ export class AuthModule {
   private setupRoutes() {
     // Base route: /api/auth
 
-    this.router.post('/register', validateZodRequest(registerSchema), this.controller.register.bind(this.controller));
-    this.router.post('/login', validateZodRequest(loginSchema), this.controller.login.bind(this.controller));
+    this.router.post('/register', authLimiter, validateZodRequest(registerSchema), this.controller.register.bind(this.controller));
+    this.router.post('/login', authLimiter, validateZodRequest(loginSchema), this.controller.login.bind(this.controller));
     this.router.post('/refresh-token', validateZodRequest(refreshTokenSchema), this.controller.refreshToken.bind(this.controller));
   }
 }

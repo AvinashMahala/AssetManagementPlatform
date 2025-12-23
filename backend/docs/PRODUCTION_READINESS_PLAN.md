@@ -33,6 +33,12 @@ This document outlines the roadmap for moving the Asset Management Platform back
 
 **Goal**: Make the API consumable and self-documenting for frontend developers.
 
+### 2.0 Development Standards
+- [x] **Task**: Document API standards.
+- [x] **Details**:
+    - Created `backend/docs/API_STANDARDS.md`.
+    - Documented Configuration, Validation, and Rate Limiting patterns.
+
 ### 2.1 API Documentation (Swagger/OpenAPI)
 - [x] **Task**: Generate accurate API documentation.
 - [x] **Details**:

@@ -34,6 +34,10 @@ const envSchema = z.object({
   EMAIL_PROVIDER: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
 
+  // Rate Limiting
+  RATE_LIMIT_WINDOW_MS: z.string().default('900000').transform(Number), // 15 minutes default
+  RATE_LIMIT_MAX: z.string().default('100').transform(Number), // 100 requests default
+
   // Auth
   JWT_SECRET: z.string().default('your-secret-key'),
   JWT_REFRESH_SECRET: z.string().default('your-refresh-secret-key'),
@@ -71,6 +75,10 @@ export const config = {
   email: {
     provider: _env.data.EMAIL_PROVIDER,
     resendApiKey: _env.data.RESEND_API_KEY,
+  },
+  rateLimit: {
+    windowMs: _env.data.RATE_LIMIT_WINDOW_MS,
+    max: _env.data.RATE_LIMIT_MAX,
   },
   auth: {
     jwtSecret: _env.data.JWT_SECRET,

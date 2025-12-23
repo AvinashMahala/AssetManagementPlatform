@@ -2,11 +2,11 @@ import { config } from '@/shared/config/env';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import { Pool } from 'pg';
 import { logger } from '@/shared/utils/logger.js';
 import { requestLoggingMiddleware, requestIdMiddleware } from '@/shared/middleware/loggingMiddleware.js';
 import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from '@/shared/middleware/errorHandler.js';
+import { globalLimiter } from '@/shared/middleware/rateLimitMiddleware';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './src/shared/config/swagger/index.js';
 import { swaggerUiOptions } from './src/shared/config/swagger/index.js';
@@ -228,15 +228,8 @@ const startServer = async () => {
 
   const app = express();
 
-  // Rate limiting
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    message: 'Too many requests from this IP, please try again after 15 minutes',
-  });
-  app.use(limiter);
+  // Global Rate limiting
+  app.use(globalLimiter);
 
   // Security and CORS middleware
   app.use(helmet({
