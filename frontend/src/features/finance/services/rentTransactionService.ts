@@ -7,7 +7,7 @@ class RentTransactionService {
    * Get all rent transactions
    */
   async getAll(propertyId?: string, unitId?: string, status?: string): Promise<ApiResponse<RentTransaction[]>> {
-    let url = '/api/rent-transactions';
+    let url = '/api/v1/rent-transactions';
     const params = new URLSearchParams();
     if (propertyId) params.append('propertyId', propertyId);
     if (unitId) params.append('unitId', unitId);
@@ -43,7 +43,7 @@ class RentTransactionService {
    * Create new rent transaction (draft)
    */
   async create(data: RentTransactionInput): Promise<ApiResponse<RentTransaction>> {
-    return apiClient.post<RentTransaction>('/api/rent-transactions', data);
+    return apiClient.post<RentTransaction>('/api/v1/rent-transactions', data);
   }
 
   /**
@@ -64,14 +64,14 @@ class RentTransactionService {
    * Generate invoice for transaction
    */
   async generateInvoice(request: InvoiceGenerationRequest): Promise<ApiResponse<{ pdfUrl: string; invoiceNumber: string }>> {
-    return apiClient.post<{ pdfUrl: string; invoiceNumber: string }>('/api/rent-transactions/generate-invoice', request);
+    return apiClient.post<{ pdfUrl: string; invoiceNumber: string }>('/api/v1/rent-transactions/generate-invoice', request);
   }
 
   /**
    * Generate receipt for transaction
    */
   async generateReceipt(request: TransactionReceiptGenerationRequest): Promise<ApiResponse<{ pdfUrl: string; receiptNumber: string }>> {
-    return apiClient.post<{ pdfUrl: string; receiptNumber: string }>('/api/rent-transactions/generate-receipt', request);
+    return apiClient.post<{ pdfUrl: string; receiptNumber: string }>('/api/v1/rent-transactions/generate-receipt', request);
   }
 
   /**

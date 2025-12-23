@@ -4,7 +4,7 @@ import type { TemplatePreviewRequest } from '../types';
 export const templateService = {
   // Template CRUD
   async getAllTemplates() {
-    const response = await apiClient.get('/api/templates');
+    const response = await apiClient.get('/api/v1/templates');
     return response.data;
   },
 
@@ -24,7 +24,7 @@ export const templateService = {
   },
 
   async getAvailablePlaceholders() {
-    const response = await apiClient.get('/api/templates/placeholders/available');
+    const response = await apiClient.get('/api/v1/templates/placeholders/available');
     return response.data;
   },
 

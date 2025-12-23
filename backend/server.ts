@@ -294,24 +294,33 @@ const startServer = async () => {
     }
   });
 
-  // Mount routes
-  app.use('/api/properties', PropertyModule.create(mainPool, userService, { fileController: propertyFileController, receiptTemplateController: propertyReceiptTemplateController }));
-  app.use('/api/auth', new AuthModule(mainPool).router);
-  app.use('/api/users', new UserModule(mainPool).router);
-  app.use('/api/tenants', TenantModule.create(mainPool, userService));
-  app.use('/api/units', UnitModule.create(mainPool, userService));
-  app.use('/api/unit-tenants', UnitTenantModule.create(mainPool, userService));
-  app.use('/api/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
-  app.use('/api/rent-payments', new RentPaymentModule(mainPool, EventBus.getInstance()).router);
-  app.use('/api/rent-transactions', new RentTransactionModule(mainPool, EventBus.getInstance()).router);
-  app.use('/api/meters', MeterModule.create(mainPool, userService));
-  app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
-  app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
-  app.use('/api', createTemplateRoutes(mainPool, userService));
-  app.use('/api', createUnitUtilityRoutes(unitUtilityController, userService));
-  app.use('/api/expenses', new ExpenseModule(mainPool).getRoutes(authMiddleware(userService)));
-  app.use('/api/files', fileStorageModule.router);
-  app.use('/api/bulk', createBulkOperationsRoutes(bulkOperationsController, userService));
+  // API Versioning - v1 Router
+  const v1Router = express.Router();
+
+  // Mount routes to v1 router
+  v1Router.use('/properties', PropertyModule.create(mainPool, userService, { fileController: propertyFileController, receiptTemplateController: propertyReceiptTemplateController }));
+  v1Router.use('/auth', new AuthModule(mainPool).router);
+  v1Router.use('/users', new UserModule(mainPool).router);
+  v1Router.use('/tenants', TenantModule.create(mainPool, userService));
+  v1Router.use('/units', UnitModule.create(mainPool, userService));
+  v1Router.use('/unit-tenants', UnitTenantModule.create(mainPool, userService));
+  v1Router.use('/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
+  v1Router.use('/rent-payments', new RentPaymentModule(mainPool, EventBus.getInstance()).router);
+  v1Router.use('/rent-transactions', new RentTransactionModule(mainPool, EventBus.getInstance()).router);
+  v1Router.use('/meters', MeterModule.create(mainPool, userService));
+  v1Router.use('/receipts', createReceiptRoutes(receiptController, userService));
+  v1Router.use('/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
+  v1Router.use('/', createTemplateRoutes(mainPool, userService));
+  v1Router.use('/', createUnitUtilityRoutes(unitUtilityController, userService));
+  v1Router.use('/expenses', new ExpenseModule(mainPool).getRoutes(authMiddleware(userService)));
+  v1Router.use('/files', fileStorageModule.router);
+  v1Router.use('/bulk', createBulkOperationsRoutes(bulkOperationsController, userService));
+
+  // Mount v1 router
+  app.use('/api/v1', v1Router);
+  
+  // Legacy support: Mount v1 router at /api as well to maintain backward compatibility during migration
+  app.use('/api', v1Router);
 
   // Error handling middleware (must be last)
   app.use(notFoundHandler);

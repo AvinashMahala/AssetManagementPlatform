@@ -655,6 +655,13 @@ CREATE TABLE rent_payments (
 - **Prettier**: Automatic formatting
 - **Conventional Commits**: Semantic commit messages
 
+### API Versioning
+
+The project follows a **URI Path Versioning** strategy (e.g., `/api/v1/properties`).
+- All new features should be implemented under the current version.
+- Breaking changes require a new version.
+- See [API Versioning Strategy](./docs/API_VERSIONING_STRATEGY.md) for full details.
+
 ## 🚀 Deployment
 
 ### Docker
@@ -709,7 +716,7 @@ CMD if [ -f yarn.lock ]; then yarn start; else npm start; fi
 - [ ] Audit logging
 - [ ] GraphQL API support
 - [ ] Real-time notifications (WebSocket)
-- [ ] API versioning strategy
+- [x] API versioning strategy (See [Strategy Doc](./docs/API_VERSIONING_STRATEGY.md))
 - [ ] Performance monitoring
 - [ ] Database migrations
 - [ ] Multi-factor authentication (MFA)

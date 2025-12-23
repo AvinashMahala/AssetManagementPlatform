@@ -147,7 +147,7 @@ class FileService {
    * Get storage statistics
    */
   async getStorageStats(): Promise<ApiResponse<FileStorageStats>> {
-    return apiClient.get<FileStorageStats>('/api/files/stats');
+    return apiClient.get<FileStorageStats>('/api/v1/files/stats');
   }
 
   /**
@@ -176,7 +176,7 @@ class FileService {
     if (filters?.offset) params.append('offset', filters.offset.toString());
 
     const queryString = params.toString();
-    const url = queryString ? `/api/files?${queryString}` : '/api/files';
+    const url = queryString ? `/api/files?${queryString}` : '/api/v1/files';
 
     return apiClient.get<FileListResponse>(url);
   }

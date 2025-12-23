@@ -47,7 +47,7 @@ export default function TemplateImportExport({ templateId, templateName, onImpor
       const text = await file.text();
       const data = JSON.parse(text);
 
-      const response = await fetch('/api/templates/import', {
+      const response = await fetch('/api/v1/templates/import', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
