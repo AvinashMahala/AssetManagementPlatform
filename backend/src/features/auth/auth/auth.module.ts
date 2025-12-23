@@ -5,6 +5,8 @@ import { AuthService } from './core/AuthService';
 import { AuthController } from './api/AuthController';
 import { UserRepository } from '@/features/auth/user/data/UserRepository';
 import { UserService } from '@/features/auth/user/core/UserService';
+import { validateZodRequest } from '@/shared/middleware/validationMiddleware';
+import { registerSchema, loginSchema, refreshTokenSchema } from './api/auth.validation';
 
 export class AuthModule {
   public router: Router;
@@ -27,8 +29,8 @@ export class AuthModule {
   private setupRoutes() {
     // Base route: /api/auth
 
-    this.router.post('/register', this.controller.register.bind(this.controller));
-    this.router.post('/login', this.controller.login.bind(this.controller));
-    this.router.post('/refresh-token', this.controller.refreshToken.bind(this.controller));
+    this.router.post('/register', validateZodRequest(registerSchema), this.controller.register.bind(this.controller));
+    this.router.post('/login', validateZodRequest(loginSchema), this.controller.login.bind(this.controller));
+    this.router.post('/refresh-token', validateZodRequest(refreshTokenSchema), this.controller.refreshToken.bind(this.controller));
   }
 }

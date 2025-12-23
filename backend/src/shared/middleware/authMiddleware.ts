@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { IUserService } from '@/features/auth/user/core/IUserService';
+import { config } from '@/shared/config/env';
 
 export interface AuthenticatedRequest extends Request {
   user?: any;
@@ -18,7 +19,7 @@ export const authMiddleware = (userService: IUserService) => {
       }
 
       const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+      const jwtSecret = config.auth.jwtSecret;
 
       const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; role: string };
 
@@ -84,14 +85,14 @@ export const adminMiddleware = (req: AuthenticatedRequest, res: Response, next: 
  */
 export const conditionalAuth = (userService: IUserService) => {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const authDisabled = process.env.DISABLE_AUTH === 'true';
+    const authDisabled = config.auth.disableAuth;
     
     if (authDisabled) {
       // Bypass authentication - use dev user from environment
       req.user = {
-        id: process.env.DEV_USER_ID || 'f40a33a6-8f4c-4a1d-bd26-857920024739',
-        email: process.env.DEV_USER_EMAIL || 'dev@example.com',
-        role: (process.env.DEV_USER_ROLE as 'admin' | 'user') || 'admin'
+        id: config.devUser.id || 'f40a33a6-8f4c-4a1d-bd26-857920024739',
+        email: config.devUser.email || 'dev@example.com',
+        role: (config.devUser.role as 'admin' | 'user') || 'admin'
       };
       // Try to lookup the user in DB to warn if missing
       try {
@@ -117,7 +118,7 @@ export const conditionalAuth = (userService: IUserService) => {
       }
 
       const token = authHeader.substring(7);
-      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+      const jwtSecret = config.auth.jwtSecret;
 
       const decoded = jwt.verify(token, jwtSecret) as { userId: string; email: string; role: string };
 
@@ -168,13 +169,13 @@ export const conditionalAuth = (userService: IUserService) => {
  * Always bypasses in development when DISABLE_AUTH=true
  */
 export const devAuthBypass = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const authDisabled = process.env.DISABLE_AUTH === 'true';
+  const authDisabled = config.auth.disableAuth;
   
   if (authDisabled) {
     req.user = {
-      id: process.env.DEV_USER_ID || 'f40a33a6-8f4c-4a1d-bd26-857920024739',
-      email: process.env.DEV_USER_EMAIL || 'dev@example.com',
-      role: (process.env.DEV_USER_ROLE as 'admin' | 'user') || 'admin'
+      id: config.devUser.id || 'f40a33a6-8f4c-4a1d-bd26-857920024739',
+      email: config.devUser.email || 'dev@example.com',
+      role: (config.devUser.role as 'admin' | 'user') || 'admin'
     };
     return next();
   }

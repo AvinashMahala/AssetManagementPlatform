@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import { TemplateCustomizationService } from '../core/services/TemplateCustomizationService';
 import { HTTP_STATUS } from '@/shared/constants/http';
 import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
+import { config } from '@/shared/config/env';
 
 /**
  * @swagger
@@ -258,7 +259,7 @@ export class TemplateController {
 
   importTemplate = async (req: any, res: Response) => {
     try {
-      const newTemplateId = await this.service.importTemplate(req.body, req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID);
+      const newTemplateId = await this.service.importTemplate(req.body, req.user?.id || config.devUser.id || config.system.userId);
       res.status(HTTP_STATUS.CREATED).json({ 
         success: true, 
         data: { id: newTemplateId },

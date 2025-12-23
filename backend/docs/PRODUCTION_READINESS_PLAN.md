@@ -7,24 +7,24 @@ This document outlines the roadmap for moving the Asset Management Platform back
 **Goal**: Ensure the application is stable, secure, and fails fast if configuration is missing.
 
 ### 1.1 Typed Configuration
-- [ ] **Task**: Create a centralized configuration service.
-- [ ] **Details**:
+- [x] **Task**: Create a centralized configuration service.
+- [x] **Details**:
     - Create `src/shared/config/env.ts`.
     - Validate all required environment variables on startup (using `envalid` or manual checks).
     - Export a typed configuration object (e.g., `config.db.host`, `config.jwt.secret`).
     - Replace all direct `process.env` access in the codebase with this config object.
 
 ### 1.2 Input Validation
-- [ ] **Task**: Implement comprehensive request validation.
-- [ ] **Details**:
+- [x] **Task**: Implement comprehensive request validation.
+- [x] **Details**:
     - Adopt a validation library (Zod is recommended for TypeScript inference, or Joi).
     - Create validation schemas for every `POST`, `PUT`, and `PATCH` endpoint.
     - Location: `src/features/<feature>/api/<feature>.validation.ts`.
     - Apply validation middleware to all routes in `*.routes.ts` files.
 
 ### 1.3 Security Hardening
-- [ ] **Task**: Implement standard security protections.
-- [ ] **Details**:
+- [x] **Task**: Implement standard security protections.
+- [x] **Details**:
     - **Rate Limiting**: Install and configure `express-rate-limit` to prevent abuse.
     - **Helmet**: Verify `helmet` middleware configuration for security headers.
     - **Sanitization**: Ensure input sanitization to prevent XSS/Injection (handled partly by validation).
@@ -34,8 +34,8 @@ This document outlines the roadmap for moving the Asset Management Platform back
 **Goal**: Make the API consumable and self-documenting for frontend developers.
 
 ### 2.1 API Documentation (Swagger/OpenAPI)
-- [ ] **Task**: Generate accurate API documentation.
-- [ ] **Details**:
+- [x] **Task**: Generate accurate API documentation.
+- [x] **Details**:
     - Add `swagger-jsdoc` annotations (JSDoc comments) to all Controllers.
     - Define reusable components (Schemas) in Swagger configuration.
     - Ensure the `/api-docs` endpoint renders the UI correctly.

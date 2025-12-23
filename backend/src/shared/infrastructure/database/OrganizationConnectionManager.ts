@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { config } from '@/shared/config/env';
 
 /**
  * Manages database connections for multiple organizations.
@@ -12,11 +13,11 @@ export class OrganizationConnectionManager {
   private constructor() {
     // Initialize master pool (used for 'default' connection and looking up orgs)
     this.masterPool = new Pool({
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME, // Master/Default DB
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
+      host: config.db.host,
+      port: config.db.port,
+      database: config.db.name, // Master/Default DB
+      user: config.db.user,
+      password: config.db.password,
     });
   }
 
@@ -67,11 +68,11 @@ export class OrganizationConnectionManager {
       console.log(`[ConnectionManager] Initializing pool for organization: ${orgId} (DB: ${dbName})`);
 
       const newPool = new Pool({
-        host: process.env.DB_HOST, // Usually same host, different DB
-        port: parseInt(process.env.DB_PORT || '5432'),
+        host: config.db.host, // Usually same host, different DB
+        port: config.db.port,
         database: dbName,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
+        user: config.db.user,
+        password: config.db.password,
         max: 10, // Smaller pool size per org to save connections
         idleTimeoutMillis: 30000,
       });

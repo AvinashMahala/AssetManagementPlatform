@@ -1,20 +1,8 @@
-import dotenv from 'dotenv';
-import path from 'path';
-import fs from 'fs';
-
-// Try to load .env from current directory first (for Docker/local), then parent (original setup)
-const localEnv = path.resolve(process.cwd(), '.env');
-const parentEnv = path.resolve(process.cwd(), '../.env');
-
-if (fs.existsSync(localEnv)) {
-  dotenv.config({ path: localEnv });
-} else {
-  dotenv.config({ path: parentEnv });
-}
-
+import { config } from '@/shared/config/env';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { Pool } from 'pg';
 import { logger } from '@/shared/utils/logger.js';
 import { requestLoggingMiddleware, requestIdMiddleware } from '@/shared/middleware/loggingMiddleware.js';
@@ -99,33 +87,33 @@ import { RentTransactionModule } from '@/features/finance/rent-transaction/rent-
 setupProcessErrorHandlers();
 
 logger.info('🚀 Starting Asset Management Platform Backend...', {
-  nodeEnv: process.env.NODE_ENV,
-  emailProvider: process.env.EMAIL_PROVIDER,
-  hasResendApiKey: !!process.env.RESEND_API_KEY,
-  dbConfig: process.env.MAIN_DATABASE_URL ? 'url' : 'env_vars',
+  nodeEnv: config.env,
+  emailProvider: config.email.provider,
+  hasResendApiKey: !!config.email.resendApiKey,
+  dbConfig: config.db.url ? 'url' : 'env_vars',
 });
 
 const startServer = async () => {
-  const mainDbConfig = process.env.MAIN_DATABASE_URL
-    ? { connectionString: process.env.MAIN_DATABASE_URL }
+  const mainDbConfig = config.db.url
+    ? { connectionString: config.db.url }
     : {
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT || '5432'),
-        database: process.env.DB_NAME,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
+        host: config.db.host,
+        port: config.db.port,
+        database: config.db.name,
+        user: config.db.user,
+        password: config.db.password,
       };
 
   const mainPool = createMultiTenantPool();
 
-  const filesDbConfig = process.env.FILES_DATABASE_URL
-    ? { connectionString: process.env.FILES_DATABASE_URL }
+  const filesDbConfig = config.db.filesUrl
+    ? { connectionString: config.db.filesUrl }
     : {
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT || '5432'),
-        database: process.env.DB_FILES_NAME || process.env.DB_NAME, // Fallback to main DB if not specified
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
+        host: config.db.host,
+        port: config.db.port,
+        database: config.db.filesName || config.db.name, // Fallback to main DB if not specified
+        user: config.db.user,
+        password: config.db.password,
       };
 
   const filesPool = new Pool(filesDbConfig);
@@ -240,6 +228,16 @@ const startServer = async () => {
 
   const app = express();
 
+  // Rate limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+  });
+  app.use(limiter);
+
   // Security and CORS middleware
   app.use(helmet({
     contentSecurityPolicy: false, // Disable CSP for Swagger UI to work
@@ -325,11 +323,11 @@ const startServer = async () => {
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  const PORT = process.env.PORT || 5002;
+  const PORT = config.port;
   app.listen(PORT, () => {
     logger.info(`✅ Server is running on port ${PORT}`, {
       port: PORT,
-      environment: process.env.NODE_ENV,
+      environment: config.env,
       swaggerUrl: `http://localhost:${PORT}/api-docs`,
     });
   });

@@ -2,6 +2,8 @@ import { Router } from 'express';
 import multer from 'multer';
 import { PropertyController } from './PropertyController.js';
 import { conditionalAuth } from '@/shared/middleware/authMiddleware.js';
+import { validateZodRequest } from '@/shared/middleware/validationMiddleware';
+import { createPropertySchema, updatePropertySchema, updatePropertyStatusSchema, setPropertyTemplateSchema } from './property.validation';
 
 export const createPropertyRoutes = (
   controller: PropertyController,
@@ -39,13 +41,13 @@ export const createPropertyRoutes = (
 
   router.get('/', auth, controller.getAll.bind(controller));
   router.get('/:id', auth, controller.getById.bind(controller));
-  router.post('/', auth, controller.create.bind(controller));
-  router.put('/:id', auth, controller.update.bind(controller));
+  router.post('/', auth, validateZodRequest(createPropertySchema), controller.create.bind(controller));
+  router.put('/:id', auth, validateZodRequest(updatePropertySchema), controller.update.bind(controller));
   router.delete('/:id', auth, controller.delete.bind(controller));
 
-  router.patch('/:id/status', auth, controller.updateStatus.bind(controller));
+  router.patch('/:id/status', auth, validateZodRequest(updatePropertyStatusSchema), controller.updateStatus.bind(controller));
   router.get('/:id/template', auth, controller.getPropertyTemplate.bind(controller));
-  router.put('/:id/template', auth, controller.setPropertyTemplate.bind(controller));
+  router.put('/:id/template', auth, validateZodRequest(setPropertyTemplateSchema), controller.setPropertyTemplate.bind(controller));
   router.delete('/:id/template', auth, controller.removePropertyTemplate.bind(controller));
 
   if (fileController) {

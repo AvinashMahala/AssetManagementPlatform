@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { BulkOperationsService } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
 import { BulkRentCollectionInput, BulkPaymentInput, BulkReceiptGenerationInput, BulkCommunicationInput } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
+import { config } from '@/shared/config/env';
 
 /**
  * @swagger
@@ -46,7 +47,7 @@ export class BulkOperationsController {
   async bulkRentCollection(req: Request, res: Response): Promise<void> {
     try {
       const input: BulkRentCollectionInput = req.body;
-      const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      const userId = req.user?.id || config.devUser.id || config.system.userId;
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
@@ -104,10 +105,10 @@ export class BulkOperationsController {
    *       500:
    *         description: Internal server error
    */
-  async bulkPaymentRecording(req: Request, res: Response): Promise<void> {
+  async bulkPaymentProcessing(req: Request, res: Response): Promise<void> {
     try {
       const input: BulkPaymentInput = req.body;
-      const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      const userId = req.user?.id || config.devUser.id || config.system.userId;
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
@@ -160,7 +161,7 @@ export class BulkOperationsController {
   async bulkReceiptGeneration(req: Request, res: Response): Promise<void> {
     try {
       const input: BulkReceiptGenerationInput = req.body;
-      const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      const userId = req.user?.id || config.devUser.id || config.system.userId;
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
@@ -215,10 +216,10 @@ export class BulkOperationsController {
    *       500:
    *         description: Internal server error
    */
-  async bulkTenantCommunication(req: Request, res: Response): Promise<void> {
+  async bulkCommunication(req: Request, res: Response): Promise<void> {
     try {
       const input: BulkCommunicationInput = req.body;
-      const userId = req.user?.id || process.env.DEV_USER_ID || process.env.SYSTEM_USER_ID;
+      const userId = req.user?.id || config.devUser.id || config.system.userId;
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized' });
         return;

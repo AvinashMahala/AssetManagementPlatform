@@ -7,6 +7,7 @@ import { ValidationUtils } from '@/shared/utils/validation';
 import { ERROR_MESSAGES } from '@/shared/constants/validation';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { config } from '@/shared/config/env';
 
 export class AuthService {
   private jwtSecret: string;
@@ -18,10 +19,10 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly userRepository: IUserRepository
   ) {
-    this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
-    this.jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key';
-    this.accessTokenExpiry = process.env.JWT_ACCESS_TOKEN_EXPIRY || '15m';
-    this.refreshTokenExpiry = process.env.JWT_REFRESH_TOKEN_EXPIRY || '7d';
+    this.jwtSecret = config.auth.jwtSecret;
+    this.jwtRefreshSecret = config.auth.jwtRefreshSecret;
+    this.accessTokenExpiry = config.auth.accessTokenExpiry;
+    this.refreshTokenExpiry = config.auth.refreshTokenExpiry;
   }
 
   async register(data: RegisterParams): Promise<AuthResponse> {

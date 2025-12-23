@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { body, param, validationResult } from 'express-validator';
+import { ZodSchema, ZodError, ZodIssue } from 'zod';
+import { HTTP_STATUS } from '@/shared/constants/http';
 
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
@@ -247,4 +249,28 @@ export const validateRequest = {
       .withMessage('sendEmail must be a boolean'),
     handleValidationErrors
   ]
+};
+export const validateZodRequest = (schema: ZodSchema) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: 'Validation failed',
+          errors: (error as ZodError<any>).errors.map((e: ZodIssue) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        });
+      }
+      next(error);
+    }
+  };
 };
