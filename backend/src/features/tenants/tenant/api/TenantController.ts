@@ -19,7 +19,7 @@ export class TenantController {
 
   /**
    * @swagger
-   * /api/v1/tenants:
+   * /tenants:
    *   post:
    *     summary: Create a new tenant
    *     tags: [Tenants]
@@ -49,7 +49,7 @@ export class TenantController {
 
   /**
    * @swagger
-   * /api/v1/tenants/{id}:
+   * /tenants/{id}:
    *   put:
    *     summary: Update a tenant
    *     tags: [Tenants]
@@ -86,7 +86,7 @@ export class TenantController {
 
   /**
    * @swagger
-   * /api/v1/tenants/{id}:
+   * /tenants/{id}:
    *   get:
    *     summary: Get tenant by ID
    *     tags: [Tenants]
@@ -116,7 +116,7 @@ export class TenantController {
 
   /**
    * @swagger
-   * /api/v1/tenants:
+   * /tenants:
    *   get:
    *     summary: List all tenants
    *     tags: [Tenants]
@@ -144,7 +144,7 @@ export class TenantController {
 
   /**
    * @swagger
-   * /api/v1/tenants/{id}:
+   * /tenants/{id}:
    *   delete:
    *     summary: Delete a tenant
    *     tags: [Tenants]

@@ -12,16 +12,16 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/v1/auth/register:
+   * /auth/register:
    *   post:
    *     summary: Register a new user
-   *     tags: [Auth]
+   *     tags: [Authentication]
    *     requestBody:
    *       required: true
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/RegisterRequest'
+   *             $ref: '#/components/schemas/UserRegistrationInput'
    *     responses:
    *       201:
    *         description: User registered successfully
@@ -43,16 +43,16 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/v1/auth/login:
+   * /auth/login:
    *   post:
    *     summary: Login user
-   *     tags: [Auth]
+   *     tags: [Authentication]
    *     requestBody:
    *       required: true
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/LoginRequest'
+   *             $ref: '#/components/schemas/UserCredentials'
    *     responses:
    *       200:
    *         description: Login successful
@@ -78,10 +78,10 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/v1/auth/refresh-token:
+   * /auth/refresh-token:
    *   post:
    *     summary: Refresh access token
-   *     tags: [Auth]
+   *     tags: [Authentication]
    *     requestBody:
    *       required: true
    *       content:

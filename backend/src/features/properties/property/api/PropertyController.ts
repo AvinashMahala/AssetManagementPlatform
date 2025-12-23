@@ -22,7 +22,7 @@ export class PropertyController {
 
   /**
    * @swagger
-   * /api/v1/properties:
+   * /properties:
    *   get:
    *     summary: Get all properties
    *     tags: [Properties]
@@ -54,7 +54,7 @@ export class PropertyController {
 
   /**
    * @swagger
-   * /api/v1/properties/{id}:
+   * /properties/{id}:
    *   get:
    *     summary: Get property by ID
    *     tags: [Properties]
@@ -87,7 +87,7 @@ export class PropertyController {
 
   /**
    * @swagger
-   * /api/v1/properties:
+   * /properties:
    *   post:
    *     summary: Create a new property
    *     tags: [Properties]
@@ -221,7 +221,7 @@ export class PropertyController {
 
   /**
    * @swagger
-   * /api/v1/properties/{id}:
+   * /properties/{id}:
    *   put:
    *     summary: Update a property
    *     tags: [Properties]
@@ -270,7 +270,7 @@ export class PropertyController {
 
   /**
    * @swagger
-   * /api/v1/properties/{id}:
+   * /properties/{id}:
    *   delete:
    *     summary: Delete a property
    *     tags: [Properties]

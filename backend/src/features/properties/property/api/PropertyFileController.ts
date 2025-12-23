@@ -5,6 +5,12 @@ import { PropertyFileService } from '../core/services/PropertyFileService';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 
+/**
+ * @swagger
+ * tags:
+ *   name: PropertyFiles
+ *   description: Property file management endpoints
+ */
 export class PropertyFileController {
   constructor(
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,
@@ -12,6 +18,49 @@ export class PropertyFileController {
     private propertyFileService: PropertyFileService
   ) {}
 
+  /**
+   * @swagger
+   * /properties/{propertyId}/files:
+   *   post:
+   *     summary: Upload a file for a property
+   *     tags: [PropertyFiles]
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - file
+   *               - fileType
+   *             properties:
+   *               file:
+   *                 type: string
+   *                 format: binary
+   *               fileType:
+   *                 type: string
+   *                 enum: [photo, document]
+   *               description:
+   *                 type: string
+   *               customName:
+   *                 type: string
+   *     responses:
+   *       201:
+   *         description: File uploaded successfully
+   *       400:
+   *         description: Invalid input or missing file
+   *       404:
+   *         description: Property not found
+   *       500:
+   *         description: Internal server error
+   */
   async uploadFile(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -64,6 +113,33 @@ export class PropertyFileController {
     }
   }
 
+  /**
+   * @swagger
+   * /properties/{propertyId}/files:
+   *   get:
+   *     summary: Get files for a property
+   *     tags: [PropertyFiles]
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *       - in: query
+   *         name: type
+   *         schema:
+   *           type: string
+   *           enum: [photo, document]
+   *         description: Filter by file type
+   *     responses:
+   *       200:
+   *         description: List of property files
+   *       404:
+   *         description: Property not found
+   *       500:
+   *         description: Internal server error
+   */
   async getPropertyFiles(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -88,6 +164,33 @@ export class PropertyFileController {
     }
   }
 
+  /**
+   * @swagger
+   * /properties/{propertyId}/files/{fileId}/download:
+   *   get:
+   *     summary: Download a property file
+   *     tags: [PropertyFiles]
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *       - in: path
+   *         name: fileId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: File ID
+   *     responses:
+   *       200:
+   *         description: File content
+   *       404:
+   *         description: File or Property not found
+   *       500:
+   *         description: Internal server error
+   */
   async downloadFile(req: Request, res: Response) {
     try {
       const { propertyId, fileId } = req.params;
@@ -115,6 +218,38 @@ export class PropertyFileController {
     }
   }
 
+  /**
+   * @swagger
+   * /properties/files/{fileId}:
+   *   put:
+   *     summary: Update a property file
+   *     tags: [PropertyFiles]
+   *     parameters:
+   *       - in: path
+   *         name: fileId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: File ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               fileName:
+   *                 type: string
+   *               description:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: File updated successfully
+   *       404:
+   *         description: File not found
+   *       500:
+   *         description: Internal server error
+   */
   async updateFile(req: Request, res: Response) {
     try {
       const { fileId } = req.params;
@@ -131,6 +266,33 @@ export class PropertyFileController {
     }
   }
 
+  /**
+   * @swagger
+   * /properties/{propertyId}/files/{fileId}:
+   *   delete:
+   *     summary: Delete a property file
+   *     tags: [PropertyFiles]
+   *     parameters:
+   *       - in: path
+   *         name: propertyId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Property ID
+   *       - in: path
+   *         name: fileId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: File ID
+   *     responses:
+   *       200:
+   *         description: File deleted successfully
+   *       404:
+   *         description: File or Property not found
+   *       500:
+   *         description: Internal server error
+   */
   async deleteFile(req: Request, res: Response) {
     try {
       const { propertyId, fileId } = req.params;
