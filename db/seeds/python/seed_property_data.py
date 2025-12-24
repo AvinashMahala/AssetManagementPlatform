@@ -25,7 +25,7 @@ BLUE = '\033[94m'
 YELLOW = '\033[93m'
 RESET = '\033[0m'
 
-SEED_DATA_FILE = 'scripts/seed_data_templates.json'
+SEED_DATA_FILE = 'db/seeds/data/seed_data_templates.json'
 
 # UUID mappings to maintain foreign key relationships
 tenant_uuids = {}
@@ -164,18 +164,36 @@ def seed_properties(conn, properties_data):
 
             cursor.execute("""
                 INSERT INTO properties (
-                    id, name, address, city, state, zip_code, country,
-                    property_type, total_units, total_floors, built_year,
-                    parking_spaces, amenities, area, description, created_at, updated_at
+                    id, name, address_street, address_city, address_state, address_pincode, address_country, address_landmark,
+                    property_type, total_floors, year_built, parking_spaces, amenities, area, description,
+                    owner_id, owner_name, owner_mobile_numbers, owner_email_ids, owner_website, co_owners, template_id,
+                    created_at, updated_at
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW()
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW()
                 )
             """, (
-                property_id, prop['name'], prop['address'], prop.get('city', 'Unknown'),
-                prop.get('state', 'Unknown'), prop.get('zip_code'), prop.get('country', 'USA'),
-                prop.get('property_type', 'residential'), prop.get('total_units', 1),
-                prop.get('total_floors', 1), prop.get('built_year'), prop.get('parking_spaces'),
-                json.dumps(prop.get('amenities', [])), prop.get('area'), prop.get('description')
+                property_id,
+                prop.get('name'),
+                prop.get('address'),
+                prop.get('city', 'Unknown'),
+                prop.get('state', 'Unknown'),
+                prop.get('zip_code') or prop.get('pincode') or prop.get('address_pincode') or None,
+                prop.get('country', 'India'),
+                prop.get('landmark') or prop.get('address_landmark') or None,
+                prop.get('property_type', 'apartment'),
+                prop.get('total_floors') or prop.get('total_units') or None,
+                prop.get('built_year') or prop.get('year_built') or None,
+                prop.get('parking_spaces'),
+                json.dumps(prop.get('amenities', {})),
+                prop.get('area'),
+                prop.get('description'),
+                prop.get('owner_id'),
+                prop.get('owner_name'),
+                json.dumps(prop.get('owner_mobile_numbers', [])),
+                json.dumps(prop.get('owner_email_ids', [])),
+                prop.get('owner_website'),
+                json.dumps(prop.get('co_owners', [])),
+                prop.get('template_id')
             ))
             seeded += 1
         except Exception as e:

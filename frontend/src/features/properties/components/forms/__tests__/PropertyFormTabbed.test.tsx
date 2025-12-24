@@ -56,4 +56,24 @@ describe('PropertyFormTabbed', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/Server failed/i);
     expect(mockSubmit).toHaveBeenCalledTimes(1);
   });
+
+  test('shows validation error when name exceeds 255 chars', async () => {
+    const mockSubmit = vi.fn();
+
+    render(
+      <MemoryRouter>
+        <PropertyFormTabbed onSubmit={mockSubmit} />
+      </MemoryRouter>
+    );
+
+    const longName = 'x'.repeat(260);
+    const nameInput = screen.getByLabelText(/property name/i);
+    userEvent.type(nameInput, longName);
+
+    const createBtn = screen.getByRole('button', { name: /create property/i });
+    userEvent.click(createBtn);
+
+    expect(await screen.findByText(/Property name must be at most 255 characters/i)).toBeInTheDocument();
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
 });
