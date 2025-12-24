@@ -19,4 +19,8 @@ export class FileStorageService {
   async deleteFile(fileId: string): Promise<boolean> {
     return this.repository.deleteFile(fileId);
   }
+
+  async listFiles(options: { limit?: number; offset?: number; entityType?: string | null; entityId?: string | null }) {
+    return this.repository.listFiles(options);
+  }
 }

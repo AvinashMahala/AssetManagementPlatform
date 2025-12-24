@@ -35,8 +35,8 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
 
   // Rate Limiting
-  RATE_LIMIT_WINDOW_MS: z.string().default('900000').transform(Number), // 15 minutes default
-  RATE_LIMIT_MAX: z.string().default('100').transform(Number), // 100 requests default
+  RATE_LIMIT_WINDOW_MS: z.string().default('9000').transform(Number), // 15 minutes default
+  RATE_LIMIT_MAX: z.string().default('10000').transform(Number), // 100 requests default
 
   // Auth
   JWT_SECRET: z.string().default('your-secret-key'),

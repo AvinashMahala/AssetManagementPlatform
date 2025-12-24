@@ -134,6 +134,62 @@ export class FileStorageRepository {
   }
 
   /**
+   * List files with pagination and optional filters
+   */
+  async listFiles(options: { limit?: number; offset?: number; entityType?: string | null; entityId?: string | null }) {
+    const { limit = 20, offset = 0, entityType = null, entityId = null } = options;
+
+    const params: any[] = [];
+    let whereClauses: string[] = [];
+
+    if (entityType) {
+      params.push(entityType);
+      whereClauses.push(`entity_type = $${params.length}`);
+    }
+
+    if (entityId) {
+      params.push(entityId);
+      whereClauses.push(`entity_id = $${params.length}`);
+    }
+
+    // Add pagination params
+    params.push(limit);
+    params.push(offset);
+
+    const where = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+    const result = await this.pool.query(
+      `SELECT id, entity_type as "entityType", entity_id as "entityId", filename, original_name as "originalName", file_size as "fileSize", mime_type as "mimeType", category, tags, uploaded_by as "uploadedBy", uploaded_at as "uploadedAt", last_accessed as "lastAccessed", version, COUNT(*) OVER() as total_count
+       FROM file_metadata
+       ${where}
+       ORDER BY uploaded_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}
+      `,
+      params
+    );
+
+    const items = result.rows.map((r: any) => ({
+      id: r.id,
+      entityType: r.entityType,
+      entityId: r.entityId,
+      filename: r.filename,
+      originalName: r.originalName,
+      fileSize: r.fileSize,
+      mimeType: r.mimeType,
+      category: r.category,
+      tags: r.tags,
+      uploadedBy: r.uploadedBy,
+      uploadedAt: r.uploadedAt,
+      lastAccessed: r.lastAccessed,
+      version: r.version
+    }));
+
+    const total = result.rows.length > 0 ? Number(result.rows[0].total_count) : 0;
+
+    return { items, total };
+  }
+
+  /**
    * Delete a file
    */
   async deleteFile(fileId: string): Promise<boolean> {

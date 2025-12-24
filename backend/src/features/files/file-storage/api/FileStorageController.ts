@@ -154,4 +154,86 @@ export class FileStorageController {
       });
     }
   };
+
+  /**
+   * List files (paginated)
+   */
+  listFiles = async (req: Request, res: Response) => {
+    try {
+      const limit = Math.max(1, Math.min(100, parseInt(String(req.query.limit || '20'), 10)));
+      const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
+      const offset = (page - 1) * limit;
+      const entityType = req.query.entityType ? String(req.query.entityType) : null;
+      const entityId = req.query.entityId ? String(req.query.entityId) : null;
+
+      const { items, total } = await this.fileStorageService.listFiles({ limit, offset, entityType, entityId });
+
+      const totalPages = Math.ceil(total / limit);
+      const hasNext = page < totalPages;
+      const hasPrev = page > 1;
+
+      res.json({
+        success: true,
+        data: {
+          files: items,
+          pagination: {
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNext,
+            hasPrev
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('File listing error:', error);
+      res.status(500).json({
+        error: 'Failed to list files',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  };
+
+  /**
+   * Get metadata for a single file
+   */
+  getMetadata = async (req: Request, res: Response) => {
+    try {
+      const { fileId } = req.params;
+      const metadata = await this.fileStorageService.getFileMetadata(fileId);
+      if (!metadata) {
+        return res.status(404).json({ success: false, error: 'File not found' });
+      }
+
+      return res.json({ success: true, data: metadata });
+    } catch (error) {
+      logger.error('File metadata error:', error);
+      res.status(500).json({
+        error: 'Failed to retrieve file metadata',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  };
+
+  /**
+   * Delete a file and its content
+   */
+  deleteFile = async (req: Request, res: Response) => {
+    try {
+      const { fileId } = req.params;
+      const deleted = await this.fileStorageService.deleteFile(fileId);
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'File not found' });
+      }
+
+      return res.json({ success: true, message: 'File deleted' });
+    } catch (error) {
+      logger.error('File delete error:', error);
+      res.status(500).json({
+        error: 'Failed to delete file',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  };
 }

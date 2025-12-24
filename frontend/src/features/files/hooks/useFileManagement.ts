@@ -23,8 +23,14 @@ export const useFileManagement = () => {
       });
 
       if (response.success && response.data) {
-        setFiles(response.data.files);
-        setTotalFiles(response.data.pagination.total);
+        // Support multiple backend shapes for file listings:
+        //  - { items: FileMetadata[], total: number, page, limit }
+        //  - { files: FileMetadata[], pagination: { total } }
+        const items = (response.data as any).items || (response.data as any).files || [];
+        const total = (response.data as any).total || (response.data as any).pagination?.total || 0;
+
+        setFiles(items);
+        setTotalFiles(total);
       } else {
         console.error('Failed to load files:', response.error?.message);
       }

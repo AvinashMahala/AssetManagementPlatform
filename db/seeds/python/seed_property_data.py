@@ -7,6 +7,7 @@ Seeds data back to property-related tables after cleanup.
 import os
 import sys
 import json
+import argparse
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import bcrypt
@@ -203,6 +204,46 @@ def seed_properties(conn, properties_data):
     print_success(f"Seeded {seeded} properties")
     return seeded
 
+
+def validate_property_entry(prop: dict) -> list:
+    """Validate a single property entry and return list of validation error messages"""
+    errors = []
+    name = prop.get('name')
+    if not name or not str(name).strip():
+        errors.append('name is required')
+    elif len(str(name)) > 255:
+        errors.append('name must be at most 255 characters')
+
+    # Address: accept either string or structured object
+    addr = prop.get('address')
+    if not addr:
+        # fallback to legacy fields
+        if not (prop.get('city') or prop.get('address_street') or prop.get('zip_code')):
+            errors.append('address is required (street or city)')
+    else:
+        if isinstance(addr, str):
+            if not addr.strip():
+                errors.append('address string must be non-empty')
+        elif isinstance(addr, dict):
+            if not addr.get('street') or not addr.get('city') or not addr.get('state'):
+                errors.append('address object must contain street, city and state')
+
+    # owner mobile/email array size checks
+    mobiles = prop.get('owner_mobile_numbers') or prop.get('owner_mobile_numbers')
+    emails = prop.get('owner_email_ids') or prop.get('owner_email_ids')
+    try:
+        if mobiles and len(mobiles) > 5:
+            errors.append('owner_mobile_numbers cannot have more than 5 entries')
+    except Exception:
+        pass
+    try:
+        if emails and len(emails) > 5:
+            errors.append('owner_email_ids cannot have more than 5 entries')
+    except Exception:
+        pass
+
+    return errors
+
 def seed_units(conn, units_data):
     """Seed units data"""
     print_step("Seeding units...")
@@ -374,14 +415,55 @@ def main():
     print("This script will seed data back to property-related tables:")
     print("• Properties, Units, Meters, Tenants, Leases, Expenses")
     print()
-    print("📋 Data source: scripts/seed_data_templates.json")
+    print(f"📋 Data source: {SEED_DATA_FILE}")
     print()
+
+    # Parse CLI args
+    parser = argparse.ArgumentParser(description='Property data seeding script')
+    parser.add_argument('--dry-run', action='store_true', help='Validate seed data and show summary without inserting')
+    parser.add_argument('--validate-only', action='store_true', help='Validate seed data and exit with non-zero if invalid')
+    args = parser.parse_args()
 
     # Load seed data
     seed_data = load_seed_data(SEED_DATA_FILE)
     if not seed_data:
         print_error("Failed to load seed data")
         return
+
+    # If validation flags were provided, validate the seeds and optionally exit
+    if args.dry_run or args.validate_only:
+        print_step('Validating property seed payloads...')
+        property_errors = {}
+        if 'properties' in seed_data:
+            for idx, p in enumerate(seed_data.get('properties', [])):
+                errs = validate_property_entry(p)
+                if errs:
+                    property_errors[p.get('name') or f'index_{idx}'] = errs
+
+        if property_errors:
+            print_error('Validation failed for seed properties:')
+            for name, errs in property_errors.items():
+                print(f" - {name}:")
+                for e in errs:
+                    print(f"    • {e}")
+        else:
+            print_success('All property seed entries validated successfully')
+
+        if args.validate_only:
+            if property_errors:
+                print_error('Seed validation failed (validate-only)')
+                sys.exit(2)
+            else:
+                print_success('Seed validation (validate-only) succeeded')
+                sys.exit(0)
+
+        if args.dry_run:
+            if property_errors:
+                print_error('Dry-run completed: validation errors present; no data was inserted')
+                sys.exit(2)
+            else:
+                print_success('Dry-run validation succeeded: no data inserted')
+                sys.exit(0)
 
     # Get database configuration
     db_config = get_db_config()

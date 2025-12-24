@@ -82,6 +82,7 @@ import { AuthModule } from '@/features/auth/auth/auth.module';
 import { UserModule } from '@/features/auth/user/user.module';
 import { RentPaymentModule } from '@/features/finance/rent-payment/rent-payment.module';
 import { RentTransactionModule } from '@/features/finance/rent-transaction/rent-transaction.module';
+import { createLeaseRoutes } from '@/features/leases/api/lease.routes';
 
 // Setup global process error handlers
 setupProcessErrorHandlers();
@@ -235,12 +236,46 @@ const startServer = async () => {
   app.use(helmet({
     contentSecurityPolicy: false, // Disable CSP for Swagger UI to work
   }));
-  app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:5000', 'http://localhost:5001'],
+  // CORS configuration: read allowed origins from ENV or fallback to local defaults
+  const rawOrigins = process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:5000,http://localhost:5001';
+  const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
+
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow non-browser requests (curl, server-to-server) where origin is undefined
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // In development, also accept common localhost/127.0.0.1 origins that may not be present
+      // in the explicit allowlist to make local dev less brittle.
+      if (config.env === 'development') {
+        try {
+          const parsed = new URL(origin);
+          const host = parsed.hostname;
+          const devHosts = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+          if (devHosts.has(host)) {
+            console.info('CORS allowed local dev origin:', origin);
+            return callback(null, true);
+          }
+        } catch (e) {
+          // If origin can't be parsed, fall through to block with helpful log
+        }
+      }
+
+      // Not allowed - provide a helpful error
+      const err = new Error(`CORS policy: Origin ${origin} not allowed`);
+      // Log for debugging
+      console.warn('CORS blocked origin:', origin, 'Allowed:', allowedOrigins);
+      return callback(err);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma']
-  }));
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma', 'X-CSRF-Token', 'X-Request-ID', 'Accept'] ,
+    optionsSuccessStatus: 200,
+  };
+
+  app.use(cors(corsOptions as any));
+  // Ensure preflight requests are handled
+  app.options('*', cors(corsOptions as any));
   app.use(express.json());
 
   // Serve static PDF files
@@ -295,7 +330,8 @@ const startServer = async () => {
   v1Router.use('/units', UnitModule.create(mainPool, userService));
   v1Router.use('/units', UnitModule.create(mainPool, userService));
   v1Router.use('/unit-tenants', UnitTenantModule.create(mainPool, userService));
-  // v1Router.use('/leases', createNewLeaseRoutes(authMiddleware(userService) as any)); // TODO: Implement lease routes
+  // Mount lease routes
+  v1Router.use('/leases', createLeaseRoutes(authMiddleware(userService) as any));
   v1Router.use('/rent-payments', new RentPaymentModule(mainPool, EventBus.getInstance()).router);
   v1Router.use('/meters', MeterModule.create(mainPool, userService));
   v1Router.use('/receipts', createReceiptRoutes(receiptController, userService));

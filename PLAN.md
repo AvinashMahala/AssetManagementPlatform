@@ -182,8 +182,10 @@ A. Analyze & Map ✅
  - 2025-12-23 16:10 UTC - **Feature:** Properties — **Microphase:** Backend Alignment — **Action:** Updated validation to accept structured `address`, added normalization for legacy `type` into `propertyType`, increased `name` max to 255, and added unit tests. **Commit:** `fix(properties): accept structured address and propertyType; normalize legacy 'type'; increase name length; add tests`.
  - 2025-12-23 16:40 UTC - **Feature:** Properties — **Microphase:** Frontend Alignment — **Action:** Added frontend name length validation and test; ensured forms use `propertyType` and structured address. **Commit:** `fix(properties-frontend): add frontend name length validation & test`.
  - 2025-12-23 16:55 UTC - **Feature:** Properties — **Microphase:** Seeds & Data — **Action:** Updated property seed script to insert into current `properties` columns (address_street, address_city, address_state, address_pincode, etc.) and pointed all seed scripts to `db/seeds/data/seed_data_templates.json`. **Commit:** `fix(properties-seed): align seed with schema & new seed path`.
+ - 2025-12-23 17:20 UTC - **Feature:** Properties — **Microphase:** Seeds & Data — **Action:** Added `--dry-run` and `--validate-only` modes to `db/seeds/python/seed_property_data.py` to validate seeds before insertion and updated all python seed scripts to point to `db/seeds/data/seed_data_templates.json`.
+ - 2025-12-23 17:35 UTC - **Feature:** Properties — **Microphase:** Tests — **Action:** Added integration test `backend/src/features/properties/property/integration/createProperty.integration.test.ts` that initializes DB schema and tests create+find flows (requires a running test DB). **Note:** Tests not executed here (Jest may not be configured locally); run in CI or dev env.
 
-**Status:** Frontend Alignment completed and seed updates in progress (seed script updated). Next: Add/verify seed tests or a dry-run; complete Properties: Tests & Sign-off.
+**Status:** Frontend Alignment completed, Seeds updated with dry-run/validation, and integration test added. Next: Add CI job to run integration tests against ephemeral DB and complete Properties: Tests & Sign-off.
 
 ---
 

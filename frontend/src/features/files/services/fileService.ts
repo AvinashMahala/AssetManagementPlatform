@@ -41,10 +41,14 @@ class FileService {
     }
 
     // For file uploads, we need to use fetch directly to handle FormData
-    const token = localStorage.getItem('token');
+    // Read token from sessionStorage (primary) with a fallback to localStorage for compatibility
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const headers: Record<string, string> = {};
     if (token) {
       headers.Authorization = `Bearer ${token}`;
+    } else {
+      // Helpful warning for debugging authentication issues (e.g., 401s during upload)
+      console.warn('File upload: no auth token found in sessionStorage or localStorage');
     }
 
     try {

@@ -37,7 +37,13 @@ export const createFileStorageRoutes = (controller: FileStorageController, authM
   });
 
   router.post('/upload', authMiddleware as any, upload.single('file') as any, controller.uploadFile);
+  // List files (paginated)
+  router.get('/', authMiddleware as any, controller.listFiles as any);
+  // File metadata
+  router.get('/:fileId/metadata', controller.getMetadata as any);
   router.get('/:fileId/download', controller.downloadFile); // Auth handled in controller/service or optional
+  // Delete a file
+  router.delete('/:fileId', authMiddleware as any, controller.deleteFile as any);
 
   return router;
 };
