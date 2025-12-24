@@ -2,10 +2,10 @@
 
 import { config } from 'dotenv';
 import { Pool } from 'pg';
-import { initializeDatabase } from '../backend/src/shared/config/database/init/index.ts';
+import { initializeDatabase } from '../../backend/src/shared/config/database/init/index.ts';
 
 // Load environment variables
-config({ path: '../.env' });
+config({ path: '../../.env' });
 
 // Database configuration
 const mainDbUrl = process.env.MAIN_DATABASE_URL || 'postgresql://user:pass@localhost:5434/asset_platform_main';

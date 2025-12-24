@@ -16,7 +16,7 @@ const { exec, spawnSync } = require('child_process');
 const { existsSync } = require('fs');
 const path = require('path');
 
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(__dirname);
 process.chdir(projectRoot);
 
 const args = process.argv.slice(2);
@@ -362,8 +362,8 @@ async function setupPythonVenv() {
     catch (e) { warn('Failed to create python venv.'); }
   }
   const pipPath = process.platform === 'win32' ? path.join(venvPath, 'Scripts', 'pip.exe') : path.join(venvPath, 'bin', 'pip');
-  if (existsSync(path.join(projectRoot, 'scripts', 'seeding_requirements.txt'))) {
-    try { execCommand(`${pipPath} install -U pip`); execCommand(`${pipPath} install -r scripts/seeding_requirements.txt`); }
+  if (existsSync(path.join(projectRoot, 'db', 'seeds', 'python', 'seeding_requirements.txt'))) {
+    try { execCommand(`${pipPath} install -U pip`); execCommand(`${pipPath} install -r db/seeds/python/seeding_requirements.txt`); }
     catch (e) { warn('Failed to install python seeding requirements'); }
   } else info('No python seeding requirements found');
 }

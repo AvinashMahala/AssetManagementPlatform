@@ -11,8 +11,8 @@
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "init-db": "tsx ../scripts/init-db.ts",
-    "seed:templates": "tsx scripts/seed-receipt-templates.ts"
+    "init-db": "tsx ../db/scripts/init.ts",
+    "seed:templates": "tsx ../db/seeds/typescript/seed-receipt-templates.ts"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",

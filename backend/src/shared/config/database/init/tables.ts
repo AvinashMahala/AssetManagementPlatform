@@ -78,7 +78,7 @@ export const initializeTables = async (pool: Pool) => {
 
     // Execute each schema file
     for (const schemaFile of schemaFiles) {
-      const schemaPath = join(process.cwd(), '..', 'scripts', 'schema', schemaFile);
+      const schemaPath = join(process.cwd(), '..', 'db', 'schema', schemaFile);
       console.log(`Running schema: ${schemaFile}`);
 
       const sql = readFileSync(schemaPath, 'utf8');
