@@ -1,49 +1,22 @@
-import { Router } from 'express';
-import multer from 'multer';
+import { Router, RequestHandler } from 'express';
+import { defaultMemoryUploader } from '@/shared/utils/uploads';
 import { FileStorageController } from './FileStorageController';
+import { asyncHandler } from '@/shared/middleware/errorHandler';
 
-export const createFileStorageRoutes = (controller: FileStorageController, authMiddleware: any) => {
+export const createFileStorageRoutes = (controller: FileStorageController, authMiddleware: RequestHandler) => {
   const router = Router();
 
-  // Configure multer for memory storage
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB limit
-    },
-    fileFilter: (req: any, file: any, cb: any) => {
-      // Allow common file types
-      const allowedTypes = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/plain',
-        'text/csv',
-        'text/markdown'
-      ];
+  // Use shared default memory uploader instance
+  const upload = defaultMemoryUploader;
 
-      if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error(`File type ${file.mimetype} not allowed`));
-      }
-    }
-  });
-
-  router.post('/upload', authMiddleware as any, upload.single('file') as any, controller.uploadFile);
+  router.post('/upload', authMiddleware, upload.single('file') as any, asyncHandler(controller.uploadFile.bind(controller)));
   // List files (paginated)
-  router.get('/', authMiddleware as any, controller.listFiles as any);
+  router.get('/', authMiddleware, asyncHandler(controller.listFiles.bind(controller)));
   // File metadata
-  router.get('/:fileId/metadata', controller.getMetadata as any);
-  router.get('/:fileId/download', controller.downloadFile); // Auth handled in controller/service or optional
+  router.get('/:fileId/metadata', asyncHandler(controller.getMetadata.bind(controller)));
+  router.get('/:fileId/download', asyncHandler(controller.downloadFile.bind(controller))); // Auth handled in controller/service or optional
   // Delete a file
-  router.delete('/:fileId', authMiddleware as any, controller.deleteFile as any);
+  router.delete('/:fileId', authMiddleware, asyncHandler(controller.deleteFile.bind(controller)));
 
   return router;
 };

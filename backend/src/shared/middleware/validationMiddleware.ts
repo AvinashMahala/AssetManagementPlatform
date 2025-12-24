@@ -272,7 +272,8 @@ export const validateZodRequest = (schema: ZodSchema) => {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
           message: 'Validation failed',
-          errors: (error as ZodError<any>).errors.map((e: ZodIssue) => ({
+          // `ZodError` exposes `issues` which is the correct array of ZodIssue
+          errors: (error as ZodError<any>).issues.map((e: ZodIssue) => ({
             field: e.path.join('.'),
             message: e.message,
           })),

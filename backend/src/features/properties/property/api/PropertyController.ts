@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware.js';
 import { GetPropertiesUseCase } from '../core/use-cases/GetProperties.usecase.js';
 import { GetPropertyByIdUseCase } from '../core/use-cases/GetPropertyById.usecase.js';
 import { CreatePropertyUseCase } from '../core/use-cases/CreateProperty.usecase.js';
@@ -107,14 +108,14 @@ export class PropertyController {
    *       400:
    *         description: Invalid input
    */
-  async create(req: Request, res: Response) {
+  async create(req: AuthenticatedRequest, res: Response) {
     try {
       const propertyData: PropertyInput = req.body;
       // Debug: log incoming payload to help trace missing totalArea issues (temporary)
       logger.debug('Create property payload', { keys: Object.keys(req.body || {}), area: (req.body as any).area, totalArea: (req.body as any).totalArea });
       
       // Handle ownerId based on user role
-      const authenticatedUser = (req as any).user;
+      const authenticatedUser = req.user;
       if (authenticatedUser) {
         // If user is admin, allow them to set ownerId, otherwise use their own ID
         if (authenticatedUser.role !== 'admin' && propertyData.ownerId) {

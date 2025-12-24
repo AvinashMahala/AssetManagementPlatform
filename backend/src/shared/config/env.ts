@@ -38,6 +38,10 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.string().default('9000').transform(Number), // 15 minutes default
   RATE_LIMIT_MAX: z.string().default('10000').transform(Number), // 100 requests default
 
+  // File upload defaults
+  FILE_UPLOAD_MAX_BYTES: z.string().default(String(50 * 1024 * 1024)).transform(Number),
+  FILE_UPLOAD_ALLOWED_MIME_TYPES: z.string().optional(),
+
   // Auth
   JWT_SECRET: z.string().default('your-secret-key'),
   JWT_REFRESH_SECRET: z.string().default('your-refresh-secret-key'),
@@ -86,6 +90,10 @@ export const config = {
     accessTokenExpiry: _env.data.JWT_ACCESS_TOKEN_EXPIRY,
     refreshTokenExpiry: _env.data.JWT_REFRESH_TOKEN_EXPIRY,
     disableAuth: _env.data.DISABLE_AUTH,
+  },
+  fileUpload: {
+    maxFileSizeBytes: _env.data.FILE_UPLOAD_MAX_BYTES,
+    allowedMimeTypes: _env.data.FILE_UPLOAD_ALLOWED_MIME_TYPES ? _env.data.FILE_UPLOAD_ALLOWED_MIME_TYPES.split(',').map(s => s.trim()).filter(Boolean) : undefined,
   },
   devUser: {
     id: _env.data.DEV_USER_ID,

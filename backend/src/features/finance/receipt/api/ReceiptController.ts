@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware.js';
 import { IReceiptService } from '@/features/finance/receipt/core/interfaces/IReceiptRepository';
 import { ReceiptGenerationRequest, BulkReceiptGenerationRequest } from '@/features/finance/receipt/core/receipt.types';
 import { createModuleLogger, PerformanceLogger } from '@/shared/utils/logger.js';
@@ -27,9 +28,9 @@ export class ReceiptController {
    *       500:
    *         description: Internal server error
    */
-  async getAllReceipts(req: Request, res: Response): Promise<void> {
+  async getAllReceipts(req: AuthenticatedRequest, res: Response): Promise<void> {
     const perfLogger = new PerformanceLogger('getAllReceipts', {
-      userId: (req as any).user?.id,
+      userId: req.user?.id,
     });
 
     try {
@@ -72,11 +73,11 @@ export class ReceiptController {
    *       500:
    *         description: Internal server error
    */
-  async getReceiptById(req: Request, res: Response): Promise<void> {
+  async getReceiptById(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const perfLogger = new PerformanceLogger('getReceiptById', {
       receiptId: id,
-      userId: (req as any).user?.id,
+      userId: req.user?.id,
     });
 
     try {

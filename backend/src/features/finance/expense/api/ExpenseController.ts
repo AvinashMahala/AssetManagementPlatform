@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { CreateExpenseUseCase } from '../core/use-cases/CreateExpense.usecase';
 import { UpdateExpenseUseCase } from '../core/use-cases/UpdateExpense.usecase';
 import { DeleteExpenseUseCase } from '../core/use-cases/DeleteExpense.usecase';
@@ -65,9 +66,9 @@ export class ExpenseController {
    *       400:
    *         description: Bad request
    */
-  async createExpense(req: Request, res: Response): Promise<void> {
+  async createExpense(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const userId = (req as any).user?.id;
+      const userId = req.user?.id;
       const params: CreateExpenseParams = {
         ...req.body,
         createdBy: userId
@@ -118,10 +119,10 @@ export class ExpenseController {
    *       400:
    *         description: Bad request
    */
-  async updateExpense(req: Request, res: Response): Promise<void> {
+  async updateExpense(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const userId = (req as any).user?.id;
+      const userId = req.user?.id;
       const params: UpdateExpenseParams = {
         ...req.body,
         updatedBy: userId

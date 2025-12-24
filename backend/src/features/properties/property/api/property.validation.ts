@@ -18,7 +18,7 @@ const AmenitiesObject = z.object({
     smokingAllowed: z.boolean().optional().default(false),
     eventsAllowed: z.boolean().optional().default(false),
     customRules: z.string().optional(),
-  }).optional().default({}),
+  }).optional().default({ petFriendly: false, smokingAllowed: false, eventsAllowed: false }),
 }).optional();
 
 export const createPropertySchema = z.object({

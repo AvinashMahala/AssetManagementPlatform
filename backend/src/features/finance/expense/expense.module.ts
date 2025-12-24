@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { RequestHandler } from 'express';
 import { ExpenseRepository } from './data/repository/ExpenseRepository';
 import { CreateExpenseUseCase } from './core/use-cases/CreateExpense.usecase';
 import { UpdateExpenseUseCase } from './core/use-cases/UpdateExpense.usecase';
@@ -36,7 +37,7 @@ export class ExpenseModule {
     );
   }
 
-  getRoutes(authMiddleware: any) {
+  getRoutes(authMiddleware: RequestHandler) {
     return createExpenseRoutes(this.controller, authMiddleware);
   }
 }

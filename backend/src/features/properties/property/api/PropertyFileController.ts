@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { GetPropertyByIdUseCase } from '../core/use-cases/GetPropertyById.usecase.js';
 import { FileStorageService } from '@/features/files/file-storage/core/services/FileStorageService';
 import { PropertyFileService } from '../core/services/PropertyFileService';
@@ -61,7 +62,7 @@ export class PropertyFileController {
    *       500:
    *         description: Internal server error
    */
-  async uploadFile(req: Request, res: Response) {
+  async uploadFile(req: AuthenticatedRequest, res: Response) {
     try {
       const { propertyId } = req.params;
       const { fileType, description, customName } = req.body;
@@ -88,7 +89,7 @@ export class PropertyFileController {
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         category: fileType,
-        uploadedBy: (req as any).user?.id || null
+        uploadedBy: req.user?.id || null
       };
 
       const fileId = await this.fileStorageService.uploadFile(req.file.buffer, metadata);
@@ -191,7 +192,7 @@ export class PropertyFileController {
    *       500:
    *         description: Internal server error
    */
-  async downloadFile(req: Request, res: Response) {
+  async downloadFile(req: AuthenticatedRequest, res: Response) {
     try {
       const { propertyId, fileId } = req.params;
 
@@ -207,7 +208,7 @@ export class PropertyFileController {
       }
 
       // Get file buffer from storage service
-      const fileBuffer = await this.fileStorageService.downloadFile(file.fileId, (req as any).user?.id || 'system');
+      const fileBuffer = await this.fileStorageService.downloadFile(file.fileId, req.user?.id || 'system');
       
       res.setHeader('Content-Type', file.fileType === 'photo' ? 'image/jpeg' : 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);

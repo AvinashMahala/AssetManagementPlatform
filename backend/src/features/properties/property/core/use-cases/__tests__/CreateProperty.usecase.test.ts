@@ -19,8 +19,8 @@ describe('CreatePropertyUseCase', () => {
         ownerDetails: data.ownerDetails as any,
         amenities: data.amenities as any,
         files: data.files || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
       return result as Property;
     })
@@ -51,9 +51,7 @@ describe('CreatePropertyUseCase', () => {
 
   it('accepts legacy `area` field when totalArea missing', async () => {
     const input = baseInput();
-    // @ts-expect-error legacy field
-    delete input.totalArea;
-    // @ts-expect-error legacy field
+    delete (input as any).totalArea;
     (input as any).area = '300';
 
     const result = await usecase.execute(input as any);
@@ -64,9 +62,7 @@ describe('CreatePropertyUseCase', () => {
   it('throws if area/totalArea missing', async () => {
     const input = baseInput();
     // remove both
-    // @ts-expect-error manipulating
-    delete input.totalArea;
-    // @ts-expect-error manipulating
+    delete (input as any).totalArea;
     delete (input as any).area;
 
     await expect(usecase.execute(input as any)).rejects.toThrow('Property area is required');

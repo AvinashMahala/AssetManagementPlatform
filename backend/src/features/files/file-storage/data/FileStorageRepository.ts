@@ -3,6 +3,23 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { FileMetadata, FileRecord } from '../core/file-storage.types';
 
+interface FileMetadataRow {
+  id: string;
+  entityType: string | null;
+  entityId: string | null;
+  filename: string;
+  originalName: string;
+  fileSize: number;
+  mimeType: string;
+  category: string;
+  tags: string[];
+  uploadedBy: string;
+  uploadedAt: Date;
+  lastAccessed: Date | null;
+  version: number;
+  total_count?: number;
+}
+
 export class FileStorageRepository {
   constructor(private readonly pool: Pool) {}
 
@@ -139,7 +156,7 @@ export class FileStorageRepository {
   async listFiles(options: { limit?: number; offset?: number; entityType?: string | null; entityId?: string | null }) {
     const { limit = 20, offset = 0, entityType = null, entityId = null } = options;
 
-    const params: any[] = [];
+    const params: Array<string | number | null> = [];
     let whereClauses: string[] = [];
 
     if (entityType) {
@@ -168,7 +185,7 @@ export class FileStorageRepository {
       params
     );
 
-    const items = result.rows.map((r: any) => ({
+    const items = result.rows.map((r: FileMetadataRow) => ({
       id: r.id,
       entityType: r.entityType,
       entityId: r.entityId,

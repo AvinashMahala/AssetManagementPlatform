@@ -102,7 +102,7 @@ router.post('/rent-collection', auth, async (req, res) => {
  */
 router.post('/payments', auth, async (req, res) => {
   const controller = req.app.locals.bulkOperationsController as BulkOperationsController;
-  await controller.bulkPaymentRecording(req, res);
+  await controller.bulkPaymentProcessing(req, res);
 });
 
 /**
@@ -188,7 +188,7 @@ router.post('/receipts', auth, async (req, res) => {
  */
 router.post('/communication', auth, async (req, res) => {
   const controller = req.app.locals.bulkOperationsController as BulkOperationsController;
-  await controller.bulkTenantCommunication(req, res);
+  await controller.bulkCommunication(req, res);
 });
 
 /**

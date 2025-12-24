@@ -1,71 +1,87 @@
-import { Router } from 'express';
-import multer from 'multer';
+import { Router, RequestHandler } from 'express';
+import { defaultMemoryUploader } from '@/shared/utils/uploads';
 import { PropertyController } from './PropertyController.js';
 import { conditionalAuth } from '@/shared/middleware/authMiddleware.js';
+import { IPropertyFileController, IReceiptTemplateController, UserServiceLike } from '../types';
+import { createPropertyFilesRouter } from './property.files.routes';
+import { createPropertyTemplatesRouter } from './property.templates.routes';
 import { validateZodRequest } from '@/shared/middleware/validationMiddleware';
+import { asyncHandler } from '@/shared/middleware/errorHandler';
 import { createPropertySchema, updatePropertySchema, updatePropertyStatusSchema, setPropertyTemplateSchema } from './property.validation';
+
+/**
+ * Property routes factory
+ *
+ * This module exports a factory function `createPropertyRoutes` that wires
+ * up Express routes for all operations related to properties (CRUD, files,
+ * templates, UPI links, and status changes).
+ *
+ * Notes:
+ * - Authentication is added conditionally via `conditionalAuth(userService)`
+ *   so routes can be used in contexts where auth should be toggled (e.g., tests)
+ * - File upload handling uses `multer` with memory storage and a 50MB limit
+ * - Request validation is performed with Zod via `validateZodRequest`
+ *
+ * Refactor ideas (see bottom of file):
+ * - Extract the multer configuration into a shared `fileUpload` helper
+ *   so it can be reused and unit-tested separately
+ * - Replace `any` types (for `userService`, `fileController`, and
+ *   `receiptTemplateController`) with explicit interfaces for better
+ *   type-safety and discoverability
+ */
 
 export const createPropertyRoutes = (
   controller: PropertyController,
-  userService: any,
-  fileController?: any,
-  receiptTemplateController?: any
+  userService: UserServiceLike,
+  fileController?: IPropertyFileController,
+  receiptTemplateController?: IReceiptTemplateController
 ) => {
   const router = Router();
-  const auth = conditionalAuth(userService);
+  // `conditionalAuth` returns an express middleware (RequestHandler)
+  const auth: RequestHandler = conditionalAuth(userService);
 
-  // Configure multer for property file uploads
-  const propertyFileUpload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB limit
-    },
-    fileFilter: (req: any, file: any, cb: any) => {
-      const allowedTypes = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      ];
+  // Use centralized memory uploader (50MB default). This is shared across
+  // file-related routes in the app.
+  const propertyFileUpload = defaultMemoryUploader;
 
-      if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error(`File type ${file.mimetype} not allowed`));
-      }
-    }
-  });
+  // Core property CRUD routes
+  router.get('/', auth, asyncHandler(controller.getAll.bind(controller)));
+  router.get('/:id', auth, asyncHandler(controller.getById.bind(controller)));
+  router.post('/', auth, validateZodRequest(createPropertySchema), asyncHandler(controller.create.bind(controller)));
+  router.put('/:id', auth, validateZodRequest(updatePropertySchema), asyncHandler(controller.update.bind(controller)));
+  router.delete('/:id', auth, asyncHandler(controller.delete.bind(controller)));
 
-  router.get('/', auth, controller.getAll.bind(controller));
-  router.get('/:id', auth, controller.getById.bind(controller));
-  router.post('/', auth, validateZodRequest(createPropertySchema), controller.create.bind(controller));
-  router.put('/:id', auth, validateZodRequest(updatePropertySchema), controller.update.bind(controller));
-  router.delete('/:id', auth, controller.delete.bind(controller));
+  // Status and template management
+  router.patch('/:id/status', auth, validateZodRequest(updatePropertyStatusSchema), asyncHandler(controller.updateStatus.bind(controller)));
+  router.get('/:id/template', auth, asyncHandler(controller.getPropertyTemplate.bind(controller)));
+  router.put('/:id/template', auth, validateZodRequest(setPropertyTemplateSchema), asyncHandler(controller.setPropertyTemplate.bind(controller)));
+  router.delete('/:id/template', auth, asyncHandler(controller.removePropertyTemplate.bind(controller)));
 
-  router.patch('/:id/status', auth, validateZodRequest(updatePropertyStatusSchema), controller.updateStatus.bind(controller));
-  router.get('/:id/template', auth, controller.getPropertyTemplate.bind(controller));
-  router.put('/:id/template', auth, validateZodRequest(setPropertyTemplateSchema), controller.setPropertyTemplate.bind(controller));
-  router.delete('/:id/template', auth, controller.removePropertyTemplate.bind(controller));
-
+  // File-related routes (optional). The `fileController` is injected so the
+  // property module doesn't own file storage concerns and remains testable.
   if (fileController) {
-    router.post('/:propertyId/files', auth, propertyFileUpload.single('file') as any, fileController.uploadFile.bind(fileController));
-    router.get('/:propertyId/files', auth, fileController.getPropertyFiles.bind(fileController));
-    router.get('/:propertyId/files/:fileId/download', auth, fileController.downloadFile.bind(fileController));
-    router.put('/files/:fileId', auth, fileController.updateFile.bind(fileController));
-    router.delete('/:propertyId/files/:fileId', auth, fileController.deleteFile.bind(fileController));
+    // Mount file-related sub-router at '/:propertyId/files'
+    router.use('/:propertyId/files', createPropertyFilesRouter(fileController, auth, propertyFileUpload));
   }
 
+  // Receipt template routes (optional injection)
   if (receiptTemplateController) {
-    router.post('/:propertyId/receipt-template', auth, receiptTemplateController.createTemplate.bind(receiptTemplateController));
-    router.get('/:propertyId/receipt-template', auth, receiptTemplateController.getTemplate.bind(receiptTemplateController));
-    router.put('/:propertyId/receipt-template', auth, receiptTemplateController.updateTemplate.bind(receiptTemplateController));
-    router.delete('/:propertyId/receipt-template', auth, receiptTemplateController.deleteTemplate.bind(receiptTemplateController));
-    router.get('/:propertyId/upi-links', auth, receiptTemplateController.generateUPILinks.bind(receiptTemplateController));
+    router.use('/:propertyId/receipt-template', createPropertyTemplatesRouter(receiptTemplateController, auth));
   }
 
   return router;
 };
+
+/**
+ * Refactor suggestions (summary):
+ * - Type safety: replace `any` with explicit interfaces for `userService`,
+ *   `fileController`, and `receiptTemplateController`. This will improve the
+ *   developer experience and make tests more reliable.
+ * - Shared upload helper: create a `shared/uploads.ts` that exports a
+ *   configured multer instance and a mime-type validator so other modules can
+ *   reuse it and the configuration is centralized.
+ * - Route grouping: Consider grouping nested routes (files, templates) into
+ *   sub-routers for clearer separation and easier testing (e.g.,
+ *   `propertyFilesRouter`, `propertyTemplatesRouter`).
+ */
 
