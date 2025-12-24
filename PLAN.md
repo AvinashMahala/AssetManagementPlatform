@@ -178,6 +178,9 @@ A. Analyze & Map ✅
 
 **Progress Log:**
 - 2025-12-23 15:40 UTC - **Feature:** Properties — **Microphase:** Analyze & Map — **Action:** Completed field mappings and identified validation & seed mismatches. **Next:** Start Backend Alignment (update validation + tests).
+ - 2025-12-23 16:10 UTC - **Feature:** Properties — **Microphase:** Backend Alignment — **Action:** Updated validation to accept structured `address`, added normalization for legacy `type` into `propertyType`, increased `name` max to 255, and added unit tests. **Commit:** `fix(properties): accept structured address and propertyType; normalize legacy 'type'; increase name length; add tests`.
+  
+**Status:** Backend Alignment completed locally; tests added but not executed in CI (Jest not available in local path). Next: Frontend Alignment (client validations & form checks).
 
 ---
 
