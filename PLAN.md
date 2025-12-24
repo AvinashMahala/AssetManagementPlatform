@@ -131,6 +131,54 @@ F. Sign-off ✅
 - [ ] Agent to start **Properties**: set microphase `A. Analyze & Map` to `in-progress`, create a mapping artifact, and report findings in session log.
 - [ ] Confirm plan format and whether you want the `PLAN.md` in root or under `db/` (current: root `PLAN.md`).
 
+### Feature: Properties (P0, L) — Analyze & Map (completed)
+
+A. Analyze & Map ✅
+- **DB files:** `db/schema/008_properties.sql`
+- **Backend files:**
+	- `backend/src/features/properties/property/core/types/property.types.ts`
+	- `backend/src/features/properties/property/api/property.validation.ts`
+	- `backend/src/features/properties/property/data/mappers/PropertyMapper.ts`
+	- `backend/src/features/properties/property/data/repository/PropertyRepository.ts`
+	- `backend/src/features/properties/property/api/PropertyController.ts`
+- **Frontend files:**
+	- `frontend/src/features/properties/types/index.ts`
+	- `frontend/src/features/properties/components/forms/PropertyFormTabbed.tsx`
+	- `frontend/src/features/properties/components/forms/validators.ts`
+	- `frontend/src/features/properties/components/forms/tabs/*`
+
+**Field-level summary (high level):**
+- `id` — DB uuid, backend string, frontend string — **match**
+- `name` — DB VARCHAR(255) NOT NULL, backend Zod max 100, frontend no max — **mismatch (backend max 100)**
+- `address` — DB stores `address_street`, `address_city`, etc; backend & frontend use `address` object (street, city, state, pincode, country, landmark) — **mismatch (shape differs; mapper handles conversion)**
+- `property_type` / `type` — DB uses `property_type`, backend types use `propertyType` enum; validation expects `type` field — **naming mismatch (routes expect `type` instead of `propertyType`)**
+- `amenities` — DB JSONB (structured with `basic`, `luxury`, `additionalInfo`); backend `amenities` type mirrors this; frontend uses same object — **match**
+- `buildingPhotos` — present in backend/frontend as files array but stored in `property_files` table (no direct DB column) — **handled via repository but ensure docs reflect this**
+- `owner` fields — DB uses `owner_name`, `owner_mobile_numbers` (JSONB), `owner_email_ids` (JSONB); backend uses `ownerDetails` object — **match (mapper converts JSONB to object)**
+- `area` vs `totalArea` — DB column `area` maps to backend `totalArea` — **naming mismatch but mapper handles it**
+
+**Seed scripts note:** `db/seeds/python/seed_property_data.py` inserts into legacy columns (e.g., `address`, `city`, `zip_code`, `built_year`, `total_units`) that do not match current schema — **seed scripts must be updated**.
+
+**Primary issues found (actionable):**
+1. Backend validation (`createPropertySchema`, `updatePropertySchema`) expects `address` as a string and `type` field — needs to accept the structured `address` object and use `propertyType` naming (or accept both temporarily for compatibility). Also increase `name` max from 100 to 255 to align with DB.
+2. Seeds are outdated and can mask schema drift — update seed scripts to use repository create APIs or align columns with the current schema.
+3. Ensure repository/controller injects audit fields (e.g., `created_at`/`created_by`) where DB requires non-null values (verify flow for created_by if required elsewhere).
+
+**Recommended immediate microtasks:**
+- Backend Alignment (in-progress):
+	- Update `property.validation.ts` to accept structured `address` object and rename/alias `type` → `propertyType` (backwards-compatible accept both).
+	- Change `name` validator to `.max(255)`.
+	- Add unit tests for `createPropertySchema` and `updatePropertySchema` covering both legacy and new payload shapes.
+- Frontend Alignment (next):
+	- Add client-side validation for name length (<=255) in `validators.ts`.
+	- Ensure forms submit `propertyType` and full `address` object (already true) and remove any code that sends `address` as single string.
+- Seeds & Data:
+	- Update `db/seeds/python/seed_property_data.py` to insert using repository methods (or adjust SQL) to avoid legacy columns.
+	- Add a dry-run mode to seeds that validates shape against the `PropertyInput` type or via API.
+
+**Progress Log:**
+- 2025-12-23 15:40 UTC - **Feature:** Properties — **Microphase:** Analyze & Map — **Action:** Completed field mappings and identified validation & seed mismatches. **Next:** Start Backend Alignment (update validation + tests).
+
 ---
 
 *If you want, I can now: (A) commit this `PLAN.md` to the repo and mark the Properties microphase as `in-progress` and begin the analyze step, or (B) adjust the plan wording/structure per your preferences.*
