@@ -126,3 +126,65 @@ The application uses a centralized error handling mechanism.
 - **Unexpected Errors**: Caught by the global error handler in `server.ts`.
 
 Always ensure your async controller methods catch errors and pass them to `next(error)` or use a wrapper.
+
+---
+
+## 5. API Documentation (Swagger/OpenAPI)
+
+We use **Swagger (OpenAPI 3.0)** to document our API endpoints. Documentation is generated from JSDoc comments in the controller files.
+
+### Documenting a Controller
+
+Add `@swagger` annotations to your controller methods.
+
+```typescript
+/**
+ * @swagger
+ * /items:
+ *   post:
+ *     summary: Create a new item
+ *     tags: [Items]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateItemInput'
+ *     responses:
+ *       201:
+ *         description: Item created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Item'
+ *       400:
+ *         description: Validation error
+ */
+public create = async (req: Request, res: Response) => {
+  // ...
+}
+```
+
+### Defining Schemas
+
+Schemas are defined centrally in `src/shared/config/swagger/apis/{feature}/schemas.ts`.
+
+1.  Define the schema in the appropriate feature folder.
+2.  Export it in `src/shared/config/swagger/apis/index.ts`.
+
+```typescript
+// src/shared/config/swagger/apis/items/schemas.ts
+export const itemSchemas = {
+  Item: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      name: { type: 'string' },
+    },
+  },
+};
+```
+
+### Viewing Documentation
+
+The API documentation is available at `/api-docs` when the server is running.
