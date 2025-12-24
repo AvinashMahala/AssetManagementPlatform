@@ -21,13 +21,6 @@ import { createPropertySchema, updatePropertySchema, updatePropertyStatusSchema,
  *   so routes can be used in contexts where auth should be toggled (e.g., tests)
  * - File upload handling uses `multer` with memory storage and a 50MB limit
  * - Request validation is performed with Zod via `validateZodRequest`
- *
- * Refactor ideas (see bottom of file):
- * - Extract the multer configuration into a shared `fileUpload` helper
- *   so it can be reused and unit-tested separately
- * - Replace `any` types (for `userService`, `fileController`, and
- *   `receiptTemplateController`) with explicit interfaces for better
- *   type-safety and discoverability
  */
 
 export const createPropertyRoutes = (
@@ -71,17 +64,3 @@ export const createPropertyRoutes = (
 
   return router;
 };
-
-/**
- * Refactor suggestions (summary):
- * - Type safety: replace `any` with explicit interfaces for `userService`,
- *   `fileController`, and `receiptTemplateController`. This will improve the
- *   developer experience and make tests more reliable.
- * - Shared upload helper: create a `shared/uploads.ts` that exports a
- *   configured multer instance and a mime-type validator so other modules can
- *   reuse it and the configuration is centralized.
- * - Route grouping: Consider grouping nested routes (files, templates) into
- *   sub-routers for clearer separation and easier testing (e.g.,
- *   `propertyFilesRouter`, `propertyTemplatesRouter`).
- */
-
