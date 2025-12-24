@@ -113,34 +113,7 @@ export class PropertyFileController {
       }
     }
   }
-
-  /**
-   * @swagger
-   * /properties/{propertyId}/files:
-   *   get:
-   *     summary: Get files for a property
-   *     tags: [PropertyFiles]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *       - in: query
-   *         name: type
-   *         schema:
-   *           type: string
-   *           enum: [photo, document]
-   *         description: Filter by file type
-   *     responses:
-   *       200:
-   *         description: List of property files
-   *       404:
-   *         description: Property not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async getPropertyFiles(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -218,39 +191,7 @@ export class PropertyFileController {
       ErrorUtils.handleGenericError(res, err, 'Failed to download file');
     }
   }
-
-  /**
-   * @swagger
-   * /properties/files/{fileId}:
-   *   put:
-   *     summary: Update a property file
-   *     tags: [PropertyFiles]
-   *     parameters:
-   *       - in: path
-   *         name: fileId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: File ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               fileName:
-   *                 type: string
-   *               description:
-   *                 type: string
-   *     responses:
-   *       200:
-   *         description: File updated successfully
-   *       404:
-   *         description: File not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async updateFile(req: Request, res: Response) {
     try {
       const { fileId } = req.params;
@@ -266,34 +207,7 @@ export class PropertyFileController {
       ErrorUtils.handleGenericError(res, err, 'Failed to update file');
     }
   }
-
-  /**
-   * @swagger
-   * /properties/{propertyId}/files/{fileId}:
-   *   delete:
-   *     summary: Delete a property file
-   *     tags: [PropertyFiles]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *       - in: path
-   *         name: fileId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: File ID
-   *     responses:
-   *       200:
-   *         description: File deleted successfully
-   *       404:
-   *         description: File or Property not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async deleteFile(req: Request, res: Response) {
     try {
       const { propertyId, fileId } = req.params;

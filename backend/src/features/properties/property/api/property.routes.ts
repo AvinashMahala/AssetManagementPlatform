@@ -7,7 +7,7 @@ import { createPropertyFilesRouter } from './property.files.routes';
 import { createPropertyTemplatesRouter } from './property.templates.routes';
 import { validateZodRequest } from '@/shared/middleware/validationMiddleware';
 import { asyncHandler } from '@/shared/middleware/errorHandler';
-import { createPropertySchema, updatePropertySchema, updatePropertyStatusSchema, setPropertyTemplateSchema } from './property.validation';
+import { createPropertySchema, updatePropertySchema, updatePropertyStatusSchema, setPropertyTemplateSchema, getPropertySchema } from './property.validation';
 
 /**
  * Property routes factory
@@ -38,16 +38,25 @@ export const createPropertyRoutes = (
   const propertyFileUpload = defaultMemoryUploader;
 
   // Core property CRUD routes
+  // Get all Properties.
   router.get('/', auth, asyncHandler(controller.getAll.bind(controller)));
-  router.get('/:id', auth, asyncHandler(controller.getById.bind(controller)));
+  // Get a single Property by ID.
+  router.get('/:id', auth, validateZodRequest(getPropertySchema), asyncHandler(controller.getById.bind(controller)));
+  //Create a new Property.
   router.post('/', auth, validateZodRequest(createPropertySchema), asyncHandler(controller.create.bind(controller)));
+  // Update an existing Property by ID.
   router.put('/:id', auth, validateZodRequest(updatePropertySchema), asyncHandler(controller.update.bind(controller)));
+  // Delete a Property by ID.
   router.delete('/:id', auth, asyncHandler(controller.delete.bind(controller)));
 
   // Status and template management
+  // Update Property status
   router.patch('/:id/status', auth, validateZodRequest(updatePropertyStatusSchema), asyncHandler(controller.updateStatus.bind(controller)));
-  router.get('/:id/template', auth, asyncHandler(controller.getPropertyTemplate.bind(controller)));
+  // Property template management
+  router.get('/:id/template', auth, validateZodRequest(getPropertySchema), asyncHandler(controller.getPropertyTemplate.bind(controller)));
+  // Set or update Property template
   router.put('/:id/template', auth, validateZodRequest(setPropertyTemplateSchema), asyncHandler(controller.setPropertyTemplate.bind(controller)));
+  // Remove Property template
   router.delete('/:id/template', auth, asyncHandler(controller.removePropertyTemplate.bind(controller)));
 
   // File-related routes (optional). The `fileController` is injected so the

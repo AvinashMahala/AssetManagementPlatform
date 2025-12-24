@@ -7,6 +7,9 @@ import { UpdatePropertyUseCase } from '../core/use-cases/UpdateProperty.usecase.
 import { DeletePropertyUseCase } from '../core/use-cases/DeleteProperty.usecase.js';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
+import { ValidationUtils } from '@/shared/utils/validation.js';
+import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
+import { PropertyNotFoundError } from '../core/errors/PropertyNotFoundError.js';
 import { PropertyInput } from '../core/types/property.types.js';
 import { createModuleLogger } from '@/shared/utils/logger.js';
 
@@ -21,28 +24,7 @@ export class PropertyController {
     private deletePropertyUseCase: DeletePropertyUseCase
   ) {}
 
-  /**
-   * @swagger
-   * /properties:
-   *   get:
-   *     summary: Get all properties
-   *     tags: [Properties]
-   *     parameters:
-   *       - in: query
-   *         name: ownerId
-   *         schema:
-   *           type: string
-   *         description: Filter by owner ID
-   *     responses:
-   *       200:
-   *         description: List of properties
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Property'
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async getAll(req: Request, res: Response) {
     try {
       const { ownerId } = req.query;
@@ -53,61 +35,36 @@ export class PropertyController {
     }
   }
 
-  /**
-   * @swagger
-   * /properties/{id}:
-   *   get:
-   *     summary: Get property by ID
-   *     tags: [Properties]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     responses:
-   *       200:
-   *         description: Property details
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Property'
-   *       404:
-   *         description: Property not found
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
+
+      // Validate ID format early and return 400 if invalid
+      const idValidation = ValidationUtils.validateUUID(id);
+      if (!idValidation.isValid) {
+        return ResponseUtils.badRequest(res, ERROR_MESSAGES.PROPERTY.INVALID_ID);
+      }
+
       const property = await this.getPropertyByIdUseCase.execute(id);
       ResponseUtils.success(res, property);
     } catch (err) {
+      // Not found -> 404
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      // Database related errors -> map to friendly messages where possible
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
+      // Fallback: return consistent/meaningful 500 message
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch property');
     }
   }
 
-  /**
-   * @swagger
-   * /properties:
-   *   post:
-   *     summary: Create a new property
-   *     tags: [Properties]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/PropertyInput'
-   *     responses:
-   *       201:
-   *         description: Property created successfully
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Property'
-   *       400:
-   *         description: Invalid input
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async create(req: AuthenticatedRequest, res: Response) {
     try {
       const propertyData: PropertyInput = req.body;
@@ -123,6 +80,18 @@ export class PropertyController {
         } else if (!propertyData.ownerId) {
           propertyData.ownerId = authenticatedUser.id;
         }
+      }
+
+      // Defensive normalization in case request did not pass through Zod middleware
+      // Normalize legacy images -> buildingPhotos
+      if ((req.body as any).images && !propertyData.buildingPhotos) {
+        propertyData.buildingPhotos = (req.body as any).images;
+      }
+      // Normalize amenities array/object -> buildingAmenities
+      if (Array.isArray((req.body as any).amenities) && !propertyData.buildingAmenities) {
+        propertyData.buildingAmenities = (req.body as any).amenities;
+      } else if ((req.body as any).amenities && !propertyData.buildingAmenities && (req.body as any).amenities.basic) {
+        propertyData.buildingAmenities = (req.body as any).amenities.basic;
       }
 
       const property = await this.createPropertyUseCase.execute(propertyData);
@@ -222,37 +191,7 @@ export class PropertyController {
     }
   }
 
-  /**
-   * @swagger
-   * /properties/{id}:
-   *   put:
-   *     summary: Update a property
-   *     tags: [Properties]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/PropertyInput'
-   *     responses:
-   *       200:
-   *         description: Property updated successfully
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Property'
-   *       404:
-   *         description: Property not found
-   *       400:
-   *         description: Invalid input
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -262,40 +201,42 @@ export class PropertyController {
       const errorMessage = (err as Error).message;
       const { id } = req.params;
       logger.error('Property update error', err, { errorMessage, propertyId: id });
+
+      // Not found
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
       if (errorMessage.includes('required') || errorMessage.includes('Invalid') ||
           errorMessage.includes('cannot be') || errorMessage.includes('must be')) {
-        ResponseUtils.badRequest(res, errorMessage);
-      } else {
-        ErrorUtils.handleGenericError(res, err, 'Failed to update property');
+        return ResponseUtils.badRequest(res, errorMessage);
       }
+
+      // Database errors
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
+      ErrorUtils.handleGenericError(res, err, 'Failed to update property');
     }
   }
 
-  /**
-   * @swagger
-   * /properties/{id}:
-   *   delete:
-   *     summary: Delete a property
-   *     tags: [Properties]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     responses:
-   *       204:
-   *         description: Property deleted successfully
-   *       404:
-   *         description: Property not found
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
       await this.deletePropertyUseCase.execute(id);
       res.status(204).send();
     } catch (err) {
+      // Not found
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
       ErrorUtils.handleGenericError(res, err, 'Failed to delete property');
     }
   }
@@ -307,6 +248,14 @@ export class PropertyController {
       const property = await this.updatePropertyUseCase.execute({ id, data: { status } });
       ResponseUtils.success(res, property);
     } catch (err) {
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
       ErrorUtils.handleGenericError(res, err, 'Failed to update property status');
     }
   }
@@ -325,9 +274,19 @@ export class PropertyController {
         templateOverrides: property.templateOverrides
       });
     } catch (err) {
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch property template');
     }
   }
+
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
 
   async setPropertyTemplate(req: Request, res: Response) {
     try {
@@ -339,9 +298,19 @@ export class PropertyController {
       });
       ResponseUtils.success(res, property);
     } catch (err) {
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
       ErrorUtils.handleGenericError(res, err, 'Failed to set property template');
     }
   }
+
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
 
   async removePropertyTemplate(req: Request, res: Response) {
     try {
@@ -352,7 +321,17 @@ export class PropertyController {
       });
       ResponseUtils.success(res, property);
     } catch (err) {
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
       ErrorUtils.handleGenericError(res, err, 'Failed to remove property template');
     }
   }
+
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
 }

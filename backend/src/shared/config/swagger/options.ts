@@ -1,6 +1,7 @@
 import swaggerJSDoc from 'swagger-jsdoc';
 import { baseDefinition } from './base.js';
 import { allTags, allSchemas, allSecuritySchemes } from './apis/index.js';
+import { allResponses } from './apis/index.js';
 
 const options = {
   definition: {
@@ -9,6 +10,7 @@ const options = {
     components: {
       schemas: allSchemas,
       securitySchemes: allSecuritySchemes,
+      responses: allResponses,
     },
   },
   apis: [

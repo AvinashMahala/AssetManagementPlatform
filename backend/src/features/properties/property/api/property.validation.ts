@@ -30,6 +30,14 @@ export const createPropertySchema = z.object({
     type: z.nativeEnum(PropertyType).optional(),
     propertyType: z.nativeEnum(PropertyType).optional(),
     description: z.string().optional(),
+    // Accept owner fields (optional) — ownerId may be supplied by admin, ownerDetails may be provided
+    ownerId: z.string().uuid().optional(),
+    ownerDetails: z.object({
+      name: z.string().min(1),
+      mobileNumbers: z.array(z.string()).optional().default([]),
+      emailIds: z.array(z.string()).optional().default([]),
+      website: z.string().optional(),
+    }).optional(),
     // Accept numeric total area (sq ft). Allow string numbers by preprocessing.
     totalArea: z.preprocess((v) => {
       if (typeof v === 'string') return parseFloat(v as string);
@@ -42,7 +50,11 @@ export const createPropertySchema = z.object({
     }, z.number().min(1).max(100000)).optional(),
     // Allow amenities as either array of strings (legacy) or structured object
     amenities: z.union([z.array(z.string()), AmenitiesObject]).optional(),
+    // Legacy image field
     images: z.array(z.string()).optional(),
+    // Canonical fields accepted directly
+    buildingAmenities: z.array(z.string()).optional(),
+    buildingPhotos: z.array(z.string()).optional(),
   })
   .refine((d) => !!(d.type || d.propertyType), { message: 'propertyType (type) is required' })
   .transform((d) => {
@@ -63,6 +75,13 @@ export const createPropertySchema = z.object({
 
     if (Array.isArray(normalized.amenities)) {
       normalized.amenities = { basic: normalized.amenities, luxury: [], additionalInfo: { petFriendly: false, smokingAllowed: false, eventsAllowed: false } };
+      // also preserve legacy building amenities array for downstream validation
+      if (!normalized.buildingAmenities) normalized.buildingAmenities = normalized.amenities.basic;
+    }
+
+    // If amenities provided as object, populate buildingAmenities from basic list
+    if (normalized.amenities && !normalized.buildingAmenities && typeof normalized.amenities === 'object') {
+      normalized.buildingAmenities = normalized.amenities.basic || [];
     }
 
     // Remove legacy 'type' to avoid ambiguity downstream
@@ -76,6 +95,16 @@ export const createPropertySchema = z.object({
     // Ensure numeric totalArea is present if provided
     if ((normalized as any).totalArea !== undefined) {
       normalized.totalArea = Number(normalized.totalArea);
+    }
+
+    // Normalize legacy images -> buildingPhotos
+    if ((d as any).images && !(normalized as any).buildingPhotos) {
+      normalized.buildingPhotos = (d as any).images;
+    }
+
+    // If buildingPhotos provided explicitly, ensure it's present
+    if ((d as any).buildingPhotos) {
+      normalized.buildingPhotos = (d as any).buildingPhotos;
     }
 
     return normalized;
@@ -100,8 +129,17 @@ export const updatePropertySchema = z.object({
     type: z.nativeEnum(PropertyType).optional(),
     propertyType: z.nativeEnum(PropertyType).optional(),
     description: z.string().optional(),
+    ownerId: z.string().uuid().optional(),
+    ownerDetails: z.object({
+      name: z.string().min(1),
+      mobileNumbers: z.array(z.string()).optional().default([]),
+      emailIds: z.array(z.string()).optional().default([]),
+      website: z.string().optional(),
+    }).optional(),
     amenities: z.union([z.array(z.string()), AmenitiesObject]).optional(),
     images: z.array(z.string()).optional(),
+    buildingAmenities: z.array(z.string()).optional(),
+    buildingPhotos: z.array(z.string()).optional(),
     status: z.nativeEnum(PropertyStatus).optional(),
   })
   .refine((d) => !(d && !(d.type || d.propertyType)), { message: 'propertyType (type) is required when present' })
@@ -123,6 +161,19 @@ export const updatePropertySchema = z.object({
     if ((normalized as any).totalArea !== undefined) normalized.totalArea = Number(normalized.totalArea);
     if (Array.isArray(normalized.amenities)) {
       normalized.amenities = { basic: normalized.amenities, luxury: [], additionalInfo: { petFriendly: false, smokingAllowed: false, eventsAllowed: false } };
+      if (!normalized.buildingAmenities) normalized.buildingAmenities = normalized.amenities.basic;
+    }
+
+    if (normalized.amenities && !normalized.buildingAmenities && typeof normalized.amenities === 'object') {
+      normalized.buildingAmenities = normalized.amenities.basic || [];
+    }
+
+    if ((d as any).images && !(normalized as any).buildingPhotos) {
+      normalized.buildingPhotos = (d as any).images;
+    }
+
+    if ((d as any).buildingPhotos) {
+      normalized.buildingPhotos = (d as any).buildingPhotos;
     }
     return normalized;
   }),
@@ -134,6 +185,12 @@ export const updatePropertyStatusSchema = z.object({
   }),
   body: z.object({
     status: z.nativeEnum(PropertyStatus),
+  }),
+});
+
+export const getPropertySchema = z.object({
+  params: z.object({
+    id: z.string().uuid(),
   }),
 });
 

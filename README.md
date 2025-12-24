@@ -622,6 +622,28 @@ Content-Type: application/json
 
 ### Properties API
 
+#### Legacy field compatibility
+
+The Property create/update endpoints accept several legacy field names and will normalize them to the canonical shape expected by the backend. This helps older clients continue working without immediate changes.
+
+- `images` -> normalized to `buildingPhotos` (array of image URLs)
+- `amenities` (array) -> normalized to `amenities` (structured) and `buildingAmenities` (basic list)
+- `area` (string or number) -> normalized to `totalArea` (number, strings are parsed)
+- `type` -> normalized to `propertyType` (enum)
+
+Example (legacy-style):
+```json
+{
+  "name": "Legacy Property",
+  "type": "house",
+  "address": "56 Old Road, Pune",
+  "area": "900",
+  "amenities": ["parking","garden"],
+  "images": ["https://example.com/1.jpg"]
+}
+```
+
+
 #### List Properties
 ```http
 GET /api/properties

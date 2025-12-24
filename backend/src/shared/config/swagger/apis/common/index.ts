@@ -1,1 +1,1 @@
-export { commonSchemas, commonSecuritySchemes } from './schemas.js';
+export { commonSchemas, commonSecuritySchemes, commonResponses } from './schemas.js';

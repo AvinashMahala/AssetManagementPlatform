@@ -155,11 +155,11 @@ export interface PropertyInput {
   parkingSpaces?: number;
   buildingAmenities?: string[];
   buildingPhotos?: string[];
-  ownerDetails: OwnerContact;
+  ownerDetails?: OwnerContact;
   amenities?: PropertyAmenities;
   files?: PropertyFile[];
   receiptTemplate?: Omit<PropertyReceiptTemplate, 'id' | 'propertyId' | 'createdAt' | 'updatedAt'>;
-  ownerId: string;
+  ownerId?: string;
   coOwners?: string[];
   receiptSettings?: PropertyReceiptSettings;
   templateId?: string;

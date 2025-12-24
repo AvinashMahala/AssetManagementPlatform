@@ -240,6 +240,14 @@ Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
+## OpenAPI / Swagger
+
+- Generate the OpenAPI JSON: `npm run generate-swagger`
+- Validate the generated spec: `npm run validate-swagger` (uses `@apidevtools/swagger-cli` via `npx`)
+- Convenience: `npm run check-swagger` will generate and validate in one step (good for CI)
+
+If you hit import/module errors while generating the spec locally, run the generator from the `backend` folder so TypeScript paths resolve correctly (the script uses `tsx`).
+
 #### Update Property
 ```http
 PUT /api/properties/:id

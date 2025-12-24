@@ -16,55 +16,7 @@ export class PropertyReceiptTemplateController {
     private propertyReceiptTemplateService: PropertyReceiptTemplateService
   ) {}
 
-  /**
-   * @swagger
-   * /properties/{propertyId}/receipt-template:
-   *   post:
-   *     summary: Create a receipt template for a property
-   *     tags: [PropertyReceiptTemplates]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - templateName
-   *             properties:
-   *               templateName:
-   *                 type: string
-   *               headerText:
-   *                 type: string
-   *               footerText:
-   *                 type: string
-   *               logoUrl:
-   *                 type: string
-   *               wallets:
-   *                 type: array
-   *                 items:
-   *                   type: object
-   *                   properties:
-   *                     type:
-   *                       type: string
-   *                     address:
-   *                       type: string
-   *     responses:
-   *       201:
-   *         description: Receipt template created successfully
-   *       400:
-   *         description: Invalid input or template already exists
-   *       404:
-   *         description: Property not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async createTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -89,28 +41,7 @@ export class PropertyReceiptTemplateController {
       }
     }
   }
-
-  /**
-   * @swagger
-   * /properties/{propertyId}/receipt-template:
-   *   get:
-   *     summary: Get receipt template for a property
-   *     tags: [PropertyReceiptTemplates]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     responses:
-   *       200:
-   *         description: Receipt template details
-   *       404:
-   *         description: Property or template not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async getTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -132,51 +63,7 @@ export class PropertyReceiptTemplateController {
     }
   }
 
-  /**
-   * @swagger
-   * /properties/{propertyId}/receipt-template:
-   *   put:
-   *     summary: Update a receipt template
-   *     tags: [PropertyReceiptTemplates]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               templateName:
-   *                 type: string
-   *               headerText:
-   *                 type: string
-   *               footerText:
-   *                 type: string
-   *               logoUrl:
-   *                 type: string
-   *               wallets:
-   *                 type: array
-   *                 items:
-   *                   type: object
-   *                   properties:
-   *                     type:
-   *                       type: string
-   *                     address:
-   *                       type: string
-   *     responses:
-   *       200:
-   *         description: Receipt template updated successfully
-   *       404:
-   *         description: Property or template not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async updateTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -204,27 +91,7 @@ export class PropertyReceiptTemplateController {
     }
   }
 
-  /**
-   * @swagger
-   * /properties/{propertyId}/receipt-template:
-   *   delete:
-   *     summary: Delete a receipt template
-   *     tags: [PropertyReceiptTemplates]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     responses:
-   *       200:
-   *         description: Receipt template deleted successfully
-   *       404:
-   *         description: Property or template not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async deleteTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -245,33 +112,7 @@ export class PropertyReceiptTemplateController {
       ErrorUtils.handleGenericError(res, err, 'Failed to delete receipt template');
     }
   }
-
-  /**
-   * @swagger
-   * /properties/{propertyId}/receipt-template/upi-links:
-   *   get:
-   *     summary: Generate UPI links for a property
-   *     tags: [PropertyReceiptTemplates]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *       - in: query
-   *         name: amount
-   *         schema:
-   *           type: number
-   *         description: Amount for UPI link
-   *     responses:
-   *       200:
-   *         description: List of UPI links
-   *       404:
-   *         description: Property or template not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
   async generateUPILinks(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;

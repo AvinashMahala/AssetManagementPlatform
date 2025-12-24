@@ -13,6 +13,11 @@
     "test": "jest",
     "init-db": "tsx ../db/scripts/init.ts",
     "seed:templates": "tsx ../db/seeds/typescript/seed-receipt-templates.ts"
+    ,
+    "generate-swagger": "tsx scripts/generate-swagger.ts",
+    "validate-swagger": "npx @apidevtools/swagger-cli validate public/openapi.json --verbose"
+    ,
+    "check-swagger": "npm run generate-swagger && npm run validate-swagger"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",

@@ -6,7 +6,8 @@ import { unitsTags, unitsSchemas } from './units/index.js';
 import { tenantsTags, tenantsSchemas } from './tenants/index.js';
 import { leasesTags, leasesSchemas } from './leases/index.js';
 import { paymentsTags, paymentsSchemas } from './payments/index.js';
-import { commonSchemas, commonSecuritySchemes } from './common/index.js';
+import { receiptTemplatesTags, receiptTemplatesSchemas } from './receipt-templates/schemas.js';
+import { commonSchemas, commonSecuritySchemes, commonResponses } from './common/index.js';
 
 import { OpenAPIV3 } from 'openapi-types';
 
@@ -19,6 +20,7 @@ export const allTags: OpenAPIV3.TagObject[] = [
   ...tenantsTags,
   ...leasesTags,
   ...paymentsTags,
+  ...receiptTemplatesTags,
 ];
 
 // Combine all schemas
@@ -30,7 +32,12 @@ export const allSchemas: Record<string, OpenAPIV3.SchemaObject> = {
   ...tenantsSchemas,
   ...leasesSchemas,
   ...paymentsSchemas,
+  ...receiptTemplatesSchemas,
   ...commonSchemas,
+};
+
+export const allResponses: Record<string, OpenAPIV3.ResponseObject> = {
+  ...commonResponses,
 };
 
 // Combine all security schemes
