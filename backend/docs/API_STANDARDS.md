@@ -188,3 +188,5 @@ export const itemSchemas = {
 ### Viewing Documentation
 
 The API documentation is available at `/api-docs` when the server is running.
+
+You can also fetch the raw OpenAPI JSON at `/openapi.json`. The Swagger UI includes an "OpenAPI (JSON)" selector that points to this URL for easy download or external consumption.

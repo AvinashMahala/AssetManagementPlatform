@@ -282,6 +282,14 @@ const startServer = async () => {
   app.use('/invoices', express.static('public/invoices'));
   app.use('/api/receipts', express.static('public/receipts'));
 
+  // Expose raw OpenAPI/Swagger JSON for external tools and direct access
+  app.get('/openapi.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    // Prevent caching in dev; consumers can cache in prod as needed
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(specs);
+  });
+
   // Logging middleware (must be before routes)
   app.use(requestIdMiddleware);
   app.use(requestLoggingMiddleware);

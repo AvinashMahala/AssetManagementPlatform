@@ -363,6 +363,13 @@ export class AuthController {
 }
 ```
 
+### API Documentation (Swagger / OpenAPI) 🔖
+
+The API documentation UI is available at: `http://localhost:<PORT>/api-docs`.
+
+You can also retrieve the raw OpenAPI JSON at: `http://localhost:<PORT>/openapi.json` — useful for external tools that consume OpenAPI specs or for downloading a copy.
+
+
 ### Services
 
 Services contain business logic and domain rules:

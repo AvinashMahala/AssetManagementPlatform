@@ -1,0 +1,9 @@
+{
+  "logoUrl": "https://cdn.example.com/new-logo.png",
+  "bankName": "New Bank",
+  "accountNumber": "9876543210",
+  "ifscCode": "NEWB0000123",
+  "wallets": [{ "type": "GPAY", "number": "+919912345678", "name": "Acme Wallet" }],
+  "receiptPrefix": "RCPT-",
+  "receiptCounter": 1501
+}

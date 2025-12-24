@@ -110,6 +110,8 @@ export class PropertyController {
   async create(req: Request, res: Response) {
     try {
       const propertyData: PropertyInput = req.body;
+      // Debug: log incoming payload to help trace missing totalArea issues (temporary)
+      logger.debug('Create property payload', { keys: Object.keys(req.body || {}), area: (req.body as any).area, totalArea: (req.body as any).totalArea });
       
       // Handle ownerId based on user role
       const authenticatedUser = (req as any).user;

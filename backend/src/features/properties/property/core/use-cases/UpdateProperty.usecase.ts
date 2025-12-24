@@ -44,6 +44,13 @@ export class UpdatePropertyUseCase implements IUseCase<{ id: string; data: Parti
       }
     }
 
+    // Backwards compatibility: accept legacy `area` field in update payloads
+    const legacyArea = (data as any).area;
+    if ((data as any).totalArea === undefined && legacyArea !== undefined) {
+      const parsed = typeof legacyArea === 'string' ? parseFloat(legacyArea) : legacyArea;
+      (data as any).totalArea = parsed;
+    }
+
     if (data.totalArea !== undefined) {
       const areaValidation = ValidationUtils.validatePropertyArea(data.totalArea);
       if (!areaValidation.isValid) {

@@ -30,6 +30,16 @@ export const createPropertySchema = z.object({
     type: z.nativeEnum(PropertyType).optional(),
     propertyType: z.nativeEnum(PropertyType).optional(),
     description: z.string().optional(),
+    // Accept numeric total area (sq ft). Allow string numbers by preprocessing.
+    totalArea: z.preprocess((v) => {
+      if (typeof v === 'string') return parseFloat(v as string);
+      return v;
+    }, z.number().min(1).max(100000)).optional(),
+    // Legacy field 'area' accepted and normalized below
+    area: z.preprocess((v) => {
+      if (typeof v === 'string') return parseFloat(v as string);
+      return v;
+    }, z.number().min(1).max(100000)).optional(),
     // Allow amenities as either array of strings (legacy) or structured object
     amenities: z.union([z.array(z.string()), AmenitiesObject]).optional(),
     images: z.array(z.string()).optional(),
@@ -58,6 +68,16 @@ export const createPropertySchema = z.object({
     // Remove legacy 'type' to avoid ambiguity downstream
     delete normalized.type;
 
+    // Normalize legacy 'area' -> 'totalArea' if present
+    if ((normalized as any).area !== undefined && (normalized as any).totalArea === undefined) {
+      normalized.totalArea = (normalized as any).area;
+    }
+
+    // Ensure numeric totalArea is present if provided
+    if ((normalized as any).totalArea !== undefined) {
+      normalized.totalArea = Number(normalized.totalArea);
+    }
+
     return normalized;
   }),
 });
@@ -69,6 +89,14 @@ export const updatePropertySchema = z.object({
   body: z.object({
     name: z.string().min(1).max(255).optional(),
     address: z.union([z.string().min(1), AddressObject]).optional(),
+    totalArea: z.preprocess((v) => {
+      if (typeof v === 'string') return parseFloat(v as string);
+      return v;
+    }, z.number().min(1).max(100000)).optional(),
+    area: z.preprocess((v) => {
+      if (typeof v === 'string') return parseFloat(v as string);
+      return v;
+    }, z.number().min(1).max(100000)).optional(),
     type: z.nativeEnum(PropertyType).optional(),
     propertyType: z.nativeEnum(PropertyType).optional(),
     description: z.string().optional(),
@@ -89,6 +117,10 @@ export const updatePropertySchema = z.object({
       };
     }
     delete normalized.type;
+    if ((normalized as any).area !== undefined && (normalized as any).totalArea === undefined) {
+      normalized.totalArea = (normalized as any).area;
+    }
+    if ((normalized as any).totalArea !== undefined) normalized.totalArea = Number(normalized.totalArea);
     if (Array.isArray(normalized.amenities)) {
       normalized.amenities = { basic: normalized.amenities, luxury: [], additionalInfo: { petFriendly: false, smokingAllowed: false, eventsAllowed: false } };
     }

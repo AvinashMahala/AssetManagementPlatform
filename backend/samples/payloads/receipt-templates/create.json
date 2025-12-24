@@ -1,0 +1,15 @@
+{
+  "name": "Professional Template",
+  "type": "professional",
+  "description": "Clean professional layout",
+  "defaultSettings": {
+    "theme": { "primaryColor": "#1E293B", "secondaryColor": "#64748B", "fontFamily": "Inter, sans-serif", "fontSize": "medium" },
+    "layout": { "showLogo": true, "logoPosition": "top-left", "showWatermark": false, "paperSize": "a4", "orientation": "portrait" },
+    "content": { "showPropertyAddress": true, "showTenantAddress": true, "showPaymentBreakdown": true, "showBalanceForward": false, "showTermsAndConditions": true, "showSignature": true },
+    "paymentOptions": { "showBankDetails": true, "showUPI": true, "showQRCode": true, "showWallets": true },
+    "numbering": { "prefix": "RCPT-", "startNumber": 1000, "includeYear": true, "includeMonth": false }
+  },
+  "isActive": true,
+  "isDefault": false,
+  "sortOrder": 2
+}

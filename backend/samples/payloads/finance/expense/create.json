@@ -1,0 +1,9 @@
+{
+  "propertyId": "prop_01EXAMPLE",
+  "unitId": "unit_01EXAMPLE",
+  "amount": 2500,
+  "date": "2025-06-01",
+  "category": "MAINTENANCE",
+  "description": "Plumbing repair",
+  "vendor": "ABC Plumbing"
+}

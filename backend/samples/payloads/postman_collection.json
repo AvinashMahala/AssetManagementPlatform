@@ -1,0 +1,479 @@
+{
+  "info": {
+    "name": "AMP Backend - Sample Payloads",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Auto-generated Postman collection with request examples and sample responses. Replace {{baseUrl}} and {{token}} before running."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"ashakumar\",\n  \"email\": \"asha.kumar@example.com\",\n  \"password\": \"s3cureP@ss\",\n  \"firstName\": \"Asha\",\n  \"lastName\": \"Kumar\",\n  \"role\": \"user\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{ \"success\": true, \"data\": { \"id\": \"user_01EXAMPLE\", \"username\": \"ashakumar\", \"email\": \"asha.kumar@example.com\", \"role\": \"user\" }, \"tokens\": { \"accessToken\": \"<jwt>\", \"refreshToken\": \"<refresh>\" } }"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{ \"success\": false, \"error\": { \"message\": \"Validation failed: email is required\" } }"
+            },
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "body": "{ \"success\": false, \"error\": { \"message\": \"Unexpected server error\" } }"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response has user id and tokens', function () { var json = pm.response.json(); pm.expect(json.success).to.be.true; pm.expect(json.data).to.have.property('id'); pm.expect(json.tokens).to.have.property('accessToken'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"asha.kumar@example.com\",\n  \"password\": \"s3cureP@ss\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] }
+          },
+          "response": [
+            { "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true, \"data\": { \"tokens\": { \"accessToken\": \"<jwt>\", \"refreshToken\": \"<refresh>\" } } }" },
+            { "name": "401 Unauthorized", "status": "Unauthorized", "code": 401, "body": "{ \"success\": false, \"error\": { \"message\": \"Invalid credentials\" } }" }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains access token', function () { var json = pm.response.json(); pm.expect(json.data.tokens).to.have.property('accessToken'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"ref_01EXAMPLEREFRESHTOKEN\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/refresh-token", "host": ["{{baseUrl}}"], "path": ["auth","refresh-token"] }
+          },
+          "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true, \"data\": { \"tokens\": { \"accessToken\": \"<jwt>\" } } }" }]
+        }
+      ]
+    },
+
+    {
+      "name": "Properties",
+      "item": [
+        {
+          "name": "Create Lease",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"prop_01EXAMPLE\",\n  \"unitId\": \"unit_01EXAMPLE\",\n  \"tenantId\": \"tenant_01EXAMPLE\",\n  \"startDate\": \"2025-07-01\",\n  \"endDate\": \"2026-06-30\",\n  \"rentAmount\": 20000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/leases", "host": ["{{baseUrl}}"], "path": ["leases"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{ \"success\": true, \"data\": { \"id\": \"lease_01EXAMPLE\", \"rentAmount\": 20000 } }"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Create Lease returns 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Lease id present', function () { var json = pm.response.json(); pm.expect(json.data).to.have.property('id'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Property",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Oak Apartments - Renovated\",\n  \"description\": \"Recent renovations completed\"\n}" },
+            "url": { "raw": "{{baseUrl}}/properties/:id", "host": ["{{baseUrl}}"], "path": ["properties", ":id"] }
+          },
+          "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true, \"data\": { \"id\": \":id\" } }" }]
+        },
+        {
+          "name": "Update Property Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"occupied\"\n}" },
+            "url": { "raw": "{{baseUrl}}/properties/:id/status", "host": ["{{baseUrl}}"], "path": ["properties", ":id","status"] }
+          },
+          "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }]
+        }
+      ]
+    },
+
+    {
+      "name": "Files",
+      "item": [
+        {
+          "name": "Upload File (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" },
+                { "key": "propertyId", "value": "prop_01EXAMPLE", "type": "text" },
+                { "key": "description", "value": "Lease agreement scan", "type": "text" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/files/upload", "host": ["{{baseUrl}}"], "path": ["files","upload"] }
+          },
+          "response": [
+            { "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true, \"data\": { \"fileId\": \"file_01EXAMPLE\", \"fileName\": \"lease.pdf\", \"mimeType\": \"application/pdf\" } }" },
+            { "name": "400 Bad Request", "status": "Bad Request", "code": 400, "body": "{ \"success\": false, \"error\": { \"message\": \"No file provided\" } }" }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('File id present', function () { var json = pm.response.json(); pm.expect(json.data).to.have.property('fileId'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update File Metadata",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"description\": \"Updated lease agreement (signed)\",\n  \"fileType\": \"document\"\n}" },
+            "url": { "raw": "{{baseUrl}}/files/:fileId", "host": ["{{baseUrl}}"], "path": ["files", ":fileId"] }
+          },
+          "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }]
+        }
+      ]
+    },
+
+    {
+      "name": "Units",
+      "item": [
+        {
+          "name": "Create Unit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"propertyId\": \"prop_01EXAMPLE\",\n  \"unitNumber\": \"A-101\",\n  \"unitType\": \"apartment\",\n  \"area\": 900,\n  \"monthlyRent\": 15000,\n  \"securityDeposit\": 30000\n}" },
+            "url": { "raw": "{{baseUrl}}/units", "host": ["{{baseUrl}}"], "path": ["units"] }
+          },
+          "response": [
+            { "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true, \"data\": { \"id\": \"unit_01EXAMPLE\", \"unitNumber\": \"A-101\", \"monthlyRent\": 15000 } }" },
+            { "name": "400 Bad Request", "status": "Bad Request", "code": 400, "body": "{ \"success\": false, \"error\": { \"message\": \"monthlyRent must be positive\" } }" }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response data has id and rent', function () { var json = pm.response.json(); pm.expect(json.data).to.have.property('id'); pm.expect(json.data.monthlyRent).to.be.a('number'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        { "name": "Update Unit", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"monthlyRent\": 16000\n}" }, "url": { "raw": "{{baseUrl}}/units/:id", "host": ["{{baseUrl}}"], "path": ["units", ":id"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Update Unit Status", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"occupied\"\n}" }, "url": { "raw": "{{baseUrl}}/units/:id/status", "host": ["{{baseUrl}}"], "path": ["units", ":id", "status"] } }, "response": [] }
+      ]
+    },
+
+    {
+      "name": "Unit Tenants",
+      "item": [
+        { "name": "Assign Tenant to Unit", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"unitId\": \"unit_01EXAMPLE\",\n  \"tenantId\": \"tenant_01EXAMPLE\",\n  \"startDate\": \"2025-07-01\",\n  \"endDate\": \"2026-06-30\",\n  \"status\": \"active\"\n}" }, "url": { "raw": "{{baseUrl}}/unit-tenants", "host": ["{{baseUrl}}"], "path": ["unit-tenants"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "Update Tenant Assignment", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"startDate\": \"2025-08-01\",\n  \"endDate\": \"2026-07-31\"\n}" }, "url": { "raw": "{{baseUrl}}/unit-tenants/:unitId/:tenantId", "host": ["{{baseUrl}}"], "path": ["unit-tenants", ":unitId", ":tenantId"] } }
+    }]
+    },
+
+    {
+      "name": "Meters & Readings",
+      "item": [
+        { "name": "Create Meter", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"propertyId\": \"prop_01EXAMPLE\",\n  \"unitId\": \"unit_01EXAMPLE\",\n  \"type\": \"electric\",\n  \"serialNumber\": \"MTR-2025-0001\"\n}" }, "url": { "raw": "{{baseUrl}}/meters", "host": ["{{baseUrl}}"], "path": ["meters"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "Create Meter Reading", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"meterId\": \"meter_01EXAMPLE\",\n  \"readingValue\": 12345.6,\n  \"readingDate\": \"2025-06-15T10:00:00.000Z\"\n}" }, "url": { "raw": "{{baseUrl}}/meter-readings", "host": ["{{baseUrl}}"], "path": ["meter-readings"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] }
+      ]
+    },
+
+    {
+      "name": "Unit Utilities",
+      "item": [
+        { "name": "Create Unit Utility", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"unitId\": \"unit_01EXAMPLE\",\n  \"propertyId\": \"prop_01EXAMPLE\",\n  \"utilityType\": \"electricity\",\n  \"utilityName\": \"Main Meter\",\n  \"billingMethod\": \"meter_based\"\n}" }, "url": { "raw": "{{baseUrl}}/unit-utilities", "host": ["{{baseUrl}}"], "path": ["unit-utilities"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "Calculate Charges (query)", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/unit-utilities/{unitId}/charges?startDate=2025-06-01T00:00:00.000Z&endDate=2025-06-30T23:59:59.999Z", "host": ["{{baseUrl}}"], "path": ["unit-utilities","{unitId}","charges"], "query": [{ "key": "startDate", "value": "2025-06-01T00:00:00.000Z" }, { "key": "endDate", "value": "2025-06-30T23:59:59.999Z" }] } }
+    }]
+    },
+
+    {
+      "name": "Finance - Rent Transactions",
+      "item": [
+        { "name": "Create Transaction", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"leaseId\": \"lease_01EXAMPLE\",\n  \"amount\": 15000,\n  \"transactionDate\": \"2025-06-05\",\n  \"type\": \"PAYMENT\",\n  \"description\": \"June rent payment\"\n}" }, "url": { "raw": "{{baseUrl}}/rent-transactions", "host": ["{{baseUrl}}"], "path": ["rent-transactions"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "Update Transaction", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"amount\": 15500,\n  \"description\": \"Adjusted June rent with late fee\"\n}" }, "url": { "raw": "{{baseUrl}}/rent-transactions/:id", "host": ["{{baseUrl}}"], "path": ["rent-transactions", ":id"] } }
+    }]
+    },
+
+    {
+      "name": "Finance - Rent Payments",
+      "item": [
+        { "name": "Create Payment", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"leaseId\": \"lease_01EXAMPLE\",\n  \"amount\": 15000,\n  \"paymentDate\": \"2025-06-05\",\n  \"paymentMethod\": \"bank_transfer\"\n}" }, "url": { "raw": "{{baseUrl}}/rent-payments", "host": ["{{baseUrl}}"], "path": ["rent-payments"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "Update Payment", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"amount\": 15200,\n  \"paymentMethod\": \"upi\"\n}" }, "url": { "raw": "{{baseUrl}}/rent-payments/:id", "host": ["{{baseUrl}}"], "path": ["rent-payments", ":id"] } }
+    }]
+    },
+
+    {
+      "name": "Finance - Receipts",
+      "item": [
+        { "name": "Generate Receipt", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"paymentId\": \"pay_01F8XYZEXAMPLE\",\n  \"notes\": \"Received payment for June 2025 rent\"\n}" }, "url": { "raw": "{{baseUrl}}/receipts/generate", "host": ["{{baseUrl}}"], "path": ["receipts","generate"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true, \"data\": { \"receiptNumber\": \"RCPT-1001\" } }" }] },
+        { "name": "Generate Bulk Receipts", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"propertyId\": \"prop_01EXAMPLE\",\n  \"month\": 6,\n  \"year\": 2025,\n  \"tenantIds\": [\"tenant_01EXAMPLE\"]\n}" }, "url": { "raw": "{{baseUrl}}/receipts/generate-bulk", "host": ["{{baseUrl}}"], "path": ["receipts","generate-bulk"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true, \"data\": [] }" }] },
+        { "name": "Update Receipt", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"amount\": 15500,\n  \"description\": \"Updated receipt after adjustment\"\n}" }, "url": { "raw": "{{baseUrl}}/receipts/:id", "host": ["{{baseUrl}}"], "path": ["receipts", ":id"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Send Receipt by Email", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"tenant@example.com\"\n}" }, "url": { "raw": "{{baseUrl}}/receipts/:id/send-email", "host": ["{{baseUrl}}"], "path": ["receipts", ":id", "send-email"] } }
+    }]
+    },
+
+    {
+      "name": "Finance - Expenses",
+      "item": [
+        { "name": "Create Expense", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"propertyId\": \"prop_01EXAMPLE\",\n  \"unitId\": \"unit_01EXAMPLE\",\n  \"amount\": 2500,\n  \"date\": \"2025-06-01\",\n  \"category\": \"MAINTENANCE\",\n  \"description\": \"Plumbing repair\"\n}" }, "url": { "raw": "{{baseUrl}}/expenses", "host": ["{{baseUrl}}"], "path": ["expenses"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "Update Expense", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"amount\": 2750,\n  \"description\": \"Plumbing repair - follow up\"\n}" }, "url": { "raw": "{{baseUrl}}/expenses/:id", "host": ["{{baseUrl}}"], "path": ["expenses", ":id"] } }
+    }]
+    },
+
+    {
+      "name": "Receipt Templates & Templates",
+      "item": [
+        { "name": "Create Receipt Template", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Professional Template\",\n  \"type\": \"professional\",\n  \"description\": \"Clean professional layout\",\n  \"defaultSettings\": { \"theme\": { \"primaryColor\": \"#1E293B\" }, \"layout\": { \"showLogo\": true }, \"content\": { \"showPropertyAddress\": true }, \"paymentOptions\": { \"showBankDetails\": true }, \"numbering\": { \"prefix\": \"RCPT-\", \"startNumber\": 1000 } }\n}" }, "url": { "raw": "{{baseUrl}}/receipt-templates", "host": ["{{baseUrl}}"], "path": ["receipt-templates"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "Update Receipt Template", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Professional Template v2\"\n}" }, "url": { "raw": "{{baseUrl}}/receipt-templates/:id", "host": ["{{baseUrl}}"], "path": ["receipt-templates", ":id"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Set Property Template (overrides)", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"templateId\": \"tmpl_01EXAMPLE\",\n  \"overrides\": { \"layout\": { \"showLogo\": false } }\n}" }, "url": { "raw": "{{baseUrl}}/properties/:propertyId/template", "host": ["{{baseUrl}}"], "path": ["properties", ":propertyId", "template"] } }
+    }]
+    },
+
+    {
+      "name": "Bulk Operations",
+      "item": [
+        { "name": "Bulk Rent Collection", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"unitIds\": [\"unit_01EXAMPLE\", \"unit_02EXAMPLE\"],\n  \"billingPeriodStart\": \"2025-06-01\",\n  \"billingPeriodEnd\": \"2025-06-30\"\n}" }, "url": { "raw": "{{baseUrl}}/bulk/rent-collection", "host": ["{{baseUrl}}"], "path": ["bulk","rent-collection"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Bulk Payments", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"transactionIds\": [\"txn_01EXAMPLE\"],\n  \"amount\": 30000,\n  \"paymentMethod\": \"bank_transfer\"\n}" }, "url": { "raw": "{{baseUrl}}/bulk/payments", "host": ["{{baseUrl}}"], "path": ["bulk","payments"] } }
+    }]
+    }
+    ,
+    {
+      "name": "Receipts - Reads & Download",
+      "item": [
+        {
+          "name": "List Receipts",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipts", "host": ["{{baseUrl}}"], "path": ["receipts"] } },
+          "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true, \"data\": [] }" }]
+        },
+        {
+          "name": "Get Receipt By ID",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipts/:id", "host": ["{{baseUrl}}"], "path": ["receipts", ":id"] } },
+          "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true, \"data\": { \"id\": \":id\" } }" }]
+        },
+        {
+          "name": "Get Receipt By Number",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipts/number/:receiptNumber", "host": ["{{baseUrl}}"], "path": ["receipts","number", ":receiptNumber"] } }
+        },
+        {
+          "name": "Get Receipts By Property",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipts/property/:propertyId", "host": ["{{baseUrl}}"], "path": ["receipts","property", ":propertyId"] } }
+        },
+        {
+          "name": "Get Receipts By Tenant",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipts/tenant/:tenantId", "host": ["{{baseUrl}}"], "path": ["receipts","tenant", ":tenantId"] } }
+        },
+        {
+          "name": "Download Receipt PDF",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipts/:id/download", "host": ["{{baseUrl}}"], "path": ["receipts", ":id", "download"] } }
+        }
+      ]
+    },
+    {
+      "name": "Rent Transactions - Full",
+      "item": [
+        { "name": "List Transactions", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-transactions", "host": ["{{baseUrl}}"], "path": ["rent-transactions"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true, \"data\": [] }" }] },
+        { "name": "Get Transaction By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-transactions/:id", "host": ["{{baseUrl}}"], "path": ["rent-transactions", ":id"] } } , "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Delete Transaction", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-transactions/:id", "host": ["{{baseUrl}}"], "path": ["rent-transactions", ":id"] } } , "response": [{ "name": "204 No Content", "status": "No Content", "code": 204, "body": "" }] },
+        { "name": "Get Transactions by Lease", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-transactions/lease/:leaseId", "host": ["{{baseUrl}}"], "path": ["rent-transactions","lease", ":leaseId"] } } },
+        { "name": "Get Transactions by Property", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-transactions/property/:propertyId", "host": ["{{baseUrl}}"], "path": ["rent-transactions","property", ":propertyId"] } } },
+        { "name": "Get Transactions by Tenant", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-transactions/tenant/:tenantId", "host": ["{{baseUrl}}"], "path": ["rent-transactions","tenant", ":tenantId"] } } },
+        { "name": "Get Transactions by Unit", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-transactions/unit/:unitId", "host": ["{{baseUrl}}"], "path": ["rent-transactions","unit", ":unitId"] } } }
+      ]
+    },
+    {
+      "name": "Rent Payments - Reads & Delete",
+      "item": [
+        { "name": "List Payments", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-payments", "host": ["{{baseUrl}}"], "path": ["rent-payments"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Get Payment By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-payments/:id", "host": ["{{baseUrl}}"], "path": ["rent-payments", ":id"] } } },
+        { "name": "Delete Payment", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-payments/:id", "host": ["{{baseUrl}}"], "path": ["rent-payments", ":id"] } } , "response": [{ "name": "204 No Content", "status": "No Content", "code": 204, "body": "" }] },
+        { "name": "Get Payments by Lease", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-payments/lease/:leaseId", "host": ["{{baseUrl}}"], "path": ["rent-payments","lease", ":leaseId"] } } },
+        { "name": "Get Payments by Property", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-payments/property/:propertyId", "host": ["{{baseUrl}}"], "path": ["rent-payments","property", ":propertyId"] } } },
+        { "name": "Get Payments by Tenant", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/rent-payments/tenant/:tenantId", "host": ["{{baseUrl}}"], "path": ["rent-payments","tenant", ":tenantId"] } } }
+      ]
+    },
+    {
+      "name": "Expenses - Reads & Delete",
+      "item": [
+        { "name": "List Expenses", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/expenses", "host": ["{{baseUrl}}"], "path": ["expenses"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Get Expense By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/expenses/:id", "host": ["{{baseUrl}}"], "path": ["expenses", ":id"] } } },
+        { "name": "Delete Expense", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/expenses/:id", "host": ["{{baseUrl}}"], "path": ["expenses", ":id"] } } , "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Get Expenses by Property", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/expenses/property/:propertyId", "host": ["{{baseUrl}}"], "path": ["expenses","property", ":propertyId"] } } },
+        { "name": "Get Expenses by Unit", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/expenses/unit/:unitId", "host": ["{{baseUrl}}"], "path": ["expenses","unit", ":unitId"] } } }
+      ]
+    },
+    {
+      "name": "Files - Reads & Property Files",
+      "item": [
+        { "name": "List Files", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/files", "host": ["{{baseUrl}}"], "path": ["files"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "Get File Metadata", "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/files/:fileId/metadata", "host": ["{{baseUrl}}"], "path": ["files", ":fileId", "metadata"] } } },
+        { "name": "Download File", "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/files/:fileId/download", "host": ["{{baseUrl}}"], "path": ["files", ":fileId", "download"] } } },
+        { "name": "Delete File", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/files/:fileId", "host": ["{{baseUrl}}"], "path": ["files", ":fileId"] } }, "response": [{ "name": "200 OK", "status": "OK", "code": 200, "body": "{ \"success\": true }" }] },
+        { "name": "List Property Files", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/properties/:propertyId/files", "host": ["{{baseUrl}}"], "path": ["properties", ":propertyId","files"] } } },
+        { "name": "Download Property File", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/properties/:propertyId/files/:fileId/download", "host": ["{{baseUrl}}"], "path": ["properties", ":propertyId","files",":fileId","download"] } } },
+        { "name": "Delete Property File", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/properties/:propertyId/files/:fileId", "host": ["{{baseUrl}}"], "path": ["properties", ":propertyId","files",":fileId"] } } }
+      ]
+    },
+    {
+      "name": "Units - Reads & Analytics",
+      "item": [
+        { "name": "Get Unit By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/units/:id", "host": ["{{baseUrl}}"], "path": ["units", ":id"] } } },
+        { "name": "Delete Unit", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/units/:id", "host": ["{{baseUrl}}"], "path": ["units", ":id"] } } },
+        { "name": "Get Unit Analytics", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/units/:id/analytics", "host": ["{{baseUrl}}"], "path": ["units", ":id","analytics"] } } },
+        { "name": "Get Unit Tenants", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/units/:id/tenants", "host": ["{{baseUrl}}"], "path": ["units", ":id","tenants"] } } }
+      ]
+    },
+    {
+      "name": "Unit Tenants - Reads & Delete",
+      "item": [
+        { "name": "List Unit-Tenants", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/unit-tenants", "host": ["{{baseUrl}}"], "path": ["unit-tenants"] } } },
+        { "name": "Get Assignment By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/unit-tenants/:id", "host": ["{{baseUrl}}"], "path": ["unit-tenants", ":id"] } } },
+        { "name": "Delete Tenant Assignment", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/unit-tenants/:unitId/:tenantId", "host": ["{{baseUrl}}"], "path": ["unit-tenants", ":unitId", ":tenantId"] } } }
+      ]
+    },
+    {
+      "name": "Unit Utilities - Update/Delete/Toggle",
+      "item": [
+        { "name": "Update Unit Utility", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"utilityName\": \"Updated Meter Name\",\n  \"fixedAmount\": 500\n}" }, "url": { "raw": "{{baseUrl}}/unit-utilities/:id", "host": ["{{baseUrl}}"], "path": ["unit-utilities", ":id"] } } },
+        { "name": "Delete Unit Utility", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/unit-utilities/:id", "host": ["{{baseUrl}}"], "path": ["unit-utilities", ":id"] } } },
+        { "name": "Toggle Unit Utility Status", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"isEnabled\": false\n}" }, "url": { "raw": "{{baseUrl}}/unit-utilities/:id/toggle", "host": ["{{baseUrl}}"], "path": ["unit-utilities", ":id", "toggle"] } } }
+      ]
+    },
+    {
+      "name": "Meters & Meter-Readings - Reads/Update/Delete",
+      "item": [
+        { "name": "List Meters", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/meters", "host": ["{{baseUrl}}"], "path": ["meters"] } } },
+        { "name": "Get Meter By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/meters/:id", "host": ["{{baseUrl}}"], "path": ["meters", ":id"] } } },
+        { "name": "Update Meter", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"serialNumber\": \"MTR-2025-0001-REV\"\n}" }, "url": { "raw": "{{baseUrl}}/meters/:id", "host": ["{{baseUrl}}"], "path": ["meters", ":id"] } } },
+        { "name": "Delete Meter", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/meters/:id", "host": ["{{baseUrl}}"], "path": ["meters", ":id"] } } },
+        { "name": "List Meter Readings", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/meter-readings", "host": ["{{baseUrl}}"], "path": ["meter-readings"] } } },
+        { "name": "Get Meter Reading By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/meter-readings/:id", "host": ["{{baseUrl}}"], "path": ["meter-readings", ":id"] } } },
+        { "name": "Get Meter Readings By Meter", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/meter-readings/meter/:meterId", "host": ["{{baseUrl}}"], "path": ["meter-readings","meter", ":meterId"] } } },
+        { "name": "Update Meter Reading", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"readingValue\": 12400.2\n}" }, "url": { "raw": "{{baseUrl}}/meter-readings/:id", "host": ["{{baseUrl}}"], "path": ["meter-readings", ":id"] } } },
+        { "name": "Delete Meter Reading", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/meter-readings/:id", "host": ["{{baseUrl}}"], "path": ["meter-readings", ":id"] } } }
+      ]
+    },
+    {
+      "name": "Leases - Full",
+      "item": [
+        { "name": "Create Lease", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"propertyId\": \"prop_01EXAMPLE\",\n  \"unitId\": \"unit_01EXAMPLE\",\n  \"tenantId\": \"tenant_01EXAMPLE\",\n  \"startDate\": \"2025-07-01\",\n  \"endDate\": \"2026-06-30\",\n  \"rentAmount\": 20000\n}" }, "url": { "raw": "{{baseUrl}}/leases", "host": ["{{baseUrl}}"], "path": ["leases"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true }" }] },
+        { "name": "List Leases", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/leases", "host": ["{{baseUrl}}"], "path": ["leases"] } } },
+        { "name": "Get Lease By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/leases/:id", "host": ["{{baseUrl}}"], "path": ["leases", ":id"] } } },
+        { "name": "Update Lease", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"rentAmount\": 21000,\n  \"endDate\": \"2026-12-31\"\n}" }, "url": { "raw": "{{baseUrl}}/leases/:id", "host": ["{{baseUrl}}"], "path": ["leases", ":id"] } } },
+        { "name": "Terminate Lease", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"terminationDate\": \"2025-12-15\",\n  \"reason\": \"Mutual agreement\"\n}" }, "url": { "raw": "{{baseUrl}}/leases/:id/terminate", "host": ["{{baseUrl}}"], "path": ["leases", ":id", "terminate"] } } }
+      ]
+    },
+    {
+      "name": "Tenants - Full",
+      "item": [
+        { "name": "Create Tenant", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Asha\",\n  \"lastName\": \"Kumar\",\n  \"email\": \"asha.kumar@example.com\",\n  \"currentAddress\": { \"street\": \"45, MG Road\", \"city\": \"Bengaluru\", \"state\": \"Karnataka\", \"pincode\": \"560001\" },\n  \"status\": \"active\"\n}" }, "url": { "raw": "{{baseUrl}}/tenants", "host": ["{{baseUrl}}"], "path": ["tenants"] } }, "response": [{ "name": "201 Created", "status": "Created", "code": 201, "body": "{ \"success\": true, \"data\": { \"id\": \"tenant_01EXAMPLE\", \"firstName\": \"Asha\" } }" }], "event": [{ "listen": "test", "script": { "exec": ["pm.test('Tenant created (201)', function () { pm.response.to.have.status(201); });","pm.test('Response contains id', function () { var json = pm.response.json(); pm.expect(json.data).to.have.property('id'); });"], "type": "text/javascript" } }] },
+        { "name": "List Tenants", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/tenants", "host": ["{{baseUrl}}"], "path": ["tenants"] } } },
+        { "name": "Get Tenant By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/tenants/:id", "host": ["{{baseUrl}}"], "path": ["tenants", ":id"] } } },
+        { "name": "Update Tenant", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Asha\",\n  \"lastName\": \"Kumar\"\n}" }, "url": { "raw": "{{baseUrl}}/tenants/:id", "host": ["{{baseUrl}}"], "path": ["tenants", ":id"] } } },
+        { "name": "Delete Tenant", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/tenants/:id", "host": ["{{baseUrl}}"], "path": ["tenants", ":id"] } } }
+      ]
+    },
+    {
+      "name": "Users (admin) & Profile",
+      "item": [
+        { "name": "List Users", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/auth/users", "host": ["{{baseUrl}}"], "path": ["auth","users"] } } },
+        { "name": "Get User By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/auth/users/:id", "host": ["{{baseUrl}}"], "path": ["auth","users", ":id"] } } },
+        { "name": "Create User", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"username\": \"jdoe\",\n  \"email\": \"jdoe@example.com\",\n  \"password\": \"StrongP@ssw0rd\",\n  \"role\": \"user\"\n}" }, "url": { "raw": "{{baseUrl}}/auth/users", "host": ["{{baseUrl}}"], "path": ["auth","users"] } } },
+        { "name": "Update User", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"john.doe@example.com\"\n}" }, "url": { "raw": "{{baseUrl}}/auth/users/:id", "host": ["{{baseUrl}}"], "path": ["auth","users", ":id"] } } },
+        { "name": "Delete User", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/auth/users/:id", "host": ["{{baseUrl}}"], "path": ["auth","users", ":id"] } } },
+        { "name": "Get Profile", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth","profile"] } } },
+        { "name": "Update Profile", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Asha\"\n}" }, "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth","profile"] } } }
+      ]
+    },
+    {
+      "name": "Receipt Templates - admin reads & actions",
+      "item": [
+        { "name": "Get All Templates", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipt-templates", "host": ["{{baseUrl}}"], "path": ["receipt-templates"] } } },
+        { "name": "Get Available Templates", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipt-templates/available", "host": ["{{baseUrl}}"], "path": ["receipt-templates","available"] } } },
+        { "name": "Get Default Template", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipt-templates/default", "host": ["{{baseUrl}}"], "path": ["receipt-templates","default"] } } },
+        { "name": "Get Template By Type", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipt-templates/type/:type", "host": ["{{baseUrl}}"], "path": ["receipt-templates","type",":type"] } } },
+        { "name": "Get Template By ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipt-templates/:id", "host": ["{{baseUrl}}"], "path": ["receipt-templates",":id"] } } },
+        { "name": "Delete Template", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipt-templates/:id", "host": ["{{baseUrl}}"], "path": ["receipt-templates",":id"] } } },
+        { "name": "Set Template Default", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/receipt-templates/:id/default", "host": ["{{baseUrl}}"], "path": ["receipt-templates",":id","default"] } } }
+      ]
+    },
+    {
+      "name": "Bulk - missing endpoints",
+      "item": [
+        { "name": "Bulk Receipts", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"transactionIds\": [\"txn_01EXAMPLE\"]\n}" }, "url": { "raw": "{{baseUrl}}/bulk/receipts", "host": ["{{baseUrl}}"], "path": ["bulk","receipts"] } } },
+        { "name": "Bulk Communication", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"tenantIds\": [\"tenant_01EXAMPLE\"],\n  \"subject\": \"Notice\",\n  \"message\": \"Hello\",\n  \"channels\": [\"email\"]\n}" }, "url": { "raw": "{{baseUrl}}/bulk/communication", "host": ["{{baseUrl}}"], "path": ["bulk","communication"] } } },
+        { "name": "Bulk Export", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"entityType\": \"transactions\",\n  \"dateRange\": { \"start\": \"2025-01-01\", \"end\": \"2025-06-30\" },\n  \"format\": \"csv\"\n}" }, "url": { "raw": "{{baseUrl}}/bulk/export", "host": ["{{baseUrl}}"], "path": ["bulk","export"] } } }
+      ]
+    }
+]
+}

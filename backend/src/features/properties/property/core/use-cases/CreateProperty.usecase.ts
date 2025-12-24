@@ -8,6 +8,13 @@ export class CreatePropertyUseCase implements IUseCase<PropertyInput, Property> 
   constructor(private repository: IPropertyRepository) {}
 
   async execute(data: PropertyInput): Promise<Property> {
+    // Backwards compatibility: some clients may send `area` instead of `totalArea`.
+    // Normalize incoming data so validation below works consistently.
+    const legacyArea = (data as any).area;
+    if ((data as any).totalArea === undefined && legacyArea !== undefined) {
+      const parsed = typeof legacyArea === 'string' ? parseFloat(legacyArea) : legacyArea;
+      (data as any).totalArea = parsed;
+    }
     // Validate property name
     const nameValidation = ValidationUtils.validatePropertyName(data.name);
     if (!nameValidation.isValid) {

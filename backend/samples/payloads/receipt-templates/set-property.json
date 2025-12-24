@@ -1,0 +1,7 @@
+{
+  "templateId": "tmpl_01EXAMPLE",
+  "overrides": {
+    "layout": { "showLogo": false },
+    "numbering": { "prefix": "PR-", "startNumber": 2000 }
+  }
+}

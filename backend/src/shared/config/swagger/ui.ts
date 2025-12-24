@@ -237,6 +237,11 @@ const swaggerUiOptions = {
   customSiteTitle: 'Asset Management Platform API Documentation',
   swaggerOptions: {
     persistAuthorization: true,
+    // Add a named OpenAPI URL so the UI shows a link / selector for the raw spec
+    // This points to the route we will expose at `/openapi.json`.
+    urls: [
+      { name: 'OpenAPI (JSON)', url: '/openapi.json' }
+    ],
     displayRequestDuration: true,
     docExpansion: 'none',
     filter: true,
