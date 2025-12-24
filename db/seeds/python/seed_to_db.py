@@ -8,6 +8,8 @@ while maintaining foreign key relationships through mappings.
 import os
 import sys
 import json
+import logging
+import argparse
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import bcrypt
@@ -15,6 +17,7 @@ import uuid
 import pandas as pd
 from urllib.parse import urlparse
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load environment variables from .env file
 load_dotenv()
@@ -38,6 +41,24 @@ meter_uuids = {}
 rent_transaction_uuids = {}
 receipt_uuids = {}
 
+# Global flags populated by CLI
+DRY_RUN = False
+AUTO_YES = False
+
+# Summary to be written as JSON at the end
+SUMMARY = {
+    'users': 0,
+    'tenants': 0,
+    'properties': 0,
+    'units': 0,
+    'leases': 0,
+    'meters': 0,
+    'meter_readings': 0,
+    'rent_transactions': 0,
+    'receipts': 0,
+    'tenant_documents': 0
+}
+
 def print_success(msg):
     print(f"{GREEN}✅ {msg}{RESET}")
 
@@ -56,11 +77,48 @@ def print_warning(msg):
 def ask_confirmation(prompt):
     """Ask user for confirmation with y/N default"""
     try:
+        if AUTO_YES:
+            print_info(f"Auto-confirm enabled. Proceeding with: {prompt}")
+            return True
         response = input(f"{YELLOW}{prompt} (y/N): {RESET}").strip().lower()
         return response in ['y', 'yes']
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
         return False
+
+
+class DryRunCursor:
+    def execute(self, sql, params=None):
+        # Print query preview for dry-run
+        if params:
+            try:
+                preview = sql.replace('%s', '{}')
+                preview = preview.format(*[repr(p) for p in params])
+            except Exception:
+                preview = f"{sql}  -- params={params}"
+        else:
+            preview = sql
+        print_info(f"[DRY RUN] SQL: {preview}")
+
+    def fetchone(self):
+        return None
+
+    def fetchall(self):
+        return []
+
+    def close(self):
+        return
+
+
+class DryRunConnection:
+    def cursor(self):
+        return DryRunCursor()
+
+    def set_isolation_level(self, _):
+        return
+
+    def close(self):
+        return
 
 def drop_all_tables(conn):
     """Drop all tables in the correct order (reverse dependencies)"""
@@ -312,6 +370,7 @@ def seed_users(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} users")
+    SUMMARY['users'] = seeded
     # If a SYSTEM_USER_ID is provided, ensure a system user is created with that ID
     system_user_id = os.getenv('SYSTEM_USER_ID')
     if system_user_id:
@@ -380,6 +439,7 @@ def seed_tenants(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} tenants")
+    SUMMARY['tenants'] = seeded
 
 def seed_properties(conn, df):
     """Seed properties with owner FK resolution"""
@@ -423,6 +483,7 @@ def seed_properties(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} properties")
+    SUMMARY['properties'] = seeded
 
 def seed_units(conn, df):
     """Seed units with property FK resolution"""
@@ -468,6 +529,7 @@ def seed_units(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} units")
+    SUMMARY['units'] = seeded
 
 def seed_leases(conn, df):
     """Seed leases with unit and tenant FK resolution"""
@@ -525,6 +587,7 @@ def seed_leases(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} leases")
+    SUMMARY['leases'] = seeded
 
 def seed_unit_tenants(conn, df=None):
     """Seed unit_tenants junction table from leases"""
@@ -576,6 +639,7 @@ def seed_unit_tenants(conn, df=None):
     
     cursor.close()
     print_success(f"Seeded {seeded} unit tenant relationships")
+    # unit_tenants don't have a specific summary key, but leases implies relationships
 
 def seed_rent_payments(conn, df):
     """Seed rent payments with lease FK resolution"""
@@ -631,6 +695,7 @@ def seed_rent_payments(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} rent payments")
+    # rent_payments are not part of SUMMARY currently
 
 def seed_meters(conn, df):
     """Seed meters with unit FK resolution"""
@@ -678,6 +743,7 @@ def seed_meters(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} meters")
+    SUMMARY['meters'] = seeded
 
 def seed_meter_readings(conn, df):
     """Seed meter readings with meter FK resolution"""
@@ -716,6 +782,7 @@ def seed_meter_readings(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} meter readings")
+    SUMMARY['meter_readings'] = seeded
 
 def seed_rent_transactions(conn, df):
     """Seed rent transactions with lease FK resolution"""
@@ -795,6 +862,7 @@ def seed_rent_transactions(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} rent transactions")
+    SUMMARY['rent_transactions'] = seeded
 
 def seed_rent_transaction_meter_readings(conn, df):
     """Seed rent transaction meter readings junction table"""
@@ -842,6 +910,7 @@ def seed_rent_transaction_meter_readings(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} rent transaction meter readings")
+    # counted as part of rent transaction details
 
 def seed_receipts(conn, df):
     """Seed receipts with transaction FK resolution"""
@@ -933,6 +1002,7 @@ def seed_receipts(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} receipts")
+    SUMMARY['receipts'] = seeded
 
 def seed_tenant_documents(conn, df):
     """Seed tenant documents with tenant FK resolution"""
@@ -971,6 +1041,7 @@ def seed_tenant_documents(conn, df):
     
     cursor.close()
     print_success(f"Seeded {seeded} tenant documents")
+    SUMMARY['tenant_documents'] = seeded
 
 def seed_receipt_templates(conn):
     """Seed receipt templates from SQL file"""
@@ -1004,105 +1075,219 @@ def seed_receipt_templates(conn):
         cursor.close()
 
 def main():
-    """Main seeding function"""
+    """Main seeding function with CLI support"""
+    parser = argparse.ArgumentParser(description="Smart Database Seeding CLI")
+    parser.add_argument('--drop', action='store_true', help='Drop all tables')
+    parser.add_argument('--create', action='store_true', help='Create all tables')
+    parser.add_argument('--clear', action='store_true', help='Clear all data')
+    parser.add_argument('--seed', action='store_true', help='Seed data')
+    parser.add_argument('--only', type=str, help='Comma-separated sheets to seed (e.g., users,properties)')
+    parser.add_argument('--exclude', type=str, help='Comma-separated sheets to exclude')
+    parser.add_argument('--dry-run', action='store_true', help='Do not write to DB; show actions')
+    parser.add_argument('-y', '--yes', action='store_true', help='Auto-confirm prompts')
+    parser.add_argument('--non-interactive', action='store_true', help='Run in non-interactive mode (defaults to --seed)')
+    args = parser.parse_args()
+
+    # Configure logging
+    os.makedirs('logs', exist_ok=True)
+    log_file = os.path.join('logs', f'seeder-{datetime.utcnow().strftime("%Y%m%d-%H%M%S")}.log')
+    logging.basicConfig(level=logging.INFO, filename=log_file, filemode='w',
+                        format='%(asctime)s %(levelname)s: %(message)s')
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
+    global DRY_RUN, AUTO_YES
+    DRY_RUN = args.dry_run
+    AUTO_YES = args.yes
+
     print("\n" + "=" * 70)
     print("Smart Database Seeding with Dynamic UUID Generation")
     print("=" * 70 + "\n")
-    
+
     # Load Excel data
     seed_data = load_excel_data(SEED_DATA_FILE)
     if not seed_data:
         print_error("Failed to load seed data")
         return
-    
-    # Get database configuration
+
+    # Build selection helpers
+    only_set = set([s.strip() for s in args.only.split(',')]) if args.only else None
+    exclude_set = set([s.strip() for s in args.exclude.split(',')]) if args.exclude else set()
+
+    def should_run_sheet(sheet):
+        if only_set is not None:
+            return sheet in only_set
+        if exclude_set:
+            return sheet not in exclude_set
+        return True
+
+    # Determine whether we are in interactive mode (no flags) OR non-interactive with flags
+    explicit_steps = args.drop or args.create or args.clear or args.seed
+
+    # Get database configuration and connect (unless dry-run)
     db_config = get_db_config()
     print_info(f"Database: {db_config['user']}@{db_config['host']}:{db_config['port']}/{db_config['database']}")
-    
-    # Database connection
+
     try:
-        conn = psycopg2.connect(**db_config)
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        print_success("Connected to database")
-        
-        # STEP 1: Schema Deletion
-        print_warning("⚠️  STEP 1: Schema Deletion")
-        print_warning("This will DROP ALL TABLES in the database!")
-        if not ask_confirmation("🔴 Do you want to DROP ALL TABLES?"):
-            print_info("Schema deletion skipped")
+        if DRY_RUN:
+            conn = DryRunConnection()
+            conn.set_isolation_level(None)
+            print_info("Running in DRY-RUN mode; no changes will be made")
         else:
-            drop_all_tables(conn)
-        
-        # STEP 2: Schema Creation
-        print_warning("⚠️  STEP 2: Schema Creation")
-        print_warning("This will CREATE ALL TABLES in the database!")
-        if not ask_confirmation("🟡 Do you want to CREATE ALL TABLES?"):
-            print_info("Schema creation skipped")
+            conn = psycopg2.connect(**db_config)
+            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            print_success("Connected to database")
+
+        # If no explicit steps and not forced non-interactive, run interactive flow
+        if not explicit_steps and not args.non_interactive:
+            # Original interactive flow
+            # STEP 1: Schema Deletion
+            print_warning("⚠️  STEP 1: Schema Deletion")
+            print_warning("This will DROP ALL TABLES in the database!")
+            if not ask_confirmation("🔴 Do you want to DROP ALL TABLES?"):
+                print_info("Schema deletion skipped")
+            else:
+                drop_all_tables(conn)
+
+            # STEP 2: Schema Creation
+            print_warning("⚠️  STEP 2: Schema Creation")
+            print_warning("This will CREATE ALL TABLES in the database!")
+            if not ask_confirmation("🟡 Do you want to CREATE ALL TABLES?"):
+                print_info("Schema creation skipped")
+            else:
+                if not create_all_tables(conn):
+                    print_error("Schema creation failed")
+                    conn.close()
+                    return
+
+            # STEP 3: Data Deletion
+            print_warning("⚠️  STEP 3: Data Deletion")
+            print_warning("This will CLEAR ALL DATA from existing tables!")
+            if not ask_confirmation("🟠 Do you want to CLEAR ALL DATA?"):
+                print_info("Data deletion skipped")
+            else:
+                clear_all_data(conn)
+
+            # STEP 4: Data Creation/Seeding
+            print_warning("⚠️  STEP 4: Data Creation/Seeding")
+            print_warning("This will INSERT SEED DATA into the database!")
+            if not ask_confirmation("🟢 Do you want to SEED THE DATABASE?"):
+                print_info("Data seeding skipped")
+            else:
+                # Seed in order (respecting foreign key dependencies)
+                if 'users' in seed_data and should_run_sheet('users'):
+                    seed_users(conn, seed_data['users'])
+
+                if 'tenants' in seed_data and should_run_sheet('tenants'):
+                    seed_tenants(conn, seed_data['tenants'])
+
+                if 'properties' in seed_data and should_run_sheet('properties'):
+                    seed_properties(conn, seed_data['properties'])
+
+                if 'units' in seed_data and should_run_sheet('units'):
+                    seed_units(conn, seed_data['units'])
+
+                if 'leases' in seed_data and should_run_sheet('leases'):
+                    seed_leases(conn, seed_data['leases'])
+
+                # Always seed unit_tenants from leases (required for proper relationships)
+                if should_run_sheet('unit_tenants'):
+                    seed_unit_tenants(conn, None)
+
+                if 'rent_payments' in seed_data and should_run_sheet('rent_payments'):
+                    seed_rent_payments(conn, seed_data['rent_payments'])
+
+                if 'meters' in seed_data and should_run_sheet('meters'):
+                    seed_meters(conn, seed_data['meters'])
+
+                if 'meter_readings' in seed_data and should_run_sheet('meter_readings'):
+                    seed_meter_readings(conn, seed_data['meter_readings'])
+
+                if 'rent_transactions' in seed_data and should_run_sheet('rent_transactions'):
+                    seed_rent_transactions(conn, seed_data['rent_transactions'])
+
+                if 'rent_transaction_meter_readings' in seed_data and should_run_sheet('rent_transaction_meter_readings'):
+                    seed_rent_transaction_meter_readings(conn, seed_data['rent_transaction_meter_readings'])
+
+                if 'receipts' in seed_data and should_run_sheet('receipts'):
+                    seed_receipts(conn, seed_data['receipts'])
+
+                if 'tenant_documents' in seed_data and should_run_sheet('tenant_documents'):
+                    seed_tenant_documents(conn, seed_data['tenant_documents'])
+
+                # Seed receipt templates from SQL file
+                if should_run_sheet('receipt_templates'):
+                    seed_receipt_templates(conn)
+
         else:
-            if not create_all_tables(conn):
-                print_error("Schema creation failed")
-                conn.close()
-                return
-        
-        # STEP 3: Data Deletion
-        print_warning("⚠️  STEP 3: Data Deletion")
-        print_warning("This will CLEAR ALL DATA from existing tables!")
-        if not ask_confirmation("🟠 Do you want to CLEAR ALL DATA?"):
-            print_info("Data deletion skipped")
-        else:
-            clear_all_data(conn)
-        
-        # STEP 4: Data Creation/Seeding
-        print_warning("⚠️  STEP 4: Data Creation/Seeding")
-        print_warning("This will INSERT SEED DATA into the database!")
-        if not ask_confirmation("🟢 Do you want to SEED THE DATABASE?"):
-            print_info("Data seeding skipped")
-        else:
-            # Seed in order (respecting foreign key dependencies)
-            if 'users' in seed_data:
-                seed_users(conn, seed_data['users'])
-            
-            if 'tenants' in seed_data:
-                seed_tenants(conn, seed_data['tenants'])
-            
-            if 'properties' in seed_data:
-                seed_properties(conn, seed_data['properties'])
-            
-            if 'units' in seed_data:
-                seed_units(conn, seed_data['units'])
-            
-            if 'leases' in seed_data:
-                seed_leases(conn, seed_data['leases'])
-            
-            # Always seed unit_tenants from leases (required for proper relationships)
-            seed_unit_tenants(conn, None)
-            
-            if 'rent_payments' in seed_data:
-                seed_rent_payments(conn, seed_data['rent_payments'])
-            
-            if 'meters' in seed_data:
-                seed_meters(conn, seed_data['meters'])
-            
-            if 'meter_readings' in seed_data:
-                seed_meter_readings(conn, seed_data['meter_readings'])
-            
-            if 'rent_transactions' in seed_data:
-                seed_rent_transactions(conn, seed_data['rent_transactions'])
-            
-            if 'rent_transaction_meter_readings' in seed_data:
-                seed_rent_transaction_meter_readings(conn, seed_data['rent_transaction_meter_readings'])
-            
-            if 'receipts' in seed_data:
-                seed_receipts(conn, seed_data['receipts'])
-            
-            if 'tenant_documents' in seed_data:
-                seed_tenant_documents(conn, seed_data['tenant_documents'])
-            
-            # Seed receipt templates from SQL file
-            seed_receipt_templates(conn)
-        
+            # Non-interactive mode: run only requested steps
+            if args.non_interactive and not explicit_steps:
+                # default to seeding when non-interactive with no explicit flags
+                args.seed = True
+
+            if args.drop:
+                drop_all_tables(conn)
+
+            if args.create:
+                if not create_all_tables(conn):
+                    print_error("Schema creation failed")
+                    conn.close()
+                    return
+
+            if args.clear:
+                clear_all_data(conn)
+
+            if args.seed:
+                # Seed in order (respecting foreign key dependencies)
+                if 'users' in seed_data and should_run_sheet('users'):
+                    seed_users(conn, seed_data['users'])
+
+                if 'tenants' in seed_data and should_run_sheet('tenants'):
+                    seed_tenants(conn, seed_data['tenants'])
+
+                if 'properties' in seed_data and should_run_sheet('properties'):
+                    seed_properties(conn, seed_data['properties'])
+
+                if 'units' in seed_data and should_run_sheet('units'):
+                    seed_units(conn, seed_data['units'])
+
+                if 'leases' in seed_data and should_run_sheet('leases'):
+                    seed_leases(conn, seed_data['leases'])
+
+                if should_run_sheet('unit_tenants'):
+                    seed_unit_tenants(conn, None)
+
+                if 'rent_payments' in seed_data and should_run_sheet('rent_payments'):
+                    seed_rent_payments(conn, seed_data['rent_payments'])
+
+                if 'meters' in seed_data and should_run_sheet('meters'):
+                    seed_meters(conn, seed_data['meters'])
+
+                if 'meter_readings' in seed_data and should_run_sheet('meter_readings'):
+                    seed_meter_readings(conn, seed_data['meter_readings'])
+
+                if 'rent_transactions' in seed_data and should_run_sheet('rent_transactions'):
+                    seed_rent_transactions(conn, seed_data['rent_transactions'])
+
+                if 'rent_transaction_meter_readings' in seed_data and should_run_sheet('rent_transaction_meter_readings'):
+                    seed_rent_transaction_meter_readings(conn, seed_data['rent_transaction_meter_readings'])
+
+                if 'receipts' in seed_data and should_run_sheet('receipts'):
+                    seed_receipts(conn, seed_data['receipts'])
+
+                if 'tenant_documents' in seed_data and should_run_sheet('tenant_documents'):
+                    seed_tenant_documents(conn, seed_data['tenant_documents'])
+
+                if should_run_sheet('receipt_templates'):
+                    seed_receipt_templates(conn)
+
         conn.close()
-        
+
+        # Write summary JSON
+        summary_file = os.path.join('logs', f'seed_summary_{datetime.utcnow().strftime("%Y%m%d-%H%M%S")}.json')
+        with open(summary_file, 'w') as sf:
+            json.dump(SUMMARY, sf, indent=2)
+        print_info(f"Wrote summary to {summary_file}")
+
         print()
         print("=" * 70)
         print_success("Database operations completed!")
@@ -1113,25 +1298,27 @@ def main():
         print("   Password: admin123")
         print()
         print("📊 Seeded Data Summary:")
-        print(f"   - Users: {len(user_uuids)}")
-        print(f"   - Tenants: {len(tenant_uuids)}")
-        print(f"   - Properties: {len(property_uuids)}")
-        print(f"   - Units: {len(unit_uuids)}")
-        print(f"   - Leases: {len(lease_uuids)}")
-        print(f"   - Meters: {len(meter_uuids)}")
-        print(f"   - Meter Readings: {len(seed_data.get('meter_readings', []))}")
-        print(f"   - Rent Transactions: {len(rent_transaction_uuids)}")
-        print(f"   - Rent Transaction Meter Readings: {len(seed_data.get('rent_transaction_meter_readings', []))}")
-        print(f"   - Receipts: {len(receipt_uuids)}")
-        print(f"   - Tenant Documents: {len(seed_data.get('tenant_documents', []))}")
+        print(f"   - Users: {SUMMARY.get('users', len(user_uuids))}")
+        print(f"   - Tenants: {SUMMARY.get('tenants', len(tenant_uuids))}")
+        print(f"   - Properties: {SUMMARY.get('properties', len(property_uuids))}")
+        print(f"   - Units: {SUMMARY.get('units', len(unit_uuids))}")
+        print(f"   - Leases: {SUMMARY.get('leases', len(lease_uuids))}")
+        print(f"   - Meters: {SUMMARY.get('meters', len(meter_uuids))}")
+        print(f"   - Meter Readings: {SUMMARY.get('meter_readings', len(seed_data.get('meter_readings', []))) }")
+        print(f"   - Rent Transactions: {SUMMARY.get('rent_transactions', len(rent_transaction_uuids))}")
+        print(f"   - Receipts: {SUMMARY.get('receipts', len(receipt_uuids))}")
+        print(f"   - Tenant Documents: {SUMMARY.get('tenant_documents', len(seed_data.get('tenant_documents', [])))}")
         print()
         print("✨ All UUIDs generated dynamically!")
         print("📝 Edit JSON file (db/seeds/data/seed_data_templates.json) to add more data")
         print("📝 Then run smart_seed_excel.py to generate Excel, and re-run this script")
         print()
+        logging.info(f"Summary written to {summary_file}")
+        logging.info(f"Log file: {log_file}")
         
     except Exception as e:
         print_error(f"Database error: {e}")
+        logging.exception(e)
         return
 
 if __name__ == '__main__':

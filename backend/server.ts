@@ -333,6 +333,7 @@ const startServer = async () => {
   // Mount lease routes
   v1Router.use('/leases', createLeaseRoutes(authMiddleware(userService) as any));
   v1Router.use('/rent-payments', new RentPaymentModule(mainPool, EventBus.getInstance()).router);
+  v1Router.use('/rent-transactions', new RentTransactionModule(mainPool, EventBus.getInstance()).router);
   v1Router.use('/meters', MeterModule.create(mainPool, userService));
   v1Router.use('/receipts', createReceiptRoutes(receiptController, userService));
   v1Router.use('/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));

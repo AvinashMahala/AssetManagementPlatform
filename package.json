@@ -20,6 +20,8 @@
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
     "lint": "yarn workspaces run lint"
+    ,
+    "seed:db": "python3 db/seeds/python/seed_to_db.py"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.14.0",
