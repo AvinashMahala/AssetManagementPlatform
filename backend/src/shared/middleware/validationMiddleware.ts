@@ -253,11 +253,19 @@ export const validateRequest = {
 export const validateZodRequest = (schema: ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await schema.parseAsync({
+      // Parse and normalize request parts (body/query/params) according to the schema
+      const parsed = await schema.parseAsync({
         body: req.body,
         query: req.query,
         params: req.params,
       });
+
+      // If the schema returned normalized values, assign them back to the request
+      if (parsed && typeof parsed === 'object') {
+        if ('body' in parsed && parsed.body !== undefined) req.body = (parsed as any).body;
+        if ('query' in parsed && parsed.query !== undefined) req.query = (parsed as any).query;
+        if ('params' in parsed && parsed.params !== undefined) req.params = (parsed as any).params;
+      }
       next();
     } catch (error) {
       if (error instanceof ZodError) {
