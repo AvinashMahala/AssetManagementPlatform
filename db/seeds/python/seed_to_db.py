@@ -1126,7 +1126,7 @@ def main():
         print(f"   - Tenant Documents: {len(seed_data.get('tenant_documents', []))}")
         print()
         print("✨ All UUIDs generated dynamically!")
-        print("📝 Edit JSON file (seed_data_templates.json) to add more data")
+        print("📝 Edit JSON file (db/seeds/data/seed_data_templates.json) to add more data")
         print("📝 Then run smart_seed_excel.py to generate Excel, and re-run this script")
         print()
         
