@@ -41,10 +41,14 @@ class FileService {
     }
 
     // For file uploads, we need to use fetch directly to handle FormData
-    const token = localStorage.getItem('token');
+    // Read token from sessionStorage (primary) with a fallback to localStorage for compatibility
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const headers: Record<string, string> = {};
     if (token) {
       headers.Authorization = `Bearer ${token}`;
+    } else {
+      // Helpful warning for debugging authentication issues (e.g., 401s during upload)
+      console.warn('File upload: no auth token found in sessionStorage or localStorage');
     }
 
     try {
@@ -147,7 +151,7 @@ class FileService {
    * Get storage statistics
    */
   async getStorageStats(): Promise<ApiResponse<FileStorageStats>> {
-    return apiClient.get<FileStorageStats>('/api/files/stats');
+    return apiClient.get<FileStorageStats>('/api/v1/files/stats');
   }
 
   /**
@@ -176,7 +180,7 @@ class FileService {
     if (filters?.offset) params.append('offset', filters.offset.toString());
 
     const queryString = params.toString();
-    const url = queryString ? `/api/files?${queryString}` : '/api/files';
+    const url = queryString ? `/api/files?${queryString}` : '/api/v1/files';
 
     return apiClient.get<FileListResponse>(url);
   }

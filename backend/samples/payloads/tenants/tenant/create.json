@@ -1,0 +1,16 @@
+{
+  "firstName": "Asha",
+  "lastName": "Kumar",
+  "email": "asha.kumar@example.com",
+  "phone": "+919812345678",
+  "dateOfBirth": "1990-04-12",
+  "gender": "female",
+  "occupation": "Software Engineer",
+  "currentAddress": {
+    "street": "45, MG Road",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560001"
+  },
+  "status": "active"
+}

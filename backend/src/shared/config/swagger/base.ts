@@ -19,16 +19,16 @@ export const baseDefinition: Partial<OpenAPIV3.Document> = {
   },
   servers: [
     {
-      url: 'http://localhost:5001',
-      description: 'Development server'
+      url: 'http://localhost:5001/api/v1',
+      description: 'Development server (v1)'
     },
     {
-      url: 'https://api.assetmanagementplatform.com',
-      description: 'Production server'
+      url: 'https://api.assetmanagementplatform.com/api/v1',
+      description: 'Production server (v1)'
     },
     {
-      url: 'https://staging.assetmanagementplatform.com',
-      description: 'Staging server'
+      url: 'https://staging.assetmanagementplatform.com/api/v1',
+      description: 'Staging server (v1)'
     }
   ],
   security: [

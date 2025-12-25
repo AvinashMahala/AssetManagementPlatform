@@ -1,0 +1,13 @@
+{
+  "name": "Imported Template",
+  "type": "basic",
+  "description": "Imported from external source",
+  "defaultSettings": {
+    "theme": { "primaryColor": "#000000", "secondaryColor": "#FFFFFF", "fontFamily": "Arial", "fontSize": "small" },
+    "layout": { "showLogo": true, "logoPosition": "top-center", "showWatermark": false, "paperSize": "a4", "orientation": "portrait" },
+    "content": { "showPropertyAddress": true, "showTenantAddress": false, "showPaymentBreakdown": true, "showBalanceForward": false, "showTermsAndConditions": false, "showSignature": false },
+    "paymentOptions": { "showBankDetails": true, "showUPI": false, "showQRCode": false, "showWallets": false },
+    "numbering": { "prefix": "IMP-", "startNumber": 1, "includeYear": false, "includeMonth": false }
+  },
+  "templateHtml": "<html><body>{{content}}</body></html>"
+}

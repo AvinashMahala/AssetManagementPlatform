@@ -9,3 +9,5 @@
 # Keep directory structure
 !backend/.gitkeep
 !frontend/.gitkeep
+
+/Users/avinashmahala/Desktop/githubRepos/AssetManagementPlatform/backend/logs

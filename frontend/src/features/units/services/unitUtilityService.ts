@@ -4,7 +4,7 @@ import { apiClient } from '@/lib/apiClient';
 
 class UnitUtilityService {
   async getAll(unitId?: string, propertyId?: string): Promise<ApiResponse<UnitUtility[]>> {
-    let url = '/api/unit-utilities';
+    let url = '/api/v1/unit-utilities';
     const params = new URLSearchParams();
 
     if (unitId) params.append('unitId', unitId);
@@ -22,7 +22,7 @@ class UnitUtilityService {
   }
 
   async create(data: UnitUtilityInput): Promise<ApiResponse<UnitUtility>> {
-    return apiClient.post<UnitUtility>('/api/unit-utilities', data);
+    return apiClient.post<UnitUtility>('/api/v1/unit-utilities', data);
   }
 
   async update(id: string, data: Partial<UnitUtilityInput>): Promise<ApiResponse<UnitUtility>> {

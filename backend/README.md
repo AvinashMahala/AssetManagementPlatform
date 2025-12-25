@@ -10,42 +10,47 @@ The backend API server for the Property Management Platform, built with Node.js,
 
 ## 🏗️ Architecture Overview
 
-### Layered Architecture Pattern
+### Modular Architecture Pattern
 
-The backend follows a **Layered Architecture** pattern with **Dependency Injection**:
+The backend follows a **Modular Architecture** (also known as Feature-Sliced Design or Vertical Slice Architecture) combined with **Domain-Driven Design (DDD)** principles. Each feature is a self-contained module with its own API, Core (Business Logic), and Data layers.
 
 ```
-┌─────────────────┐    ┌─────────────────┐
-│   Controllers   │────│   Interfaces    │
-│                 │    │  (Contracts)    │
-├─────────────────┤    ├─────────────────┤
-│    Services     │────│                 │
-├─────────────────┤    └─────────────────┘
-│  Repositories   │           ↑
-├─────────────────┤    ┌─────────────────┐
-│    Database     │    │ Dependency      │
-│  (PostgreSQL)   │    │   Container     │
-└─────────────────┘    │  (Singleton)    │
-                       └─────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                     Feature Module                      │
+### Swagger / docs commands (reference)
+
+Use these commands from the `backend` folder (or prefix with `npm --prefix backend run <script>` from repo root):
+
+│  (e.g., src/features/properties/property)               │
+│                                                         │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐    │
+│  │     API     │──▶│    Core     │──▶│    Data     │    │
+│  │ (Controller)│   │  (Service)  │   │(Repository) │    │
+│  └─────────────┘   └─────────────┘   └─────────────┘    │
+└─────────────────────────────────────────────────────────┘
+**CI recommendation:** Add `npm --prefix backend run check-docs` as a step in your pipeline to catch doc/regression mismatches early.
+           │                 │                 │
+           ▼                 ▼                 ▼
+┌─────────────────────────────────────────────────────────┐
+│                     Shared Kernel                       │
+│      (Utils, Middleware, Config, Infrastructure)        │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ### Architecture Layers
 
-1. **Controllers** (`src/controllers/`): HTTP request/response handling
-2. **Services** (`src/services/`): Business logic and domain rules
-3. **Repositories** (`src/repositories/`): Data access and persistence
-4. **Models** (`src/models/`): Data transfer objects and interfaces
-5. **Interfaces** (`src/interfaces/`): Contract definitions for DI
-6. **Utils** (`src/utils/`): Shared utilities and helpers
-7. **Constants** (`src/constants/`): Configuration and constants
-8. **Middlewares** (`src/middlewares/`): Express middleware functions
+Inside each feature module, the code is organized into:
+
+1.  **API** (`api/`): HTTP request/response handling, Controllers, and Routes.
+2.  **Core** (`core/`): Business logic, Services, Use Cases, Domain Models, and Interfaces.
+3.  **Data** (`data/`): Data access, Repositories, and Data Mappers.
 
 ### Dependency Injection
 
-- **Interface Segregation**: Each layer has its own interface contracts
-- **Dependency Inversion**: High-level modules don't depend on low-level modules
-- **Singleton Container**: Centralized dependency management
-- **Testability**: Easy mocking for unit tests
+- **Interface Segregation**: Each layer has its own interface contracts.
+- **Dependency Inversion**: High-level modules don't depend on low-level modules.
+- **Singleton Container**: Centralized dependency management (via `server.ts` or DI container).
+- **Testability**: Easy mocking for unit tests.
 
 ## 🚀 Features
 
@@ -219,70 +224,83 @@ Authorization: Bearer <token>
 http://localhost:5000
 ```
 
-### Assets API
+### Properties API
 
-#### List Assets
+#### List Properties
 ```http
-GET /api/assets
+GET /api/properties
 Authorization: Bearer <token>
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "name": "Laptop Dell XPS 13",
-      "description": "Developer laptop",
-      "value": 1500.00,
-      "location": "Office A",
-      "createdAt": "2024-01-15T10:30:00Z",
-      "updatedAt": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 1
-  }
-}
-```
-
-#### Get Asset by ID
+#### Get Property by ID
 ```http
-GET /api/assets/:id
+GET /api/properties/:id
 Authorization: Bearer <token>
 ```
 
-#### Create Asset
+#### Create Property
 ```http
-POST /api/assets
+POST /api/properties
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Request Body:**
-```json
-{
-  "name": "Server Rack",
-  "description": "Data center equipment",
-  "value": 5000.00,
-  "location": "Server Room B"
-}
+## OpenAPI / Swagger
+
+- Generate the OpenAPI JSON: `npm run generate-swagger`
+- Validate the generated spec: `npm run validate-swagger` (uses `@apidevtools/swagger-cli` via `npx`)
+- Convenience: `npm run check-swagger` will generate and validate in one step (good for CI)
+
+**Development tip:** You can auto-regenerate the OpenAPI JSON during development with:
+
+```bash
+# start the backend + auto-generate swagger on file changes
+npm run dev:with-swagger
 ```
 
-#### Update Asset
+This runs the dev server and watches `src/shared/config/swagger/apis/**/*.ts` for changes, regenerating `public/openapi.json` automatically so the Swagger UI (configured to fetch `/openapi.json`) reflects updates without restarting the server.
+
+If you hit import/module errors while generating the spec locally, run the generator from the `backend` folder so TypeScript paths resolve correctly (the script uses `tsx`).
+
+#### Update Property
 ```http
-PUT /api/assets/:id
+PUT /api/properties/:id
+Authorization: Bearer <token>
+```
+
+### Tenants API
+
+#### List Tenants
+```http
+GET /api/tenants
+Authorization: Bearer <token>
+```
+
+#### Create Tenant
+```http
+POST /api/tenants
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-#### Delete Asset
+### Leases API
+
+#### List Leases
 ```http
-DELETE /api/assets/:id
+GET /api/leases
+Authorization: Bearer <token>
+```
+
+#### Create Lease
+```http
+POST /api/leases
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+#### Terminate Lease
+```http
+POST /api/leases/:id/terminate
 Authorization: Bearer <token>
 ```
 
@@ -314,54 +332,26 @@ Content-Type: application/json
 ```
 backend/
 ├── src/
-│   ├── controllers/          # HTTP request handlers
-│   │   ├── assetController.ts
-│   │   ├── userController.ts
-│   │   └── authController.ts
-│   ├── services/             # Business logic layer
-│   │   ├── AssetService.ts
-│   │   ├── UserService.ts
-│   │   ├── AuthService.ts
-│   │   └── PasswordResetService.ts
-│   ├── repositories/         # Data access layer
-│   │   ├── AssetRepository.ts
-│   │   ├── UserRepository.ts
-│   │   ├── PasswordResetMethodRepository.ts
-│   │   ├── RecoveryCodeRepository.ts
-│   │   └── SecurityQuestionRepository.ts
-│   ├── interfaces/           # TypeScript interfaces
-│   │   ├── repositories/
-│   │   │   ├── IAssetRepository.ts
-│   │   │   ├── IUserRepository.ts
-│   │   │   └── IAuthRepository.ts
-│   │   └── services/
-│   │       ├── IAssetService.ts
-│   │       ├── IUserService.ts
-│   │       └── IAuthService.ts
-│   ├── models/               # DTOs and interfaces
-│   │   ├── Asset.ts
-│   │   ├── User.ts
-│   │   └── Auth.ts
-│   ├── routes/               # API route definitions
-│   │   ├── assetRoutes.ts
-│   │   ├── userRoutes.ts
-│   │   └── authRoutes.ts
-│   ├── utils/                # Shared utilities
-│   │   ├── DependencyContainer.ts
-│   │   ├── error.ts
-│   │   ├── password.ts
-│   │   ├── response.ts
-│   │   ├── validation.ts
-│   │   └── email.ts
-│   ├── constants/            # Configuration constants
-│   │   ├── database.ts
-│   │   ├── http.ts
-│   │   └── validation.ts
-│   ├── middlewares/          # Express middlewares
-│   │   ├── authMiddleware.ts
-│   │   └── validationMiddleware.ts
-│   └── server.ts             # Application entry point
-├── tests/                    # Test files
+│   ├── features/             # Feature modules (Vertical Slices)
+│   │   ├── admin/            # Admin & Bulk Operations
+│   │   ├── auth/             # Authentication & User Management
+│   │   ├── files/            # File Storage & Management
+│   │   ├── finance/          # Financial Operations (Rent, Expenses, Receipts)
+│   │   ├── leases/           # Lease Management
+│   │   ├── properties/       # Property & Unit Management
+│   │   └── tenants/          # Tenant Management
+│   ├── shared/               # Shared kernel & cross-cutting concerns
+│   │   ├── config/           # Configuration (DB, Swagger)
+│   │   ├── constants/        # Global constants
+│   │   ├── core/             # Base classes & interfaces
+│   │   ├── infrastructure/   # Infrastructure services (EventBus, Notifications)
+│   │   ├── middleware/       # Express middleware
+│   │   ├── types/            # Shared types
+│   │   └── utils/            # Utility functions
+│   ├── app.ts                # App setup
+│   └── server.ts             # Entry point
+├── scripts/                  # Utility scripts
+├── tests/                    # Tests
 ├── package.json
 ├── tsconfig.json
 └── Dockerfile
@@ -379,6 +369,7 @@ Controllers handle HTTP requests and responses. They:
 
 **Example:**
 ```typescript
+// src/features/auth/auth/api/AuthController.ts
 export class AuthController {
   constructor(private authService: IAuthService) {}
 
@@ -394,6 +385,13 @@ export class AuthController {
 }
 ```
 
+### API Documentation (Swagger / OpenAPI) 🔖
+
+The API documentation UI is available at: `http://localhost:<PORT>/api-docs`.
+
+You can also retrieve the raw OpenAPI JSON at: `http://localhost:<PORT>/openapi.json` — useful for external tools that consume OpenAPI specs or for downloading a copy.
+
+
 ### Services
 
 Services contain business logic and domain rules:
@@ -404,6 +402,7 @@ Services contain business logic and domain rules:
 
 **Example:**
 ```typescript
+// src/features/auth/auth/core/AuthService.ts
 export class AuthService implements IAuthService {
   constructor(
     private userRepository: IUserRepository,
@@ -437,6 +436,7 @@ Repositories handle data persistence:
 
 **Example:**
 ```typescript
+// src/features/auth/user/data/UserRepository.ts
 export class UserRepository implements IUserRepository {
   constructor(private pool: Pool) {}
 
@@ -470,54 +470,39 @@ export class UserRepository implements IUserRepository {
 JWT-based authentication middleware:
 
 ```typescript
-export const authenticate = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      throw new UnauthorizedError('No token provided');
+// src/shared/middleware/authMiddleware.ts
+export const authMiddleware = (userService: IUserService) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Access token required' });
+      }
+      // ... verification logic
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: 'Invalid token' });
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    req.user = decoded;
-    next();
-  } catch (error) {
-    next(new UnauthorizedError('Invalid token'));
-  }
+  };
 };
 ```
 
-### Dependency Container
+### Dependency Injection
 
-Centralized dependency management using singleton pattern:
+Dependencies are wired up in `server.ts` (Composition Root):
 
 ```typescript
-export class DependencyContainer {
-  private static instance: DependencyContainer;
-  private pool: Pool;
+// server.ts
+// Repositories
+const userRepository = new UserRepository(mainPool);
+const propertyRepository = new PropertyRepository(mainPool);
 
-  static initialize(pool: Pool): DependencyContainer {
-    if (!DependencyContainer.instance) {
-      DependencyContainer.instance = new DependencyContainer(pool);
-    }
-    return DependencyContainer.instance;
-  }
+// Services
+const userService = new UserService(userRepository);
+const authService = new AuthService(userRepository, jwtService);
 
-  get authService(): IAuthService {
-    return new AuthService(this.userRepository, this.jwtService);
-  }
-
-  get userService(): IUserService {
-    return new UserService(this.userRepository);
-  }
-
-  get assetService(): IAssetService {
-    return new AssetService(this.assetRepository);
-  }
-}
+// Controllers
+const authController = new AuthController(authService);
 ```
 
 ## 🛡️ Security & Validation
@@ -636,41 +621,43 @@ describe('AuthService', () => {
 
 ```sql
 CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) NOT NULL UNIQUE,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password_hash VARCHAR(255),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'user',
   google_id VARCHAR(255) UNIQUE,
-  avatar TEXT,
-  email_verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### Assets Table
+### Tenants Table
 
 ```sql
-CREATE TABLE assets (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL UNIQUE,
-  description TEXT,
-  value DECIMAL(10,2) NOT NULL CHECK (value > 0),
-  location VARCHAR(100),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE tenants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  phone VARCHAR(20),
+  current_address_street VARCHAR(255) NOT NULL,
+  current_address_city VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### Password Reset Methods Table
+### Rent Payments Table
 
 ```sql
-CREATE TABLE password_reset_methods (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  method_type VARCHAR(20) NOT NULL, -- 'email', 'sms', 'security_questions'
-  identifier VARCHAR(255), -- email, phone, or question set
-  is_active BOOLEAN DEFAULT TRUE,
+CREATE TABLE rent_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lease_id UUID NOT NULL REFERENCES leases(id),
+  property_id UUID NOT NULL REFERENCES properties(id),
+  tenant_id UUID NOT NULL REFERENCES tenants(id),
+  amount NUMERIC(10, 2) NOT NULL,
+  due_date DATE NOT NULL,
+  status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
@@ -679,14 +666,16 @@ CREATE TABLE password_reset_methods (
 
 ### Adding New Features
 
-1. **Define Interface Contracts** (if needed)
-2. **Implement Repository** layer
-3. **Implement Service** layer with business logic
-4. **Create Controller** for HTTP handling
-5. **Add Routes** and validation
-6. **Update Dependency Container**
-7. **Write Tests** for all layers
-8. **Update Documentation**
+1. **Create Feature Module**: Create a new folder in `src/features/` (e.g., `src/features/my-feature`).
+2. **Define Structure**: Create `api`, `core`, and `data` folders.
+3. **Define Interface Contracts**: In `core/interfaces`.
+4. **Implement Repository**: In `data/repository`.
+5. **Implement Service**: In `core/services`.
+6. **Create Controller**: In `api/`.
+7. **Add Routes**: In `api/`.
+8. **Update Composition Root**: Register new services and controllers in `server.ts`.
+9. **Write Tests**: For all layers.
+10. **Update Documentation**.
 
 ### Code Style
 
@@ -694,6 +683,13 @@ CREATE TABLE password_reset_methods (
 - **ESLint**: Configured for code quality
 - **Prettier**: Automatic formatting
 - **Conventional Commits**: Semantic commit messages
+
+### API Versioning
+
+The project follows a **URI Path Versioning** strategy (e.g., `/api/v1/properties`).
+- All new features should be implemented under the current version.
+- Breaking changes require a new version.
+- See [API Versioning Strategy](./docs/API_VERSIONING_STRATEGY.md) for full details.
 
 ## 🚀 Deployment
 
@@ -749,10 +745,19 @@ CMD if [ -f yarn.lock ]; then yarn start; else npm start; fi
 - [ ] Audit logging
 - [ ] GraphQL API support
 - [ ] Real-time notifications (WebSocket)
-- [ ] API versioning strategy
+- [x] API versioning strategy (See [Strategy Doc](./docs/API_VERSIONING_STRATEGY.md))
 - [ ] Performance monitoring
 - [ ] Database migrations
 - [ ] Multi-factor authentication (MFA)
+
+## 📋 Production Readiness
+
+We are actively working on making the backend production-ready. See our [Implementation Plan](./docs/PRODUCTION_READINESS_PLAN.md) for details on:
+- Input Validation
+- Typed Configuration
+- Security Hardening
+- Automated Testing
+- Database Migrations
 
 ## 📚 Additional Resources
 

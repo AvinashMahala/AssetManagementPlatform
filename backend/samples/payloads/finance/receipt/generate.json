@@ -1,0 +1,16 @@
+{
+  "paymentId": "pay_01F8XYZEXAMPLE",
+  "customSettings": {
+    "logoUrl": "https://cdn.example.com/logo.png",
+    "bankDetails": {
+      "bankName": "Acme Bank",
+      "accountNumber": "1234567890",
+      "ifscCode": "ACME0000123",
+      "accountHolderName": "Acme Properties"
+    },
+    "wallets": [
+      { "type": "GPAY", "number": "+919999999999", "name": "Acme Payments" }
+    ]
+  },
+  "notes": "Received payment for June 2025 rent"
+}

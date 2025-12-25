@@ -13,13 +13,15 @@
     "start-dev:win": "powershell -ExecutionPolicy Bypass -File start-dev.ps1",
     "setup:win": "powershell -ExecutionPolicy Bypass -File setup.ps1",
     "setup:unix": "bash setup.sh",
-    "setup": "node scripts/setup.js",
-    "setup:check": "node scripts/setup.js --dry-run",
+    "setup": "node setup.js",
+    "setup:check": "node setup.js --dry-run",
     "dev:frontend": "yarn workspace frontend dev",
     "dev:backend": "yarn workspace backend dev",
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test",
     "lint": "yarn workspaces run lint"
+    ,
+    "seed:db": "python3 db/seeds/python/seed_to_db.py"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.14.0",
@@ -29,5 +31,9 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "prettier": "^3.1.0"
+  },
+  "dependencies": {
+    "express-rate-limit": "^8.2.1",
+    "zod": "^4.2.1"
   }
 }

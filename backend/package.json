@@ -6,13 +6,24 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "tsx watch server.ts",
+    "dev": "concurrently \"npm run dev:server\" \"npm run generate-swagger:watch\"",
+    "dev:server": "tsx watch server.ts",
     "dev:debug": "tsx watch --inspect=0.0.0.0:5000 server.ts",
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "init-db": "tsx ../scripts/init-db.ts",
-    "seed:templates": "tsx scripts/seed-receipt-templates.ts"
+    "init-db": "tsx ../db/scripts/init.ts",
+    "seed:templates": "tsx ../db/seeds/typescript/seed-receipt-templates.ts"
+    ,
+    "generate-swagger": "tsx scripts/generate-swagger.ts",
+    "validate-swagger": "npx @apidevtools/swagger-cli validate public/openapi.json --verbose"
+    ,
+    "check-swagger": "npm run generate-swagger && npm run validate-swagger",
+    "validate-endpoints": "node scripts/validate-endpoints.cjs",
+    "validate-endpoints-report": "node scripts/validate-endpoints-report.cjs",
+    "check-docs": "npm run generate-swagger && npm run validate-swagger && npm run validate-endpoints",
+    "generate-swagger:watch": "onchange \"src/shared/config/swagger/apis/**/*.ts\" -- npm run generate-swagger",
+    "dev:with-swagger": "concurrently \"npm run dev\" \"npm run generate-swagger:watch\""
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -55,5 +66,8 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.6.2",
     "typescript": "^5.3.3"
+    ,
+    "onchange": "^7.1.0",
+    "concurrently": "^8.2.0"
   }
 }

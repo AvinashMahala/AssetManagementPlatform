@@ -1,0 +1,12 @@
+{
+  "propertyId": "prop_01EXAMPLE",
+  "unitNumber": "A-101",
+  "unitName": "Unit A101",
+  "unitType": "apartment",
+  "area": 900,
+  "bedrooms": 2,
+  "bathrooms": 1,
+  "furnished": false,
+  "monthlyRent": 15000,
+  "securityDeposit": 30000
+}

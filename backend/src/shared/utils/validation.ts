@@ -1,5 +1,5 @@
 import { VALIDATION, ERROR_MESSAGES } from '@/shared/constants/validation';
-import { PropertyType, PropertyStatus } from '@/models/Property';
+import { PropertyType, PropertyStatus } from '@/features/properties/property/core/types/property.types';
 
 export class ValidationUtils {
   /**

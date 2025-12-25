@@ -53,3 +53,5 @@ export interface CreateLeaseDTO extends Omit<Lease, 'id' | 'createdAt' | 'update
 }
 
 export interface UpdateLeaseDTO extends Partial<Omit<Lease, 'id' | 'createdAt' | 'updatedAt'>> {}
+
+export type LeaseInput = CreateLeaseDTO;

@@ -29,6 +29,7 @@ export const validateTab = (tabId: TabId, formData: PropertyInput, isEdit: boole
   switch (tabId) {
     case 'basic':
       if (!formData.name || formData.name.trim().length === 0) newErrors.name = 'Property name is required';
+      if (formData.name && formData.name.length > 255) newErrors.name = 'Property name must be at most 255 characters';
       if (!isEdit && !formData.ownerId) newErrors.ownerId = 'Owner selection is required';
       break;
     case 'address':
@@ -51,6 +52,7 @@ export const validateTab = (tabId: TabId, formData: PropertyInput, isEdit: boole
 export const validateAll = (formData: PropertyInput, isEdit: boolean): FormErrors => {
   const newErrors: FormErrors = {};
   if (!formData.name || formData.name.trim().length === 0) newErrors.name = 'Property name is required';
+  if (formData.name && formData.name.length > 255) newErrors.name = 'Property name must be at most 255 characters';
   if (!formData.address.street || formData.address.street.trim().length === 0) newErrors.street = 'Street address is required';
   if (!formData.address.city || formData.address.city.trim().length === 0) newErrors.city = 'City is required';
   if (!formData.address.state || formData.address.state.trim().length === 0) newErrors.state = 'State is required';

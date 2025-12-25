@@ -1,0 +1,9 @@
+{
+  "bankDetails": {
+    "bankName": "Acme Bank Updated",
+    "accountNumber": "111122223333",
+    "ifscCode": "ACME000111",
+    "accountHolderName": "Acme Holdings"
+  },
+  "additionalInfo": { "paymentInstructions": "Use bank transfer only" }
+}

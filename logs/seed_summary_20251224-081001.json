@@ -1,0 +1,12 @@
+{
+  "users": 1,
+  "tenants": 0,
+  "properties": 0,
+  "units": 0,
+  "leases": 0,
+  "meters": 0,
+  "meter_readings": 0,
+  "rent_transactions": 0,
+  "receipts": 0,
+  "tenant_documents": 0
+}

@@ -1,219 +1,321 @@
-import dotenv from 'dotenv';
-import path from 'path';
-import fs from 'fs';
-
-// Try to load .env from current directory first (for Docker/local), then parent (original setup)
-const localEnv = path.resolve(process.cwd(), '.env');
-const parentEnv = path.resolve(process.cwd(), '../.env');
-
-if (fs.existsSync(localEnv)) {
-  dotenv.config({ path: localEnv });
-} else {
-  dotenv.config({ path: parentEnv });
-}
-
+import { config } from '@/shared/config/env';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Pool } from 'pg';
-import { logger } from './src/shared/utils/logger.js';
-import { requestLoggingMiddleware, requestIdMiddleware } from './src/shared/middleware/loggingMiddleware.js';
-import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from './src/shared/middleware/errorHandler.js';
-import swaggerJSDoc from 'swagger-jsdoc';
+import { logger } from '@/shared/utils/logger.js';
+import { requestLoggingMiddleware, requestIdMiddleware } from '@/shared/middleware/loggingMiddleware.js';
+import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from '@/shared/middleware/errorHandler.js';
+import { globalLimiter } from '@/shared/middleware/rateLimitMiddleware';
+import fs from 'fs';
+import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './src/shared/config/swagger/index.js';
 import { swaggerUiOptions } from './src/shared/config/swagger/index.js';
-import { createLeaseRoutes as createNewLeaseRoutes } from '@/features/leases/api/lease.routes';
+import { PropertyModule } from '@/features/properties/property/index.js';
+import { UnitModule } from '@/features/properties/unit/unit.module.js';
+import { TenantModule } from '@/features/tenants/tenant/index.js';
+import { UnitTenantModule } from '@/features/tenants/unit-tenant/unit-tenant.module.js';
+import { MeterModule } from '@/features/properties/meter/meter.module.js';
 import { authMiddleware } from '@/shared/middleware/authMiddleware';
-// import { initializeDatabase } from './src/shared/config/database/init/index.js';
-import { IPropertyRepository } from './src/interfaces/repositories/IPropertyRepository.js';
-import { IUserRepository } from './src/interfaces/repositories/IUserRepository.js';
-import { ITenantRepository } from './src/interfaces/repositories/ITenantRepository.js';
-import { IUnitRepository } from './src/interfaces/repositories/IUnitRepository.js';
-import { ILeaseRepository } from './src/interfaces/repositories/ILeaseRepository.js';
-import { ILeaseService } from './src/interfaces/services/ILeaseService.js';
-import { LeaseRepository } from './src/repositories/LeaseRepository.js';
-import { LeaseService } from './src/services/LeaseService.js';
-import { LeaseController } from './src/controllers/leaseController.js';
-import { createLeaseRoutes } from './src/routes/leaseRoutes.js';
-import { RentPaymentController } from './src/controllers/RentPaymentController.js';
-import { createRentPaymentRoutes } from './src/routes/rentPaymentRoutes.js';
-import { RentTransactionController } from './src/controllers/RentTransactionController.js';
-import { createRentTransactionRoutes } from './src/routes/rentTransactionRoutes.js';
-import { MeterController } from './src/controllers/MeterController.js';
-import { createMeterRoutes } from './src/routes/meterRoutes.js';
-import { ReceiptController } from './src/controllers/ReceiptController.js';
-import { createReceiptRoutes } from './src/routes/receiptRoutes.js';
-import { ReceiptTemplateController } from './src/controllers/ReceiptTemplateController.js';
-import { createReceiptTemplateRoutes } from './src/routes/receiptTemplateRoutes.js';
-import createTemplateRoutes from './src/routes/templateRoutes.js';
-import { PropertyController } from './src/controllers/propertyController.js';
-import { PropertyFileController } from './src/controllers/PropertyFileController.js';
-import { PropertyReceiptTemplateController } from './src/controllers/PropertyReceiptTemplateController.js';
-import { UserController } from './src/controllers/userController.js';
-import { TenantController } from './src/controllers/TenantController.js';
-import { UnitController } from './src/controllers/UnitController.js';
-import { UnitTenantController } from './src/controllers/UnitTenantController.js';
-import { createPropertyRoutes } from './src/routes/propertyRoutes.js';
-import { createAuthRoutes } from './src/routes/authRoutes.js';
-import { createUserRoutes } from './src/routes/userRoutes.js';
-import { createTenantRoutes } from './src/routes/tenantRoutes.js';
-import { createUnitRoutes } from './src/routes/unitRoutes.js';
-import { createUnitTenantRoutes } from './src/routes/unitTenantRoutes.js';
-import { UnitUtilityController } from './src/controllers/UnitUtilityController.js';
-import { createUnitUtilityRoutes } from './src/routes/unitUtilityRoutes.js';
-import { createFileRoutes } from './src/routes/fileRoutes.js';
-import { ExpenseController } from './src/controllers/ExpenseController.js';
-import { createExpenseRoutes } from './src/routes/expenseRoutes.js';
-import { BulkOperationsController } from './src/controllers/BulkOperationsController.js';
-import { createBulkOperationsRoutes } from './src/routes/bulkOperations.js';
-import { DependencyContainer } from './src/shared/utils/DependencyContainer.js';
-import { FileStorageService } from './src/services/FileStorageService.js';
+import { organizationMiddleware } from '@/shared/middleware/OrganizationMiddleware.js';
+import { createMultiTenantPool } from '@/shared/infrastructure/database/MultiTenantPool.js';
+import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
+
+// Legacy Imports (Moved to Features)
+import { ReceiptController } from '@/features/finance/receipt/api/ReceiptController';
+import { createReceiptRoutes } from '@/features/finance/receipt/api/receipt.routes';
+import { ReceiptService } from '@/features/finance/receipt/core/services/ReceiptService';
+import { ReceiptRepository } from '@/features/finance/receipt/data/repository/ReceiptRepository';
+
+import { ReceiptTemplateController } from '@/features/finance/receipt-template/api/ReceiptTemplateController';
+import { createReceiptTemplateRoutes } from '@/features/finance/receipt-template/api/receipt-template.routes';
+import { ReceiptTemplateService } from '@/features/finance/receipt-template/core/services/ReceiptTemplateService';
+import { ReceiptTemplateRepository } from '@/features/finance/receipt-template/data/repository/ReceiptTemplateRepository';
+import { TemplateController } from '@/features/finance/receipt-template/api/TemplateController';
+import createTemplateRoutes from '@/features/finance/receipt-template/api/template.routes';
+
+import { UnitUtilityController } from '@/features/properties/unit-utility/api/UnitUtilityController';
+import { createUnitUtilityRoutes } from '@/features/properties/unit-utility/api/unit-utility.routes';
+import { UnitUtilityService } from '@/features/properties/unit-utility/core/services/UnitUtilityService';
+import { UnitUtilityRepository } from '@/features/properties/unit-utility/data/repository/UnitUtilityRepository';
+
+import { BulkOperationsController } from '@/features/admin/bulk-operations/api/BulkOperationsController';
+import { createBulkOperationsRoutes } from '@/features/admin/bulk-operations/api/bulk-operations.routes';
+import { BulkOperationsService } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
+
+// Legacy Repositories & Services (for DI)
+import { PropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository';
+import { UserRepository } from '@/features/auth/user/data/UserRepository';
+import { TenantRepository } from '@/features/tenants/tenant/data/repository/TenantRepository';
+import { LeaseRepository } from '@/features/leases/data/LeaseRepository';
+import { RentPaymentRepository } from '@/features/finance/rent-payment/data/RentPaymentRepository';
+import { RentTransactionRepository } from '@/features/finance/rent-transaction/data/RentTransactionRepository';
+import { RentTransactionMeterReadingRepository } from '@/features/finance/rent-transaction/data/RentTransactionMeterReadingRepository';
+import { UnitRepository } from '@/features/properties/unit/data/repository/UnitRepository';
+
+import { UserService } from '@/features/auth/user/core/UserService';
+import { RentPaymentService } from '@/features/finance/rent-payment/core/RentPaymentService';
+import { RentTransactionService } from '@/features/finance/rent-transaction/core/RentTransactionService';
+
+// New Feature Services & Repositories (Migrated from Legacy)
+import { MeterRepository } from '@/features/properties/meter/data/repository/MeterRepository';
+import { MeterReadingRepository } from '@/features/properties/meter/data/repository/MeterReadingRepository';
+import { MeterService } from '@/features/properties/meter/core/services/MeterService';
+import { MeterReadingService } from '@/features/properties/meter/core/services/MeterReadingService';
+import { PropertyFileRepository } from '@/features/properties/property/data/repository/PropertyFileRepository';
+import { PropertyReceiptTemplateRepository } from '@/features/properties/property/data/repository/PropertyReceiptTemplateRepository';
+import { PropertyFileService } from '@/features/properties/property/core/services/PropertyFileService';
+import { PropertyReceiptTemplateService } from '@/features/properties/property/core/services/PropertyReceiptTemplateService';
+
+import { PropertyController } from '@/features/properties/property/api/PropertyController.js';
+import { PropertyFileController } from '@/features/properties/property/api/PropertyFileController.js';
+import { PropertyReceiptTemplateController } from '@/features/properties/property/api/PropertyReceiptTemplateController.js';
+import { GetPropertiesUseCase } from '@/features/properties/property/core/use-cases/GetProperties.usecase.js';
+import { GetPropertyByIdUseCase } from '@/features/properties/property/core/use-cases/GetPropertyById.usecase.js';
+import { CreatePropertyUseCase } from '@/features/properties/property/core/use-cases/CreateProperty.usecase.js';
+import { UpdatePropertyUseCase } from '@/features/properties/property/core/use-cases/UpdateProperty.usecase.js';
+import { DeletePropertyUseCase } from '@/features/properties/property/core/use-cases/DeleteProperty.usecase.js';
+import { PropertyRepository as NewPropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository.js';
+
+import { FileStorageModule } from '@/features/files/file-storage/file-storage.module';
+import { ExpenseModule } from '@/features/finance/expense/expense.module';
+import { AuthModule } from '@/features/auth/auth/auth.module';
+import { UserModule } from '@/features/auth/user/user.module';
+import { RentPaymentModule } from '@/features/finance/rent-payment/rent-payment.module';
+import { RentTransactionModule } from '@/features/finance/rent-transaction/rent-transaction.module';
+import { createLeaseRoutes } from '@/features/leases/api/lease.routes';
 
 // Setup global process error handlers
 setupProcessErrorHandlers();
 
 logger.info('🚀 Starting Asset Management Platform Backend...', {
-  nodeEnv: process.env.NODE_ENV,
-  emailProvider: process.env.EMAIL_PROVIDER,
-  hasResendApiKey: !!process.env.RESEND_API_KEY,
-  dbConfig: process.env.MAIN_DATABASE_URL ? 'url' : 'env_vars',
+  nodeEnv: config.env,
+  emailProvider: config.email.provider,
+  hasResendApiKey: !!config.email.resendApiKey,
+  dbConfig: config.db.url ? 'url' : 'env_vars',
 });
 
 const startServer = async () => {
-  const mainDbConfig = process.env.MAIN_DATABASE_URL
-    ? { connectionString: process.env.MAIN_DATABASE_URL }
+  const mainDbConfig = config.db.url
+    ? { connectionString: config.db.url }
     : {
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT || '5432'),
-        database: process.env.DB_NAME,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
+        host: config.db.host,
+        port: config.db.port,
+        database: config.db.name,
+        user: config.db.user,
+        password: config.db.password,
       };
 
-  const mainPool = new Pool(mainDbConfig);
+  const mainPool = createMultiTenantPool();
 
-  const filesDbConfig = process.env.FILES_DATABASE_URL
-    ? { connectionString: process.env.FILES_DATABASE_URL }
+  const filesDbConfig = config.db.filesUrl
+    ? { connectionString: config.db.filesUrl }
     : {
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT || '5432'),
-        database: process.env.DB_FILES_NAME || process.env.DB_NAME, // Fallback to main DB if not specified
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
+        host: config.db.host,
+        port: config.db.port,
+        database: config.db.filesName || config.db.name, // Fallback to main DB if not specified
+        user: config.db.user,
+        password: config.db.password,
       };
 
   const filesPool = new Pool(filesDbConfig);
 
+  // --- Dependency Injection (Manual) ---
+
+  // Repositories
+  const userRepository = new UserRepository(mainPool);
+  const propertyRepository = new PropertyRepository(mainPool);
+  const tenantRepository = new TenantRepository(mainPool);
+  const leaseRepository = new LeaseRepository(mainPool);
+  const rentPaymentRepository = new RentPaymentRepository(mainPool);
+  const rentTransactionRepository = new RentTransactionRepository(mainPool);
+  const meterRepository = new MeterRepository(mainPool);
+  const meterReadingRepository = new MeterReadingRepository(mainPool);
+  const transactionMeterReadingRepository = new RentTransactionMeterReadingRepository(mainPool);
+  const propertyFileRepository = new PropertyFileRepository(filesPool);
+  const propertyReceiptTemplateRepository = new PropertyReceiptTemplateRepository(mainPool);
+  const unitRepository = new UnitRepository(mainPool);
+  const receiptRepository = new ReceiptRepository(mainPool);
+  const receiptTemplateRepository = new ReceiptTemplateRepository(mainPool);
+  const unitUtilityRepository = new UnitUtilityRepository(mainPool);
+
+  // Services
+  const eventBus = EventBus.getInstance();
+  const userService = new UserService(userRepository);
+  const meterService = new MeterService(meterRepository);
+  const meterReadingService = new MeterReadingService(meterReadingRepository, meterRepository);
+  const propertyFileService = new PropertyFileService(propertyFileRepository);
+  const propertyReceiptTemplateService = new PropertyReceiptTemplateService(propertyReceiptTemplateRepository);
+  
+  const receiptTemplateService = new ReceiptTemplateService(receiptTemplateRepository, propertyRepository);
+  
+  const rentPaymentService = new RentPaymentService(
+    rentPaymentRepository,
+    leaseRepository,
+    tenantRepository,
+    eventBus
+  );
+
+  const receiptService = new ReceiptService(
+    receiptRepository,
+    rentTransactionRepository,
+    rentPaymentRepository,
+    leaseRepository,
+    propertyRepository,
+    tenantRepository,
+    userRepository,
+    receiptTemplateService
+  );
+
+  const unitUtilityService = new UnitUtilityService(unitUtilityRepository, meterService);
+
+  const rentTransactionService = new RentTransactionService(
+    rentTransactionRepository,
+    leaseRepository,
+    tenantRepository,
+    propertyRepository,
+    userRepository,
+    transactionMeterReadingRepository,
+    eventBus
+  );
+
+  const bulkOperationsService = new BulkOperationsService(
+    rentTransactionService,
+    receiptService,
+    propertyRepository,
+    tenantRepository,
+    unitRepository,
+    userRepository,
+    leaseRepository,
+    rentTransactionRepository,
+    rentPaymentRepository
+  );
+
   // Initialize file storage service
-  const fileStorageService = new FileStorageService(mainPool, filesPool);
+  const fileStorageModule = new FileStorageModule(filesPool, authMiddleware(userService));
+  const fileStorageService = fileStorageModule.service;
 
-  // Initialize dependency injection container
-  const container = DependencyContainer.initialize(mainPool);
-
-  // Get services from container
-  const propertyService = container.propertyService;
-  const userService = container.userService;
-  const tenantService = container.tenantService;
-  const unitService = container.unitService;
-  const unitTenantService = container.unitTenantService;
-  const leaseService = container.leaseService;
-  const rentPaymentService = container.rentPaymentService;
-  const rentTransactionService = container.rentTransactionService;
-  const passwordResetService = container.passwordResetService;
-  const meterService = container.meterService;
-  const meterReadingService = container.meterReadingService;
-  const receiptService = container.receiptService;
-  const receiptTemplateService = container.receiptTemplateService;
-  const unitUtilityService = container.unitUtilityService;
-  const expenseService = container.expenseService;
-  const bulkOperationsService = container.bulkOperationsService;
+  // Initialize Property Feature
+  const newPropertyRepository = new NewPropertyRepository(mainPool);
+  const getPropertiesUseCase = new GetPropertiesUseCase(newPropertyRepository);
+  const getPropertyByIdUseCase = new GetPropertyByIdUseCase(newPropertyRepository);
+  const createPropertyUseCase = new CreatePropertyUseCase(newPropertyRepository);
+  const updatePropertyUseCase = new UpdatePropertyUseCase(newPropertyRepository);
+  const deletePropertyUseCase = new DeletePropertyUseCase(newPropertyRepository);
 
   // Create controllers with injected services
-  const propertyController = new PropertyController(propertyService);
-  const propertyFileController = new PropertyFileController(propertyService, fileStorageService);
-  const propertyReceiptTemplateController = new PropertyReceiptTemplateController(propertyService);
-  const userController = new UserController(userService, passwordResetService);
-  const tenantController = new TenantController(tenantService);
-  const unitController = new UnitController(unitService);
-  const unitTenantController = new UnitTenantController(unitTenantService);
-  const leaseController = new LeaseController(leaseService);
-  const rentPaymentController = new RentPaymentController(rentPaymentService);
-  const rentTransactionController = new RentTransactionController(rentTransactionService);
-  const meterController = new MeterController(meterService, meterReadingService);
+  const propertyController = new PropertyController(
+    getPropertiesUseCase,
+    getPropertyByIdUseCase,
+    createPropertyUseCase,
+    updatePropertyUseCase,
+    deletePropertyUseCase
+  );
+  
+  const propertyFileController = new PropertyFileController(
+    getPropertyByIdUseCase,
+    fileStorageService,
+    propertyFileService
+  );
+  
+  const propertyReceiptTemplateController = new PropertyReceiptTemplateController(
+    getPropertyByIdUseCase,
+    propertyReceiptTemplateService
+  );
+
   const receiptController = new ReceiptController(receiptService);
   const receiptTemplateController = new ReceiptTemplateController(receiptTemplateService);
   const unitUtilityController = new UnitUtilityController(unitUtilityService);
-  const expenseController = new ExpenseController(expenseService);
   const bulkOperationsController = new BulkOperationsController(bulkOperationsService);
 
   const app = express();
+
+  // Global Rate limiting
+  app.use(globalLimiter);
 
   // Security and CORS middleware
   app.use(helmet({
     contentSecurityPolicy: false, // Disable CSP for Swagger UI to work
   }));
-  app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost:5000', 'http://localhost:5001'],
+  // CORS configuration: read allowed origins from ENV or fallback to local defaults
+  const rawOrigins = process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:5000,http://localhost:5001';
+  const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
+
+  const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow non-browser requests (curl, server-to-server) where origin is undefined
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // In development, also accept common localhost/127.0.0.1 origins that may not be present
+      // in the explicit allowlist to make local dev less brittle.
+      if (config.env === 'development') {
+        try {
+          const parsed = new URL(origin);
+          const host = parsed.hostname;
+          const devHosts = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0']);
+          if (devHosts.has(host)) {
+            console.info('CORS allowed local dev origin:', origin);
+            return callback(null, true);
+          }
+        } catch (e) {
+          // If origin can't be parsed, fall through to block with helpful log
+        }
+      }
+
+      // Not allowed - provide a helpful error
+      const err = new Error(`CORS policy: Origin ${origin} not allowed`);
+      // Log for debugging
+      console.warn('CORS blocked origin:', origin, 'Allowed:', allowedOrigins);
+      return callback(err);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma']
-  }));
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Pragma', 'X-CSRF-Token', 'X-Request-ID', 'Accept'] ,
+    optionsSuccessStatus: 200,
+  };
+
+  app.use(cors(corsOptions as any));
+  // Ensure preflight requests are handled
+  app.options('*', cors(corsOptions as any));
   app.use(express.json());
 
   // Serve static PDF files
   app.use('/invoices', express.static('public/invoices'));
   app.use('/api/receipts', express.static('public/receipts'));
 
+  // Expose raw OpenAPI/Swagger JSON for external tools and direct access
+  // Read from generated file if present to allow hot-reload without restarting server
+  app.get('/openapi.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    // Prevent caching in dev; consumers can cache in prod as needed
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+      const filePath = path.join(process.cwd(), 'public', 'openapi.json');
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf8');
+        return res.send(raw);
+      }
+    } catch (err) {
+      // ignore and fall back to in-memory specs
+    }
+
+    res.json(specs);
+  });
+
   // Logging middleware (must be before routes)
   app.use(requestIdMiddleware);
   app.use(requestLoggingMiddleware);
+  app.use(organizationMiddleware);
 
-  app.use('/api-docs', swaggerUi.serve as any, swaggerUi.setup(specs, swaggerUiOptions) as any);
+  // Use the UI configured with 'urls' (which points to /openapi.json) so the UI fetches
+  // the live generated spec at runtime and reflects changes without a server restart.
+  app.use('/api-docs', swaggerUi.serve as any, swaggerUi.setup(undefined, swaggerUiOptions) as any);
 
-  // Initialize database tables
-  // await initializeDatabase(mainPool, filesPool);
-
-  /**
-   * @swagger
-   * /:
-   *   get:
-   *     summary: Get welcome message
-   *     responses:
-   *       200:
-   *         description: Welcome message
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 message:
-   *                   type: string
-   */
   app.get('/', (req, res) => {
     res.json({ message: 'Property Management API' });
   });
 
-  /**
-   * @swagger
-   * /api/health:
-   *   get:
-   *     summary: Health check endpoint
-   *     responses:
-   *       200:
-   *         description: Service is healthy
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 status:
-   *                   type: string
-   *                 timestamp:
-   *                   type: string
-   *                 uptime:
-   *                   type: number
- */
   app.get('/api/health', async (req, res) => {
     try {
       // Test database connections
@@ -240,34 +342,45 @@ const startServer = async () => {
     }
   });
 
-  // Mount routes
-  app.use('/api/properties', createPropertyRoutes(propertyController, propertyFileController, propertyReceiptTemplateController, userService));
-  app.use('/api/auth', createAuthRoutes(userService, passwordResetService));
-  app.use('/api/users', createUserRoutes(userController, userService));
-  app.use('/api', createTenantRoutes(tenantController, userService));
-  app.use('/api', createUnitRoutes(unitController, userService));
-  app.use('/api', createUnitTenantRoutes(unitTenantController, userService));
-  app.use('/api/leases', createNewLeaseRoutes(authMiddleware(userService) as any));
-  app.use('/api/rent-payments', createRentPaymentRoutes(rentPaymentController, userService));
-  app.use('/api/rent-transactions', createRentTransactionRoutes(rentTransactionController, userService));
-  app.use('/api/meters', createMeterRoutes(meterController, userService));
-  app.use('/api/receipts', createReceiptRoutes(receiptController, userService));
-  app.use('/api/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
-  app.use('/api', createTemplateRoutes(mainPool, userService));
-  app.use('/api', createUnitUtilityRoutes(unitUtilityController, userService));
-  app.use('/api/expenses', createExpenseRoutes(expenseController, userService));
-  app.use('/api/files', createFileRoutes(mainPool, filesPool));
-  app.use('/api/bulk', createBulkOperationsRoutes(bulkOperationsController, userService));
+  // API Versioning - v1 Router
+  const v1Router = express.Router();
+
+  // Mount routes to v1 router
+  v1Router.use('/properties', PropertyModule.create(mainPool, userService, { fileController: propertyFileController, receiptTemplateController: propertyReceiptTemplateController }));
+  v1Router.use('/auth', new AuthModule(mainPool).router);
+  v1Router.use('/users', new UserModule(mainPool).router);
+  v1Router.use('/tenants', TenantModule.create(mainPool, userService));
+  v1Router.use('/units', UnitModule.create(mainPool, userService));
+  v1Router.use('/units', UnitModule.create(mainPool, userService));
+  v1Router.use('/unit-tenants', UnitTenantModule.create(mainPool, userService));
+  // Mount lease routes
+  v1Router.use('/leases', createLeaseRoutes(authMiddleware(userService) as any));
+  v1Router.use('/rent-payments', new RentPaymentModule(mainPool, EventBus.getInstance()).router);
+  v1Router.use('/rent-transactions', new RentTransactionModule(mainPool, EventBus.getInstance()).router);
+  v1Router.use('/meters', MeterModule.create(mainPool, userService));
+  v1Router.use('/receipts', createReceiptRoutes(receiptController, userService));
+  v1Router.use('/receipt-templates', createReceiptTemplateRoutes(receiptTemplateController, userService));
+  v1Router.use('/', createTemplateRoutes(mainPool, userService));
+  v1Router.use('/', createUnitUtilityRoutes(unitUtilityController, userService));
+  v1Router.use('/expenses', new ExpenseModule(mainPool).getRoutes(authMiddleware(userService)));
+  v1Router.use('/files', fileStorageModule.router);
+  v1Router.use('/bulk', createBulkOperationsRoutes(bulkOperationsController, userService));
+
+  // Mount v1 router
+  app.use('/api/v1', v1Router);
+  
+  // Legacy support: Mount v1 router at /api as well to maintain backward compatibility during migration
+  app.use('/api', v1Router);
 
   // Error handling middleware (must be last)
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  const PORT = process.env.PORT || 5002;
+  const PORT = config.port;
   app.listen(PORT, () => {
     logger.info(`✅ Server is running on port ${PORT}`, {
       port: PORT,
-      environment: process.env.NODE_ENV,
+      environment: config.env,
       swaggerUrl: `http://localhost:${PORT}/api-docs`,
     });
   });

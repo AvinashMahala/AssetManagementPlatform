@@ -1,0 +1,9 @@
+{
+  "propertyId": "prop_01EXAMPLE",
+  "unitId": "unit_01EXAMPLE",
+  "tenantId": "tenant_01EXAMPLE",
+  "startDate": "2025-07-01",
+  "endDate": "2026-06-30",
+  "rentAmount": 20000,
+  "depositAmount": 40000
+}

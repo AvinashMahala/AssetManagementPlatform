@@ -1,0 +1,7 @@
+{
+  "amount": 15200,
+  "paymentDate": "2025-06-06",
+  "paymentMethod": "upi",
+  "referenceNumber": "TXN-12345-UPDATED",
+  "notes": "updated after reconciliation"
+}

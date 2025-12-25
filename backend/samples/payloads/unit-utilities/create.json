@@ -1,0 +1,10 @@
+{
+  "unitId": "unit_01EXAMPLE",
+  "propertyId": "prop_01EXAMPLE",
+  "utilityType": "electricity",
+  "utilityName": "Main Meter",
+  "isEnabled": true,
+  "billingMethod": "meter_based",
+  "meterId": "meter_01EXAMPLE",
+  "multiplier": 1.0
+}

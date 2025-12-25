@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { body, param, validationResult } from 'express-validator';
+import { ZodSchema, ZodError, ZodIssue } from 'zod';
+import { HTTP_STATUS } from '@/shared/constants/http';
 
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
@@ -247,4 +249,37 @@ export const validateRequest = {
       .withMessage('sendEmail must be a boolean'),
     handleValidationErrors
   ]
+};
+export const validateZodRequest = (schema: ZodSchema) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Parse and normalize request parts (body/query/params) according to the schema
+      const parsed = await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+
+      // If the schema returned normalized values, assign them back to the request
+      if (parsed && typeof parsed === 'object') {
+        if ('body' in parsed && parsed.body !== undefined) req.body = (parsed as any).body;
+        if ('query' in parsed && parsed.query !== undefined) req.query = (parsed as any).query;
+        if ('params' in parsed && parsed.params !== undefined) req.params = (parsed as any).params;
+      }
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: 'Validation failed',
+          // `ZodError` exposes `issues` which is the correct array of ZodIssue
+          errors: (error as ZodError<any>).issues.map((e: ZodIssue) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        });
+      }
+      next(error);
+    }
+  };
 };

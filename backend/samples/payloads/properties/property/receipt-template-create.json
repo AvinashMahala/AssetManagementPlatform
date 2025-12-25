@@ -1,0 +1,12 @@
+{
+  "bankDetails": {
+    "bankName": "Acme Bank",
+    "accountNumber": "1234509876",
+    "ifscCode": "ACME0000987",
+    "accountHolderName": "Acme Properties"
+  },
+  "wallets": [{ "type": "GPAY", "upiPhoneNumber": "+919900000000", "upiName": "Acme" }],
+  "paymentQRCodeUrl": "https://cdn.example.com/qr.png",
+  "signatureUrl": "https://cdn.example.com/sign.png",
+  "additionalInfo": { "termsAndConditions": "Payment due within 7 days" }
+}
