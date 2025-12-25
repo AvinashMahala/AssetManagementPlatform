@@ -1,8 +1,8 @@
-import { IUseCase } from '@/shared/core/IUseCase.js';
-import { IPropertyRepository } from '../interfaces/IPropertyRepository.js';
-import { Property, PropertyInput, PropertyStatus } from '../types/property.types.js';
-import { ValidationUtils } from '@/shared/utils/validation.js';
-import { ERROR_MESSAGES } from '@/shared/constants/validation.js';
+import { IUseCase } from '@/shared/core/IUseCase';
+import { IPropertyRepository } from '../interfaces/IPropertyRepository';
+import { Property, PropertyInput, PropertyStatus } from '../types/property.types';
+import { ValidationUtils } from '@/shared/utils/validation';
+import { ERROR_MESSAGES } from '@/shared/constants/validation';
 
 export class CreatePropertyUseCase implements IUseCase<PropertyInput, Property> {
   constructor(private repository: IPropertyRepository) {}
