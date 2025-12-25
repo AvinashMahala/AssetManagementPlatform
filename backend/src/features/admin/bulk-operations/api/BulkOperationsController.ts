@@ -134,11 +134,9 @@ export class BulkOperationsController {
       });
     }
   }
+  // OpenAPI: see `src/shared/config/swagger/apis/admin/paths/api.bulk.export.post.ts`
 
-  /**
-   * GET /api/bulk/validate-receipts
-   * Receipt validation - check for missing or invalid receipts
-   */
+  // OpenAPI: see `src/shared/config/swagger/apis/admin/paths/api.bulk.validate-receipts.get.ts`
   async validateReceipts(req: Request, res: Response): Promise<void> {
     try {
       const propertyId = req.query.propertyId as string;
