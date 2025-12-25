@@ -1,6 +1,7 @@
 // Import all API group modules
 import { authTags, authSchemas } from './auth/index.js';
 import { usersTags, usersSchemas } from './users/index.js';
+import { filesTags, filesSchemas } from './files/index.js';
 import { propertiesTags, propertiesSchemas } from './properties/index.js';
 import { adminTags, adminSchemas } from './admin/index.js';
 import { unitsTags, unitsSchemas } from './units/index.js';
@@ -16,6 +17,7 @@ import { OpenAPIV3 } from 'openapi-types';
 export const allTags: OpenAPIV3.TagObject[] = [
   ...authTags,
   ...usersTags,
+  ...filesTags,
   ...propertiesTags,
   ...adminTags,
   ...unitsTags,
@@ -29,6 +31,7 @@ export const allTags: OpenAPIV3.TagObject[] = [
 export const allSchemas: Record<string, OpenAPIV3.SchemaObject> = {
   ...authSchemas,
   ...usersSchemas,
+  ...filesSchemas,
   ...propertiesSchemas,
   ...adminSchemas,
   ...unitsSchemas,

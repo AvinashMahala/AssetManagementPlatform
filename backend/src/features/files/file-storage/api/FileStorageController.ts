@@ -5,51 +5,9 @@ import { createModuleLogger } from '@/shared/utils/logger';
 
 const logger = createModuleLogger('FileStorageController');
 
-/**
- * @swagger
- * tags:
- *   name: Files
- *   description: File storage and management endpoints
- */
 export class FileStorageController {
   constructor(private readonly fileStorageService: FileStorageService) {}
 
-  /**
-   * @swagger
-   * /files/upload:
-   *   post:
-   *     summary: Upload a file
-   *     tags: [Files]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         multipart/form-data:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - file
-   *             properties:
-   *               file:
-   *                 type: string
-   *                 format: binary
-   *               entityType:
-   *                 type: string
-   *               entityId:
-   *                 type: string
-   *               category:
-   *                 type: string
-   *               tags:
-   *                 type: string
-   *               customName:
-   *                 type: string
-   *     responses:
-   *       200:
-   *         description: File uploaded successfully
-   *       400:
-   *         description: No file uploaded
-   *       500:
-   *         description: Internal server error
-   */
   uploadFile = async (req: Request, res: Response) => {
     try {
       if (!req.file) {
@@ -103,27 +61,6 @@ export class FileStorageController {
     }
   };
 
-  /**
-   * @swagger
-   * /files/{fileId}/download:
-   *   get:
-   *     summary: Download a file
-   *     tags: [Files]
-   *     parameters:
-   *       - in: path
-   *         name: fileId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: File ID
-   *     responses:
-   *       200:
-   *         description: File content
-   *       404:
-   *         description: File not found
-   *       500:
-   *         description: Internal server error
-   */
   downloadFile = async (req: Request, res: Response) => {
     try {
       const { fileId } = req.params;
