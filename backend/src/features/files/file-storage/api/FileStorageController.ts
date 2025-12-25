@@ -8,6 +8,49 @@ const logger = createModuleLogger('FileStorageController');
 export class FileStorageController {
   constructor(private readonly fileStorageService: FileStorageService) {}
 
+  /**
+   * 001. List files (paginated)
+   */
+  listFiles = async (req: Request, res: Response) => {
+    try {
+      const limit = Math.max(1, Math.min(100, parseInt(String(req.query.limit || '20'), 10)));
+      const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
+      const offset = (page - 1) * limit;
+      const entityType = req.query.entityType ? String(req.query.entityType) : null;
+      const entityId = req.query.entityId ? String(req.query.entityId) : null;
+
+      const { items, total } = await this.fileStorageService.listFiles({ limit, offset, entityType, entityId });
+
+      const totalPages = Math.ceil(total / limit);
+      const hasNext = page < totalPages;
+      const hasPrev = page > 1;
+
+      res.json({
+        success: true,
+        data: {
+          files: items,
+          pagination: {
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNext,
+            hasPrev
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('File listing error:', error);
+      res.status(500).json({
+        error: 'Failed to list files',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  };
+
+  /**
+   * 002. Upload a single file
+   */
   uploadFile = async (req: Request, res: Response) => {
     try {
       if (!req.file) {
@@ -61,6 +104,9 @@ export class FileStorageController {
     }
   };
 
+  /**
+   * 003. Download a single file
+   */
   downloadFile = async (req: Request, res: Response) => {
     try {
       const { fileId } = req.params;
@@ -92,48 +138,10 @@ export class FileStorageController {
     }
   };
 
-  /**
-   * List files (paginated)
-   */
-  listFiles = async (req: Request, res: Response) => {
-    try {
-      const limit = Math.max(1, Math.min(100, parseInt(String(req.query.limit || '20'), 10)));
-      const page = Math.max(1, parseInt(String(req.query.page || '1'), 10));
-      const offset = (page - 1) * limit;
-      const entityType = req.query.entityType ? String(req.query.entityType) : null;
-      const entityId = req.query.entityId ? String(req.query.entityId) : null;
 
-      const { items, total } = await this.fileStorageService.listFiles({ limit, offset, entityType, entityId });
-
-      const totalPages = Math.ceil(total / limit);
-      const hasNext = page < totalPages;
-      const hasPrev = page > 1;
-
-      res.json({
-        success: true,
-        data: {
-          files: items,
-          pagination: {
-            total,
-            page,
-            limit,
-            totalPages,
-            hasNext,
-            hasPrev
-          }
-        }
-      });
-    } catch (error) {
-      logger.error('File listing error:', error);
-      res.status(500).json({
-        error: 'Failed to list files',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  };
 
   /**
-   * Get metadata for a single file
+   * 004. Get metadata for a single file
    */
   getMetadata = async (req: Request, res: Response) => {
     try {
@@ -154,7 +162,7 @@ export class FileStorageController {
   };
 
   /**
-   * Delete a file and its content
+   * 005. Delete a single file
    */
   deleteFile = async (req: Request, res: Response) => {
     try {

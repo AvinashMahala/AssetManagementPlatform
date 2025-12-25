@@ -24,7 +24,11 @@ export class PropertyController {
     private deletePropertyUseCase: DeletePropertyUseCase
   ) {}
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 001. Get all properties, optionally filtered by ownerId
+   * @param req The request object
+   * @param res The response object
+   * @returns A list of properties or an error response.
+   */
   async getAll(req: Request, res: Response) {
     try {
       const { ownerId } = req.query;
@@ -35,7 +39,11 @@ export class PropertyController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 002. Get a single property by ID.
+   * @param req The request object
+   * @param res The response object
+   * @returns A single property or an error response.
+   */
   async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -64,7 +72,11 @@ export class PropertyController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 003. Create a new property.
+   * @param req The request object
+   * @param res The response object
+   * @returns The created property or an error response.
+   */
   async create(req: AuthenticatedRequest, res: Response) {
     try {
       const propertyData: PropertyInput = req.body;
@@ -191,7 +203,11 @@ export class PropertyController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 004. Update an existing property.
+   * @param req The request object
+   * @param res The response object
+   * @returns The updated property or an error response.
+   */
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -221,7 +237,11 @@ export class PropertyController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 005. Delete a property by ID.
+   * @param req The request object
+   * @param res The response object
+   * @returns A 204 No Content response or an error response.
+   */
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -241,6 +261,11 @@ export class PropertyController {
     }
   }
 
+  /** 006. Update the status of a property.
+   * @param req The request object
+   * @param res The response object
+   * @returns The updated property or an error response.
+   */
   async updateStatus(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -260,6 +285,38 @@ export class PropertyController {
     }
   }
 
+  /** 007. Set or update the template for a property.
+   * @param req The request object
+   * @param res The response object
+   * @returns The updated property after setting the template or an error response.
+   */
+  async setPropertyTemplate(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { templateId, templateOverrides } = req.body;
+      const property = await this.updatePropertyUseCase.execute({ 
+        id, 
+        data: { templateId, templateOverrides } 
+      });
+      ResponseUtils.success(res, property);
+    } catch (err) {
+      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
+        return ResponseUtils.notFound(res, 'Property not found');
+      }
+
+      if ((err as any)?.code) {
+        return ErrorUtils.handleDatabaseError(res, err);
+      }
+
+      ErrorUtils.handleGenericError(res, err, 'Failed to set property template');
+    }
+  }
+
+  /** 008. Get the template details of a property by ID.
+   * @param req The request object
+   * @param res The response object
+   * @returns The property template details or an error response.
+   */
   async getPropertyTemplate(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -286,32 +343,11 @@ export class PropertyController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
-
-  async setPropertyTemplate(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const { templateId, templateOverrides } = req.body;
-      const property = await this.updatePropertyUseCase.execute({ 
-        id, 
-        data: { templateId, templateOverrides } 
-      });
-      ResponseUtils.success(res, property);
-    } catch (err) {
-      if (err instanceof PropertyNotFoundError || (err as any)?.name === 'PropertyNotFoundError') {
-        return ResponseUtils.notFound(res, 'Property not found');
-      }
-
-      if ((err as any)?.code) {
-        return ErrorUtils.handleDatabaseError(res, err);
-      }
-
-      ErrorUtils.handleGenericError(res, err, 'Failed to set property template');
-    }
-  }
-
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
-
+  /** 009. Remove the template from a property.
+   * @param req The request object
+   * @param res The response object
+   * @returns The updated property after removing the template or an error response.
+   */
   async removePropertyTemplate(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -332,6 +368,4 @@ export class PropertyController {
       ErrorUtils.handleGenericError(res, err, 'Failed to remove property template');
     }
   }
-
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
 }

@@ -14,7 +14,11 @@ export class PropertyFileController {
     private propertyFileService: PropertyFileService
   ) {}
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths/`
+  /** 001. Upload a file for a property.
+   * @param req AuthenticatedRequest object containing propertyId in params and file data in body.
+   * @param res Response object to send back the result.
+   * @returns JSON response with the uploaded file details or error message.
+   */
   async uploadFile(req: AuthenticatedRequest, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -66,7 +70,12 @@ export class PropertyFileController {
       }
     }
   }
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+
+  /** 002. Get files for a property.
+   * @param req Request object containing propertyId in params and optional type in query.
+   * @param res Response object to send back the result.
+   * @returns JSON response with the list of files or error message.
+   */
   async getPropertyFiles(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -91,7 +100,11 @@ export class PropertyFileController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths/`
+  /** 003. Download a property file.
+   * @param req AuthenticatedRequest object containing propertyId and fileId in params.
+   * @param res Response object to send back the file or error message.
+   * @returns File download response or error message.
+   */
   async downloadFile(req: AuthenticatedRequest, res: Response) {
     try {
       const { propertyId, fileId } = req.params;
@@ -118,7 +131,12 @@ export class PropertyFileController {
       ErrorUtils.handleGenericError(res, err, 'Failed to download file');
     }
   }
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+
+  /** 004. Update file metadata.
+   * @param req Request object containing fileId in params and update data in body.
+   * @param res Response object to send back the result.
+   * @returns JSON response with the updated file details or error message.
+   */
   async updateFile(req: Request, res: Response) {
     try {
       const { fileId } = req.params;
@@ -134,7 +152,12 @@ export class PropertyFileController {
       ErrorUtils.handleGenericError(res, err, 'Failed to update file');
     }
   }
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+
+  /** 005. Delete a property file.
+   * @param req Request object containing propertyId and fileId in params.
+   * @param res Response object to send back the result.
+   * @returns JSON response confirming deletion or error message.
+   */
   async deleteFile(req: Request, res: Response) {
     try {
       const { propertyId, fileId } = req.params;

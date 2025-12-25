@@ -9,14 +9,18 @@ export const createFileStorageRoutes = (controller: FileStorageController, authM
   // Use shared default memory uploader instance
   const upload = defaultMemoryUploader;
 
-  router.post('/upload', authMiddleware, upload.single('file') as any, asyncHandler(controller.uploadFile.bind(controller)));
-  // List files (paginated)
+  // All routes listed below
+  // ------------------------------------------------
+  // 001. List files (paginated)
   router.get('/', authMiddleware, asyncHandler(controller.listFiles.bind(controller)));
-  // File metadata
-  router.get('/:fileId/metadata', asyncHandler(controller.getMetadata.bind(controller)));
+  // 002. Upload a single file
+  router.post('/upload', authMiddleware, upload.single('file') as any, asyncHandler(controller.uploadFile.bind(controller)));
+  // 003. Download a single file
   router.get('/:fileId/download', asyncHandler(controller.downloadFile.bind(controller))); // Auth handled in controller/service or optional
-  // Delete a file
+  // 004. Get metadata for a single file
+  router.get('/:fileId/metadata', asyncHandler(controller.getMetadata.bind(controller)));
+  // 005. Delete a single file
   router.delete('/:fileId', authMiddleware, asyncHandler(controller.deleteFile.bind(controller)));
-
+  // ------------------------------------------------
   return router;
 };

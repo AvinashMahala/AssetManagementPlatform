@@ -4,14 +4,16 @@ import { PropertyReceiptTemplateService } from '../core/services/PropertyReceipt
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 
-// OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths/`
 export class PropertyReceiptTemplateController {
   constructor(
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,
     private propertyReceiptTemplateService: PropertyReceiptTemplateService
   ) {}
-
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 001. Create a new receipt template for a property.
+   * @param req Express request object containing propertyId in params and template data in body
+   * @param res Express response object
+   * @returns JSON response with the created template or error message
+   */
   async createTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -36,7 +38,12 @@ export class PropertyReceiptTemplateController {
       }
     }
   }
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+
+  /** 002. Get the receipt template for a property.
+   * @param req Express request object containing propertyId in params
+   * @param res Express response object
+   * @returns JSON response with the receipt template or error message
+   */
   async getTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -58,7 +65,11 @@ export class PropertyReceiptTemplateController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 003. Update the receipt template for a property.
+   * @param req Express request object containing propertyId in params and update data in body
+   * @param res Express response object
+   * @returns JSON response with the updated template or error message
+   */
   async updateTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -86,7 +97,11 @@ export class PropertyReceiptTemplateController {
     }
   }
 
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+  /** 004. Delete the receipt template for a property.
+   * @param req Express request object containing propertyId in params
+   * @param res Express response object
+   * @returns JSON response indicating success or failure
+   */
   async deleteTemplate(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -107,7 +122,12 @@ export class PropertyReceiptTemplateController {
       ErrorUtils.handleGenericError(res, err, 'Failed to delete receipt template');
     }
   }
-  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths.ts`
+
+  /** 005. Generate UPI links for a property's receipt template.
+   * @param req Express request object containing propertyId in params and optional amount in query
+   * @param res Express response object
+   * @returns JSON response with generated UPI links or error message
+   */
   async generateUPILinks(req: Request, res: Response) {
     try {
       const { propertyId } = req.params;
