@@ -7,6 +7,8 @@ import { logger } from '@/shared/utils/logger.js';
 import { requestLoggingMiddleware, requestIdMiddleware } from '@/shared/middleware/loggingMiddleware.js';
 import { errorHandler, notFoundHandler, setupProcessErrorHandlers } from '@/shared/middleware/errorHandler.js';
 import { globalLimiter } from '@/shared/middleware/rateLimitMiddleware';
+import fs from 'fs';
+import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './src/shared/config/swagger/index.js';
 import { swaggerUiOptions } from './src/shared/config/swagger/index.js';
@@ -283,10 +285,21 @@ const startServer = async () => {
   app.use('/api/receipts', express.static('public/receipts'));
 
   // Expose raw OpenAPI/Swagger JSON for external tools and direct access
+  // Read from generated file if present to allow hot-reload without restarting server
   app.get('/openapi.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     // Prevent caching in dev; consumers can cache in prod as needed
     res.setHeader('Cache-Control', 'no-store');
+    try {
+      const filePath = path.join(process.cwd(), 'public', 'openapi.json');
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf8');
+        return res.send(raw);
+      }
+    } catch (err) {
+      // ignore and fall back to in-memory specs
+    }
+
     res.json(specs);
   });
 
@@ -295,7 +308,9 @@ const startServer = async () => {
   app.use(requestLoggingMiddleware);
   app.use(organizationMiddleware);
 
-  app.use('/api-docs', swaggerUi.serve as any, swaggerUi.setup(specs, swaggerUiOptions) as any);
+  // Use the UI configured with 'urls' (which points to /openapi.json) so the UI fetches
+  // the live generated spec at runtime and reflects changes without a server restart.
+  app.use('/api-docs', swaggerUi.serve as any, swaggerUi.setup(undefined, swaggerUiOptions) as any);
 
   app.get('/', (req, res) => {
     res.json({ message: 'Property Management API' });

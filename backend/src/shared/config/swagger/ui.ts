@@ -243,6 +243,8 @@ const swaggerUiOptions = {
       { name: 'OpenAPI (JSON)', url: '/openapi.json' }
     ],
     displayRequestDuration: true,
+    // Always sort tags/groups alphabetically (ascending)
+    tagsSorter: 'alpha',
     docExpansion: 'none',
     filter: true,
     showExtensions: true,

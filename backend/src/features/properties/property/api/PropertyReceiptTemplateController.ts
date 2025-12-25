@@ -4,12 +4,7 @@ import { PropertyReceiptTemplateService } from '../core/services/PropertyReceipt
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 
-/**
- * @swagger
- * tags:
- *   name: PropertyReceiptTemplates
- *   description: Property receipt template management endpoints
- */
+// OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths/`
 export class PropertyReceiptTemplateController {
   constructor(
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,

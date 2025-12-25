@@ -17,6 +17,10 @@ The backend follows a **Modular Architecture** (also known as Feature-Sliced Des
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                     Feature Module                      │
+### Swagger / docs commands (reference)
+
+Use these commands from the `backend` folder (or prefix with `npm --prefix backend run <script>` from repo root):
+
 │  (e.g., src/features/properties/property)               │
 │                                                         │
 │  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐    │
@@ -24,6 +28,7 @@ The backend follows a **Modular Architecture** (also known as Feature-Sliced Des
 │  │ (Controller)│   │  (Service)  │   │(Repository) │    │
 │  └─────────────┘   └─────────────┘   └─────────────┘    │
 └─────────────────────────────────────────────────────────┘
+**CI recommendation:** Add `npm --prefix backend run check-docs` as a step in your pipeline to catch doc/regression mismatches early.
            │                 │                 │
            ▼                 ▼                 ▼
 ┌─────────────────────────────────────────────────────────┐
@@ -245,6 +250,15 @@ Content-Type: application/json
 - Generate the OpenAPI JSON: `npm run generate-swagger`
 - Validate the generated spec: `npm run validate-swagger` (uses `@apidevtools/swagger-cli` via `npx`)
 - Convenience: `npm run check-swagger` will generate and validate in one step (good for CI)
+
+**Development tip:** You can auto-regenerate the OpenAPI JSON during development with:
+
+```bash
+# start the backend + auto-generate swagger on file changes
+npm run dev:with-swagger
+```
+
+This runs the dev server and watches `src/shared/config/swagger/apis/**/*.ts` for changes, regenerating `public/openapi.json` automatically so the Swagger UI (configured to fetch `/openapi.json`) reflects updates without restarting the server.
 
 If you hit import/module errors while generating the spec locally, run the generator from the `backend` folder so TypeScript paths resolve correctly (the script uses `tsx`).
 

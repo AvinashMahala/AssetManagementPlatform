@@ -17,7 +17,11 @@
     "generate-swagger": "tsx scripts/generate-swagger.ts",
     "validate-swagger": "npx @apidevtools/swagger-cli validate public/openapi.json --verbose"
     ,
-    "check-swagger": "npm run generate-swagger && npm run validate-swagger"
+    "check-swagger": "npm run generate-swagger && npm run validate-swagger",
+    "validate-endpoints": "node scripts/validate-endpoints.cjs",
+    "check-docs": "npm run generate-swagger && npm run validate-swagger && npm run validate-endpoints",
+    "generate-swagger:watch": "onchange \"src/shared/config/swagger/apis/**/*.ts\" -- npm run generate-swagger",
+    "dev:with-swagger": "concurrently \"npm run dev\" \"npm run generate-swagger:watch\""
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -60,5 +64,8 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.6.2",
     "typescript": "^5.3.3"
+    ,
+    "onchange": "^7.1.0",
+    "concurrently": "^8.2.0"
   }
 }

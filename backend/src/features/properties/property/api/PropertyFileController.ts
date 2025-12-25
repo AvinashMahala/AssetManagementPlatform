@@ -6,12 +6,7 @@ import { PropertyFileService } from '../core/services/PropertyFileService';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 
-/**
- * @swagger
- * tags:
- *   name: PropertyFiles
- *   description: Property file management endpoints
- */
+// OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths/`
 export class PropertyFileController {
   constructor(
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,
@@ -19,49 +14,7 @@ export class PropertyFileController {
     private propertyFileService: PropertyFileService
   ) {}
 
-  /**
-   * @swagger
-   * /properties/{propertyId}/files:
-   *   post:
-   *     summary: Upload a file for a property
-   *     tags: [PropertyFiles]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         multipart/form-data:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - file
-   *               - fileType
-   *             properties:
-   *               file:
-   *                 type: string
-   *                 format: binary
-   *               fileType:
-   *                 type: string
-   *                 enum: [photo, document]
-   *               description:
-   *                 type: string
-   *               customName:
-   *                 type: string
-   *     responses:
-   *       201:
-   *         description: File uploaded successfully
-   *       400:
-   *         description: Invalid input or missing file
-   *       404:
-   *         description: Property not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths/`
   async uploadFile(req: AuthenticatedRequest, res: Response) {
     try {
       const { propertyId } = req.params;
@@ -138,33 +91,7 @@ export class PropertyFileController {
     }
   }
 
-  /**
-   * @swagger
-   * /properties/{propertyId}/files/{fileId}/download:
-   *   get:
-   *     summary: Download a property file
-   *     tags: [PropertyFiles]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *       - in: path
-   *         name: fileId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: File ID
-   *     responses:
-   *       200:
-   *         description: File content
-   *       404:
-   *         description: File or Property not found
-   *       500:
-   *         description: Internal server error
-   */
+  // OpenAPI documentation moved to `src/shared/config/swagger/apis/properties/paths/`
   async downloadFile(req: AuthenticatedRequest, res: Response) {
     try {
       const { propertyId, fileId } = req.params;
