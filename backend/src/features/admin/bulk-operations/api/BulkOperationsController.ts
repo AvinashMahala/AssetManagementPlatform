@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { BulkOperationsService } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
 import { BulkRentCollectionInput, BulkPaymentInput, BulkReceiptGenerationInput, BulkCommunicationInput } from '@/features/admin/bulk-operations/core/services/BulkOperationsService';
 import { config } from '@/shared/config/env';
+import { LeaseController } from '@/features/leases/api/LeaseController';
 
 // OpenAPI documentation moved to `src/shared/config/swagger/apis/admin/paths/` and tags exported from `src/shared/config/swagger/apis/admin/tags.ts`
 export class BulkOperationsController {
