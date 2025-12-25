@@ -45,6 +45,45 @@
  *                   createdAt: "2025-12-24T00:00:00Z"
  *                   updatedAt: "2025-12-24T00:00:00Z"
  *
+ *   post:
+ *     summary: Create a new property
+ *     tags: [Properties]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PropertyInput'
+ *     responses:
+ *       201:
+ *         description: Property created successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 id: "11111111-1111-1111-1111-111111111111"
+ *                 name: "Sunset Apartments"
+ *                 propertyType: "apartment"
+ *                 status: "available"
+ *                 totalArea: 1200
+ *                 buildingAmenities:
+ *                   - "elevator"
+ *                   - "security"
+ *                 buildingPhotos:
+ *                   - "https://example.com/photo1.jpg"
+ *                 ownerId: "11111111-1111-1111-1111-111111111111"
+ *                 createdAt: "2025-12-24T00:00:00Z"
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               success: false
+ *               error: "Bad request"
+
  * /properties/{id}:
  *   get:
  *     summary: Get property by ID
@@ -182,6 +221,7 @@
  *               success: false
  *               error: "Resource not found"
  *
+ 
  *   delete:
  *     summary: Delete a property
  *     tags: [Properties]
