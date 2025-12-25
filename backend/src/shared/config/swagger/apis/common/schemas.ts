@@ -47,6 +47,33 @@ export const commonSchemas: Record<string, OpenAPIV3.SchemaObject> = {
   },
 };
 
+export const commonResponses: Record<string, OpenAPIV3.ResponseObject> = {
+  BadRequest: {
+    description: 'Bad request',
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/Error' },
+      },
+    },
+  },
+  NotFound: {
+    description: 'Resource not found',
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/Error' },
+      },
+    },
+  },
+  InternalError: {
+    description: 'Internal server error',
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/Error' },
+      },
+    },
+  },
+};
+
 export const commonSecuritySchemes: Record<string, OpenAPIV3.SecuritySchemeObject> = {
   bearerAuth: {
     type: 'http',

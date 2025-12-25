@@ -2,18 +2,30 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, refactor-backend ]
   pull_request:
-    branches: [ master ]
+    branches: [ main, refactor-backend ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: yarn install
-      - run: yarn lint
-      - run: yarn test
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies (root)
+        run: npm ci
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: ./backend
+      - name: Build backend
+        run: npm run build
+        working-directory: ./backend
+      - name: Lint backend
+        run: npm run lint
+        working-directory: ./backend

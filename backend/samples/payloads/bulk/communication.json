@@ -1,0 +1,7 @@
+{
+  "tenantIds": ["tenant_01EXAMPLE", "tenant_02EXAMPLE"],
+  "subject": "Upcoming maintenance notice",
+  "message": "We will be performing maintenance on 2025-07-05 between 10:00-14:00.",
+  "channels": ["email"],
+  "attachments": ["file_01EXAMPLE"]
+}

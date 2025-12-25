@@ -1,0 +1,6 @@
+{
+  "entityType": "transactions",
+  "dateRange": { "start": "2025-01-01", "end": "2025-06-30" },
+  "propertyIds": ["prop_01EXAMPLE"],
+  "format": "csv"
+}

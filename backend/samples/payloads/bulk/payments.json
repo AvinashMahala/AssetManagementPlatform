@@ -1,0 +1,7 @@
+{
+  "transactionIds": ["txn_01EXAMPLE", "txn_02EXAMPLE"],
+  "amount": 30000,
+  "paymentMethod": "bank_transfer",
+  "paymentDate": "2025-06-05",
+  "paymentReference": "BULK-TXN-001"
+}

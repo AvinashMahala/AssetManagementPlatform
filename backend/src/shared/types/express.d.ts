@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { User } from './models/User.js'; // Adjust path as needed
+import { User } from '../../features/auth/user/core/user.types';
 
 declare global {
   namespace Express {

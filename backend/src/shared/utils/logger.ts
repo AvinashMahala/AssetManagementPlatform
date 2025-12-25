@@ -15,6 +15,7 @@ import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { config } from '@/shared/config/env';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,7 +42,7 @@ winston.addColors(logColors);
 
 // Determine log level based on environment
 const getLogLevel = (): string => {
-  const env = process.env.NODE_ENV || 'development';
+  const env = config.env;
   return env === 'development' ? 'debug' : 'info';
 };
 

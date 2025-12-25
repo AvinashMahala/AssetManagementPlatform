@@ -1,0 +1,19 @@
+/**
+ * @openapi
+ * /rent-transactions/tenant/{tenantId}:
+ *   get:
+ *     summary: Get rent transactions by Tenant ID
+ *     tags: [Finance]
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tenant ID
+ *     responses:
+ *       200:
+ *         description: List of rent transactions for the tenant
+ *       500:
+ *         description: Internal server error
+ */

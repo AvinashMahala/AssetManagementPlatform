@@ -67,6 +67,13 @@ export class ResponseUtils {
   }
 
   /**
+   * Send a no content response
+   */
+  static noContent(res: Response): void {
+    res.status(HTTP_STATUS.NO_CONTENT).send();
+  }
+
+  /**
    * Send a not found response
    */
   static notFound(res: Response, message: string = 'Resource not found'): void {

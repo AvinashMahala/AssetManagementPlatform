@@ -159,3 +159,4 @@ logs/frontend/*.log
 logs/frontend/*-audit.json
 
 /docs/*
+backend/logs/backend/*

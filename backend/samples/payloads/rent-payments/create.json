@@ -1,0 +1,8 @@
+{
+  "leaseId": "lease_01EXAMPLE",
+  "amount": 15000,
+  "paymentDate": "2025-06-05",
+  "paymentMethod": "bank_transfer",
+  "referenceNumber": "TXN-12345",
+  "notes": "June rent"
+}

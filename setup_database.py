@@ -87,9 +87,9 @@ def check_prerequisites():
     print_step(0, "Checking Prerequisites")
 
     required_files = [
-        'scripts/smart_seed_excel.py',
-        'scripts/smart_flexible_seed.py',
-        'scripts/verify_database.py'
+        'db/seeds/python/smart_seed_excel.py',
+        'db/seeds/python/seed_to_db.py',
+        'db/scripts/verify_database.py'
     ]
 
     missing_files = []
@@ -110,21 +110,21 @@ def step1_create_excel():
     """Step 1: Create Excel seed data file"""
     print_step(1, "Creating Excel Seed Data File")
 
-    command = "python3 scripts/smart_seed_excel.py"
+    command = "python3 db/seeds/python/smart_seed_excel.py"
     return run_command(command, "Excel file creation")
 
 def step2_seed_database():
     """Step 2: Seed database with data"""
     print_step(2, "Seeding Database")
 
-    command = "python3 scripts/smart_flexible_seed.py"
+    command = "python3 db/seeds/python/seed_to_db.py"
     return run_command(command, "Database seeding")
 
 def step3_verify_database():
     """Step 3: Verify database integrity"""
     print_step(3, "Verifying Database Integrity")
 
-    command = "python3 scripts/verify_database.py"
+    command = "python3 db/scripts/verify_database.py"
     return run_command(command, "Database verification")
 
 def cleanup_temp_files():

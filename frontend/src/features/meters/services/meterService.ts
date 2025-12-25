@@ -30,7 +30,7 @@ class MeterService {
    * Get all meters with optional filtering and pagination
    */
   async getAll(options?: PaginationOptions, filters?: MeterFilters): Promise<ApiResponse<PaginationResult<Meter>>> {
-    let url = '/api/meters';
+    let url = '/api/v1/meters';
     const params = new URLSearchParams();
 
     if (options) {
@@ -61,7 +61,7 @@ class MeterService {
    * Create new meter
    */
   async create(data: MeterInput): Promise<ApiResponse<Meter>> {
-    return apiClient.post<Meter>('/api/meters', data);
+    return apiClient.post<Meter>('/api/v1/meters', data);
   }
 
   /**

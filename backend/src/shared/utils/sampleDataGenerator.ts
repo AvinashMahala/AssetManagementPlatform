@@ -1,4 +1,4 @@
-import { PreviewSampleData, DEFAULT_SAMPLE_DATA } from '@/models/TemplatePreview';
+import { PreviewSampleData, DEFAULT_SAMPLE_DATA } from '@/features/finance/receipt-template/core/types/template-preview.types';
 
 export class SampleDataGenerator {
   static generateDefault(): PreviewSampleData {

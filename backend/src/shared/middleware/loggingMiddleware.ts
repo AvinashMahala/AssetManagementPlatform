@@ -9,6 +9,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { v4 as uuidv4 } from 'uuid';
 import { createRequestLogger, PerformanceLogger } from '@/shared/utils/logger.js';
 
@@ -36,8 +37,9 @@ export const requestLoggingMiddleware = (
   req.requestId = requestId;
 
   // Get user info if authenticated
-  const userId = (req as any).user?.id;
-  const userEmail = (req as any).user?.email;
+  const authReq = req as AuthenticatedRequest;
+  const userId = authReq.user?.id;
+  const userEmail = authReq.user?.email;
 
   // Create request-specific logger
   req.requestLogger = createRequestLogger({

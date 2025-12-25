@@ -1,0 +1,20 @@
+{
+  "name": "Oak Apartments",
+  "description": "A modern apartment complex",
+  "propertyType": "apartment",
+  "currency": "INR",
+  "address": {
+    "street": "123 MG Road",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560001",
+    "country": "India"
+  },
+  "totalArea": 12000,
+  "ownerDetails": {
+    "name": "Acme Holdings",
+    "mobileNumbers": ["+919800000000"],
+    "emailIds": ["owner@acme.example"]
+  },
+  "ownerId": "user_01EXAMPLE"
+}

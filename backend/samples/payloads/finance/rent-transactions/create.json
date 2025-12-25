@@ -1,0 +1,7 @@
+{
+  "leaseId": "lease_01EXAMPLE",
+  "amount": 15000,
+  "transactionDate": "2025-06-05",
+  "type": "PAYMENT",
+  "description": "June rent payment"
+}

@@ -1,0 +1,7 @@
+{
+  "propertyId": "prop_01F8EXAMPLE",
+  "month": 6,
+  "year": 2025,
+  "includeAllTenants": false,
+  "tenantIds": ["tenant_01EXAMPLE", "tenant_02EXAMPLE"]
+}

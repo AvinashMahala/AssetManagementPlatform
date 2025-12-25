@@ -1,0 +1,7 @@
+{
+  "name": "Oak Apartments - Renovated",
+  "description": "Recent renovations completed",
+  "currency": "INR",
+  "totalArea": 12500,
+  "ownerDetails": { "name": "Acme Holdings", "mobileNumbers": ["+919800000000"], "emailIds": ["owner@acme.example"] }
+}

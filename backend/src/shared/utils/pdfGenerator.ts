@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
-import { ReceiptData } from '@/models/Receipt';
-import { ReceiptTemplateSettings } from '@/models/ReceiptTemplate';
+import { ReceiptData } from '@/features/finance/receipt/core/receipt.types';
+import { ReceiptTemplateSettings } from '@/features/finance/receipt-template/core/receipt-template.types';
 import { TemplateEngine, InvoiceTemplateData } from './templateEngine';
 
 export class PDFGenerator {

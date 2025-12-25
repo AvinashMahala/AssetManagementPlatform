@@ -1,0 +1,12 @@
+{
+  "propertyId": "prop_01EXAMPLE",
+  "sampleData": {
+    "receiptNumber": "RCPT-1001",
+    "receiptDate": "2025-06-30",
+    "amount": 15000,
+    "tenant": { "name": "Asha Kumar" },
+    "property": { "name": "Oak Apartments" }
+  },
+  "customizations": { "format": "html" },
+  "format": "html"
+}
