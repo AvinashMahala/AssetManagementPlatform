@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { PropertyType, PropertyStatus } from '../core/types/property.types';
 
+/** Address object schema for structured address input.
+ */
 const AddressObject = z.object({
   street: z.string().min(1),
   city: z.string().min(1),
@@ -10,6 +12,8 @@ const AddressObject = z.object({
   landmark: z.string().optional(),
 });
 
+/** Amenities object schema for structured amenities input.
+ */
 const AmenitiesObject = z.object({
   basic: z.array(z.string()).optional().default([]),
   luxury: z.array(z.string()).optional().default([]),
@@ -21,6 +25,8 @@ const AmenitiesObject = z.object({
   }).optional().default({ petFriendly: false, smokingAllowed: false, eventsAllowed: false }),
 }).optional();
 
+/** Schema for creating a new property.
+ */
 export const createPropertySchema = z.object({
   body: z.object({
     name: z.string().min(1).max(255),
@@ -56,61 +62,63 @@ export const createPropertySchema = z.object({
     buildingAmenities: z.array(z.string()).optional(),
     buildingPhotos: z.array(z.string()).optional(),
   })
-  .refine((d) => !!(d.type || d.propertyType), { message: 'propertyType (type) is required' })
-  .transform((d) => {
-    // Normalize to canonical shape expected by backend types
-    const normalized: any = {
-      ...d,
-      propertyType: (d as any).propertyType ?? (d as any).type,
-    };
-
-    if (typeof normalized.address === 'string') {
-      normalized.address = {
-        street: normalized.address,
-        city: '',
-        state: '',
-        pincode: '',
+    .refine((d) => !!(d.type || d.propertyType), { message: 'propertyType (type) is required' })
+    .transform((d) => {
+      // Normalize to canonical shape expected by backend types
+      const normalized: any = {
+        ...d,
+        propertyType: (d as any).propertyType ?? (d as any).type,
       };
-    }
 
-    if (Array.isArray(normalized.amenities)) {
-      normalized.amenities = { basic: normalized.amenities, luxury: [], additionalInfo: { petFriendly: false, smokingAllowed: false, eventsAllowed: false } };
-      // also preserve legacy building amenities array for downstream validation
-      if (!normalized.buildingAmenities) normalized.buildingAmenities = normalized.amenities.basic;
-    }
+      if (typeof normalized.address === 'string') {
+        normalized.address = {
+          street: normalized.address,
+          city: '',
+          state: '',
+          pincode: '',
+        };
+      }
 
-    // If amenities provided as object, populate buildingAmenities from basic list
-    if (normalized.amenities && !normalized.buildingAmenities && typeof normalized.amenities === 'object') {
-      normalized.buildingAmenities = normalized.amenities.basic || [];
-    }
+      if (Array.isArray(normalized.amenities)) {
+        normalized.amenities = { basic: normalized.amenities, luxury: [], additionalInfo: { petFriendly: false, smokingAllowed: false, eventsAllowed: false } };
+        // also preserve legacy building amenities array for downstream validation
+        if (!normalized.buildingAmenities) normalized.buildingAmenities = normalized.amenities.basic;
+      }
 
-    // Remove legacy 'type' to avoid ambiguity downstream
-    delete normalized.type;
+      // If amenities provided as object, populate buildingAmenities from basic list
+      if (normalized.amenities && !normalized.buildingAmenities && typeof normalized.amenities === 'object') {
+        normalized.buildingAmenities = normalized.amenities.basic || [];
+      }
 
-    // Normalize legacy 'area' -> 'totalArea' if present
-    if ((normalized as any).area !== undefined && (normalized as any).totalArea === undefined) {
-      normalized.totalArea = (normalized as any).area;
-    }
+      // Remove legacy 'type' to avoid ambiguity downstream
+      delete normalized.type;
 
-    // Ensure numeric totalArea is present if provided
-    if ((normalized as any).totalArea !== undefined) {
-      normalized.totalArea = Number(normalized.totalArea);
-    }
+      // Normalize legacy 'area' -> 'totalArea' if present
+      if ((normalized as any).area !== undefined && (normalized as any).totalArea === undefined) {
+        normalized.totalArea = (normalized as any).area;
+      }
 
-    // Normalize legacy images -> buildingPhotos
-    if ((d as any).images && !(normalized as any).buildingPhotos) {
-      normalized.buildingPhotos = (d as any).images;
-    }
+      // Ensure numeric totalArea is present if provided
+      if ((normalized as any).totalArea !== undefined) {
+        normalized.totalArea = Number(normalized.totalArea);
+      }
 
-    // If buildingPhotos provided explicitly, ensure it's present
-    if ((d as any).buildingPhotos) {
-      normalized.buildingPhotos = (d as any).buildingPhotos;
-    }
+      // Normalize legacy images -> buildingPhotos
+      if ((d as any).images && !(normalized as any).buildingPhotos) {
+        normalized.buildingPhotos = (d as any).images;
+      }
 
-    return normalized;
-  }),
+      // If buildingPhotos provided explicitly, ensure it's present
+      if ((d as any).buildingPhotos) {
+        normalized.buildingPhotos = (d as any).buildingPhotos;
+      }
+
+      return normalized;
+    }),
 });
 
+/** Schema for updating an existing property.
+ */
 export const updatePropertySchema = z.object({
   params: z.object({
     id: z.string().uuid(),
@@ -142,43 +150,45 @@ export const updatePropertySchema = z.object({
     buildingPhotos: z.array(z.string()).optional(),
     status: z.nativeEnum(PropertyStatus).optional(),
   })
-  .refine((d) => !(d && !(d.type || d.propertyType)), { message: 'propertyType (type) is required when present' })
-  .transform((d) => {
-    const normalized: any = { ...d };
-    if ((d as any).type && !(d as any).propertyType) normalized.propertyType = (d as any).type;
-    if (typeof normalized.address === 'string') {
-      normalized.address = {
-        street: normalized.address,
-        city: '',
-        state: '',
-        pincode: '',
-      };
-    }
-    delete normalized.type;
-    if ((normalized as any).area !== undefined && (normalized as any).totalArea === undefined) {
-      normalized.totalArea = (normalized as any).area;
-    }
-    if ((normalized as any).totalArea !== undefined) normalized.totalArea = Number(normalized.totalArea);
-    if (Array.isArray(normalized.amenities)) {
-      normalized.amenities = { basic: normalized.amenities, luxury: [], additionalInfo: { petFriendly: false, smokingAllowed: false, eventsAllowed: false } };
-      if (!normalized.buildingAmenities) normalized.buildingAmenities = normalized.amenities.basic;
-    }
+    .refine((d) => !(d && !(d.type || d.propertyType)), { message: 'propertyType (type) is required when present' })
+    .transform((d) => {
+      const normalized: any = { ...d };
+      if ((d as any).type && !(d as any).propertyType) normalized.propertyType = (d as any).type;
+      if (typeof normalized.address === 'string') {
+        normalized.address = {
+          street: normalized.address,
+          city: '',
+          state: '',
+          pincode: '',
+        };
+      }
+      delete normalized.type;
+      if ((normalized as any).area !== undefined && (normalized as any).totalArea === undefined) {
+        normalized.totalArea = (normalized as any).area;
+      }
+      if ((normalized as any).totalArea !== undefined) normalized.totalArea = Number(normalized.totalArea);
+      if (Array.isArray(normalized.amenities)) {
+        normalized.amenities = { basic: normalized.amenities, luxury: [], additionalInfo: { petFriendly: false, smokingAllowed: false, eventsAllowed: false } };
+        if (!normalized.buildingAmenities) normalized.buildingAmenities = normalized.amenities.basic;
+      }
 
-    if (normalized.amenities && !normalized.buildingAmenities && typeof normalized.amenities === 'object') {
-      normalized.buildingAmenities = normalized.amenities.basic || [];
-    }
+      if (normalized.amenities && !normalized.buildingAmenities && typeof normalized.amenities === 'object') {
+        normalized.buildingAmenities = normalized.amenities.basic || [];
+      }
 
-    if ((d as any).images && !(normalized as any).buildingPhotos) {
-      normalized.buildingPhotos = (d as any).images;
-    }
+      if ((d as any).images && !(normalized as any).buildingPhotos) {
+        normalized.buildingPhotos = (d as any).images;
+      }
 
-    if ((d as any).buildingPhotos) {
-      normalized.buildingPhotos = (d as any).buildingPhotos;
-    }
-    return normalized;
-  }),
+      if ((d as any).buildingPhotos) {
+        normalized.buildingPhotos = (d as any).buildingPhotos;
+      }
+      return normalized;
+    }),
 });
 
+/** Schema for updating property status.
+ */
 export const updatePropertyStatusSchema = z.object({
   params: z.object({
     id: z.string().uuid(),
@@ -188,12 +198,16 @@ export const updatePropertyStatusSchema = z.object({
   }),
 });
 
+/** Schema for getting a property by ID.
+ */
 export const getPropertySchema = z.object({
   params: z.object({
     id: z.string().uuid(),
   }),
 });
 
+/** Schema for setting a property template.
+ */
 export const setPropertyTemplateSchema = z.object({
   params: z.object({
     id: z.string().uuid(),

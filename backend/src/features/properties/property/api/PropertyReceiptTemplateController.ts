@@ -8,7 +8,7 @@ export class PropertyReceiptTemplateController {
   constructor(
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,
     private propertyReceiptTemplateService: PropertyReceiptTemplateService
-  ) {}
+  ) { }
   /** 001. Create a new receipt template for a property.
    * @param req Express request object containing propertyId in params and template data in body
    * @param res Express response object
@@ -30,8 +30,8 @@ export class PropertyReceiptTemplateController {
     } catch (err) {
       const errorMessage = (err as Error).message;
       if (errorMessage.includes('not found') || errorMessage.includes('already exists') ||
-          errorMessage.includes('required') || errorMessage.includes('Invalid') ||
-          errorMessage.includes('must be')) {
+        errorMessage.includes('required') || errorMessage.includes('Invalid') ||
+        errorMessage.includes('must be')) {
         ResponseUtils.badRequest(res, errorMessage);
       } else {
         ErrorUtils.handleGenericError(res, err, 'Failed to create receipt template');

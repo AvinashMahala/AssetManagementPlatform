@@ -12,7 +12,7 @@ export class PropertyFileController {
     private getPropertyByIdUseCase: GetPropertyByIdUseCase,
     private fileStorageService: FileStorageService,
     private propertyFileService: PropertyFileService
-  ) {}
+  ) { }
 
   /** 001. Upload a file for a property.
    * @param req AuthenticatedRequest object containing propertyId in params and file data in body.
@@ -122,10 +122,10 @@ export class PropertyFileController {
 
       // Get file buffer from storage service
       const fileBuffer = await this.fileStorageService.downloadFile(file.fileId, req.user?.id || 'system');
-      
+
       res.setHeader('Content-Type', file.fileType === 'photo' ? 'image/jpeg' : 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
-      
+
       res.send(fileBuffer);
     } catch (err) {
       ErrorUtils.handleGenericError(res, err, 'Failed to download file');

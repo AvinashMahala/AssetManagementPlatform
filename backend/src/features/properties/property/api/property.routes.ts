@@ -76,7 +76,7 @@ export const createPropertyRoutes = (
    * @returns The updated property or an error response.
    */
   router.patch('/:id/status', auth, validateZodRequest(updatePropertyStatusSchema), asyncHandler(controller.updateStatus.bind(controller)));
-  
+
   // Property template management
 
   /** 007. Set or update Property template
@@ -84,13 +84,13 @@ export const createPropertyRoutes = (
    * @returns The updated property after setting the template or an error response.
    */
   router.put('/:id/template', auth, validateZodRequest(setPropertyTemplateSchema), asyncHandler(controller.setPropertyTemplate.bind(controller)));
-  
+
   /** 008. Get Property template details
    * @route GET /properties/:id/template
    * @returns The property template details or an error response.
    */
   router.get('/:id/template', auth, validateZodRequest(getPropertySchema), asyncHandler(controller.getPropertyTemplate.bind(controller)));
-  
+
   /** 009. Remove Property template
    * @route DELETE /properties/:id/template
    * @returns A success message or an error response.
@@ -103,7 +103,7 @@ export const createPropertyRoutes = (
    * 
    */
   const propertyFileUpload = defaultMemoryUploader;
-  
+
   /** 001. Property File-related routes (optional). The `fileController` is injected
    * so the property module doesn't own file concerns and remains testable.
    */
@@ -118,6 +118,6 @@ export const createPropertyRoutes = (
   if (receiptTemplateController) {
     router.use('/:propertyId/receipt-template', createPropertyTemplatesRouter(receiptTemplateController, auth));
   }
-  
+
   return router;
 };

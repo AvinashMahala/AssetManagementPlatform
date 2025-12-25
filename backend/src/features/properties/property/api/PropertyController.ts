@@ -22,7 +22,7 @@ export class PropertyController {
     private createPropertyUseCase: CreatePropertyUseCase,
     private updatePropertyUseCase: UpdatePropertyUseCase,
     private deletePropertyUseCase: DeletePropertyUseCase
-  ) {}
+  ) { }
 
   /** 001. Get all properties, optionally filtered by ownerId
    * @param req The request object
@@ -82,7 +82,7 @@ export class PropertyController {
       const propertyData: PropertyInput = req.body;
       // Debug: log incoming payload to help trace missing totalArea issues (temporary)
       logger.debug('Create property payload', { keys: Object.keys(req.body || {}), area: (req.body as any).area, totalArea: (req.body as any).totalArea });
-      
+
       // Handle ownerId based on user role
       const authenticatedUser = req.user;
       if (authenticatedUser) {
@@ -195,7 +195,7 @@ export class PropertyController {
 
       // Fallback for other validation errors
       if (errorMessage.includes('required') || errorMessage.includes('Invalid') ||
-          errorMessage.includes('cannot be') || errorMessage.includes('must be')) {
+        errorMessage.includes('cannot be') || errorMessage.includes('must be')) {
         ResponseUtils.badRequest(res, errorMessage);
       } else {
         ErrorUtils.handleGenericError(res, err, 'Failed to create property');
@@ -224,7 +224,7 @@ export class PropertyController {
       }
 
       if (errorMessage.includes('required') || errorMessage.includes('Invalid') ||
-          errorMessage.includes('cannot be') || errorMessage.includes('must be')) {
+        errorMessage.includes('cannot be') || errorMessage.includes('must be')) {
         return ResponseUtils.badRequest(res, errorMessage);
       }
 
@@ -294,9 +294,9 @@ export class PropertyController {
     try {
       const { id } = req.params;
       const { templateId, templateOverrides } = req.body;
-      const property = await this.updatePropertyUseCase.execute({ 
-        id, 
-        data: { templateId, templateOverrides } 
+      const property = await this.updatePropertyUseCase.execute({
+        id,
+        data: { templateId, templateOverrides }
       });
       ResponseUtils.success(res, property);
     } catch (err) {
@@ -324,7 +324,7 @@ export class PropertyController {
       if (!property) {
         return ResponseUtils.notFound(res, 'Property not found');
       }
-      
+
       // Note: effectiveSettings logic was removed as it's not used in frontend
       ResponseUtils.success(res, {
         templateId: property.templateId,
@@ -351,9 +351,9 @@ export class PropertyController {
   async removePropertyTemplate(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const property = await this.updatePropertyUseCase.execute({ 
-        id, 
-        data: { templateId: null as any, templateOverrides: null as any } 
+      const property = await this.updatePropertyUseCase.execute({
+        id,
+        data: { templateId: null as any, templateOverrides: null as any }
       });
       ResponseUtils.success(res, property);
     } catch (err) {
