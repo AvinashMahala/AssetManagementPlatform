@@ -2,6 +2,7 @@
 import { authTags, authSchemas } from './auth/index.js';
 import { usersTags, usersSchemas } from './users/index.js';
 import { propertiesTags, propertiesSchemas } from './properties/index.js';
+import { adminTags, adminSchemas } from './admin/index.js';
 import { unitsTags, unitsSchemas } from './units/index.js';
 import { tenantsTags, tenantsSchemas } from './tenants/index.js';
 import { leasesTags, leasesSchemas } from './leases/index.js';
@@ -16,6 +17,7 @@ export const allTags: OpenAPIV3.TagObject[] = [
   ...authTags,
   ...usersTags,
   ...propertiesTags,
+  ...adminTags,
   ...unitsTags,
   ...tenantsTags,
   ...leasesTags,
@@ -28,6 +30,7 @@ export const allSchemas: Record<string, OpenAPIV3.SchemaObject> = {
   ...authSchemas,
   ...usersSchemas,
   ...propertiesSchemas,
+  ...adminSchemas,
   ...unitsSchemas,
   ...tenantsSchemas,
   ...leasesSchemas,
