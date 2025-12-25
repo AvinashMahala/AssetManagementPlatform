@@ -20,10 +20,33 @@
  *     responses:
  *       200:
  *         description: Bulk receipt generation completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BulkOperationResult'
+ *             example:
+ *               success: true
+ *               message: "Bulk receipt generation completed"
+ *               processed: 8
+ *               failed: 0
+ *               errors: []
  *       207:
  *         description: Bulk receipt generation completed with errors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BulkOperationResult'
+ *             example:
+ *               success: false
+ *               message: "Bulk receipt generation completed with errors"
+ *               processed: 8
+ *               failed: 1
+ *               errors:
+ *                 - index: 4
+ *                   itemId: "txn-789"
+ *                   message: "Receipt template missing"
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/BadRequest'
  *       500:
- *         description: Internal server error
+ *         $ref: '#/components/responses/InternalError'
  */

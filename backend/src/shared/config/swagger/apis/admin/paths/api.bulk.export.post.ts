@@ -13,8 +13,17 @@
  *     responses:
  *       200:
  *         description: Bulk export completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BulkExportResult'
+ *             example:
+ *               success: true
+ *               message: "Bulk export completed"
+ *               exportId: "export-abc123"
+ *               downloadUrl: "https://example.com/exports/export-abc123.csv"
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/BadRequest'
  *       500:
- *         description: Internal server error
+ *         $ref: '#/components/responses/InternalError'
  */

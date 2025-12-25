@@ -25,10 +25,33 @@
  *     responses:
  *       200:
  *         description: Bulk communication completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BulkOperationResult'
+ *             example:
+ *               success: true
+ *               message: "Bulk communication completed"
+ *               processed: 20
+ *               failed: 0
+ *               errors: []
  *       207:
  *         description: Bulk communication completed with errors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BulkOperationResult'
+ *             example:
+ *               success: false
+ *               message: "Bulk communication completed with errors"
+ *               processed: 20
+ *               failed: 3
+ *               errors:
+ *                 - index: 2
+ *                   itemId: "tenant-345"
+ *                   message: "Invalid email address"
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/BadRequest'
  *       500:
- *         description: Internal server error
+ *         $ref: '#/components/responses/InternalError'
  */

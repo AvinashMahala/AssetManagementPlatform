@@ -23,10 +23,33 @@
  *     responses:
  *       200:
  *         description: Bulk rent collection completed
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/BulkOperationResult'
+ *           example:
+ *             success: true
+ *             message: "Bulk rent collection completed"
+ *             processed: 10
+ *             failed: 0
+ *             errors: []
  *       207:
  *         description: Bulk rent collection completed with errors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BulkOperationResult'
+ *             example:
+ *               success: false
+ *               message: "Bulk rent collection completed with errors"
+ *               processed: 10
+ *               failed: 2
+ *               errors:
+ *                 - index: 3
+ *                   itemId: "unit-123"
+ *                   message: "Insufficient balance"
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/BadRequest'
  *       500:
- *         description: Internal server error
+ *         $ref: '#/components/responses/InternalError'
  */

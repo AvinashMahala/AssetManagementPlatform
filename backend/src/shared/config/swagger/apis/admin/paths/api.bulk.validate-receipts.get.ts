@@ -14,6 +14,16 @@
  *     responses:
  *       200:
  *         description: Receipt validation completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReceiptValidationResult'
+ *             example:
+ *               success: true
+ *               message: "Validation completed"
+ *               issues:
+ *                 - id: "receipt-1"
+ *                   issue: "Missing amount"
  *       500:
- *         description: Internal server error
+ *         $ref: '#/components/responses/InternalError'
  */
