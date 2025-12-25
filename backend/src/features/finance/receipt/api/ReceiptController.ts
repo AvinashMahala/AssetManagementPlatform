@@ -7,27 +7,9 @@ import { AppError } from '@/shared/middleware/errorHandler.js';
 
 const logger = createModuleLogger('ReceiptController');
 
-/**
- * @swagger
- * tags:
- *   name: Receipts
- *   description: Receipt management endpoints
- */
 export class ReceiptController {
   constructor(private receiptService: IReceiptService) {}
 
-  /**
-   * @swagger
-   * /receipts:
-   *   get:
-   *     summary: Get all receipts
-   *     tags: [Receipts]
-   *     responses:
-   *       200:
-   *         description: List of receipts
-   *       500:
-   *         description: Internal server error
-   */
   async getAllReceipts(req: AuthenticatedRequest, res: Response): Promise<void> {
     const perfLogger = new PerformanceLogger('getAllReceipts', {
       userId: req.user?.id,
@@ -52,27 +34,6 @@ export class ReceiptController {
     }
   }
 
-  /**
-   * @swagger
-   * /receipts/{id}:
-   *   get:
-   *     summary: Get a receipt by ID
-   *     tags: [Receipts]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Receipt ID
-   *     responses:
-   *       200:
-   *         description: Receipt details
-   *       404:
-   *         description: Receipt not found
-   *       500:
-   *         description: Internal server error
-   */
   async getReceiptById(req: AuthenticatedRequest, res: Response): Promise<void> {
     const { id } = req.params;
     const perfLogger = new PerformanceLogger('getReceiptById', {
@@ -110,27 +71,6 @@ export class ReceiptController {
     }
   }
 
-  /**
-   * @swagger
-   * /receipts/number/{receiptNumber}:
-   *   get:
-   *     summary: Get a receipt by receipt number
-   *     tags: [Receipts]
-   *     parameters:
-   *       - in: path
-   *         name: receiptNumber
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Receipt Number
-   *     responses:
-   *       200:
-   *         description: Receipt details
-   *       404:
-   *         description: Receipt not found
-   *       500:
-   *         description: Internal server error
-   */
   async getReceiptByNumber(req: Request, res: Response): Promise<void> {
     try {
       const { receiptNumber } = req.params;
@@ -157,25 +97,6 @@ export class ReceiptController {
     }
   }
 
-  /**
-   * @swagger
-   * /receipts/property/{propertyId}:
-   *   get:
-   *     summary: Get receipts by Property ID
-   *     tags: [Receipts]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     responses:
-   *       200:
-   *         description: List of receipts for the property
-   *       500:
-   *         description: Internal server error
-   */
   async getReceiptsByProperty(req: Request, res: Response): Promise<void> {
     try {
       const { propertyId } = req.params;

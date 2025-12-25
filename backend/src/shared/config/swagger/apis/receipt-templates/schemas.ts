@@ -5,6 +5,10 @@ export const receiptTemplatesTags: OpenAPIV3.TagObject[] = [
     name: 'receipt-templates',
     description: 'Receipt template management',
   },
+  {
+    name: 'Templates',
+    description: 'Template customization endpoints for receipts and properties',
+  },
 ];
 
 export const receiptTemplatesSchemas: Record<string, OpenAPIV3.SchemaObject> = {

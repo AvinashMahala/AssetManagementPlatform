@@ -5,12 +5,6 @@ import { HTTP_STATUS } from '@/shared/constants/http';
 import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { config } from '@/shared/config/env';
 
-/**
- * @swagger
- * tags:
- *   name: Templates
- *   description: Template customization endpoints
- */
 export class TemplateController {
   private service: TemplateCustomizationService;
 
@@ -18,18 +12,6 @@ export class TemplateController {
     this.service = new TemplateCustomizationService(pool);
   }
 
-  /**
-   * @swagger
-   * /templates:
-   *   get:
-   *     summary: Get all templates
-   *     tags: [Templates]
-   *     responses:
-   *       200:
-   *         description: List of templates
-   *       500:
-   *         description: Internal server error
-   */
   getAllTemplates = async (req: any, res: Response) => {
     try {
       const templates = await this.service.getAllTemplates();
@@ -43,27 +25,6 @@ export class TemplateController {
     }
   };
 
-  /**
-   * @swagger
-   * /templates/{id}:
-   *   get:
-   *     summary: Get a template by ID
-   *     tags: [Templates]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Template ID
-   *     responses:
-   *       200:
-   *         description: Template details
-   *       404:
-   *         description: Template not found
-   *       500:
-   *         description: Internal server error
-   */
   getTemplateById = async (req: any, res: Response) => {
     try {
       const template = await this.service.getTemplateById(req.params.id);
@@ -83,25 +44,6 @@ export class TemplateController {
     }
   };
 
-  /**
-   * @swagger
-   * /templates/property/{propertyId}/settings:
-   *   get:
-   *     summary: Get template settings for a property
-   *     tags: [Templates]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     responses:
-   *       200:
-   *         description: Property template settings
-   *       500:
-   *         description: Internal server error
-   */
   getPropertyTemplateSettings = async (req: any, res: Response) => {
     try {
       const settings = await this.service.getPropertyTemplateSettings(req.params.propertyId);
@@ -115,31 +57,6 @@ export class TemplateController {
     }
   };
 
-  /**
-   * @swagger
-   * /templates/property/{propertyId}/settings:
-   *   put:
-   *     summary: Update template settings for a property
-   *     tags: [Templates]
-   *     parameters:
-   *       - in: path
-   *         name: propertyId
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Property ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *     responses:
-   *       200:
-   *         description: Settings updated successfully
-   *       500:
-   *         description: Internal server error
-   */
   updatePropertyTemplateSettings = async (req: any, res: Response) => {
     try {
       const settings = await this.service.updatePropertyTemplateSettings(req.params.propertyId, req.body);
@@ -153,18 +70,6 @@ export class TemplateController {
     }
   };
 
-  /**
-   * @swagger
-   * /templates/placeholders:
-   *   get:
-   *     summary: Get available placeholders
-   *     tags: [Templates]
-   *     responses:
-   *       200:
-   *         description: List of available placeholders
-   *       500:
-   *         description: Internal server error
-   */
   getAvailablePlaceholders = async (req: any, res: Response) => {
     try {
       const placeholders = this.service.getAvailablePlaceholders();
@@ -178,43 +83,6 @@ export class TemplateController {
     }
   };
 
-  /**
-   * @swagger
-   * /templates/{id}/preview:
-   *   post:
-   *     summary: Generate a preview of a template
-   *     tags: [Templates]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Template ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - propertyId
-   *             properties:
-   *               propertyId:
-   *                 type: string
-   *               sampleData:
-   *                 type: object
-   *               customizations:
-   *                 type: object
-   *               format:
-   *                 type: string
-   *                 default: html
-   *     responses:
-   *       200:
-   *         description: Template preview generated
-   *       500:
-   *         description: Internal server error
-   */
   generatePreview = async (req: any, res: Response) => {
     try {
       const previewRequest = {
