@@ -313,4 +313,17 @@ export const tenantsSchemas: Record<string, OpenAPIV3.SchemaObject> = {
       },
     },
   },
+  UnitTenant: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      unitId: { type: 'string', format: 'uuid' },
+      tenantId: { type: 'string', format: 'uuid' },
+      startDate: { type: 'string', format: 'date-time' },
+      endDate: { type: 'string', format: 'date-time' },
+      status: { type: 'string', enum: ['active', 'inactive'] },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+    },
+  },
 };

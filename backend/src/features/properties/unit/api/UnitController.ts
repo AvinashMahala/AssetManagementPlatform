@@ -25,27 +25,7 @@ export class UnitController {
   ) {}
 
   /**
-   * @swagger
-   * /units:
-   *   get:
-   *     summary: Get all units
-   *     tags: [Units]
-   *     parameters:
-   *       - in: query
-   *         name: propertyId
-   *         schema:
-   *           type: string
-   *         description: Filter by Property ID
-   *       - in: query
-   *         name: status
-   *         schema:
-   *           type: string
-   *         description: Filter by status
-   *     responses:
-   *       200:
-   *         description: List of units
-   *       500:
-   *         description: Internal server error
+   * OpenAPI moved to /src/shared/config/swagger/apis/units/paths/index.get.ts
    */
   async getAll(req: Request, res: Response) {
     try {
@@ -61,25 +41,7 @@ export class UnitController {
   }
 
   /**
-   * @swagger
-   * /units/{id}:
-   *   get:
-   *     summary: Get a unit by ID
-   *     tags: [Units]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Unit ID
-   *     responses:
-   *       200:
-   *         description: Unit details
-   *       404:
-   *         description: Unit not found
-   *       500:
-   *         description: Internal server error
+   * OpenAPI moved to /src/shared/config/swagger/apis/units/paths/id.get.ts
    */
   async getById(req: Request, res: Response) {
     try {
@@ -95,36 +57,7 @@ export class UnitController {
   }
 
   /**
-   * @swagger
-   * /units:
-   *   post:
-   *     summary: Create a new unit
-   *     tags: [Units]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - propertyId
-   *               - unitNumber
-   *             properties:
-   *               propertyId:
-   *                 type: string
-   *               unitNumber:
-   *                 type: string
-   *               type:
-   *                 type: string
-   *               rentAmount:
-   *                 type: number
-   *               status:
-   *                 type: string
-   *     responses:
-   *       201:
-   *         description: Unit created successfully
-   *       500:
-   *         description: Internal server error
+   * OpenAPI moved to /src/shared/config/swagger/apis/units/paths/index.post.ts
    */
   async create(req: Request, res: Response) {
     try {
@@ -136,38 +69,7 @@ export class UnitController {
   }
 
   /**
-   * @swagger
-   * /units/{id}:
-   *   put:
-   *     summary: Update a unit
-   *     tags: [Units]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Unit ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               unitNumber:
-   *                 type: string
-   *               type:
-   *                 type: string
-   *               rentAmount:
-   *                 type: number
-   *               status:
-   *                 type: string
-   *     responses:
-   *       200:
-   *         description: Unit updated successfully
-   *       500:
-   *         description: Internal server error
+   * OpenAPI moved to /src/shared/config/swagger/apis/units/paths/id.put.ts
    */
   async update(req: Request, res: Response) {
     try {
@@ -180,23 +82,7 @@ export class UnitController {
   }
 
   /**
-   * @swagger
-   * /units/{id}:
-   *   delete:
-   *     summary: Delete a unit
-   *     tags: [Units]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Unit ID
-   *     responses:
-   *       200:
-   *         description: Unit deleted successfully
-   *       500:
-   *         description: Internal server error
+   * OpenAPI moved to /src/shared/config/swagger/apis/units/paths/id.delete.ts
    */
   async delete(req: Request, res: Response) {
     try {
@@ -209,34 +95,7 @@ export class UnitController {
   }
 
   /**
-   * @swagger
-   * /units/{id}/status:
-   *   patch:
-   *     summary: Update unit status
-   *     tags: [Units]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Unit ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             required:
-   *               - status
-   *             properties:
-   *               status:
-   *                 type: string
-   *     responses:
-   *       200:
-   *         description: Unit status updated successfully
-   *       500:
-   *         description: Internal server error
+   * OpenAPI moved to /src/shared/config/swagger/apis/units/paths/id.status.patch.ts
    */
   async updateStatus(req: Request, res: Response) {
     try {
@@ -250,23 +109,7 @@ export class UnitController {
   }
 
   /**
-   * @swagger
-   * /units/{id}/analytics:
-   *   get:
-   *     summary: Get unit analytics
-   *     tags: [Units]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Unit ID
-   *     responses:
-   *       200:
-   *         description: Unit analytics
-   *       500:
-   *         description: Internal server error
+   * OpenAPI moved to /src/shared/config/swagger/apis/units/paths/id.analytics.get.ts
    */
   async getAnalytics(req: Request, res: Response) {
     try {

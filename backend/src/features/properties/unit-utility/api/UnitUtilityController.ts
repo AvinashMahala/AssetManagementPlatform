@@ -12,34 +12,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities:
-   *   get:
-   *     tags: ['Unit Utilities']
-   *     summary: Get all unit utilities
-   *     parameters:
-   *       - in: query
-   *         name: unitId
-   *         schema:
-   *           type: string
-   *         description: Filter utilities by unit ID (UUID)
-   *       - in: query
-   *         name: propertyId
-   *         schema:
-   *           type: string
-   *         description: Filter utilities by property ID (UUID)
-   *     responses:
-   *       200:
-   *         description: List of unit utilities
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 utilities:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/UnitUtility'
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/index.get.ts
    */
   async getAll(req: Request, res: Response) {
     try {
@@ -61,26 +34,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities/{id}:
-   *   get:
-   *     tags: ['Unit Utilities']
-   *     summary: Get unit utility by ID
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Unit utility details
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/UnitUtility'
-   *       404:
-   *         description: Unit utility not found
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/id.get.ts
    */
   async getById(req: Request, res: Response) {
     try {
@@ -99,24 +53,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities:
-   *   post:
-   *     tags: ['Unit Utilities']
-   *     summary: Create a new unit utility
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/UnitUtilityInput'
-   *     responses:
-   *       201:
-   *         description: Unit utility created
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/UnitUtility'
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/index.post.ts
    */
   async create(req: Request, res: Response) {
     try {
@@ -136,32 +73,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities/{id}:
-   *   put:
-   *     tags: ['Unit Utilities']
-   *     summary: Update unit utility
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/UnitUtilityInput'
-   *     responses:
-   *       200:
-   *         description: Unit utility updated
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/UnitUtility'
-   *       404:
-   *         description: Unit utility not found
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/id.put.ts
    */
   async update(req: Request, res: Response) {
     try {
@@ -188,22 +100,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities/{id}:
-   *   delete:
-   *     tags: ['Unit Utilities']
-   *     summary: Delete unit utility
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Unit utility deleted
-   *       404:
-   *         description: Unit utility not found
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/id.delete.ts
    */
   async delete(req: Request, res: Response) {
     try {
@@ -222,32 +119,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities/{id}/toggle:
-   *   patch:
-   *     tags: ['Unit Utilities']
-   *     summary: Toggle unit utility status (enable/disable)
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               isEnabled:
-   *                 type: boolean
-   *                 description: Whether to enable or disable the utility
-   *     responses:
-   *       200:
-   *         description: Unit utility status updated
-   *       404:
-   *         description: Unit utility not found
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/id.toggle.patch.ts
    */
   async toggleStatus(req: Request, res: Response) {
     try {
@@ -271,65 +143,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities/{unitId}/charges:
-   *   get:
-   *     tags: ['Unit Utilities']
-   *     summary: Calculate utility charges for a unit
-   *     parameters:
-   *       - in: path
-   *         name: unitId
-   *         required: true
-   *         schema:
-   *           type: string
-   *       - in: query
-   *         name: startDate
-   *         schema:
-   *           type: string
-   *           format: date
-   *         description: Start date for charge calculation (ISO format)
-   *       - in: query
-   *         name: endDate
-   *         schema:
-   *           type: string
-   *           format: date
-   *         description: End date for charge calculation (ISO format)
-   *     responses:
-   *       200:
-   *         description: Utility charges calculation
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 unitId:
-   *                   type: string
-   *                 period:
-   *                   type: object
-   *                   properties:
-   *                     startDate:
-   *                       type: string
-   *                       format: date-time
-   *                     endDate:
-   *                       type: string
-   *                       format: date-time
-   *                 utilities:
-   *                   type: array
-   *                   items:
-   *                     type: object
-   *                     properties:
-   *                       utilityId:
-   *                         type: string
-   *                       utilityName:
-   *                         type: string
-   *                       utilityType:
-   *                         type: string
-   *                       billingMethod:
-   *                         type: string
-   *                       amount:
-   *                         type: number
-   *                 totalAmount:
-   *                   type: number
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/id.charges.get.ts
    */
   async calculateCharges(req: Request, res: Response) {
     try {
@@ -364,61 +178,7 @@ export class UnitUtilityController {
   }
 
   /**
-   * @swagger
-   * /api/unit-utilities/{unitId}/summary:
-   *   get:
-   *     tags: ['Unit Utilities']
-   *     summary: Get utility summary for a unit
-   *     parameters:
-   *       - in: path
-   *         name: unitId
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Utility summary for the unit
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 unitId:
-   *                   type: string
-   *                 totalUtilities:
-   *                   type: integer
-   *                 enabledUtilities:
-   *                   type: integer
-   *                 disabledUtilities:
-   *                   type: integer
-   *                 byType:
-   *                   type: object
-   *                   additionalProperties:
-   *                     type: integer
-   *                 byBillingMethod:
-   *                   type: object
-   *                   properties:
-   *                     fixed:
-   *                       type: integer
-   *                     meter_based:
-   *                       type: integer
-   *                 utilities:
-   *                   type: array
-   *                   items:
-   *                     type: object
-   *                     properties:
-   *                       id:
-   *                         type: string
-   *                       name:
-   *                         type: string
-   *                       type:
-   *                         type: string
-   *                       billingMethod:
-   *                         type: string
-   *                       isEnabled:
-   *                         type: boolean
-   *                       hasMeter:
-   *                         type: boolean
+   * OpenAPI moved to: /src/shared/config/swagger/apis/unit-utilities/paths/id.summary.get.ts
    */
   async getSummary(req: Request, res: Response) {
     try {

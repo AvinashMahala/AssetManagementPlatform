@@ -17,26 +17,7 @@ export class TenantController {
     private readonly deleteTenantUseCase: DeleteTenantUseCase
   ) {}
 
-  /**
-   * @swagger
-   * /tenants:
-   *   post:
-   *     summary: Create a new tenant
-   *     tags: [Tenants]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/TenantInput'
-   *     responses:
-   *       201:
-   *         description: Tenant created successfully
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Tenant'
-   */
+  // Swagger moved to `src/shared/config/swagger/apis/tenants/paths/tenant/index.post.ts`
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const validatedData = createTenantSchema.parse(req.body);
@@ -47,32 +28,7 @@ export class TenantController {
     }
   };
 
-  /**
-   * @swagger
-   * /tenants/{id}:
-   *   put:
-   *     summary: Update a tenant
-   *     tags: [Tenants]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/TenantInput'
-   *     responses:
-   *       200:
-   *         description: Tenant updated successfully
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Tenant'
-   */
+  // Swagger moved to `src/shared/config/swagger/apis/tenants/paths/tenant/id.put.ts`
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -84,26 +40,7 @@ export class TenantController {
     }
   };
 
-  /**
-   * @swagger
-   * /tenants/{id}:
-   *   get:
-   *     summary: Get tenant by ID
-   *     tags: [Tenants]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Tenant details
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Tenant'
-   */
+  // Swagger moved to `src/shared/config/swagger/apis/tenants/paths/tenant/id.get.ts`
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -114,22 +51,7 @@ export class TenantController {
     }
   };
 
-  /**
-   * @swagger
-   * /tenants:
-   *   get:
-   *     summary: List all tenants
-   *     tags: [Tenants]
-   *     responses:
-   *       200:
-   *         description: List of tenants
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Tenant'
-   */
+  // Swagger moved to `src/shared/config/swagger/apis/tenants/paths/tenant/index.get.ts`
   list = async (req: Request, res: Response, next: NextFunction) => {
     try {
       logger.info('TenantController.list: Fetching all tenants');
@@ -142,22 +64,7 @@ export class TenantController {
     }
   };
 
-  /**
-   * @swagger
-   * /tenants/{id}:
-   *   delete:
-   *     summary: Delete a tenant
-   *     tags: [Tenants]
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       204:
-   *         description: Tenant deleted successfully
-   */
+  // Swagger moved to `src/shared/config/swagger/apis/tenants/paths/tenant/id.delete.ts`
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;

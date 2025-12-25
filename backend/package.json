@@ -20,6 +20,7 @@
     ,
     "check-swagger": "npm run generate-swagger && npm run validate-swagger",
     "validate-endpoints": "node scripts/validate-endpoints.cjs",
+    "validate-endpoints-report": "node scripts/validate-endpoints-report.cjs",
     "check-docs": "npm run generate-swagger && npm run validate-swagger && npm run validate-endpoints",
     "generate-swagger:watch": "onchange \"src/shared/config/swagger/apis/**/*.ts\" -- npm run generate-swagger",
     "dev:with-swagger": "concurrently \"npm run dev\" \"npm run generate-swagger:watch\""
