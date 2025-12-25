@@ -6,7 +6,8 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "tsx watch server.ts",
+    "dev": "concurrently \"npm run dev:server\" \"npm run generate-swagger:watch\"",
+    "dev:server": "tsx watch server.ts",
     "dev:debug": "tsx watch --inspect=0.0.0.0:5000 server.ts",
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
