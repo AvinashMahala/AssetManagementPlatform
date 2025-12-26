@@ -18,8 +18,6 @@ export class TenantModule {
     
     const tenantService = new TenantService(repository);
 
-    // Tenant use-cases removed: controllers call `tenantService` directly now.
-
     // Document service (controllers call service directly)
     const tenantDocumentService = documentService;
 

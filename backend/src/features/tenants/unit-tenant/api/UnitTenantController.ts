@@ -2,6 +2,12 @@ import { Request, Response } from 'express';
 import { IUnitTenantService } from '../core/interfaces/IUnitTenantService';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
+import { ZodError, ZodIssue } from 'zod';
+import {
+  assignTenantSchema,
+  updateAssignmentSchema,
+  queryAssignmentsSchema,
+} from './unit-tenant.schema.validator';
 
 /**
  * UnitTenantController
@@ -38,13 +44,16 @@ export class UnitTenantController {
    */
   async getAll(req: Request, res: Response): Promise<void> {
     try {
-      const { unitId, tenantId } = req.query;
+      const parsed = queryAssignmentsSchema.parse(req.query);
+      const { unitId, tenantId } = parsed;
       let assignments;
       if (unitId) assignments = await this.unitTenantService.findUnitTenants(unitId as string);
       else if (tenantId) assignments = await this.unitTenantService.findByTenant(tenantId as string);
       else assignments = await this.unitTenantService.findAll();
       ResponseUtils.success(res, { assignments });
     } catch (err) {
+      if (err instanceof ZodError)
+        return ErrorUtils.handleValidationError(res, (err as ZodError<any>).issues.map((e: ZodIssue) => e.message).join('; '));
       ErrorUtils.handleGenericError(res, err, 'Failed to fetch unit-tenant assignments');
     }
   }
@@ -78,13 +87,13 @@ export class UnitTenantController {
   async assignTenant(req: Request, res: Response): Promise<void> {
     try {
       const unitId = req.params.unitId || req.body.unitId;
-      if (!unitId) {
-        return ResponseUtils.badRequest(res, 'Unit ID is required');
-      }
       const assignmentData = { ...req.body, unitId };
-      const assignment = await this.unitTenantService.assignTenantToUnit(assignmentData as any);
+      const validated = assignTenantSchema.parse(assignmentData);
+      const assignment = await this.unitTenantService.assignTenantToUnit(validated as any);
       ResponseUtils.created(res, assignment);
     } catch (err) {
+      if (err instanceof ZodError)
+        return ErrorUtils.handleValidationError(res, (err as ZodError<any>).issues.map((e: ZodIssue) => e.message).join('; '));
       ErrorUtils.handleGenericError(res, err, 'Failed to assign tenant to unit');
     }
   }
@@ -98,13 +107,15 @@ export class UnitTenantController {
   async updateAssignment(req: Request, res: Response): Promise<void> {
     try {
       const { unitId, tenantId } = req.params;
-      const updates = req.body;
+      const updates = updateAssignmentSchema.parse(req.body) as Partial<any>;
       const assignment = await this.unitTenantService.updateTenantAssignment(unitId, tenantId, updates);
       if (!assignment) {
         return ResponseUtils.notFound(res, 'Tenant assignment not found');
       }
       ResponseUtils.success(res, assignment);
     } catch (err) {
+      if (err instanceof ZodError)
+        return ErrorUtils.handleValidationError(res, (err as ZodError<any>).issues.map((e: ZodIssue) => e.message).join('; '));
       ErrorUtils.handleGenericError(res, err, 'Failed to update tenant assignment');
     }
   }
