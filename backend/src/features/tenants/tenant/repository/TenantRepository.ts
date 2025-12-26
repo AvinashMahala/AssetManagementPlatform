@@ -4,6 +4,7 @@ import { ITenantRepository } from './interfaces/ITenantRepository';
 import { Tenant, CreateTenantDTO, UpdateTenantDTO, TenantDocument } from '../models/tenant.types';
 import { TenantRow } from './types/TenantRow';
 import { TenantMapper } from './mappers/TenantMapper';
+import { RepositoryError } from '@/shared/errors/RepositoryError';
 
 export class TenantRepository extends BaseRepository<Tenant, TenantRow, Partial<TenantRow>> implements ITenantRepository {
   constructor(pool: Pool) {
@@ -106,11 +107,20 @@ export class TenantRepository extends BaseRepository<Tenant, TenantRow, Partial<
   }
 
   async updateStatus(id: string, status: string): Promise<boolean> {
-    const result = await this.pool.query(
-      `UPDATE ${this.tableName} SET status = $1, updated_at = $2 WHERE id = $3`,
-      [status, new Date(), id]
-    );
-    return (result.rowCount ?? 0) > 0;
+    try {
+      const result = await this.pool.query(
+        `UPDATE ${this.tableName} SET status = $1, updated_at = $2 WHERE id = $3`,
+        [status, new Date(), id]
+      );
+      return (result.rowCount ?? 0) > 0;
+    } catch (error: any) {
+      throw new RepositoryError(
+        `Failed to update tenant status for id ${id}: ${error.message || 'Database update failed'}`,
+        'REPOSITORY_UPDATE_ERROR',
+        error as Error,
+        { id, status, operation: 'updateStatus' }
+      );
+    }
   }
 
   // Document management methods
@@ -145,7 +155,12 @@ export class TenantRepository extends BaseRepository<Tenant, TenantRow, Partial<
       );
       return this.mapRowToTenantDocument(result.rows[0]);
     } catch (error: any) {
-      throw new Error(`Failed to add tenant document: ${error.message || 'Database insert failed'}`);
+      throw new RepositoryError(
+        `Failed to add tenant document for tenant ${tenantId}: ${error.message || 'Database insert failed'}`,
+        'REPOSITORY_INSERT_ERROR',
+        error as Error,
+        { tenantId, documentType: document.documentType, operation: 'addDocument' }
+      );
     }
   }
 
@@ -157,7 +172,12 @@ export class TenantRepository extends BaseRepository<Tenant, TenantRow, Partial<
       );
       return result.rows.map(row => this.mapRowToTenantDocument(row));
     } catch (error: any) {
-      throw new Error(`Failed to fetch tenant documents: ${error.message || 'Database query failed'}`);
+      throw new RepositoryError(
+        `Failed to fetch tenant documents for tenant ${tenantId}: ${error.message || 'Database query failed'}`,
+        'REPOSITORY_QUERY_ERROR',
+        error as Error,
+        { tenantId, operation: 'getDocuments' }
+      );
     }
   }
 
@@ -215,7 +235,12 @@ export class TenantRepository extends BaseRepository<Tenant, TenantRow, Partial<
       const result = await this.pool.query(query, values);
       return result.rows[0] ? this.mapRowToTenantDocument(result.rows[0]) : null;
     } catch (error: any) {
-      throw new Error(`Failed to update tenant document: ${error.message || 'Database update failed'}`);
+      throw new RepositoryError(
+        `Failed to update tenant document ${documentId}: ${error.message || 'Database update failed'}`,
+        'REPOSITORY_UPDATE_ERROR',
+        error as Error,
+        { documentId, data: { ...data }, operation: 'updateDocument' }
+      );
     }
   }
 
@@ -227,7 +252,12 @@ export class TenantRepository extends BaseRepository<Tenant, TenantRow, Partial<
       );
       return (result.rowCount ?? 0) > 0;
     } catch (error: any) {
-      throw new Error(`Failed to delete tenant document: ${error.message || 'Database delete failed'}`);
+      throw new RepositoryError(
+        `Failed to delete tenant document ${documentId}: ${error.message || 'Database delete failed'}`,
+        'REPOSITORY_DELETE_ERROR',
+        error as Error,
+        { documentId, operation: 'deleteDocument' }
+      );
     }
   }
 

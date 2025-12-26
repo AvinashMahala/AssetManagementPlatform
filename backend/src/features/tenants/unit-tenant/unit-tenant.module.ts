@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { UnitTenantRepository } from './repository/UnitTenantRepository.js';
-import { UnitTenantService } from './core/services/UnitTenantService';
+import { UnitTenantService } from './core/services/UnitTenantService.js';
 import { UnitTenantController } from './api/UnitTenantController.js';
 import { createUnitTenantRoutes } from './api/unit-tenant.routes.js';
 
