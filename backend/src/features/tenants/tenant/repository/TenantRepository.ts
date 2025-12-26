@@ -1,11 +1,11 @@
 import { Pool } from 'pg';
 import { BaseRepository } from '@/shared/infrastructure/database/BaseRepository';
-import { ITenantRepository } from '../../core/interfaces/ITenantRepository';
-import { Tenant, CreateTenantDTO, UpdateTenantDTO, TenantDocument } from '../../core/types/tenant.types';
-import { ITenantRow } from '../interfaces/ITenantRow';
-import { TenantMapper } from '../mappers/TenantMapper';
+import { ITenantRepository } from './interfaces/ITenantRepository';
+import { Tenant, CreateTenantDTO, UpdateTenantDTO, TenantDocument } from '../models/tenant.types';
+import { TenantRow } from './types/TenantRow';
+import { TenantMapper } from './mappers/TenantMapper';
 
-export class TenantRepository extends BaseRepository<Tenant, ITenantRow, Partial<ITenantRow>> implements ITenantRepository {
+export class TenantRepository extends BaseRepository<Tenant, TenantRow, Partial<TenantRow>> implements ITenantRepository {
   constructor(pool: Pool) {
     super(pool, 'tenants');
   }
@@ -31,7 +31,7 @@ export class TenantRepository extends BaseRepository<Tenant, ITenantRow, Partial
   }
 
   async create(data: CreateTenantDTO): Promise<Tenant> {
-    const rowData: Partial<ITenantRow> = {
+    const rowData: Partial<TenantRow> = {
       first_name: data.firstName,
       last_name: data.lastName,
       email: data.email,
@@ -57,12 +57,12 @@ export class TenantRepository extends BaseRepository<Tenant, ITenantRow, Partial
       current_property_id: data.currentPropertyId,
     };
 
-    const row = await this.add(rowData as ITenantRow);
+    const row = await this.add(rowData as TenantRow);
     return this.mapToDomain(row);
   }
 
   async update(id: string, data: UpdateTenantDTO): Promise<Tenant | null> {
-    const rowData: Partial<ITenantRow> = {};
+    const rowData: Partial<TenantRow> = {};
     
     if (data.firstName) rowData.first_name = data.firstName;
     if (data.lastName) rowData.last_name = data.lastName;

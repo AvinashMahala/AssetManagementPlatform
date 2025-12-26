@@ -6,7 +6,7 @@ import { RentPaymentService } from './core/RentPaymentService';
 import { RentPaymentController } from './api/RentPaymentController';
 import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
 import { LeaseRepository } from '@/features/leases/data/LeaseRepository';
-import { TenantRepository } from '@/features/tenants/tenant/data/repository/TenantRepository';
+import { TenantRepository } from '@/features/tenants/tenant/repository/TenantRepository';
 
 export class RentPaymentModule {
   public router: Router;

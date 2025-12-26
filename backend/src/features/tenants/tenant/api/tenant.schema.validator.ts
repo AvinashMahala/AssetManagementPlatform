@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TenantStatus } from '../../core/types/tenant.types';
+import { TenantStatus } from '../models/tenant.types';
 
 const addressSchema = z.object({
   street: z.string().min(1, 'Street is required'),

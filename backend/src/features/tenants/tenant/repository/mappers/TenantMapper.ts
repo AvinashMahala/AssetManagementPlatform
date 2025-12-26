@@ -1,8 +1,8 @@
-import { Tenant, TenantStatus } from '../../core/types/tenant.types';
-import { ITenantRow } from '../interfaces/ITenantRow';
+import { Tenant, TenantStatus } from '../../models/tenant.types';
+import { TenantRow } from '../types/TenantRow';
 
 export class TenantMapper {
-  static toDomain(row: ITenantRow): Tenant {
+  static toDomain(row: TenantRow): Tenant {
     return {
       id: row.id,
       firstName: row.first_name,

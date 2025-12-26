@@ -47,7 +47,7 @@ import { BulkOperationsService } from '@/features/admin/bulk-operations/core/ser
 // Legacy Repositories & Services (for DI)
 import { PropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository';
 import { UserRepository } from '@/features/auth/user/data/UserRepository';
-import { TenantRepository } from '@/features/tenants/tenant/data/repository/TenantRepository';
+import { TenantRepository } from '@/features/tenants/tenant/repository/TenantRepository.js';
 import { LeaseRepository } from '@/features/leases/data/LeaseRepository';
 import { RentPaymentRepository } from '@/features/finance/rent-payment/data/RentPaymentRepository';
 import { RentTransactionRepository } from '@/features/finance/rent-transaction/data/RentTransactionRepository';
@@ -144,7 +144,8 @@ const startServer = async () => {
   const eventBus = EventBus.getInstance();
   const userService = new UserService(userRepository);
   const meterService = new MeterService(meterRepository);
-  const meterReadingService = new MeterReadingService(meterReadingRepository, meterRepository);
+  // MeterReadingService requires IMeterInfoService; pass the MeterService which implements it
+  const meterReadingService = new MeterReadingService(meterReadingRepository, meterService);
   const propertyFileService = new PropertyFileService(propertyFileRepository);
   const propertyReceiptTemplateService = new PropertyReceiptTemplateService(propertyReceiptTemplateRepository);
   
@@ -349,7 +350,7 @@ const startServer = async () => {
   v1Router.use('/properties', PropertyModule.create(mainPool, userService, { fileController: propertyFileController, receiptTemplateController: propertyReceiptTemplateController }));
   v1Router.use('/auth', new AuthModule(mainPool).router);
   v1Router.use('/users', new UserModule(mainPool).router);
-  v1Router.use('/tenants', TenantModule.create(mainPool, userService));
+  v1Router.use('/tenants', TenantModule.create(mainPool, userService, { fileStorageService }));
   v1Router.use('/units', UnitModule.create(mainPool, userService));
   v1Router.use('/units', UnitModule.create(mainPool, userService));
   v1Router.use('/unit-tenants', UnitTenantModule.create(mainPool, userService));

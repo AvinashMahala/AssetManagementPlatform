@@ -1,4 +1,4 @@
-import { Tenant, CreateTenantDTO, UpdateTenantDTO, TenantDocument } from '../types/tenant.types';
+import { Tenant, CreateTenantDTO, UpdateTenantDTO, TenantDocument } from '../../models/tenant.types';
 
 export interface ITenantRepository {
   findAll(): Promise<Tenant[]>;

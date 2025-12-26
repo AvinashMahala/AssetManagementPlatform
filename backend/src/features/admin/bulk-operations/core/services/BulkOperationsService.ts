@@ -1,7 +1,7 @@
 import { IRentTransactionService } from '@/features/finance/rent-transaction/core/IRentTransactionService';
 import { IReceiptService } from '@/features/finance/receipt/core/interfaces/IReceiptRepository';
 import { IPropertyRepository } from '@/features/properties/property/core/interfaces/IPropertyRepository';
-import { ITenantRepository } from '@/features/tenants/tenant/core/interfaces/ITenantRepository';
+import { ITenantRepository } from '@/features/tenants/tenant/repository/interfaces/ITenantRepository';
 import { IUnitRepository } from '@/features/properties/unit/core/interfaces/IUnitRepository';
 import { IUserRepository } from '@/features/auth/user/core/IUserRepository';
 import { ILeaseRepository } from '@/features/leases/core/interfaces/ILeaseRepository';

@@ -6,7 +6,7 @@ import { RentTransactionService } from './core/RentTransactionService';
 import { RentTransactionController } from './api/RentTransactionController';
 import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
 import { LeaseRepository } from '@/features/leases/data/LeaseRepository';
-import { TenantRepository } from '@/features/tenants/tenant/data/repository/TenantRepository';
+import { TenantRepository } from '@/features/tenants/tenant/repository/TenantRepository';
 import { PropertyRepository } from '@/features/properties/property/data/repository/PropertyRepository';
 import { UserRepository } from '@/features/auth/user/data/UserRepository';
 import { RentTransactionMeterReadingRepository } from './data/RentTransactionMeterReadingRepository';

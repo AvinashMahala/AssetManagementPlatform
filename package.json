@@ -18,6 +18,7 @@
     "dev:frontend": "yarn workspace frontend dev",
     "dev:backend": "yarn workspace backend dev",
     "build": "yarn workspaces run build",
+    "build:watch:backend": "yarn workspace backend build:watch",
     "test": "yarn workspaces run test",
     "lint": "yarn workspaces run lint"
     ,

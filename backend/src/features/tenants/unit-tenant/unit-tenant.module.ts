@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { UnitTenantRepository } from './data/repository/UnitTenantRepository.js';
+import { UnitTenantRepository } from './repository/UnitTenantRepository.js';
 import { GetUnitTenantsUseCase } from './core/use-cases/GetUnitTenants.usecase.js';
 import { GetUnitTenantsQueryUseCase } from './core/use-cases/GetUnitTenantsQuery.usecase.js';
 import { GetUnitTenantByIdUseCase } from './core/use-cases/GetUnitTenantById.usecase.js';

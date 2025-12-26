@@ -4,7 +4,7 @@ import { IRentTransactionRepository } from '@/features/finance/rent-transaction/
 import { IRentPaymentRepository } from '@/features/finance/rent-payment/core/IRentPaymentRepository';
 import { ILeaseRepository } from '@/features/leases/core/interfaces/ILeaseRepository';
 import { IPropertyRepository } from '@/features/properties/property/core/interfaces/IPropertyRepository';
-import { ITenantRepository } from '@/features/tenants/tenant/core/interfaces/ITenantRepository';
+import { ITenantRepository } from '@/features/tenants/tenant/repository/interfaces/ITenantRepository';
 import { IUserRepository } from '@/features/auth/user/core/IUserRepository';
 // import { TenantService } from '@/features/tenants/tenant/core/services/TenantService';
 import { RentPaymentService } from '@/features/finance/rent-payment/core/RentPaymentService';

@@ -10,6 +10,7 @@
     "dev:server": "tsx watch server.ts",
     "dev:debug": "tsx watch --inspect=0.0.0.0:5000 server.ts",
     "build": "tsc",
+    "build:watch": "tsc -w",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
     "init-db": "tsx ../db/scripts/init.ts",

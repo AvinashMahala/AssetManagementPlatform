@@ -1,4 +1,4 @@
-export interface ITenantRow {
+export type TenantRow = {
   id: string;
   first_name: string;
   last_name: string;
@@ -26,4 +26,4 @@ export interface ITenantRow {
   current_property_id?: string;
   created_at: Date;
   updated_at: Date;
-}
+};

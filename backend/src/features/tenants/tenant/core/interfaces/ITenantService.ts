@@ -1,4 +1,4 @@
-import { Tenant, TenantInput, TenantDocument } from '../types/tenant.types';
+import { Tenant, TenantInput, TenantDocument } from '../../models/tenant.types';
 
 export interface ITenantService {
   getAllTenants(): Promise<Tenant[]>;
@@ -10,10 +10,7 @@ export interface ITenantService {
   deleteTenant(id: string): Promise<boolean>;
   updateTenantStatus(id: string, status: string): Promise<boolean>;
 
-  // Document management
-  addTenantDocument(tenantId: string, document: Omit<TenantDocument, 'id' | 'tenantId' | 'uploadedAt'>): Promise<TenantDocument>;
-  getTenantDocuments(tenantId: string): Promise<TenantDocument[]>;
-  updateTenantDocument(documentId: string, data: Partial<TenantDocument>): Promise<TenantDocument | null>;
-  deleteTenantDocument(documentId: string): Promise<boolean>;
-  verifyTenantDocument(documentId: string, verifiedBy: string): Promise<boolean>;
+  // Note: Document management has been extracted to a dedicated
+  // `ITenantDocumentService` to keep a single responsibility for tenant
+  // operations. See `core/interfaces/ITenantDocumentService.ts`.
 }

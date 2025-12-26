@@ -3,7 +3,7 @@ import { IRentTransactionRepository } from './IRentTransactionRepository';
 import { RentTransaction, CreateRentTransactionParams, UpdateRentTransactionParams, RentTransactionStatus, RentCollectionWorkflowStatus } from './rent-transaction.types';
 import { EventBus } from '@/shared/infrastructure/event-bus/EventBus';
 import { ILeaseRepository } from '@/features/leases/core/interfaces/ILeaseRepository';
-import { ITenantRepository } from '@/features/tenants/tenant/core/interfaces/ITenantRepository';
+import { ITenantRepository } from '@/features/tenants/tenant/repository/interfaces/ITenantRepository';
 import { IPropertyRepository } from '@/features/properties/property/core/interfaces/IPropertyRepository';
 import { IUserRepository } from '@/features/auth/user/core/IUserRepository';
 import { IRentTransactionMeterReadingRepository } from './IRentTransactionMeterReadingRepository';

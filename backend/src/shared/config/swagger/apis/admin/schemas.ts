@@ -1,4 +1,6 @@
-export const adminSchemas = {
+import { OpenAPIV3 } from 'openapi-types';
+
+export const adminSchemas: Record<string, OpenAPIV3.SchemaObject> = {
 	BulkErrorItem: {
 		type: 'object',
 		properties: {
