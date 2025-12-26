@@ -1,11 +1,18 @@
 import { Pool } from 'pg';
-import { IUnitTenantRepository } from '../core/interfaces/IUnitTenantRepository.js';
-import { UnitTenant, UnitTenantInput } from '../core/types/unit-tenant.types.js';
+import { IUnitTenantRepository } from './interfaces/IUnitTenantRepository.js';
+import { UnitTenant, UnitTenantInput } from '../models/unit-tenant.types.js';
 import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 
+/**
+ * Repository for unit-tenant assignments
+ *
+ * Responsible for all DB interactions related to unit-tenants table. Methods
+ * return domain objects (UnitTenant) and perform low-level SQL queries.
+ */
 export class UnitTenantRepository implements IUnitTenantRepository {
   constructor(private pool: Pool) {}
 
+  /** Find tenant assignments for a given unit */
   async findUnitTenants(unitId: string): Promise<UnitTenant[]> {
     const result = await this.pool.query(
       `SELECT * FROM ${TABLES.UNIT_TENANTS} WHERE ${COLUMNS.UNIT_TENANTS.UNIT_ID} = $1`,
@@ -14,11 +21,13 @@ export class UnitTenantRepository implements IUnitTenantRepository {
     return result.rows.map(this.mapRowToUnitTenant);
   }
 
+  /** Find all unit-tenant assignments (no filter) */
   async findAll(): Promise<UnitTenant[]> {
     const result = await this.pool.query(`SELECT * FROM ${TABLES.UNIT_TENANTS}`);
     return result.rows.map(this.mapRowToUnitTenant);
   }
 
+  /** Find assignment by its id */
   async findById(id: string): Promise<UnitTenant | null> {
     const result = await this.pool.query(
       `SELECT * FROM ${TABLES.UNIT_TENANTS} WHERE ${COLUMNS.UNIT_TENANTS.ID} = $1`,
@@ -27,6 +36,7 @@ export class UnitTenantRepository implements IUnitTenantRepository {
     return result.rows[0] ? this.mapRowToUnitTenant(result.rows[0]) : null;
   }
 
+  /** Find all assignments for a given tenant */
   async findByTenant(tenantId: string): Promise<UnitTenant[]> {
     const result = await this.pool.query(
       `SELECT * FROM ${TABLES.UNIT_TENANTS} WHERE ${COLUMNS.UNIT_TENANTS.TENANT_ID} = $1`,
@@ -35,6 +45,7 @@ export class UnitTenantRepository implements IUnitTenantRepository {
     return result.rows.map(this.mapRowToUnitTenant);
   }
 
+  /** Create a new tenant assignment */
   async assignTenantToUnit(data: UnitTenantInput): Promise<UnitTenant> {
     const now = new Date();
     const result = await this.pool.query(
@@ -68,6 +79,7 @@ export class UnitTenantRepository implements IUnitTenantRepository {
     return this.mapRowToUnitTenant(result.rows[0]);
   }
 
+  /** Update an existing tenant assignment; returns updated object or null */
   async updateTenantAssignment(unitId: string, tenantId: string, updates: Partial<UnitTenantInput>): Promise<UnitTenant | null> {
     const fields: string[] = [];
     const values: any[] = [];
@@ -113,6 +125,7 @@ export class UnitTenantRepository implements IUnitTenantRepository {
     return result.rows[0] ? this.mapRowToUnitTenant(result.rows[0]) : null;
   }
 
+  /** Remove tenant from unit; returns true when a row was deleted */
   async removeTenantFromUnit(unitId: string, tenantId: string): Promise<boolean> {
     const result = await this.pool.query(
       `DELETE FROM ${TABLES.UNIT_TENANTS} WHERE ${COLUMNS.UNIT_TENANTS.UNIT_ID} = $1 AND ${COLUMNS.UNIT_TENANTS.TENANT_ID} = $2`,
@@ -121,6 +134,7 @@ export class UnitTenantRepository implements IUnitTenantRepository {
     return (result.rowCount ?? 0) > 0;
   }
 
+  // Internal helper: fetch the assignment row by unitId + tenantId
   private async findTenantAssignment(unitId: string, tenantId: string): Promise<UnitTenant | null> {
     const result = await this.pool.query(
       `SELECT * FROM ${TABLES.UNIT_TENANTS} WHERE ${COLUMNS.UNIT_TENANTS.UNIT_ID} = $1 AND ${COLUMNS.UNIT_TENANTS.TENANT_ID} = $2`,
@@ -129,6 +143,7 @@ export class UnitTenantRepository implements IUnitTenantRepository {
     return result.rows[0] ? this.mapRowToUnitTenant(result.rows[0]) : null;
   }
 
+  // Map DB row to UnitTenant domain object; converts dates & numbers
   private mapRowToUnitTenant(row: any): UnitTenant {
     return {
       id: row.id,
