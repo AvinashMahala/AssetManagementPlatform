@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import { MeterRepository } from './data/repository/MeterRepository.js';
 import { MeterReadingRepository } from './data/repository/MeterReadingRepository.js';
 import { MeterReadingService } from './core/services/MeterReadingService.js';
+import { MeterInfoService } from './core/services/MeterInfoService.js';
 import { MeterReadingController } from './presentation/controllers/MeterReadingController.js';
 import { createMeterReadingRoutes } from './presentation/routes/meter-reading.routes.js';
 import { GetMetersByProperty } from './core/use-cases/GetMetersByProperty.usecase.js';
@@ -19,7 +20,8 @@ export class MeterModule {
   static create(pool: Pool, userService: any): Router {
     const repository = new MeterRepository(pool);
     const readingRepository = new MeterReadingRepository(pool);
-    const readingService = new MeterReadingService(readingRepository, repository);
+    const meterInfoService = new MeterInfoService(repository);
+    const readingService = new MeterReadingService(readingRepository, meterInfoService);
     const readingController = new MeterReadingController(readingService);
 
     const getMetersByProperty = new GetMetersByProperty(repository);

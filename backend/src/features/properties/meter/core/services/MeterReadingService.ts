@@ -1,12 +1,13 @@
 import { IMeterReadingRepository } from '../interfaces/IMeterReadingRepository';
-import { IMeterRepository } from '../interfaces/IMeterRepository';
 import { IMeterReadingService } from '../interfaces/IMeterReadingService';
+import { IMeterInfoService } from '../interfaces/IMeterInfoService';
 import { MeterReading, MeterReadingInput } from '../types/meter.types';
+import { MeterReadingCalculator } from './MeterReadingCalculator';
 
 export class MeterReadingService implements IMeterReadingService {
   constructor(
     private meterReadingRepository: IMeterReadingRepository,
-    private meterRepository: IMeterRepository
+    private meterInfoService: IMeterInfoService
   ) {}
 
   async getAllMeterReadings(): Promise<MeterReading[]> {
@@ -41,10 +42,6 @@ export class MeterReadingService implements IMeterReadingService {
     if (readingData.currentReading < 0) throw new Error('Current reading cannot be negative');
     if (!readingData.recordedBy) throw new Error('Recorded by user ID is required');
 
-    // Check if meter exists and get details for cost calculation
-    const meter = await this.meterRepository.findById(readingData.meterId);
-    if (!meter) throw new Error('Meter not found');
-
     // Check if there's already a reading for this month
     const startOfMonth = new Date(readingData.readingDate.getFullYear(), readingData.readingDate.getMonth(), 1);
     const endOfMonth = new Date(readingData.readingDate.getFullYear(), readingData.readingDate.getMonth() + 1, 0);
@@ -58,20 +55,15 @@ export class MeterReadingService implements IMeterReadingService {
     if (existingReadings.length > 0) {
       throw new Error('A reading already exists for this month');
     }
-
     // Get previous reading
     const latestReading = await this.meterReadingRepository.findLatestByMeter(readingData.meterId);
     const previousReading = latestReading ? latestReading.currentReading : 0;
 
-    if (readingData.currentReading < previousReading) {
-      throw new Error('Current reading cannot be less than previous reading');
-    }
+    // Fetch minimal meter info through the abstracted MeterInfoService
+    const meter = await this.meterInfoService.getMeterById(readingData.meterId);
 
-    // Calculate consumption and cost
-    const unitsConsumed = readingData.currentReading - previousReading;
-    const costPerUnit = meter.costPerUnit || 0;
-    const fixedCharge = meter.fixedCharge || 0;
-    const totalCost = (unitsConsumed * costPerUnit) + fixedCharge;
+    // Validate and compute using the calculator helper
+    const { unitsConsumed, totalCost } = MeterReadingCalculator.validateAndCompute(meter, previousReading, readingData.currentReading);
 
     return await this.meterReadingRepository.create({
       ...readingData,
@@ -94,18 +86,11 @@ export class MeterReadingService implements IMeterReadingService {
        const existingReading = await this.meterReadingRepository.findById(id);
        if (!existingReading) throw new Error('Meter reading not found');
 
-       const meter = await this.meterRepository.findById(existingReading.meterId);
-       if (!meter) throw new Error('Meter not found');
-
        const previousReading = existingReading.previousReading;
-       if (readingData.currentReading < previousReading) {
-         throw new Error('Current reading cannot be less than previous reading');
-       }
 
-       const unitsConsumed = readingData.currentReading - previousReading;
-       const costPerUnit = meter.costPerUnit || 0;
-       const fixedCharge = meter.fixedCharge || 0;
-       const totalCost = (unitsConsumed * costPerUnit) + fixedCharge;
+       // Fetch meter info via service and reuse calculator
+       const meter = await this.meterInfoService.getMeterById(existingReading.meterId);
+       const { unitsConsumed, totalCost } = MeterReadingCalculator.validateAndCompute(meter, previousReading, readingData.currentReading!);
 
        return await this.meterReadingRepository.update(id, {
          currentReading: readingData.currentReading,
