@@ -50,4 +50,36 @@ public class JwtServiceTests
         var token = svc.GenerateAccessToken(new MyApp.Models.User { Id = Guid.NewGuid(), Email = "x@y.com" });
         Assert.False(string.IsNullOrWhiteSpace(token));
     }
+
+    [Fact]
+    public void Token_Is_Valid_With_Derived_Key()
+    {
+        var shortKey = "shortkey123";
+        var cfg = new ConfigurationBuilder().AddInMemoryCollection(new System.Collections.Generic.Dictionary<string,string?> {
+            { "Jwt:Key", shortKey }, { "Jwt:Issuer", "iss" }, { "Jwt:Audience", "aud" }
+        }).Build();
+
+        var svc = new JwtService(cfg);
+        var user = new MyApp.Models.User { Id = Guid.NewGuid(), Email = "validate@me" };
+        var token = svc.GenerateAccessToken(user);
+
+        var derived = MyApp.Services.JwtService.DeriveKeyBytesFromSecret(shortKey);
+        var validationParams = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "iss",
+            ValidateAudience = true,
+            ValidAudience = "aud",
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(derived),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var principal = handler.ValidateToken(token, validationParams, out var validatedToken);
+
+        Assert.NotNull(principal);
+        Assert.Equal("validate@me", principal.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value);
+    }
 }

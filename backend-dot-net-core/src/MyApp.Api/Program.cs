@@ -24,7 +24,8 @@ var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection.GetValue<string>("Key") ?? "change_this_in_production";
 var jwtIssuer = jwtSection.GetValue<string>("Issuer") ?? "MyApp";
 var jwtAudience = jwtSection.GetValue<string>("Audience") ?? "MyAppUsers";
-var keyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKey);
+// Ensure the same deterministic key derivation is used for both signing and validation.
+var keyBytes = MyApp.Services.JwtService.DeriveKeyBytesFromSecret(jwtKey);
 
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

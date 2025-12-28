@@ -10,7 +10,8 @@ public class FileMetadata
     public string ContentType { get; set; } = string.Empty;
     public long Size { get; set; }
     public string EntityType { get; set; } = string.Empty; // e.g., "property"
-    public string EntityId { get; set; } = string.Empty; // e.g., propertyId
-    public string? CreatedBy { get; set; }
+    // entity id stored as uuid in DB
+    public Guid? EntityId { get; set; }
+    public Guid? CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

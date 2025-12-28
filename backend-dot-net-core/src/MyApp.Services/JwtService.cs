@@ -23,27 +23,36 @@ public class JwtService : IJwtService
         _issuer = configuration["Jwt:Issuer"] ?? "MyApp";
         _audience = configuration["Jwt:Audience"] ?? "MyAppUsers";
 
-        // Support base64-encoded secrets or plain UTF-8 strings.
+        _keyBytes = DeriveKeyBytesFromSecret(_key);
+    }
+
+    /// <summary>
+    /// Derive the actual key bytes used for signing/validation from the configured secret.
+    /// Accepts base64 or plain text; if resulting bytes are shorter than 32 bytes, derives a 32-byte key using SHA-256.
+    /// This is public so the application startup can use the same deterministic logic when configuring token validation.
+    /// </summary>
+    public static byte[] DeriveKeyBytesFromSecret(string secret)
+    {
+        byte[] bytes;
         try
         {
-            _keyBytes = Convert.FromBase64String(_key);
+            bytes = Convert.FromBase64String(secret);
         }
         catch (FormatException)
         {
-            _keyBytes = Encoding.UTF8.GetBytes(_key);
+            bytes = Encoding.UTF8.GetBytes(secret);
         }
 
-        // If key is too short for HS256, derive a 32-byte key using SHA-256 of the provided bytes.
-        // This is a pragmatic compatibility fallback for legacy/test configs that provide shorter secrets.
-        if (_keyBytes.Length * 8 < 256)
+        if (bytes.Length * 8 < 256)
         {
             // Derive a 32-byte key deterministically from the provided secret bytes
-            var derived = SHA256.HashData(_keyBytes);
-            // Replace the key bytes with the derived 32-byte key
-            _keyBytes = derived;
+            var derived = SHA256.HashData(bytes);
             // Log a warning for visibility in development (do NOT leak secrets in production logs)
             Console.WriteLine("Warning: Jwt:Key is shorter than 32 bytes — deriving a 256-bit key via SHA-256. Please update configuration to use a secure 32+ byte key.");
+            return derived;
         }
+
+        return bytes;
     }
 
     public string GenerateAccessToken(User user)

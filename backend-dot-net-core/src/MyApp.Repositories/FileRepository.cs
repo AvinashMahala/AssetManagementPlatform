@@ -25,13 +25,18 @@ public class FileRepository : IFileRepository
     public Task<FileMetadata?> GetByIdAsync(Guid id) => _db.Set<FileMetadata>().FirstOrDefaultAsync(f => f.Id == id);
 
     public async Task<IEnumerable<FileMetadata>> ListByEntityAsync(string entityType, string entityId)
-        => await _db.Set<FileMetadata>().Where(f => f.EntityType == entityType && f.EntityId == entityId).ToListAsync();
+    {
+        var q = _db.Set<FileMetadata>().AsQueryable();
+        if (!string.IsNullOrEmpty(entityType)) q = q.Where(f => f.EntityType == entityType);
+        if (!string.IsNullOrEmpty(entityId) && Guid.TryParse(entityId, out var gid)) q = q.Where(f => f.EntityId == gid);
+        return await q.ToListAsync();
+    }
 
     public async Task<PagedResult<FileMetadata>> ListByEntityPagedAsync(string? entityType, string? entityId, int offset, int limit)
     {
         var q = _db.Set<FileMetadata>().AsQueryable();
         if (!string.IsNullOrEmpty(entityType)) q = q.Where(f => f.EntityType == entityType);
-        if (!string.IsNullOrEmpty(entityId)) q = q.Where(f => f.EntityId == entityId);
+        if (!string.IsNullOrEmpty(entityId) && Guid.TryParse(entityId, out var gid)) q = q.Where(f => f.EntityId == gid);
         var total = await q.CountAsync();
         var items = await q.OrderByDescending(f => f.CreatedAt).Skip(offset).Take(limit).ToListAsync();
         return new PagedResult<FileMetadata>(items, total);

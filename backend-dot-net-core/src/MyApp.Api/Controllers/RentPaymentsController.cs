@@ -21,10 +21,18 @@ public class RentPaymentsController : ControllerBase
     public async Task<IActionResult> GetByLease(Guid leaseId) => Ok(await _service.ListByLeaseAsync(leaseId));
 
     [HttpGet("property/{propertyId}")]
-    public async Task<IActionResult> GetByProperty(string propertyId) => Ok(await _service.ListByPropertyAsync(propertyId));
+    public async Task<IActionResult> GetByProperty(string propertyId)
+    {
+        if (!Guid.TryParse(propertyId, out var pid)) return BadRequest("Invalid propertyId");
+        return Ok(await _service.ListByPropertyAsync(pid));
+    }
 
     [HttpGet("tenant/{tenantId}")]
-    public async Task<IActionResult> GetByTenant(string tenantId) => Ok(await _service.ListByTenantAsync(tenantId));
+    public async Task<IActionResult> GetByTenant(string tenantId)
+    {
+        if (!Guid.TryParse(tenantId, out var tid)) return BadRequest("Invalid tenantId");
+        return Ok(await _service.ListByTenantAsync(tid));
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(Guid id)

@@ -38,9 +38,9 @@ public class RentTransactionService : IRentTransactionService
     public Task<IEnumerable<RentTransaction>> ListAsync() => _repo.ListAsync();
 
     public Task<IEnumerable<RentTransaction>> ListByLeaseAsync(Guid leaseId) => _repo.ListByLeaseAsync(leaseId);
-    public Task<IEnumerable<RentTransaction>> ListByPropertyAsync(string propertyId) => _repo.ListByPropertyAsync(propertyId);
-    public Task<IEnumerable<RentTransaction>> ListByTenantAsync(string tenantId) => _repo.ListByTenantAsync(tenantId);
-    public Task<IEnumerable<RentTransaction>> ListByUnitAsync(string unitId) => _repo.ListByUnitAsync(unitId);
+    public Task<IEnumerable<RentTransaction>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
+    public Task<IEnumerable<RentTransaction>> ListByTenantAsync(Guid tenantId) => _repo.ListByTenantAsync(tenantId);
+    public Task<IEnumerable<RentTransaction>> ListByUnitAsync(Guid unitId) => _repo.ListByUnitAsync(unitId);
 
     public Task<RentTransaction?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 

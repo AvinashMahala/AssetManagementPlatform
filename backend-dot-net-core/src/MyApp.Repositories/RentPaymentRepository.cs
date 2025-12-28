@@ -18,13 +18,13 @@ public class RentPaymentRepository : IRentPaymentRepository
     public async Task<IEnumerable<RentPayment>> ListByLeaseAsync(Guid leaseId)
         => await _db.Set<RentPayment>().Where(p => p.LeaseId == leaseId).ToListAsync();
 
-    public async Task<IEnumerable<RentPayment>> ListByPropertyAsync(string propertyId)
+    public async Task<IEnumerable<RentPayment>> ListByPropertyAsync(Guid propertyId)
         => await (from p in _db.Set<RentPayment>()
                   join l in _db.Leases on p.LeaseId equals l.Id
                   where l.PropertyId == propertyId
                   select p).ToListAsync();
 
-    public async Task<IEnumerable<RentPayment>> ListByTenantAsync(string tenantId)
+    public async Task<IEnumerable<RentPayment>> ListByTenantAsync(Guid tenantId)
         => await (from p in _db.Set<RentPayment>()
                   join l in _db.Leases on p.LeaseId equals l.Id
                   where l.TenantId == tenantId

@@ -26,10 +26,11 @@ public class PropertyFileService : IPropertyFileService
             FileName = fileName,
             ContentType = contentType,
             Size = data.LongLength,
-            EntityType = entityType,
-            EntityId = entityId,
-            CreatedBy = createdBy
+            EntityType = entityType
         };
+
+        if (!string.IsNullOrEmpty(entityId) && Guid.TryParse(entityId, out var gid)) meta.EntityId = gid;
+        if (!string.IsNullOrEmpty(createdBy) && Guid.TryParse(createdBy, out var cid)) meta.CreatedBy = cid;
 
         await _repo.AddAsync(meta);
         return meta;

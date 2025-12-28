@@ -21,13 +21,25 @@ public class RentTransactionsController : ControllerBase
     public async Task<IActionResult> GetByLease(Guid leaseId) => Ok(await _service.ListByLeaseAsync(leaseId));
 
     [HttpGet("property/{propertyId}")]
-    public async Task<IActionResult> GetByProperty(string propertyId) => Ok(await _service.ListByPropertyAsync(propertyId));
+    public async Task<IActionResult> GetByProperty(string propertyId)
+    {
+        if (!Guid.TryParse(propertyId, out var pid)) return BadRequest("Invalid propertyId");
+        return Ok(await _service.ListByPropertyAsync(pid));
+    }
 
     [HttpGet("tenant/{tenantId}")]
-    public async Task<IActionResult> GetByTenant(string tenantId) => Ok(await _service.ListByTenantAsync(tenantId));
+    public async Task<IActionResult> GetByTenant(string tenantId)
+    {
+        if (!Guid.TryParse(tenantId, out var tid)) return BadRequest("Invalid tenantId");
+        return Ok(await _service.ListByTenantAsync(tid));
+    }
 
     [HttpGet("unit/{unitId}")]
-    public async Task<IActionResult> GetByUnit(string unitId) => Ok(await _service.ListByUnitAsync(unitId));
+    public async Task<IActionResult> GetByUnit(string unitId)
+    {
+        if (!Guid.TryParse(unitId, out var uid)) return BadRequest("Invalid unitId");
+        return Ok(await _service.ListByUnitAsync(uid));
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(Guid id)

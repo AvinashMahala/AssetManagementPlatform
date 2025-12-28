@@ -18,19 +18,19 @@ public class RentTransactionRepository : IRentTransactionRepository
     public async Task<IEnumerable<RentTransaction>> ListByLeaseAsync(Guid leaseId)
         => await _db.Set<RentTransaction>().Where(t => t.LeaseId == leaseId).ToListAsync();
 
-    public async Task<IEnumerable<RentTransaction>> ListByPropertyAsync(string propertyId)
+    public async Task<IEnumerable<RentTransaction>> ListByPropertyAsync(Guid propertyId)
         => await (from t in _db.Set<RentTransaction>()
                   join l in _db.Leases on t.LeaseId equals l.Id
                   where l.PropertyId == propertyId
                   select t).ToListAsync();
 
-    public async Task<IEnumerable<RentTransaction>> ListByTenantAsync(string tenantId)
+    public async Task<IEnumerable<RentTransaction>> ListByTenantAsync(Guid tenantId)
         => await (from t in _db.Set<RentTransaction>()
                   join l in _db.Leases on t.LeaseId equals l.Id
                   where l.TenantId == tenantId
                   select t).ToListAsync();
 
-    public async Task<IEnumerable<RentTransaction>> ListByUnitAsync(string unitId)
+    public async Task<IEnumerable<RentTransaction>> ListByUnitAsync(Guid unitId)
         => await (from t in _db.Set<RentTransaction>()
                   join l in _db.Leases on t.LeaseId equals l.Id
                   where l.UnitId == unitId

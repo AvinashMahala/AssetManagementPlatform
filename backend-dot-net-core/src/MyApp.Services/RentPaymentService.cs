@@ -22,9 +22,9 @@ public class RentPaymentService : IRentPaymentService
 
     public Task<IEnumerable<RentPayment>> ListByLeaseAsync(Guid leaseId) => _repo.ListByLeaseAsync(leaseId);
 
-    public Task<IEnumerable<RentPayment>> ListByPropertyAsync(string propertyId) => _repo.ListByPropertyAsync(propertyId);
+    public Task<IEnumerable<RentPayment>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
 
-    public Task<IEnumerable<RentPayment>> ListByTenantAsync(string tenantId) => _repo.ListByTenantAsync(tenantId);
+    public Task<IEnumerable<RentPayment>> ListByTenantAsync(Guid tenantId) => _repo.ListByTenantAsync(tenantId);
 
     public Task<RentPayment?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 

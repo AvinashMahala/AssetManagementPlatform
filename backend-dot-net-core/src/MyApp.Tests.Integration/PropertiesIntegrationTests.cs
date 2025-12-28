@@ -19,7 +19,7 @@ public class PropertiesIntegrationTests : IClassFixture<WebApplicationFactory<Pr
     {
         var client = _factory.CreateClient();
 
-        var createReq = new CreatePropertyRequest("Prop1","Addr1","owner1");
+        var createReq = new CreatePropertyRequest("Prop1","Addr1", null);
         var createResp = await client.PostAsJsonAsync("/api/properties", createReq);
         createResp.EnsureSuccessStatusCode();
         var created = await createResp.Content.ReadFromJsonAsync<Property>();
@@ -32,7 +32,7 @@ public class PropertiesIntegrationTests : IClassFixture<WebApplicationFactory<Pr
         Assert.Single(list, p => p.Id == created.Id);
 
         // Update
-        await client.PutAsJsonAsync($"/api/properties/{created.Id}", new UpdatePropertyRequest("Prop1b","Addr1b","owner1"));
+        await client.PutAsJsonAsync($"/api/properties/{created.Id}", new UpdatePropertyRequest("Prop1b","Addr1b", null));
         var got2 = await (await client.GetAsync($"/api/properties/{created.Id}")).Content.ReadFromJsonAsync<Property>();
         Assert.Equal("Prop1b", got2!.Name);
 

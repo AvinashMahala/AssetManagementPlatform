@@ -9,25 +9,8 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Explicitly map entities to lowercase table names used in the Postgres schema
-        var userEntity = modelBuilder.Entity<MyApp.Models.User>();
-        userEntity.ToTable("users");
-        // Map properties to actual database column names
-        userEntity.Property(u => u.Id).HasColumnName("id");
-        userEntity.Property(u => u.Email).HasColumnName("email");
-        userEntity.Property(u => u.PasswordHash).HasColumnName("password");
-        userEntity.Property(u => u.DisplayName).HasColumnName("name");
-        userEntity.Property(u => u.GoogleId).HasColumnName("google_id");
-        userEntity.Property(u => u.RefreshToken).HasColumnName("refresh_token");
-        userEntity.Property(u => u.RefreshTokenExpiry).HasColumnName("refresh_token_expiry");
-
-        modelBuilder.Entity<MyApp.Models.Property>().ToTable("properties");
-        modelBuilder.Entity<MyApp.Models.Lease>().ToTable("leases");
-        modelBuilder.Entity<MyApp.Models.FileMetadata>().ToTable("file_metadata");
-        modelBuilder.Entity<MyApp.Models.ReceiptTemplate>().ToTable("receipt_templates");
-        modelBuilder.Entity<MyApp.Models.RentPayment>().ToTable("rent_payments");
-        modelBuilder.Entity<MyApp.Models.RentTransaction>().ToTable("rent_transactions");
-        modelBuilder.Entity<MyApp.Models.Receipt>().ToTable("receipts");
+        // Apply all IEntityTypeConfiguration<T> implementations in this assembly
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }
