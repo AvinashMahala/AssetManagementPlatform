@@ -1,0 +1,4 @@
+{
+  "propertyId": { "in": "path", "example": "00000000-0000-0000-0000-000000000111", "required": true },
+  "fileId": { "in": "path", "example": "00000000-0000-0000-0000-00000000f001", "required": true }
+}

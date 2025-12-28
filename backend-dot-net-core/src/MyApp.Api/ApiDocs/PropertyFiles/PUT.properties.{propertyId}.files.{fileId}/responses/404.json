@@ -1,0 +1,10 @@
+{
+  "description": "Not Found - file not found or not associated with the given property",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "File not found" } }
+      }
+    }
+  }
+}
