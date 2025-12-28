@@ -135,6 +135,7 @@ Edge cases & notes
 PR checklist (before merge)
 ---------------------------
 - [ ] All migrated files for controller are present under `ApiDocs/{Controller}` with `description.md`, `request.json` (if applicable), `responses/*.json` (as needed)
+- [ ] The number of endpoint folders under `ApiDocs/{Controller}` matches the number of public controller actions (remove duplicate or orphaned folders such as legacy `GetById.GET` or extraneous method variants like `UpdateStatus.POST`).
 - [ ] `description.md` contains an **Endpoint:** line
 - [ ] Unit tests added/updated and passing
 - [ ] Manual verification of `/swagger` completed and screenshots if needed
