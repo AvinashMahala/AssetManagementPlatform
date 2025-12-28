@@ -1,3 +1,10 @@
 ﻿{
-    "description":  "Bad request - validation failed"
+  "description": "Bad request - validation failed",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Validation failed." } }
+      }
+    }
+  }
 }

@@ -183,7 +183,88 @@ Agent procedure (high-level)
    - After user approval, write files and create commits with a clear message, and if migrating write a migration manifest `migration-manifest-*.json`.
 7. Report back
    - Provide the proposed mapping, list of created/updated files, diffs (or the commit/PR link), validation results, any assumptions/ambiguities, and the location of the verification artifacts (e.g., captured `swagger.json`).
+Agent Implementation Guidance — Checklist & Templates
+----------------------------------------------------
+Add the following guidance to help an automated agent produce consistent, review-ready ApiDocs for a new controller or endpoint.
 
+Checklist (dry-run output expected before writing files)
+- Provide a mapping table: for each public action include Method, Route, Computed folder name (HTTPMETHOD.normalized-route), Proposed files (description.md, request.json, responses/*.json, parameters.json or parameters/*), and a short rationale.
+- Flag ambiguities: missing attributes, overloaded methods, mixed routing conventions, or unclear response shapes.
+- Provide example file contents (small representative examples) for each proposed file and a short note on any assumptions.
+- If mode is `migrate`, include a `migration-manifest-*.json` listing moved files and their original locations.
+
+File templates and conventions
+- `description.md` front-matter (YAML) keys the agent should populate:
+  - `summary` (short, one-line)
+  - `description` (longer form, MAY include examples and validation notes)
+  - `tags` (array with the controller/tag)
+  - `responses` (optional brief overrides; large examples go in `responses/*.json`)
+
+  Example description.md content:
+  ```markdown
+  ---
+  summary: Get a property by id
+  description: |
+    Returns the property with the supplied `id`.
+    Includes basic details such as `name`, `address` and `status`.
+  tags: [Properties]
+  ---
+
+  **Endpoint:** `GET /api/properties/{id}`
+
+  Returns `200` with the property object. If not found returns `404`.
+  ```
+
+- `request.json` acceptable shapes (agent should prefer the simplest form):
+  - Simple example object (preferred):
+    ```json
+    { "example": { "name": "Example" } }
+    ```
+  - Full content object (when necessary):
+    ```json
+    { "content": { "application/json": { "example": { ... } } } }
+    ```
+  - If request is required, ensure the generated `request.json` will cause the linter to mark `requestBody.Required = true` in the UI by providing `example` content.
+
+- `responses/<status>.json` minimal recommended structure:
+  ```json
+  {
+    "description": "OK",
+    "content": {
+      "application/json": {
+        "examples": {
+          "default": { "value": { "id": "00000000-0000-0000-0000-000000000000" } }
+        }
+      }
+    }
+  }
+  ```
+
+- `parameters.json` vs `parameters/`:
+  - For simple path/query/header parameters, `parameters.json` may contain per-parameter defs (top-level) where each parameter includes `in`, `example` and optional `required`.
+  - If `sets` are required (named parameter combos), place them in `parameters/sets.json` and keep per-parameter files under `parameters/` when helpful (the linter prefers `parameters` folder for `sets`).
+
+Behavior and heuristics
+- Detect path parameters by parsing the route `{...}` and ensure `parameters.json` (or `parameters/{in}.{name}.json`) is created with `in: "path"` and an example GUID.
+- For methods returning `204`, create a `responses/204.json` with an empty example (`{}`) under `application/json` to avoid UI confusion.
+- Prefer small, representative examples and avoid PII. Use GUID placeholders and short strings.
+- If a method has an `[Authorize]` attribute or other security metadata, include `tags` and rely on `TagDocsDocumentFilter` to show tag-level auth notes; do not add security requirements in individual docs unless explicitly needed.
+
+Idempotency and safety
+- Do not overwrite existing files unless the `Apply` flag is set. The dry-run should clearly list files to be created vs files that would be modified.
+- Keep `.bak` or migration manifests when migrating legacy sidecars and remove only after manual verification.
+
+What to ask the user (when ambiguous)
+- Which mode do you want: `create`, `update`, or `migrate`?
+- If route ambiguity exists (same path & method variations), confirm which action to document.
+- If response schemas are unclear, provide example objects or point to DTO classes to reference.
+
+Acceptance criteria (agent-generated PRs)
+- Folders use `HTTPMETHOD.normalized-route` naming and contain `description.md` with an `**Endpoint:**` line.
+- `request.json` and `responses/*.json` include small, representative examples that appear in `/swagger/v1/swagger.json` as operation request/response examples.
+- `parameters.json` present for path/query parameters with example values; `sets` included where applicable.
+- If a migration was performed, a `migration-manifest-*.json` is present and included in the commit.
+- Unit tests (or manual verification instructions) included or updated when necessary.
 Constraints & Do-Not
 - **Do not** delete legacy files or perform a `migrate` phase unless the user explicitly instructs with an `Apply` flag. Default to non-destructive `create` or `update` modes.
 - Avoid using real PII or production data in examples; use safe placeholders only.

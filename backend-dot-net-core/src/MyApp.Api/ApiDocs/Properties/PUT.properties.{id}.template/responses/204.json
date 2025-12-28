@@ -1,3 +1,10 @@
 ﻿{
-    "description":  "Template saved"
+  "description": "Template saved",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": {} }
+      }
+    }
+  }
 }

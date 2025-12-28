@@ -1,3 +1,10 @@
 ﻿{
-    "description":  "Deleted successfully"
+  "description": "Deleted successfully",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": {} }
+      }
+    }
+  }
 }

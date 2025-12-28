@@ -1,3 +1,10 @@
 ﻿{
-    "description":  "Bad request - missing or empty status"
+  "description": "Bad request - missing or empty status",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Missing or invalid status." } }
+      }
+    }
+  }
 }

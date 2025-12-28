@@ -1,3 +1,5 @@
 {
-  "displayName": "New Display Name"
+  "example": {
+    "displayName": "New Display Name"
+  }
 }

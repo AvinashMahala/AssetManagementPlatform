@@ -1,3 +1,10 @@
 ﻿{
-    "description":  "Template removed"
+  "description": "Template removed",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": {} }
+      }
+    }
+  }
 }
