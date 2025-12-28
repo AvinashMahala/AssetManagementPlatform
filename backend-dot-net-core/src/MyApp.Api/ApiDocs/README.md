@@ -1,8 +1,8 @@
 This folder contains external per-endpoint documentation used by Swagger.
 
 Naming convention (recommended):
-- Per-endpoint folder: ApiDocs/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Properties/Get.GET/`) — put all files related to that endpoint inside the folder: `description.md`, `request.json`, `responses/<status>.json`, etc.
-- **Canonical layout only**: ApiDocs must use per-endpoint folders: ApiDocs/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Properties/Get.GET/`) containing `description.md`, `request.json`, and `responses/<status>.json`.
+- Per-endpoint folder: ApiDocs/Controllers/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Controllers/Properties/Get.GET/`) — put all files related to that endpoint inside the folder: `description.md`, `request.json`, `responses/<status>.json`, etc.
+- **Canonical layout only**: ApiDocs must use per-endpoint folders: ApiDocs/Controllers/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Controllers/Properties/Get.GET/`) containing `description.md`, `request.json`, and `responses/<status>.json`.
 
 Fallback behavior:
 - **No backward compatibility**: legacy single-file sidecars such as `Action.METHOD.json` or controller-level `Action.METHOD.md` are **not** supported. Please follow the `ApiDocs/BLUEPRINT.md` conventions and use the migration script to upgrade legacy files.

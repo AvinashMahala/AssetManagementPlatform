@@ -9,15 +9,16 @@ Top-level layout (canonical)
 ```
 ApiDocs/
   ├─ Tags/                    (per-tag long-form docs, one file per tag: `{Tag}.md`)
-  ├─ {Controller}/            (feature/area — e.g., `Properties`, `Leases`)
-  │   ├─ {EndpointFolder}/    (one folder per endpoint; required naming: `HTTPMETHOD.normalized-route`, e.g., `GET.properties`, `GET.properties.{id}`, `PUT.properties.{id}.template`). Normalization rules: remove `api/` prefix; convert slashes `/` to dots `.`; strip route constraints inside braces (e.g., `{id:guid}` -> `{id}`); collapse duplicate dots.
-  │   │   ├─ description.md    (primary human-readable doc; MAY contain YAML front-matter)
-  │   │   ├─ request.json      (optional: request body example / content object)
-  │   │   ├─ responses/        (one file per numeric HTTP status code; file names MUST be numeric: `200.json`, `404.json`)
-  │   │   │   ├─ 200.json
-  │   │   │   └─ 404.json
-  │   │   └─ examples/         (optional: extra named examples for larger payloads)
-  │   └─ README.md            (controller-specific notes)
+  ├─ Controllers/             (controller-scoped folders: `Controllers/{Controller}` — e.g., `Controllers/Properties`, `Controllers/Leases`)
+  │   └─ {Controller}/        (feature/area — e.g., `Properties`, `Leases`)
+  │       ├─ {EndpointFolder}/ (one folder per endpoint; required naming: `HTTPMETHOD.normalized-route`, e.g., `GET.properties`, `GET.properties.{id}`, `PUT.properties.{id}.template`). Normalization rules: remove `api/` prefix; convert slashes `/` to dots `.`; strip route constraints inside braces (e.g., `{id:guid}` -> `{id}`); collapse duplicate dots.
+  │       │   ├─ description.md    (primary human-readable doc; MAY contain YAML front-matter)
+  │       │   ├─ request.json      (optional: request body example / content object)
+  │       │   ├─ responses/        (one file per numeric HTTP status code; file names MUST be numeric: `200.json`, `404.json`)
+  │       │   │   ├─ 200.json
+  │       │   │   └─ 404.json
+  │       │   └─ examples/         (optional: extra named examples for larger payloads)
+  │       └─ README.md            (controller-specific notes)
   └─ README.md                (global rules and migration guidance)
 ```
 
@@ -25,7 +26,7 @@ Canonical rules
 ---------------
 - Loader behavior: the `ExternalDocsOperationFilter` reads only the canonical endpoint folder layout above. Legacy single-file sidecars are deprecated and are NOT relied upon by the filter.
 - Endpoint folder naming: `HTTPMETHOD.normalized-route` (e.g., `POST.properties`, `GET.properties.{id}`, `PUT.properties.{id}.template`). Normalization removes route constraints (e.g., `{id:guid}` -> `{id}`) and replaces slashes with dots. This ensures deterministic, route-centric folder names and disambiguates same path/different-method scenarios.
-- Controller folder mapping: Use the controller class name (without the `Controller` suffix) as the top-level `ApiDocs/{Controller}` folder. **Do not** place docs for a distinct controller under another controller's folder even if their routes overlap. Example: `PropertyFilesController` → `ApiDocs/PropertyFiles` (do **not** put property-file endpoints under `ApiDocs/Properties`). This keeps controller ownership explicit and avoids accidental mixing of unrelated controller docs.
+- Controller folder mapping: Use the controller class name (without the `Controller` suffix) as the top-level `ApiDocs/Controllers/{Controller}` folder (i.e., place controller folders under `ApiDocs/Controllers/`). **Do not** place docs for a distinct controller under another controller's folder even if their routes overlap. Example: `PropertyFilesController` → `ApiDocs/Controllers/PropertyFiles` (do **not** put property-file endpoints under `ApiDocs/Controllers/Properties`). This keeps controller ownership explicit and avoids accidental mixing of unrelated controller docs.
 - `description.md`:
   - MAY include YAML front-matter block between `---` lines. Supported front-matter keys:
     - `summary` (string)
@@ -124,8 +125,8 @@ Authoring guidelines
 
 New feature authoring (fresh implementation — no migration)
 -----------------------------------------------------------
-- For new features or endpoints, **do not run the migration script**; create docs as a fresh implementation under `ApiDocs/{Controller}` using the `HTTPMETHOD.normalized-route` folder naming convention (e.g., `POST.properties`, `GET.properties.{id}`).
-- Create a folder `ApiDocs/{Controller}/{HTTPMETHOD.normalized-route}` and add `description.md` (with front-matter and a `**Endpoint:**` line), `request.json` (if applicable), `responses/*.json`, and `parameters.json` (or `parameters/*`) following the canonical rules in this blueprint.
+- For new features or endpoints, **do not run the migration script**; create docs as a fresh implementation under `ApiDocs/Controllers/{Controller}` using the `HTTPMETHOD.normalized-route` folder naming convention (e.g., `POST.properties`, `GET.properties.{id}`).
+- Create a folder `ApiDocs/Controllers/{Controller}/{HTTPMETHOD.normalized-route}` and add `description.md` (with front-matter and a `**Endpoint:**` line), `request.json` (if applicable), `responses/*.json`, and `parameters.json` (or `parameters/*`) following the canonical rules in this blueprint.
 - Verify locally (build + `/swagger`) and include the new folder(s) in your PR; do not migrate legacy docs as part of a new feature unless explicitly approved by the team.
 - If you are intentionally converting legacy docs for an existing endpoint (not a new feature), use the migration script and follow the migration checklist below.
 
@@ -134,7 +135,7 @@ Migration checklist (for legacy controllers only)
 1. Inspect existing ApiDocs for the controller and identify legacy sidecars (e.g., `Action.POST.json`, `Action.md` files).
 2. Run the migration helper:
    - From project root: `powershell .\scripts\migrate-api-docs-to-folders.ps1 -Controller Properties` (adjust controller name)
-   - The script will create endpoint folders, move/rename md files to `description.md`, and split combined JSON into `request.json` and `responses/<status>.json`.
+   - The script will create endpoint folders under `ApiDocs/Controllers/{Controller}`, move/rename md files to `description.md`, and split combined JSON into `request.json` and `responses/<status>.json`.
 3. Review the created `description.md`, `request.json`, and `responses/*.json` files. Add or edit front-matter as needed.
 3.a If the endpoint accepts path/query/header/cookie parameters (especially path `id` params), add `parameters.json` (or a `parameters` folder with `{in}.{name}.json` files) containing per-parameter `example` or `examples` and optional `sets` for named parameter combinations.
 4. Remove or consolidate large example payloads into `examples/` if necessary.
@@ -179,9 +180,9 @@ Edge cases & notes
 
 PR checklist (before merge)
 ---------------------------
-- [ ] For **new features**, docs were added as fresh `ApiDocs/{Controller}/{HTTPMETHOD.normalized-route}` folders (do NOT run the migration script for new features).
-- [ ] All migrated files for controller are present under `ApiDocs/{Controller}` with `description.md`, `request.json` (if applicable), `responses/*.json` (as needed)
-- [ ] The number of endpoint folders under `ApiDocs/{Controller}` matches the number of public controller actions (remove duplicate or orphaned folders such as legacy `GetById.GET` or extraneous method variants like `UpdateStatus.POST`).
+- [ ] For **new features**, docs were added as fresh `ApiDocs/Controllers/{Controller}/{HTTPMETHOD.normalized-route}` folders (do NOT run the migration script for new features).
+- [ ] All migrated files for controller are present under `ApiDocs/Controllers/{Controller}` with `description.md`, `request.json` (if applicable), `responses/*.json` (as needed)
+- [ ] The number of endpoint folders under `ApiDocs/Controllers/{Controller}` matches the number of public controller actions (remove duplicate or orphaned folders such as legacy `GetById.GET` or extraneous method variants like `UpdateStatus.POST`).
 - [ ] `description.md` contains an **Endpoint:** line
 - [ ] `ApiDocs/Tags/{Tag}.md` was added or updated for the controller (concise controller-level tag doc present)
 - [ ] If migration was performed, a migration manifest is present and reviewed (see generated `migration-manifest-*.json`).
@@ -193,12 +194,12 @@ PR checklist (before merge)
 AI Agent Integration — automated authoring guidance
 ---------------------------------------------------
 Purpose
-- Provide a clear, machine-actionable procedure so an AI agent can create or update `ApiDocs/{Controller}` for a given controller using this blueprint as the source of truth.
+- Provide a clear, machine-actionable procedure so an AI agent can create or update `ApiDocs/Controllers/{Controller}` for a given controller using this blueprint as the source of truth.
 
 Inputs the agent will be provided
 - Controller file path (e.g., `src/MyApp.Api/Controllers/PropertiesController.cs`) and the controller source text.
 - The path to this blueprint (`ApiDocs/BLUEPRINT.md`).
-- Optional: the existing `ApiDocs/{Controller}` folder path and a mode flag (`create` | `update` | `migrate`). Default mode for new work should be `create` or `update`; `migrate` must only be performed after explicit user confirmation.
+- Optional: the existing `ApiDocs/Controllers/{Controller}` folder path and a mode flag (`create` | `update` | `migrate`). Default mode for new work should be `create` or `update`; `migrate` must only be performed after explicit user confirmation.
 
 Agent procedure (high-level)
 1. Parse controller
