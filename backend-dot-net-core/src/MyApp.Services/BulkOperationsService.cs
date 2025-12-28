@@ -198,4 +198,26 @@ public class BulkOperationsService : IBulkOperationsService
         var url = $"/api/files/{storageId}/download"; // convenience URL (assuming FilesController download by storage id mapping)
         return new { exportType, options, url };
     }
+
+    public async Task<object> ValidateReceiptsAsync(Guid? propertyId)
+    {
+        var receipts = propertyId.HasValue ? (await _repo.ListByPropertyAsync(propertyId.Value)) : (await _repo.ListAsync());
+        var list = receipts is System.Collections.Generic.ICollection<Receipt> c ? c : receipts.ToList();
+        int total = list.Count();
+        int missingStorage = list.Count(r => string.IsNullOrWhiteSpace(r.PdfStorageId));
+        int missingFile = 0;
+        foreach (var r in list.Where(r => !string.IsNullOrWhiteSpace(r.PdfStorageId)))
+        {
+            var data = await _storage.GetAsync(r.PdfStorageId);
+            if (data is null) missingFile++;
+        }
+
+        return new
+        {
+            total,
+            missingStorage,
+            missingFile,
+            sample = list.Take(10).Select(r => new { r.Id, r.ReceiptNumber, r.PdfStorageId })
+        };
+    }
 }

@@ -12,7 +12,9 @@ public interface IMeterService
     Task<Meter> CreateAsync(Meter m);
     Task<Meter?> UpdateAsync(Guid id, Meter m);
     Task<bool> DeleteAsync(Guid id);
-}
+    Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId);
+    Task<IEnumerable<Meter>> ListByUnitAsync(Guid unitId);
+} 
 
 public interface IMeterReadingService
 {

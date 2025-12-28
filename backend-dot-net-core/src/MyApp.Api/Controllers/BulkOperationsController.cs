@@ -71,4 +71,11 @@ public class BulkOperationsController : ControllerBase
         var r = await _service.BulkExportAsync(exportType, options);
         return Ok(r);
     }
-}
+
+    [HttpGet("validate-receipts")]
+    public async Task<IActionResult> ValidateReceipts([FromQuery] Guid? propertyId)
+    {
+        var r = await _service.ValidateReceiptsAsync(propertyId);
+        return Ok(r);
+    }
+} 

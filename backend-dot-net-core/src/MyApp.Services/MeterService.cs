@@ -25,4 +25,8 @@ public class MeterService : IMeterService
         return existing;
     }
     public async Task<bool> DeleteAsync(Guid id) { await _repo.DeleteAsync(id); return true; }
+
+    public Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
+
+    public Task<IEnumerable<Meter>> ListByUnitAsync(Guid unitId) => _repo.ListByUnitAsync(unitId);
 }

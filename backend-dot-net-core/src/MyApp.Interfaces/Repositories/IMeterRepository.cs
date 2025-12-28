@@ -12,4 +12,6 @@ public interface IMeterRepository
     Task AddAsync(Meter m);
     Task UpdateAsync(Meter m);
     Task DeleteAsync(Guid id);
-}
+    Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId);
+    Task<IEnumerable<Meter>> ListByUnitAsync(Guid unitId);
+} 

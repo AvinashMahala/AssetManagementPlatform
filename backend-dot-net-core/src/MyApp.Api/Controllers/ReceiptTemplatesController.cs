@@ -65,6 +65,30 @@ public class ReceiptTemplatesController : ControllerBase
         return Content(body, "text/html");
     }
 
+    [HttpGet("templates/{id:guid}/export")]
+    public async Task<IActionResult> ExportTemplate(Guid id)
+    {
+        var e = await _service.ExportTemplateAsync(id);
+        return Ok(e);
+    }
+
+    [HttpPost("templates/import")]
+    public async Task<IActionResult> ImportTemplate([FromBody] object payload)
+    {
+        var created = await _service.ImportTemplateAsync(payload);
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+    }
+
+    [HttpPost("templates/{id:guid}/duplicate")]
+    public async Task<IActionResult> DuplicateTemplate(Guid id)
+    {
+        var created = await _service.DuplicateTemplateAsync(id);
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+    }
+
+    [HttpGet("templates/placeholders/available")]
+    public async Task<IActionResult> GetAvailablePlaceholders() => Ok(await _service.GetAvailablePlaceholdersAsync());
+
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] ReceiptTemplate updates)
     {

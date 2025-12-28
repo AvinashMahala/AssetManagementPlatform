@@ -24,4 +24,28 @@ public class ReceiptTemplateServiceTests
         var got = await svc.GetByIdAsync(template.Id);
         Assert.Equal(template, got);
     }
+
+    [Fact]
+    public async Task DuplicateTemplate_CreatesNewTemplateWithCopiedContent()
+    {
+        var existing = new ReceiptTemplate { Id = Guid.NewGuid(), Name = "T1", Type = "receipt", SettingsJson = "{ \"body\": \"hi\" }" };
+        var repoMock = new Mock<IReceiptTemplateRepository>();
+        repoMock.Setup(r => r.GetByIdAsync(existing.Id)).ReturnsAsync(existing);
+        repoMock.Setup(r => r.CreateAsync(It.IsAny<ReceiptTemplate>())).ReturnsAsync((ReceiptTemplate t) => { t.Id = Guid.NewGuid(); return t; });
+
+        var svc = new ReceiptTemplateService(repoMock.Object);
+        var dup = await svc.DuplicateTemplateAsync(existing.Id);
+        Assert.NotEqual(existing.Id, dup.Id);
+        Assert.Equal(existing.SettingsJson, dup.SettingsJson);
+        Assert.Contains("Copy", dup.Name);
+    }
+
+    [Fact]
+    public async Task GetAvailablePlaceholders_ReturnsList()
+    {
+        var repoMock = new Mock<IReceiptTemplateRepository>();
+        var svc = new ReceiptTemplateService(repoMock.Object);
+        var list = await svc.GetAvailablePlaceholdersAsync();
+        Assert.NotEmpty(list);
+    }
 }

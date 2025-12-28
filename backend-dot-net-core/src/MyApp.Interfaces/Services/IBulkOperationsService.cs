@@ -15,4 +15,5 @@ public interface IBulkOperationsService
     Task<BulkOperationSummary> BulkReceiptsAsync(IEnumerable<Guid> transactionIds, bool regenerateExisting);
     Task<BulkOperationSummary> BulkCommunicationAsync(IEnumerable<Guid> tenantIds, string subject, string message, IEnumerable<string> channels, IEnumerable<Guid>? attachments);
     Task<object> BulkExportAsync(string exportType, IDictionary<string, string> options);
-}
+    Task<object> ValidateReceiptsAsync(Guid? propertyId);
+} 

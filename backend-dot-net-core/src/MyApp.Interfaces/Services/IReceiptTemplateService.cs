@@ -12,4 +12,8 @@ public partial interface IReceiptTemplateService
     Task<ReceiptTemplate> CreateAsync(ReceiptTemplate template);
     Task<ReceiptTemplate?> UpdateAsync(Guid id, ReceiptTemplate updates);
     Task DeleteAsync(Guid id);
+    Task<object> ExportTemplateAsync(Guid id);
+    Task<ReceiptTemplate> ImportTemplateAsync(object payload);
+    Task<ReceiptTemplate> DuplicateTemplateAsync(Guid id);
+    Task<IEnumerable<string>> GetAvailablePlaceholdersAsync();
 }

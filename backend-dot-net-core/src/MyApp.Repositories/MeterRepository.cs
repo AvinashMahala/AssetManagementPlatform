@@ -37,4 +37,16 @@ public class MeterRepository : IMeterRepository
         _db.Set<Meter>().Remove(m);
         await _db.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId)
+    {
+        return await _db.Set<Meter>().Where(m => m.PropertyId == propertyId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Meter>> ListByUnitAsync(Guid unitId)
+    {
+        var unit = await _db.Set<Unit>().FirstOrDefaultAsync(u => u.Id == unitId);
+        if (unit is null) return new List<Meter>();
+        return await _db.Set<Meter>().Where(m => m.PropertyId == unit.PropertyId).ToListAsync();
+    } 
 }

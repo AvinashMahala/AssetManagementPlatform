@@ -42,4 +42,11 @@ public class PropertyReceiptTemplateController : ControllerBase
         await _service.RemoveTemplateAsync(propertyId);
         return NoContent();
     }
+
+    [HttpGet("{propertyId:guid}/upi-links")]
+    public async Task<IActionResult> GenerateUPILinks(Guid propertyId, [FromQuery] decimal? amount)
+    {
+        var links = await _service.GenerateUPILinksAsync(propertyId, amount);
+        return Ok(links);
+    }
 }

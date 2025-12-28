@@ -28,4 +28,10 @@ public class MetersController : ControllerBase
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id) { await _service.DeleteAsync(id); return NoContent(); }
+
+    [HttpGet("property/{propertyId:guid}")]
+    public async Task<IActionResult> ByProperty(Guid propertyId) => Ok(await _service.ListByPropertyAsync(propertyId));
+
+    [HttpGet("unit/{unitId:guid}")]
+    public async Task<IActionResult> ByUnit(Guid unitId) => Ok(await _service.ListByUnitAsync(unitId));
 }
