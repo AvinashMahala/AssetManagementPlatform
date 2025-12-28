@@ -1,0 +1,3 @@
+{
+  "meterId": { "in": "path", "description": "Meter id (guid)", "examples": { "default": { "value": "00000000-0000-0000-0000-000000000000" } } }
+}
