@@ -2,6 +2,7 @@
 summary: List transactions for a unit
 tags:
   - RentTransactions
+security: []
 responses:
   200: "Transactions for unit"
   400: "Invalid unit id"

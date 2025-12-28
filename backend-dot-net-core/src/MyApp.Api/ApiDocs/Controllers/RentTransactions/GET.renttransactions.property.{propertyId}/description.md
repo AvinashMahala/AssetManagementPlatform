@@ -2,6 +2,7 @@
 summary: List transactions for a property
 tags:
   - RentTransactions
+security: []
 responses:
   200: "Transactions for property"
   400: "Invalid property id"

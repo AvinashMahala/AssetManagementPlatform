@@ -6,6 +6,7 @@ description: |
   The operation returns a `BulkOperationSummary` with `processed` payment ids and any `errors`.
   If some items fail, a `207` will be returned; if all fail the controller returns `500` with the same summary.
 tags: [BulkOperations]
+operationId: BulkOperations_ApplyPayments
 responses:
   "200": { "description": "OK" }
   "207": { "description": "Partial success (multi-status)" }

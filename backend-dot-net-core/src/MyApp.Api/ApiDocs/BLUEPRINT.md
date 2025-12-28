@@ -49,7 +49,7 @@ Examples behavior (loader)
 - What the loader sets:
   - The chosen example is set to `OpenApiMediaType.Example` and also mirrored to `OpenApiMediaType.Schema.Example` to maximize compatibility with Swagger UI.
   - Any existing media `schema` (for example a `$ref`) is preserved when the example is attached so schema references are not lost.
-  - The chosen example (and schema.example) is propagated to other JSON-like content types (e.g., `application/json-patch+json`, `text/json`, `application/*+json`) so the UI shows an example regardless of the selected media type.
+  - The chosen example (and schema.example) is propagated to other JSON-like content types (e.g., `text/json`, `application/*+json`) so the UI shows an example regardless of the selected media type. **Exception:** `application/json-patch+json` is NOT propagated automatically; only include `application/json-patch+json` when the operation explicitly supports RFC-6902 JSON Patch (typically PATCH methods) and you intentionally provide a patch-array example in `request.json`.
   - Named examples are preserved as `x-example-{name}` extensions on the media object for backward compatibility and possible custom UI handling.
   - When an example is attached, `operation.RequestBody.Required` is set to `true` to improve UI visibility of the example.
 
@@ -122,6 +122,7 @@ Authoring guidelines
 - For multiple named examples (e.g., success, validationError), place them under `responses/<status>.json` in `content.application/json.examples` with descriptive keys.
 - For non-JSON content-types, put fully formed `content` objects in `request.json` or `responses/<status>.json` with the correct content-type keys.
 - Avoid storing sensitive or PII data in sample payloads.
+- Schema authoring: define component schemas under `ApiDocs/Components/schemas/<Name>.json`. Prefer explicit property definitions and set `additionalProperties: false` unless the shape is intentionally open-ended. Ensure examples in `responses/*.json` match the defined schema and keep examples minimal.
 
 New feature authoring (fresh implementation — no migration)
 -----------------------------------------------------------

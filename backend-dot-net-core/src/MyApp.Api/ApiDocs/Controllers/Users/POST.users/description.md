@@ -1,6 +1,7 @@
 ---
 summary: Create a new user
 tags: [Users]
+operationId: Users_Create
 ---
 **Endpoint:** `POST /api/users`
 

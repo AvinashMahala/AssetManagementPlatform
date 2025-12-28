@@ -2,6 +2,7 @@
 summary: Get available placeholders for templates
 tags:
   - ReceiptTemplates
+security: []
 responses:
   200: "List of available placeholders"
 ---

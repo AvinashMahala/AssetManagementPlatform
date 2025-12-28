@@ -6,6 +6,7 @@ description: |
   Returns `201 Created` with the file metadata (`FileMetadata`).
   If no file is supplied the endpoint returns `400` with an error object.
 tags: [PropertyFiles]
+operationId: PropertyFiles_Upload
 ---
 
 **Endpoint:** `POST /api/properties/{propertyId}/files`

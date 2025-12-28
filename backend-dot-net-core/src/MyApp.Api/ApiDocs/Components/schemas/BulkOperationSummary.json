@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "processed": {
+      "type": "array",
+      "items": { "type": "string", "format": "uuid" }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "itemId": { "type": "string", "format": "uuid" },
+          "message": { "type": "string" }
+        },
+        "required": ["itemId", "message"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

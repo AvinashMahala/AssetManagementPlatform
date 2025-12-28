@@ -2,6 +2,7 @@
 summary: List rent transactions
 tags:
   - RentTransactions
+security: []
 responses:
   200: "Array of rent transactions"
 ---

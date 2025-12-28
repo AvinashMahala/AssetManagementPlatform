@@ -2,6 +2,7 @@
 summary: Update a receipt template
 tags:
   - ReceiptTemplates
+security: []
 responses:
   200: "Updated template"
   404: "Template not found"

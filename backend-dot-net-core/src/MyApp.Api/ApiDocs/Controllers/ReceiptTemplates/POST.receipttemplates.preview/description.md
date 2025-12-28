@@ -2,6 +2,7 @@
 summary: Render a template preview
 tags:
   - ReceiptTemplates
+security: []
 responses:
   200: "Rendered HTML preview"
   404: "Template not found"

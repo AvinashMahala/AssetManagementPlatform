@@ -2,6 +2,7 @@
 summary: Delete a rent transaction
 tags:
   - RentTransactions
+security: []
 responses:
   204: "Deleted"
   404: "Not found"

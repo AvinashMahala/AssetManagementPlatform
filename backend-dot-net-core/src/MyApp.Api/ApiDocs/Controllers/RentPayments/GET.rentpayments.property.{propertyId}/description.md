@@ -2,6 +2,7 @@
 summary: List payments for a property
 tags:
   - RentPayments
+security: []
 responses:
   200: "Payments for property"
   400: "Invalid property id"

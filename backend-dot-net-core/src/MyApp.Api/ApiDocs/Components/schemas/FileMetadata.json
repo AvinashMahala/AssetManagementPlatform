@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "fileId": { "type": "string", "nullable": true },
+    "fileName": { "type": "string" },
+    "contentType": { "type": "string" },
+    "size": { "type": "integer", "format": "int64" },
+    "entityType": { "type": "string", "nullable": true },
+    "entityId": { "type": "string", "format": "uuid", "nullable": true },
+    "uploadedBy": { "type": "string", "nullable": true },
+    "createdAt": { "type": "string", "format": "date-time", "nullable": true },
+    "uploadedAt": { "type": "string", "format": "date-time", "nullable": true },
+    "version": { "type": "integer", "format": "int32", "nullable": true }
+  },
+  "additionalProperties": false
+}

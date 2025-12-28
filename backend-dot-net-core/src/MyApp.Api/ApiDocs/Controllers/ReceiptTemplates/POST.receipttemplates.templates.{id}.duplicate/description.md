@@ -2,6 +2,7 @@
 summary: Duplicate a template
 tags:
   - ReceiptTemplates
+security: []
 responses:
   201: "Duplicated template created"
 ---

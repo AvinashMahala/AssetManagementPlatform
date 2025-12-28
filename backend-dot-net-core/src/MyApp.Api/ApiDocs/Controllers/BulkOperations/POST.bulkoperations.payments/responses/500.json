@@ -2,6 +2,7 @@
   "description": "Server error - all payments failed",
   "content": {
     "application/json": {
+      "schema": { "$ref": "#/components/schemas/BulkOperationSummary" },
       "examples": {
         "default": { "value": { "processed": [], "errors": [{ "itemId": "22222222-2222-2222-2222-222222222222", "message": "Insufficient data" }] } }
       }

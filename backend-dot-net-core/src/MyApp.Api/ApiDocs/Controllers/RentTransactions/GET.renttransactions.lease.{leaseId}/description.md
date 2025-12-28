@@ -2,6 +2,7 @@
 summary: List transactions for a lease
 tags:
   - RentTransactions
+security: []
 responses:
   200: "Transactions for lease"
 ---

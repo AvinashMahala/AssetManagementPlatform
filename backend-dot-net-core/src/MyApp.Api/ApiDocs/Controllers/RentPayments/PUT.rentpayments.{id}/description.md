@@ -2,6 +2,7 @@
 summary: Update a rent payment
 tags:
   - RentPayments
+security: []
 responses:
   204: "Updated"
 ---

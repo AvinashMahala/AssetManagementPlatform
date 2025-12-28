@@ -2,6 +2,7 @@
 summary: Get a rent transaction by id
 tags:
   - RentTransactions
+security: []
 responses:
   200: "Transaction found"
   404: "Not found"

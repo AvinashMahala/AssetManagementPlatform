@@ -2,6 +2,7 @@
 summary: Create a rent payment
 tags:
   - RentPayments
+security: []
 responses:
   201: "Payment created"
 ---

@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "email": { "type": "string" },
+    "name": { "type": "string", "nullable": true },
+    "displayName": { "type": "string", "nullable": true },
+    "role": { "type": "string", "nullable": true }
+  },
+  "additionalProperties": false
+}

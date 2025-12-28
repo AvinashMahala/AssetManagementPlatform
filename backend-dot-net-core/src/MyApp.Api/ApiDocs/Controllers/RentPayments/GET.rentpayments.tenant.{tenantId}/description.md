@@ -2,6 +2,7 @@
 summary: List payments for a tenant
 tags:
   - RentPayments
+security: []
 responses:
   200: "Payments for tenant"
   400: "Invalid tenant id"

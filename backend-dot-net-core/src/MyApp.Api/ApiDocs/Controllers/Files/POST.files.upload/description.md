@@ -1,5 +1,6 @@
 ---
 tags: [Files]
+operationId: Files_Upload
 summary: Upload a file for an entity (multipart/form-data)
 ---
 

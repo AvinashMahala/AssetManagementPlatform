@@ -7,6 +7,7 @@ description: |
   The operation returns a `BulkOperationSummary` listing `processed` items and any `errors` encountered.
   Partial success will return status `207` with the same summary body; if all operations fail a `500` is returned with the summary.
 tags: [BulkOperations]
+operationId: BulkOperations_RentCollection
 responses:
   "200": { "description": "OK" }
   "207": { "description": "Partial success (multi-status)" }

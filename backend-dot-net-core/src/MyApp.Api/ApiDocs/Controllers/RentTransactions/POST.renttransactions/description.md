@@ -2,6 +2,7 @@
 summary: Create a rent transaction
 tags:
   - RentTransactions
+security: []
 responses:
   201: "Transaction created"
 ---

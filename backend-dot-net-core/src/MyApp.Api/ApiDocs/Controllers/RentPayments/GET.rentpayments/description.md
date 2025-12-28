@@ -2,6 +2,7 @@
 summary: List rent payments
 tags:
   - RentPayments
+security: []
 responses:
   200: "Array of rent payments"
 ---

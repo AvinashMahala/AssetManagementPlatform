@@ -2,6 +2,7 @@
 summary: List rent payments for a lease
 tags:
   - RentPayments
+security: []
 responses:
   200: "Payments for lease"
 ---

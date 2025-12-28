@@ -2,6 +2,7 @@
 summary: Update a rent transaction
 tags:
   - RentTransactions
+security: []
 responses:
   204: "Updated"
 ---
