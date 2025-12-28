@@ -25,18 +25,27 @@ namespace MyApp.Api.Swagger
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
             var controller = context.MethodInfo.DeclaringType?.Name?.Replace("Controller", "") ?? string.Empty;
-            var action = context.MethodInfo.Name;
-            var httpMethod = context.ApiDescription.HttpMethod?.ToLowerInvariant() ?? "get";
+            var httpMethod = context.ApiDescription.HttpMethod?.ToUpperInvariant() ?? "GET";
 
             var controllerDir = Path.Combine(_root, controller);
 
-            // Primary convention: per-endpoint folder with `description.md` (no legacy fallback)
+            // Primary convention (route-based): `{HTTPMETHOD}.{normalized-route}` where normalized-route is the relative
+            // path with `api/` stripped, slashes replaced by dots, and route constraints removed: e.g., `GET.properties.{id}`
             string? endpointDir = null;
             if (Directory.Exists(controllerDir))
             {
-                var allDirs = Directory.GetDirectories(controllerDir, "*", SearchOption.AllDirectories);
-                endpointDir = allDirs.FirstOrDefault(d => string.Equals(Path.GetFileName(d), $"{action}.{httpMethod}", StringComparison.InvariantCultureIgnoreCase))
-                              ?? allDirs.FirstOrDefault(d => Path.GetFileName(d).IndexOf(action, StringComparison.InvariantCultureIgnoreCase) >= 0);
+                // Build normalized candidate from ApiDescription.RelativePath
+                var rel = context.ApiDescription.RelativePath ?? string.Empty;
+                var relOnly = rel.Split('?')[0].Trim('/');
+                if (relOnly.StartsWith("api/", StringComparison.InvariantCultureIgnoreCase)) relOnly = relOnly.Substring(4);
+                // Remove route constraints like {id:guid} -> {id}
+                relOnly = System.Text.RegularExpressions.Regex.Replace(relOnly, "\\{([^:}]+):[^}]+\\}", "{$1}");
+                var normalized = relOnly.Replace('/', '.');
+
+                var candidate = $"{httpMethod}.{normalized}";
+                // Look up exact match in the controller's ApiDocs folder (case-insensitive)
+                var topDirs = Directory.GetDirectories(controllerDir, "*", SearchOption.TopDirectoryOnly);
+                endpointDir = topDirs.FirstOrDefault(d => string.Equals(Path.GetFileName(d), candidate, StringComparison.InvariantCultureIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(endpointDir))
@@ -208,59 +217,7 @@ namespace MyApp.Api.Swagger
                 // ignore any file system errors
             }
 
-            // Legacy single-file `{Action}.{httpMethod}.json` (fallback)
-            var jsonFile = Path.Combine(controllerDir, $"{action}.{httpMethod}.json");
-            if (File.Exists(jsonFile))
-            {
-                var json = File.ReadAllText(jsonFile);
-                using var doc = JsonDocument.Parse(json);
-                var root = doc.RootElement;
 
-                if (root.TryGetProperty("summary", out var s)) operation.Summary = s.GetString() ?? operation.Summary;
-                if (root.TryGetProperty("description", out var d)) operation.Description = d.GetString() ?? operation.Description;
-
-                // Responses (supports examples and multiple named examples)
-                if (root.TryGetProperty("responses", out var responses)) ApplyResponsesFromJson(responses, operation.Responses);
-
-                // Request body examples
-                if (root.TryGetProperty("requestBody", out var requestBody))
-                {
-                    if (requestBody.TryGetProperty("content", out var rbContent))
-                    {
-                        foreach (var media in rbContent.EnumerateObject())
-                        {
-                            var mediaType = media.Name;
-                            var mediaObj = new OpenApiMediaType();
-                            var mediaVal = media.Value;
-
-                            if (mediaVal.TryGetProperty("example", out var example))
-                            {
-                                mediaObj.Example = JsonToOpenApiAnyConverter.Convert(example);
-                            }
-
-                            if (mediaVal.TryGetProperty("examples", out var examples))
-                            {
-                                var dict = new Dictionary<string, OpenApiExample>();
-                                foreach (var ex in examples.EnumerateObject())
-                                {
-                                    var exName = ex.Name;
-                                    var exObj = ex.Value;
-                                    var openApiExample = new OpenApiExample();
-                                    if (exObj.TryGetProperty("summary", out var es)) openApiExample.Summary = es.GetString();
-                                    if (exObj.TryGetProperty("value", out var ev)) openApiExample.Value = JsonToOpenApiAnyConverter.Convert(ev);
-                                    dict[exName] = openApiExample;
-                                }
-
-                                foreach (var kv in dict) mediaObj.Extensions.Add($"x-example-{kv.Key}", new Microsoft.OpenApi.Any.OpenApiString(kv.Value.Value?.ToString() ?? kv.Value.Summary ?? ""));
-                                // Note: OpenApiMediaType.Examples is not available in the OpenAPI v3 types here; we store simple extensions per example to allow SwaggerUI to pick them up via customizations if needed.
-                            }
-
-                            operation.RequestBody ??= new OpenApiRequestBody();
-                            operation.RequestBody.Content[mediaType] = mediaObj;
-                        }
-                    }
-                }
-            }
 
         }
 

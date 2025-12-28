@@ -5,4 +5,6 @@ description: |
 tags: [Properties]
 ---
 
+**Endpoint:** `PATCH /api/properties/{id}/status`
+
 Returns `204` on success, `400` for bad request (missing status) and `404` if the property does not exist.
