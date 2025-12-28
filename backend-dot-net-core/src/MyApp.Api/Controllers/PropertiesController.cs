@@ -9,6 +9,7 @@ namespace MyApp.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/properties")]
 [Route("api/properties")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class PropertiesController : ControllerBase
 {
     private readonly IPropertyService _service;

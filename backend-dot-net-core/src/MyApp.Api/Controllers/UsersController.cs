@@ -9,6 +9,7 @@ namespace MyApp.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/users")]
 [Route("api/users")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class UsersController : ControllerBase
 {
     private readonly IUserAdminService _service;

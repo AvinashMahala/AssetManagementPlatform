@@ -9,6 +9,7 @@ namespace MyApp.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/receipttemplates")]
 [Route("api/receipttemplates")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class ReceiptTemplatesController : ControllerBase
 {
     private readonly IReceiptTemplateService _service;

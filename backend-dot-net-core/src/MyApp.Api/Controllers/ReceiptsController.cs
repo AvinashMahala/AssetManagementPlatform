@@ -10,6 +10,7 @@ namespace MyApp.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/receipts")]
 [Route("api/receipts")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class ReceiptsController : ControllerBase
 {
     private readonly IReceiptService _service;

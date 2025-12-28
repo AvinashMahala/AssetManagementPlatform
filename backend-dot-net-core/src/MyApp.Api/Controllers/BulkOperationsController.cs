@@ -11,6 +11,7 @@ namespace MyApp.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/bulkoperations")]
 [Route("api/bulkoperations")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class BulkOperationsController : ControllerBase
 {
     private readonly IBulkOperationsService _service;

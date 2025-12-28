@@ -9,6 +9,7 @@ namespace MyApp.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/unitutilities")]
 [Route("api/unitutilities")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class UnitUtilitiesController : ControllerBase
 {
     private readonly IUnitUtilityService _service;

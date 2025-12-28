@@ -18,6 +18,7 @@ public class AuthController : ControllerBase
     public AuthController(IAuthService service) => _service = service;
 
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest req)
     {
         try
@@ -32,6 +33,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
         try
@@ -46,6 +48,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
+    [AllowAnonymous]
     public async Task<IActionResult> Refresh([FromBody] RefreshRequest req)
     {
         try

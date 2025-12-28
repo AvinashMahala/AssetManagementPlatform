@@ -10,6 +10,7 @@ namespace MyApp.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/renttransactions")]
 [Route("api/renttransactions")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class RentTransactionsController : ControllerBase
 {
     private readonly IRentTransactionService _service;

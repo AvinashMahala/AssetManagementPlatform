@@ -6,6 +6,7 @@ namespace MyApp.Api.Controllers;
 
 [ApiController]
 [Route("api/properties/{propertyId:guid}/receipt-template")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class PropertyReceiptTemplateController : ControllerBase
 {
     private readonly IPropertyReceiptTemplateService _service;
