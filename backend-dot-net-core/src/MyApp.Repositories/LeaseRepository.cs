@@ -17,6 +17,9 @@ public class LeaseRepository : ILeaseRepository
 
     public Task<Lease?> GetByIdAsync(Guid id) => _db.Leases.FirstOrDefaultAsync(l => l.Id == id);
 
+    public async Task<IEnumerable<Lease>> ListByUnitAndPeriodAsync(Guid unitId, DateTime start, DateTime end)
+        => await _db.Leases.Where(l => l.UnitId == unitId && l.StartDate <= end && (l.EndDate == null || l.EndDate >= start)).ToListAsync();
+
     public async Task AddAsync(Lease lease)
     {
         await _db.Leases.AddAsync(lease);

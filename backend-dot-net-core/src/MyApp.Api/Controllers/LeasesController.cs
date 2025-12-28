@@ -6,6 +6,7 @@ namespace MyApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class LeasesController : ControllerBase
 {
     private readonly ILeaseService _service;

@@ -10,5 +10,6 @@ public partial interface IReceiptService
     Task<IEnumerable<Receipt>> ListAsync();
     Task<Receipt?> GetByIdAsync(Guid id);
     Task<Receipt> GenerateReceiptForPaymentAsync(Guid rentPaymentId, decimal amount);
+    Task<Receipt> GenerateReceiptForTransactionAsync(Guid rentTransactionId, decimal amount);
     Task<byte[]?> DownloadReceiptPdfAsync(Guid id);
 }

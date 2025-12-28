@@ -17,6 +17,12 @@ public class ReceiptRepository : IReceiptRepository
 
     public Task<Receipt?> GetByIdAsync(Guid id) => _db.Set<Receipt>().FirstOrDefaultAsync(r => r.Id == id);
 
+    public async Task<IEnumerable<Receipt>> ListByRentTransactionAsync(Guid rentTransactionId)
+        => await _db.Set<Receipt>().Where(r => r.RentTransactionId == rentTransactionId).ToListAsync();
+
+    public async Task<IEnumerable<Receipt>> ListByRentPaymentAsync(Guid rentPaymentId)
+        => await _db.Set<Receipt>().Where(r => r.RentPaymentId == rentPaymentId).ToListAsync();
+
     public async Task<Receipt> CreateAsync(Receipt r)
     {
         if (r.Id == Guid.Empty) r.Id = Guid.NewGuid();

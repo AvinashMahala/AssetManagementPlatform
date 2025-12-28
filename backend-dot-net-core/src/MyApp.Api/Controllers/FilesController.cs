@@ -29,6 +29,7 @@ public class FilesController : ControllerBase
 
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> Upload([FromForm] FileUploadRequest request)
     {
         var file = request.File;
@@ -64,6 +65,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _service.DeleteAsync(id);
@@ -71,6 +73,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpGet]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? entityType = null, [FromQuery] string? entityId = null)
     {
         // validate and sanitize
@@ -105,6 +108,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> UpdateMetadata(Guid id, [FromBody] object body)
     {
         string? fileName = (body as dynamic)?.fileName;

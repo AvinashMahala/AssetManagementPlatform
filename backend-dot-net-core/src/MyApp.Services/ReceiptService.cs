@@ -70,6 +70,23 @@ public class ReceiptService : IReceiptService
         return created;
     }
 
+    public async Task<Receipt> GenerateReceiptForTransactionAsync(Guid rentTransactionId, decimal amount)
+    {
+        var r = new Receipt { RentTransactionId = rentTransactionId, Amount = amount };
+        var created = await _repo.CreateAsync(r);
+
+        using var scope = _scopes.CreateScope();
+        var templateService = scope.ServiceProvider.GetRequiredService<IReceiptTemplateService>();
+        var templates = await templateService.ListAsync();
+        var template = templates != null ? System.Linq.Enumerable.FirstOrDefault(templates, t => t.IsDefault) ?? System.Linq.Enumerable.FirstOrDefault(templates) : null;
+
+        var pdf = RenderTemplateBytes(created, null, template);
+        var storageId = await _storage.StoreAsync(pdf, $"receipt-{created.Id}.pdf");
+        created.PdfStorageId = storageId;
+        await _repo.UpdateAsync(created);
+        return created;
+    }
+
     public async Task<byte[]?> DownloadReceiptPdfAsync(Guid id)
     {
         var r = await _repo.GetByIdAsync(id);

@@ -26,6 +26,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRentTransactionService, RentTransactionService>();
         services.AddScoped<IReceiptService, ReceiptService>();
 
+        // Tenant services
+        services.AddScoped<ITenantService, TenantService>();
+        services.AddScoped<ITenantDocumentService, TenantDocumentService>();
+        services.AddScoped<IUnitService, UnitService>();
+        services.AddScoped<IUnitTenantService, UnitTenantService>();
+        services.AddScoped<IExpenseService, ExpenseService>();
+        services.AddScoped<IBulkOperationsService, BulkOperationsService>();
+        services.AddScoped<ICommunicationService, CommunicationService>();
+        services.AddScoped<IUserAdminService, UserAdminService>();
+        services.AddScoped<IUnitUtilityService, UnitUtilityService>();
+        services.AddScoped<IMeterService, MeterService>();
+        services.AddScoped<IMeterReadingService, MeterReadingService>();
+
         // Event bus: prefer RabbitMQ when configured, otherwise use in-memory for dev/testing
         var rabbitHost = configuration["RabbitMq:Host"];
         if (!string.IsNullOrEmpty(rabbitHost))

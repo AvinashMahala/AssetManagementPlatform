@@ -23,4 +23,12 @@ public class AppDbContext : DbContext
     public DbSet<MyApp.Models.RentPayment> RentPayments => Set<MyApp.Models.RentPayment>();
     public DbSet<MyApp.Models.RentTransaction> RentTransactions => Set<MyApp.Models.RentTransaction>();
     public DbSet<MyApp.Models.Receipt> Receipts => Set<MyApp.Models.Receipt>();
+    public DbSet<MyApp.Models.Tenant> Tenants => Set<MyApp.Models.Tenant>();
+    public DbSet<MyApp.Models.TenantDocument> TenantDocuments => Set<MyApp.Models.TenantDocument>();
+    public DbSet<MyApp.Models.Unit> Units => Set<MyApp.Models.Unit>();
+    public DbSet<MyApp.Models.UnitTenant> UnitTenants => Set<MyApp.Models.UnitTenant>();
+    public DbSet<MyApp.Models.Expense> Expenses => Set<MyApp.Models.Expense>();
+    public DbSet<MyApp.Models.UnitUtility> UnitUtilities => Set<MyApp.Models.UnitUtility>();
+    public DbSet<MyApp.Models.Meter> Meters => Set<MyApp.Models.Meter>();
+    public DbSet<MyApp.Models.MeterReading> MeterReadings => Set<MyApp.Models.MeterReading>();
 }

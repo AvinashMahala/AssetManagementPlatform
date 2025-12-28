@@ -20,6 +20,7 @@ public class UserRepository : IUserRepository
 
     public async Task AddAsync(User user)
     {
+        if (user.Id == Guid.Empty) user.Id = Guid.NewGuid();
         await _db.Set<User>().AddAsync(user);
         await _db.SaveChangesAsync();
     }
@@ -27,6 +28,16 @@ public class UserRepository : IUserRepository
     public async Task UpdateAsync(User user)
     {
         _db.Set<User>().Update(user);
+        await _db.SaveChangesAsync();
+    }
+
+    public Task<IEnumerable<User>> GetAllAsync() => _db.Set<User>().ToListAsync();
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var u = await FindByIdAsync(id);
+        if (u is null) return;
+        _db.Set<User>().Remove(u);
         await _db.SaveChangesAsync();
     }
 }

@@ -44,7 +44,24 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
 
 builder.Services.AddAuthorization();
 
+// Add validation and use problem details for consistent error responses
 builder.Services.AddControllers().AddNewtonsoftJson();
+
+// Register FluentValidation and configure automatic 400 responses to match Express validation behavior
+// Register FluentValidation validators
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<MyApp.Api.Controllers.TenantsController>();
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(kvp => kvp.Value.Errors.Count > 0)
+            .Select(kvp => new { field = kvp.Key, errors = kvp.Value.Errors.Select(e => e.ErrorMessage) });
+        var payload = new { success = false, errors = errors };
+        return new BadRequestObjectResult(payload);
+    };
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -103,6 +120,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+// Conditional auth middleware must run after authentication so it can call AuthenticateAsync if header present
+app.UseMiddleware<MyApp.Api.Middleware.ConditionalAuthMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

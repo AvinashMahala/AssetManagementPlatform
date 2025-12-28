@@ -38,7 +38,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRentPaymentRepository, RentPaymentRepository>();
         services.AddScoped<IRentTransactionRepository, RentTransactionRepository>();
         services.AddScoped<IReceiptRepository, ReceiptRepository>();
-
+        services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<ITenantDocumentRepository, TenantDocumentRepository>();
+        services.AddScoped<IUnitRepository, UnitRepository>();
+        services.AddScoped<IUnitTenantRepository, UnitTenantRepository>();
+        services.AddScoped<IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<IUnitUtilityRepository, UnitUtilityRepository>();
+        services.AddScoped<IMeterRepository, MeterRepository>();
+        services.AddScoped<IMeterReadingRepository, MeterReadingRepository>();
         // Ensure LeaseRepository is registered (already wired above) - other repositories will be added per-feature
 
         // Make DB accessible to integration tests via scoped provider
