@@ -30,30 +30,152 @@ namespace MyApp.Api.Swagger
 
             var controllerDir = Path.Combine(_root, controller);
 
-            // Primary convention: {Action}.{httpmethod}.md/.json
-            var mdFile = Path.Combine(controllerDir, $"{action}.{httpMethod}.md");
-            mdFile = FindFallbackFile(mdFile, controllerDir, ".md", action, httpMethod);
-            if (File.Exists(mdFile))
+            // Primary convention: per-endpoint folder with `description.md` (no legacy fallback)
+            string? endpointDir = null;
+            if (Directory.Exists(controllerDir))
             {
-                var md = File.ReadAllText(mdFile);
+                var allDirs = Directory.GetDirectories(controllerDir, "*", SearchOption.AllDirectories);
+                endpointDir = allDirs.FirstOrDefault(d => string.Equals(Path.GetFileName(d), $"{action}.{httpMethod}", StringComparison.InvariantCultureIgnoreCase))
+                              ?? allDirs.FirstOrDefault(d => Path.GetFileName(d).IndexOf(action, StringComparison.InvariantCultureIgnoreCase) >= 0);
+            }
 
-                // Parse YAML front matter if present
-                var (frontMatterJson, body) = ExtractFrontMatter(md);
-                if (frontMatterJson != null)
+            if (!string.IsNullOrEmpty(endpointDir))
+            {
+                var descPath = Path.Combine(endpointDir, "description.md");
+                if (File.Exists(descPath))
                 {
-                    ApplyYamlFrontMatterToOperation(frontMatterJson, operation);
-                    // Use body (after front matter) as description if not provided in front matter or as additional text
-                    operation.Description = string.IsNullOrWhiteSpace(operation.Description) ? body : operation.Description + "\n\n" + body;
-                }
-                else
-                {
-                    operation.Summary = ExtractSummary(md) ?? operation.Summary;
-                    operation.Description = md;
+                    var md = File.ReadAllText(descPath);
+                    var (frontMatterJson, body) = ExtractFrontMatter(md);
+                    if (frontMatterJson != null)
+                    {
+                        ApplyYamlFrontMatterToOperation(frontMatterJson, operation);
+                        operation.Description = string.IsNullOrWhiteSpace(operation.Description) ? body : operation.Description + "\n\n" + body;
+                    }
+                    else
+                    {
+                        operation.Summary = ExtractSummary(md) ?? operation.Summary;
+                        operation.Description = md;
+                    }
                 }
             }
 
+            // Look for request/response fragments inside the endpoint folder (canonical layout)
+            try
+            {
+                // endpointDir determined above (we already set endpointDir when reading description.md)
+                if (!string.IsNullOrEmpty(endpointDir))
+                {
+                    // request.json
+                    var requestPath = Path.Combine(endpointDir, "request.json");
+                    if (File.Exists(requestPath))
+                    {
+                        var json = File.ReadAllText(requestPath);
+                        using var doc = JsonDocument.Parse(json);
+                        var root = doc.RootElement;
+
+                        // Accept either a full requestBody-like object (with content) or a content map
+                        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("content", out var contentEl))
+                        {
+                            ApplyRequestContentFromJson(contentEl, operation);
+                        }
+                        else if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("example", out var exampleEl))
+                        {
+                            operation.RequestBody ??= new OpenApiRequestBody();
+                            var exAny = JsonToOpenApiAnyConverter.Convert(exampleEl);
+
+                            // Preserve existing schema for application/json if present
+                            OpenApiSchema? existingSchema = null;
+                            if (operation.RequestBody.Content.TryGetValue("application/json", out var existing)) existingSchema = existing.Schema;
+
+                            var media = new OpenApiMediaType { Example = exAny, Schema = existingSchema ?? new OpenApiSchema() };
+                            // Mirror into schema example as well for better compatibility
+                            media.Schema.Example = exAny;
+                            operation.RequestBody.Content["application/json"] = media;
+                            // If a request example exists, mark request body required so UI shows it consistently
+                            operation.RequestBody.Required = true;
+                            // Also ensure other json-like content types also have the example (so default media selection doesn't hide it)
+                            foreach (var kv in operation.RequestBody.Content)
+                            {
+                                if (string.Equals(kv.Key, "application/json", StringComparison.InvariantCultureIgnoreCase)) continue;
+                                if (!kv.Key.Contains("json", StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                                kv.Value.Example ??= exAny;
+                                kv.Value.Schema ??= new OpenApiSchema();
+                                kv.Value.Schema.Example ??= exAny;
+                            }
+                        }
+                    }
+
+                    // responses/*.json
+                    var responsesDir = Path.Combine(endpointDir, "responses");
+                    if (Directory.Exists(responsesDir))
+                    {
+                        foreach (var f in Directory.GetFiles(responsesDir, "*.json"))
+                        {
+                            var fileName = Path.GetFileNameWithoutExtension(f);
+                            var status = fileName; // e.g., '200', '404', 'default'
+                            try
+                            {
+                                var txt = File.ReadAllText(f);
+                                using var doc = JsonDocument.Parse(txt);
+                                var root = doc.RootElement;
+
+                                var respObj = new OpenApiResponse();
+                                if (root.TryGetProperty("description", out var rd)) respObj.Description = rd.GetString() ?? string.Empty;
+
+                                if (root.TryGetProperty("content", out var contentNode))
+                                {
+                                    foreach (var media in contentNode.EnumerateObject())
+                                    {
+                                        var mediaType = media.Name;
+                                        var mediaObj = new OpenApiMediaType();
+                                        var mediaVal = media.Value;
+
+                                        if (mediaVal.TryGetProperty("example", out var example))
+                                        {
+                                            mediaObj.Example = JsonToOpenApiAnyConverter.Convert(example);
+                                        }
+
+                                        if (mediaVal.TryGetProperty("examples", out var examples))
+                                        {
+                                            IOpenApiAny? firstExample = null;
+                                            foreach (var ex in examples.EnumerateObject())
+                                            {
+                                                var exName = ex.Name;
+                                                var exObj = ex.Value;
+                                                if (exObj.TryGetProperty("value", out var ev))
+                                                {
+                                                    var converted = JsonToOpenApiAnyConverter.Convert(ev);
+                                                    // Preserve previous extension behavior for backwards-compat
+                                                    mediaObj.Extensions[$"x-example-{exName}"] = converted is IOpenApiPrimitive p ? new OpenApiString(p.ToString()) : new OpenApiString(ev.GetRawText());
+                                                    if (firstExample == null) firstExample = converted;
+                                                    if (exName.Equals("default", StringComparison.InvariantCultureIgnoreCase)) firstExample = converted;
+                                                }
+                                            }
+                                            if (firstExample != null) mediaObj.Example = firstExample;
+                                        }
+
+                                        respObj.Content[mediaType] = mediaObj;
+                                    }
+                                }
+
+                                operation.Responses[status] = respObj;
+                            }
+                            catch
+                            {
+                                // ignore malformed response file
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore any file system errors
+            }
+
+            // Legacy single-file `{Action}.{httpMethod}.json` (fallback)
             var jsonFile = Path.Combine(controllerDir, $"{action}.{httpMethod}.json");
-            jsonFile = FindFallbackFile(jsonFile, controllerDir, ".json", action, httpMethod);
             if (File.Exists(jsonFile))
             {
                 var json = File.ReadAllText(jsonFile);
@@ -126,33 +248,7 @@ namespace MyApp.Api.Swagger
             return null;
         }
 
-        private string FindFallbackFile(string primaryPath, string controllerDir, string ext, string action, string httpMethod)
-        {
-            if (File.Exists(primaryPath)) return primaryPath;
-            try
-            {
-                if (!Directory.Exists(controllerDir)) return primaryPath;
-                // Look for any file ending with .{httpMethod}{ext}
-                var pattern = $"*.{httpMethod}{ext}";
-                var candidates = Directory.GetFiles(controllerDir, pattern);
-                if (candidates.Length == 0) return primaryPath;
 
-                // Prefer file that contains the action name
-                var actionMatch = candidates.FirstOrDefault(c => Path.GetFileName(c).IndexOf(action, StringComparison.InvariantCultureIgnoreCase) >= 0);
-                if (actionMatch != null) return actionMatch;
-
-                // Otherwise prefer files that look like they refer to an id parameter
-                var idMatch = candidates.FirstOrDefault(c => Path.GetFileName(c).IndexOf("id", StringComparison.InvariantCultureIgnoreCase) >= 0);
-                if (idMatch != null) return idMatch;
-
-                // Otherwise just return first candidate
-                return candidates[0];
-            }
-            catch
-            {
-                return primaryPath;
-            }
-        }
 
         private (string? frontMatterJson, string body) ExtractFrontMatter(string md)
         {
@@ -259,6 +355,74 @@ namespace MyApp.Api.Swagger
                 }
 
                 responsesDict[status] = respObj;
+            }
+        }
+
+        private void ApplyRequestContentFromJson(JsonElement contentEl, OpenApiOperation operation)
+        {
+            foreach (var media in contentEl.EnumerateObject())
+            {
+                var mediaType = media.Name;
+                var mediaVal = media.Value;
+                var mediaObj = new OpenApiMediaType();
+
+                // Preserve any existing schema on the operation's request media so we don't lose $ref information
+                if (operation.RequestBody?.Content != null && operation.RequestBody.Content.TryGetValue(mediaType, out var existingMedia))
+                {
+                    mediaObj.Schema = existingMedia.Schema;
+                }
+
+                if (mediaVal.TryGetProperty("example", out var example))
+                {
+                    var exAny = JsonToOpenApiAnyConverter.Convert(example);
+                    mediaObj.Example = exAny;
+                    // Also set schema.example to increase compatibility with Swagger UI
+                    if (mediaObj.Schema == null) mediaObj.Schema = new OpenApiSchema();
+                    mediaObj.Schema.Example = exAny;
+                }
+
+                if (mediaVal.TryGetProperty("examples", out var examples))
+                {
+                    IOpenApiAny? firstExample = null;
+                    foreach (var ex in examples.EnumerateObject())
+                    {
+                        var exName = ex.Name;
+                        var exObj = ex.Value;
+                        if (exObj.TryGetProperty("value", out var ev))
+                        {
+                            var converted = JsonToOpenApiAnyConverter.Convert(ev);
+                            // Preserve extension for backward compatibility
+                            mediaObj.Extensions[$"x-example-{exName}"] = converted is IOpenApiPrimitive p ? new OpenApiString(p.ToString()) : new OpenApiString(ev.GetRawText());
+                            if (firstExample == null) firstExample = converted;
+                            if (exName.Equals("default", StringComparison.InvariantCultureIgnoreCase)) firstExample = converted;
+                        }
+                    }
+                    if (firstExample != null)
+                    {
+                        mediaObj.Example = firstExample;
+                        if (mediaObj.Schema == null) mediaObj.Schema = new OpenApiSchema();
+                        mediaObj.Schema.Example = firstExample;
+                    }
+                }
+
+                operation.RequestBody ??= new OpenApiRequestBody();
+                operation.RequestBody.Content[mediaType] = mediaObj;
+                // If we've attached an example to the request content, prefer showing it in the UI
+                if (mediaObj.Example != null)
+                {
+                    operation.RequestBody.Required = true;
+                    // Propagate the example to other JSON-like content types so UI shows it regardless of selected media
+                    foreach (var kv in operation.RequestBody.Content)
+                    {
+                        if (string.Equals(kv.Key, mediaType, StringComparison.InvariantCultureIgnoreCase)) continue;
+                        if (!kv.Key.Contains("json", StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                        kv.Value.Example ??= mediaObj.Example;
+                        kv.Value.Schema ??= new OpenApiSchema();
+                        if (mediaObj.Schema?.Example != null)
+                            kv.Value.Schema.Example ??= mediaObj.Schema.Example;
+                    }
+                }
             }
         }
     }

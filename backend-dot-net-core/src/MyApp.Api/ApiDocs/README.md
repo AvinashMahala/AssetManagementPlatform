@@ -1,11 +1,13 @@
 This folder contains external per-endpoint documentation used by Swagger.
 
-Naming convention:
-- Primary: ApiDocs/{Controller}/{Action}.{httpmethod}.md (description)
-- Primary: ApiDocs/{Controller}/{Action}.{httpmethod}.json (structured metadata: responses/examples)
+Naming convention (recommended):
+- Per-endpoint folder: ApiDocs/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Properties/Get.GET/`) — put all files related to that endpoint inside the folder: `description.md`, `request.json`, `responses/<status>.json`, etc.
+- **Canonical layout only**: ApiDocs must use per-endpoint folders: ApiDocs/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Properties/Get.GET/`) containing `description.md`, `request.json`, and `responses/<status>.json`.
 
 Fallback behavior:
-- The operation filter will also accept any file that ends with `.{httpmethod}.md` or `.{httpmethod}.json` in the controller folder and will prefer files that contain the action name or `id` in the filename. This makes it OK to use a more human-friendly filename (e.g., `GetById.GET.md`) even if the controller method is named `Get`.
+- **No backward compatibility**: legacy single-file sidecars such as `Action.METHOD.json` or controller-level `Action.METHOD.md` are **not** supported. Please follow the `ApiDocs/BLUEPRINT.md` conventions and use the migration script to upgrade legacy files.
+
+See `ApiDocs/BLUEPRINT.md` for a full blueprint and migration steps.
 
 YAML front matter (new):
 - `.md` files may contain YAML front matter at the top between `---` lines. Recognized fields: `summary`, `description`, `tags` (array), and `responses` (same structure as `.json` sidecars). The body after the front matter is used as the long-form description.

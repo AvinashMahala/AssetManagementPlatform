@@ -1,0 +1,19 @@
+﻿{
+    "description": "Created - returns created PropertyDto",
+    "content": {
+        "application/json": {
+            "examples": {
+                "created": {
+                    "summary": "Created property",
+                    "value": {
+                        "id": "a1111111-2222-3333-4444-555555555555",
+                        "name": "Greenwood Apartments",
+                        "address": "123 Green St, Springfield",
+                        "ownerId": "e7a1d2f7-3c4b-4f76-9f8f-3a5c6f9e4b2c",
+                        "status": "active"
+                    }
+                }
+            }
+        }
+    }
+}

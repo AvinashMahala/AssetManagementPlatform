@@ -1,3 +1,5 @@
+**Endpoint:** `GET /api/properties/{id}`
+
 **Summary**: Get a property by id
 
 **Description**:

@@ -1,0 +1,20 @@
+﻿{
+    "content": {
+        "application/json": {
+            "examples": {
+                "set-active": {
+                    "summary": "Set status to active",
+                    "value": {
+                        "status": "active"
+                    }
+                },
+                "set-inactive": {
+                    "summary": "Set status to inactive",
+                    "value": {
+                        "status": "inactive"
+                    }
+                }
+            }
+        }
+    }
+}
