@@ -164,7 +164,7 @@ def create_all_tables(conn):
     """Create all tables from schema files"""
     print_step("Creating database schema...")
     
-    schema_dir = 'scripts/schema'
+    schema_dir = 'db/schema'
     if not os.path.exists(schema_dir):
         print_error(f"Schema directory not found: {schema_dir}")
         return False

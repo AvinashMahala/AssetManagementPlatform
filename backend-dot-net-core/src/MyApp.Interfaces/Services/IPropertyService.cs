@@ -1,0 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MyApp.Models;
+
+namespace MyApp.Interfaces;
+
+public partial interface IPropertyService
+{
+    Task<IEnumerable<Property>> ListAsync();
+    Task<Property?> GetByIdAsync(Guid id);
+    Task<Property> CreateAsync(CreatePropertyRequest req);
+    Task UpdateAsync(Guid id, UpdatePropertyRequest req);
+    Task DeleteAsync(Guid id);
+    Task SetTemplateAsync(Guid id, string templateJson);
+    Task<string?> GetTemplateAsync(Guid id);
+    Task RemoveTemplateAsync(Guid id);
+}
