@@ -1,0 +1,10 @@
+{
+  "description": "Unauthorized",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Invalid refresh token." } }
+      }
+    }
+  }
+}

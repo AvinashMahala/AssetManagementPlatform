@@ -1,0 +1,15 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": {
+          "value": {
+            "accessToken": "eyJhbGciOi...",
+            "refreshToken": "rt_00000000"
+          }
+        }
+      }
+    }
+  }
+}
