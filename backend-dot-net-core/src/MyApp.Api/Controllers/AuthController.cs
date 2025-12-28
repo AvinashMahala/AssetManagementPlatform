@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
         try
         {
             var tokens = await _service.LoginAsync(req);
-            return Ok(new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken });
+            return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
         }
         catch (InvalidOperationException ex)
         {
@@ -54,7 +54,7 @@ public class AuthController : ControllerBase
         try
         {
             var tokens = await _service.RefreshTokenAsync(req);
-            return Ok(new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken });
+            return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
         }
         catch (InvalidOperationException ex)
         {

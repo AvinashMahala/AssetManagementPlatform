@@ -60,7 +60,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(corsOriginsArray)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // only when you need cookies/auth
     });
 });
 

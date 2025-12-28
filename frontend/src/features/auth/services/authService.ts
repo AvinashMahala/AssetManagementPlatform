@@ -30,6 +30,10 @@ class AuthService {
     if (!response.success || !response.data) {
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Login failed' });
     }
+    // Ensure backend returned tokens
+    if (!response.data.tokens || !response.data.tokens.accessToken) {
+      throw new ApiException({ code: 'INVALID_RESPONSE', message: 'Authentication response is missing tokens' });
+    }
     return response.data;
   }
 
@@ -139,6 +143,11 @@ class AuthService {
       console.error('[authService.googleAuth] Failed:', response.error);
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Google authentication failed' });
     }
+    // Ensure backend returned tokens
+    if (!response.data.tokens || !response.data.tokens.accessToken) {
+      console.error('[authService.googleAuth] Missing tokens in response', response.data);
+      throw new ApiException({ code: 'INVALID_RESPONSE', message: 'Google authentication response is missing tokens' });
+    }
     return response.data;
   }
 
@@ -147,6 +156,9 @@ class AuthService {
     const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh-token', { refreshToken });
     if (!response.success || !response.data) {
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Token refresh failed' });
+    }
+    if (!response.data.tokens || !response.data.tokens.accessToken) {
+      throw new ApiException({ code: 'INVALID_RESPONSE', message: 'Refresh token response is missing tokens' });
     }
     return response.data;
   }

@@ -189,12 +189,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     try {
       const authResponse = await authService.login(credentials);
-      setUser(authResponse.user);
-      setIsAuthenticated(true);
+
+      // Defensive checks in case backend returns an unexpected shape
+      if (!authResponse || !authResponse.tokens || !authResponse.tokens.accessToken) {
+        const message = 'Authentication tokens missing from response';
+        showError('Login Failed', message);
+        return { success: false, error: message };
+      }
+
       apiClient.setAuthToken(authResponse.tokens.accessToken);
-      // Store tokens and user data in sessionStorage
+      // Store refresh token
       sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
-      sessionStorage.setItem('user', JSON.stringify(authResponse.user));
+
+      // If backend returned user directly, use it; otherwise fetch profile
+      if (authResponse.user) {
+        setUser(authResponse.user);
+        sessionStorage.setItem('user', JSON.stringify(authResponse.user));
+      } else {
+        try {
+          const userData = await authService.getProfile();
+          setUser(userData);
+          sessionStorage.setItem('user', JSON.stringify(userData));
+        } catch (err) {
+          // Non-fatal: token is valid but profile fetch failed
+          console.warn('Login succeeded but profile fetch failed', err);
+        }
+      }
+
+      setIsAuthenticated(true);
       return { success: true };
     } catch (error: any) {
       const errorMessage = error?.message || 'Login failed';
@@ -331,6 +353,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const googleAuth = async (profile: GoogleUserProfile): Promise<boolean> => {
     try {
       const authResponse = await authService.googleAuth(profile);
+      if (!authResponse || !authResponse.tokens || !authResponse.tokens.accessToken) {
+        console.error('[AuthContext.googleAuth] Tokens missing in response', authResponse);
+        return false;
+      }
       setUser(authResponse.user);
       setIsAuthenticated(true);
       apiClient.setAuthToken(authResponse.tokens.accessToken);
@@ -351,6 +377,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const authResponse = await authService.refreshToken(refreshTokenValue);
+      if (!authResponse || !authResponse.tokens || !authResponse.tokens.accessToken) {
+        // Invalid/empty response from refresh endpoint
+        return false;
+      }
       apiClient.setAuthToken(authResponse.tokens.accessToken);
       sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
       return true;
