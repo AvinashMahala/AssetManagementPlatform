@@ -11,7 +11,7 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace MyApp.Api.Swagger
 {
     /// <summary>
-    /// Loads external docs for an operation from ApiDocs/{Controller}/{Action}.{method}.md (description) and .json (responses/examples).
+    /// Loads external docs for an operation from `ApiDocs/Controllers/{Controller}/{Action}.{method}.md` (description) and .json (responses/examples).
     /// </summary>
     public class ExternalDocsOperationFilter : IOperationFilter
     {
@@ -27,7 +27,7 @@ namespace MyApp.Api.Swagger
             var controller = context.MethodInfo.DeclaringType?.Name?.Replace("Controller", "") ?? string.Empty;
             var httpMethod = context.ApiDescription.HttpMethod?.ToUpperInvariant() ?? "GET";
 
-            var controllerDir = Path.Combine(_root, controller);
+            var controllerDir = Path.Combine(_root, "Controllers", controller);
 
             // Primary convention (route-based): `{HTTPMETHOD}.{normalized-route}` where normalized-route is the relative
             // path with `api/` stripped, slashes replaced by dots, and route constraints removed: e.g., `GET.properties.{id}`
