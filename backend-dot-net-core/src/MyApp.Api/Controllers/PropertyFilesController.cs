@@ -46,7 +46,7 @@ public class PropertyFilesController : ControllerBase
         if (meta is null) return NotFound();
         if (meta.EntityId != propertyId) return NotFound();
 
-        var data = await _service.DownloadAsync(meta.FileId);
+        var data = await _service.DownloadAsync(fileId);
         if (data is null) return NotFound();
         return File(data, meta.ContentType, meta.FileName);
     }

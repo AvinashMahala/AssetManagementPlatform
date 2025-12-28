@@ -38,4 +38,21 @@ public class PropertyReceiptTemplateIntegrationTests : IClassFixture<WebApplicat
         var del = await client.DeleteAsync($"/api/properties/{prop.Id}/receipt-template");
         del.EnsureSuccessStatusCode();
     }
+
+    [Fact]
+    public async Task GenerateUPILinks_ReturnsLinks()
+    {
+        var client = _factory.CreateClient();
+
+        // Create property
+        var createReq = new CreatePropertyRequest("PropUPI","Addr","owner");
+        var createResp = await client.PostAsJsonAsync("/api/properties", createReq);
+        createResp.EnsureSuccessStatusCode();
+        var prop = await createResp.Content.ReadFromJsonAsync<Property>();
+
+        var getResp = await client.GetAsync($"/api/properties/{prop!.Id}/receipt-template/upi-links?amount=100");
+        getResp.EnsureSuccessStatusCode();
+        var links = await getResp.Content.ReadFromJsonAsync<dynamic>();
+        Assert.NotNull(links);
+    }
 }

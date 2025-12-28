@@ -43,7 +43,7 @@ public class PropertyReceiptTemplateController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("{propertyId:guid}/upi-links")]
+    [HttpGet("upi-links")]
     public async Task<IActionResult> GenerateUPILinks(Guid propertyId, [FromQuery] decimal? amount)
     {
         var links = await _service.GenerateUPILinksAsync(propertyId, amount);
