@@ -1,0 +1,13 @@
+{
+  "content": {
+    "application/json": {
+      "example": {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "name": "Building A - Unit 1",
+        "number": "A1",
+        "status": "active",
+        "floor": 1
+      }
+    }
+  }
+}

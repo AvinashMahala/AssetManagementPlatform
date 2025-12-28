@@ -1,0 +1,9 @@
+{
+  "content": {
+    "application/json": {
+      "example": [
+        { "id": "aaaaaaaa-bbbb-cccc-dddd-000000000001", "email": "user@example.com", "name": "Jane Doe", "role": "admin" }
+      ]
+    }
+  }
+}

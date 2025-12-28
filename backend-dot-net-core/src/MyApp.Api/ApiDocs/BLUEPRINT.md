@@ -183,6 +183,7 @@ PR checklist (before merge)
 - [ ] All migrated files for controller are present under `ApiDocs/{Controller}` with `description.md`, `request.json` (if applicable), `responses/*.json` (as needed)
 - [ ] The number of endpoint folders under `ApiDocs/{Controller}` matches the number of public controller actions (remove duplicate or orphaned folders such as legacy `GetById.GET` or extraneous method variants like `UpdateStatus.POST`).
 - [ ] `description.md` contains an **Endpoint:** line
+- [ ] `ApiDocs/Tags/{Tag}.md` was added or updated for the controller (concise controller-level tag doc present)
 - [ ] If migration was performed, a migration manifest is present and reviewed (see generated `migration-manifest-*.json`).
 - [ ] Unit tests added/updated and passing
 - [ ] Manual verification of `/swagger` completed and screenshots if needed
@@ -213,6 +214,7 @@ Agent procedure (high-level)
    - `request.json`: synthesize a minimal representative example for body parameters (use safe placeholder values, avoid PII).
    - `responses/<status>.json`: create minimal response objects with examples (e.g., `200.json`, `204.json`) and small `content.application/json.examples.default.value` where appropriate.
    - `parameters.json` (or `parameters/{in}.{name}.json`): provide per-parameter `example` values and optional `sets` for common combinations.
+   - `tags` / Tag docs: create or update `ApiDocs/Tags/{Tag}.md` for the controller (short description, `Controller` name, `Authentication` note, `Endpoints included` list, and `Notes`) following the Tag doc format in this blueprint.
    - `examples/` (optional): store large example payloads only when necessary.
 5. Validate (dry-run verification)
    - Ensure `description.md` has `**Endpoint:**`, examples are present and small, and folder counts align with public actions.
@@ -229,6 +231,7 @@ Checklist (dry-run output expected before writing files)
 - Provide a mapping table: for each public action include Method, Route, Computed folder name (HTTPMETHOD.normalized-route), Proposed files (description.md, request.json, responses/*.json, parameters.json or parameters/*), and a short rationale.
 - Flag ambiguities: missing attributes, overloaded methods, mixed routing conventions, or unclear response shapes.
 - Provide example file contents (small representative examples) for each proposed file and a short note on any assumptions.
+- Include proposed Tag doc content or an update plan for `ApiDocs/Tags/{Tag}.md` (one-line summary, endpoints list, and any special notes) to ensure consistent controller-level docs.
 - If mode is `migrate`, include a `migration-manifest-*.json` listing moved files and their original locations.
 
 File templates and conventions

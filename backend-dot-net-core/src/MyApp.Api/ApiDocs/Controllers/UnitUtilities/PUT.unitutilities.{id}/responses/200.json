@@ -1,0 +1,13 @@
+{
+  "content": {
+    "application/json": {
+      "example": {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "unitId": "55555555-5555-5555-5555-555555555555",
+        "name": "Electricity (updated)",
+        "enabled": false,
+        "rate": 50.0
+      }
+    }
+  }
+}

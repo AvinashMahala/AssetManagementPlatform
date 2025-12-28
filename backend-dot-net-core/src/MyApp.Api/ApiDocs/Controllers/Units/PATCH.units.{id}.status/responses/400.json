@@ -1,0 +1,7 @@
+{
+  "content": {
+    "application/json": {
+      "example": { "message": "status is required" }
+    }
+  }
+}

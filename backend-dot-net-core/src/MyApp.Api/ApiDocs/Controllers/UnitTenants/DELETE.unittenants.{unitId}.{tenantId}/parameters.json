@@ -1,0 +1,4 @@
+{
+  "unitId": { "in": "path", "example": "55555555-5555-5555-5555-555555555555", "required": true },
+  "tenantId": { "in": "path", "example": "66666666-6666-6666-6666-666666666666", "required": true }
+}
