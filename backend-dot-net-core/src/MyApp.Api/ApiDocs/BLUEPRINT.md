@@ -273,8 +273,16 @@ Linter — `validate-api-docs.ps1`
   powershell -NoProfile -NonInteractive -File backend-dot-net-core/scripts/validate-api-docs.ps1 -ApiDocsRoot 'backend-dot-net-core/src/MyApp.Api/ApiDocs'
 
 - Flags:
-  - `-Fix`: attempt to auto-insert missing `**Endpoint:**` lines when folder names clearly indicate HTTP method and route.
+  - `-Fix`: attempt to auto-insert missing `**Endpoint:**` lines and missing front-matter `tags` (when controller name can be inferred) when folder names clearly indicate HTTP method and route.
   - `-Json`: emit JSON output suitable for CI consumption.
+
+Additional linter checks performed:
+- Ensures `description.md` includes YAML front-matter and a non-empty `tags` entry (auto-inserted with the controller name when `-Fix` is used).
+- Ensures `responses/` exists and contains numeric status files (`200.json`, `204.json`, etc.). If present, validates that at least one of the expected status codes for the HTTP method is provided (e.g., `GET` expects `200` or `404`, `POST` expects `201` or `200`, `PUT/PATCH` expect `200`/`204`, `DELETE` expects `204`/`200`). When using `-Fix`, the validator may auto-create a minimal `responses/{status}.json` file for the first expected status code.
+- Warns when a route contains path parameters but `parameters.json` or `parameters/` is missing.
+- Ensures `description.md` front-matter includes `summary` (auto-inserted from the body when `-Fix` is used).
+- For `POST/PUT/PATCH` endpoints, warns if `request.json` is missing (auto-creates a minimal `request.json` when `-Fix` is used).
+- Verifies each `responses/*.json` is valid JSON and contains an `application/json` example; when `-Fix` is used, a minimal example is inserted.
 
 - Exit codes:
   - `0` — no issues found
