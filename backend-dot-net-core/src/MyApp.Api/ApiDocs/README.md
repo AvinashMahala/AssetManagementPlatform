@@ -1,5 +1,7 @@
 This folder contains external per-endpoint documentation used by Swagger.
 
+**API versioning:** The API uses URL segment versioning. Current stable version is **v1**; endpoints are available under `/api/v1/...`. Older non-versioned `/api/...` routes are kept as a fallback for compatibility.
+
 Naming convention (recommended):
 - Per-endpoint folder: ApiDocs/Controllers/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Controllers/Properties/Get.GET/`) — put all files related to that endpoint inside the folder: `description.md`, `request.json`, `responses/<status>.json`, etc.
 - **Canonical layout only**: ApiDocs must use per-endpoint folders: ApiDocs/Controllers/{Controller}/{EndpointFolder}/ (e.g., `ApiDocs/Controllers/Properties/Get.GET/`) containing `description.md`, `request.json`, and `responses/<status>.json`.

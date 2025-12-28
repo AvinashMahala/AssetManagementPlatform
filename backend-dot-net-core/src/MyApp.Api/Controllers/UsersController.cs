@@ -6,7 +6,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/users")]
+[Route("api/users")]
 public class UsersController : ControllerBase
 {
     private readonly IUserAdminService _service;

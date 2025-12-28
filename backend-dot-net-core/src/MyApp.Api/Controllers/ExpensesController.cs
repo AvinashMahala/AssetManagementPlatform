@@ -6,7 +6,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/expenses")]
+[Route("api/expenses")]
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class ExpensesController : ControllerBase
 {

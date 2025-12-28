@@ -6,7 +6,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/properties")]
+[Route("api/properties")]
 public class PropertiesController : ControllerBase
 {
     private readonly IPropertyService _service;

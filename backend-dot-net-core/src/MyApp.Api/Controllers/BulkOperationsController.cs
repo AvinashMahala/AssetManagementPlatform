@@ -8,7 +8,9 @@ using MyApp.Interfaces;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/bulkoperations")]
+[Route("api/bulkoperations")]
 public class BulkOperationsController : ControllerBase
 {
     private readonly IBulkOperationsService _service;

@@ -6,7 +6,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/receipttemplates")]
+[Route("api/receipttemplates")]
 public class ReceiptTemplatesController : ControllerBase
 {
     private readonly IReceiptTemplateService _service;

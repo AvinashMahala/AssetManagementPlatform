@@ -7,7 +7,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/renttransactions")]
+[Route("api/renttransactions")]
 public class RentTransactionsController : ControllerBase
 {
     private readonly IRentTransactionService _service;

@@ -51,6 +51,37 @@ builder.Services.AddAuthorization();
 // Add validation and use problem details for consistent error responses
 builder.Services.AddControllers().AddNewtonsoftJson();
 
+// Configure CORS for local development. Reads CORS_ORIGIN from configuration (comma-separated list)
+var corsOrigins = builder.Configuration["CORS_ORIGIN"] ?? "http://localhost:5173";
+var corsOriginsArray = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("LocalDev", policy =>
+    {
+        policy.WithOrigins(corsOriginsArray)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// API Versioning (URL segment style, default to v1)
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new Microsoft.AspNetCore.Mvc.Versioning.UrlSegmentApiVersionReader();
+});
+
+// Provides API explorer information for each API version (used by Swagger)
+builder.Services.AddVersionedApiExplorer(options =>
+{
+    // Format: 'v1'
+    options.GroupNameFormat = "'v'VVV";
+    // Substitute the version in the URL where {version:apiVersion} is used
+    options.SubstituteApiVersionInUrl = true;
+});
+
 // Register FluentValidation and configure automatic 400 responses to match Express validation behavior
 // Register FluentValidation validators
 // Add FluentValidation integration (ensure package FluentValidation.AspNetCore is referenced in the project)
@@ -99,9 +130,18 @@ builder.Services.AddSwaggerGen(options =>
     // Load external per-endpoint docs from ApiDocs (see ApiDocs/README.md)
     options.OperationFilter<ExternalDocsOperationFilter>();
     options.DocumentFilter<TagDocsDocumentFilter>();
+    // Lowercase path keys so controller segments appear in lower case in Swagger UI (e.g. /api/v1/auth/login)
+    options.DocumentFilter<LowercasePathsDocumentFilter>();
 
     var xmlFile = System.IO.Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".xml");
     if (System.IO.File.Exists(xmlFile)) options.IncludeXmlComments(xmlFile);
+
+    // Register a Swagger document for each discovered API version
+    var provider = builder.Services.BuildServiceProvider().GetRequiredService<Microsoft.AspNetCore.Mvc.ApiExplorer.IApiVersionDescriptionProvider>();
+    foreach (var description in provider.ApiVersionDescriptions)
+    {
+        options.SwaggerDoc(description.GroupName, new OpenApiInfo { Title = $"MyApp API {description.GroupName}", Version = description.GroupName });
+    }
 });
 
 var app = builder.Build();
@@ -125,14 +165,25 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
+
+    var provider = app.Services.GetRequiredService<Microsoft.AspNetCore.Mvc.ApiExplorer.IApiVersionDescriptionProvider>();
     app.UseSwaggerUI(c =>
     {
+        // Expose a swagger endpoint for each discovered API version
+        foreach (var description in provider.ApiVersionDescriptions)
+        {
+            c.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", $"MyApp API {description.GroupName}");
+        }
+
         // Collapse sections by default
         c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
         // Inject custom JS to add Collapse All / Expand All buttons and force collapse
         c.InjectJavascript("/swagger-ui/swagger-custom.js");
     });
 }
+
+// Enable configured CORS policy so browser requests from local dev origins are allowed
+app.UseCors("LocalDev");
 
 app.UseAuthentication();
 // Conditional auth middleware must run after authentication so it can call AuthenticateAsync if header present

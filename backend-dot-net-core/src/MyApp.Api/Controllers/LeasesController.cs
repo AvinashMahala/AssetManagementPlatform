@@ -5,7 +5,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/leases")]
+[Route("api/leases")]
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class LeasesController : ControllerBase
 {

@@ -20,7 +20,9 @@ public class FileUploadRequest
 }
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/files")]
+[Route("api/files")]
 public class FilesController : ControllerBase
 {
     private readonly IPropertyFileService _service;

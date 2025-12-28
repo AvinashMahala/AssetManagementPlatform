@@ -6,7 +6,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/unittenants")]
+[Route("api/unittenants")]
 public class UnitTenantsController : ControllerBase
 {
     private readonly IUnitTenantService _service;

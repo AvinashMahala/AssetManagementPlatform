@@ -6,7 +6,9 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/unitutilities")]
+[Route("api/unitutilities")]
 public class UnitUtilitiesController : ControllerBase
 {
     private readonly IUnitUtilityService _service;
