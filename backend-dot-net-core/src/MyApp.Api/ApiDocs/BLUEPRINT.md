@@ -10,7 +10,7 @@ Top-level layout (canonical)
 ApiDocs/
   ├─ Tags/                    (per-tag long-form docs, one file per tag: `{Tag}.md`)
   ├─ {Controller}/            (feature/area — e.g., `Properties`, `Leases`)
-  │   ├─ {EndpointFolder}/    (one folder per endpoint; recommended naming: `Action.HTTPMETHOD`, e.g., `GetById.GET`)
+  │   ├─ {EndpointFolder}/    (one folder per endpoint; required naming: `HTTPMETHOD.normalized-route`, e.g., `GET.properties`, `GET.properties.{id}`, `PUT.properties.{id}.template`). Normalization rules: remove `api/` prefix; convert slashes `/` to dots `.`; strip route constraints inside braces (e.g., `{id:guid}` -> `{id}`); collapse duplicate dots.
   │   │   ├─ description.md    (primary human-readable doc; MAY contain YAML front-matter)
   │   │   ├─ request.json      (optional: request body example / content object)
   │   │   ├─ responses/        (one file per numeric HTTP status code; file names MUST be numeric: `200.json`, `404.json`)
@@ -24,7 +24,7 @@ ApiDocs/
 Canonical rules
 ---------------
 - Loader behavior: the `ExternalDocsOperationFilter` reads only the canonical endpoint folder layout above. Legacy single-file sidecars are deprecated and are NOT relied upon by the filter.
-- Endpoint folder naming: `Action.HTTPMETHOD` (e.g., `Create.POST`, `Update.PUT`). This disambiguates same path/different-method scenarios.
+- Endpoint folder naming: `HTTPMETHOD.normalized-route` (e.g., `POST.properties`, `GET.properties.{id}`, `PUT.properties.{id}.template`). Normalization removes route constraints (e.g., `{id:guid}` -> `{id}`) and replaces slashes with dots. This ensures deterministic, route-centric folder names and disambiguates same path/different-method scenarios.
 - `description.md`:
   - MAY include YAML front-matter block between `---` lines. Supported front-matter keys:
     - `summary` (string)
@@ -84,7 +84,14 @@ Authoring guidelines
 - For non-JSON content-types, put fully formed `content` objects in `request.json` or `responses/<status>.json` with the correct content-type keys.
 - Avoid storing sensitive or PII data in sample payloads.
 
-Migration checklist (for a controller)
+New feature authoring (fresh implementation — no migration)
+-----------------------------------------------------------
+- For new features or endpoints, **do not run the migration script**; create docs as a fresh implementation under `ApiDocs/{Controller}` using the `HTTPMETHOD.normalized-route` folder naming convention (e.g., `POST.properties`, `GET.properties.{id}`).
+- Create a folder `ApiDocs/{Controller}/{HTTPMETHOD.normalized-route}` and add `description.md` (with front-matter and a `**Endpoint:**` line), `request.json` (if applicable), `responses/*.json`, and `parameters.json` (or `parameters/*`) following the canonical rules in this blueprint.
+- Verify locally (build + `/swagger`) and include the new folder(s) in your PR; do not migrate legacy docs as part of a new feature unless explicitly approved by the team.
+- If you are intentionally converting legacy docs for an existing endpoint (not a new feature), use the migration script and follow the migration checklist below.
+
+Migration checklist (for legacy controllers only)
 --------------------------------------
 1. Inspect existing ApiDocs for the controller and identify legacy sidecars (e.g., `Action.POST.json`, `Action.md` files).
 2. Run the migration helper:
@@ -134,13 +141,125 @@ Edge cases & notes
 
 PR checklist (before merge)
 ---------------------------
+- [ ] For **new features**, docs were added as fresh `ApiDocs/{Controller}/{HTTPMETHOD.normalized-route}` folders (do NOT run the migration script for new features).
 - [ ] All migrated files for controller are present under `ApiDocs/{Controller}` with `description.md`, `request.json` (if applicable), `responses/*.json` (as needed)
 - [ ] The number of endpoint folders under `ApiDocs/{Controller}` matches the number of public controller actions (remove duplicate or orphaned folders such as legacy `GetById.GET` or extraneous method variants like `UpdateStatus.POST`).
 - [ ] `description.md` contains an **Endpoint:** line
+- [ ] If migration was performed, a migration manifest is present and reviewed (see generated `migration-manifest-*.json`).
 - [ ] Unit tests added/updated and passing
 - [ ] Manual verification of `/swagger` completed and screenshots if needed
 - [ ] `.bak` and legacy files removed (or documented if kept temporarily)
 - [ ] Update `ApiDocs/README.md` if special cases or exceptions were made
+
+AI Agent Integration — automated authoring guidance
+---------------------------------------------------
+Purpose
+- Provide a clear, machine-actionable procedure so an AI agent can create or update `ApiDocs/{Controller}` for a given controller using this blueprint as the source of truth.
+
+Inputs the agent will be provided
+- Controller file path (e.g., `src/MyApp.Api/Controllers/PropertiesController.cs`) and the controller source text.
+- The path to this blueprint (`ApiDocs/BLUEPRINT.md`).
+- Optional: the existing `ApiDocs/{Controller}` folder path and a mode flag (`create` | `update` | `migrate`). Default mode for new work should be `create` or `update`; `migrate` must only be performed after explicit user confirmation.
+
+Agent procedure (high-level)
+1. Parse controller
+   - Extract class-level route template, public action methods, HTTP method attributes (HttpGet/HttpPost/etc.), action-level route templates, parameter lists (path/query/body), and likely response semantics (from method names, attributes, or return types where possible).
+2. Compute canonical mapping
+   - For each action compute `HTTPMETHOD.normalized-route` using the normalization rules in this blueprint (remove `api/` prefix, replace `/` with `.`, strip route constraints `{id:guid}` -> `{id}`, collapse duplicate dots).
+   - Detect collisions and ambiguous routes; report them instead of guessing.
+3. Plan changes (dry-run)
+   - Decide for each action: create new folder (`create`), update existing canonical folder (`update`), or include in migration plan (`migrate`).
+   - Produce a dry-run mapping table and present it to the user for review before making changes.
+4. Generate content
+   - `description.md`: create front-matter (`summary`, `description`, `tags`) and an `**Endpoint:**` line. Include human-friendly usage notes derived from parameter names/types.
+   - `request.json`: synthesize a minimal representative example for body parameters (use safe placeholder values, avoid PII).
+   - `responses/<status>.json`: create minimal response objects with examples (e.g., `200.json`, `204.json`) and small `content.application/json.examples.default.value` where appropriate.
+   - `parameters.json` (or `parameters/{in}.{name}.json`): provide per-parameter `example` values and optional `sets` for common combinations.
+   - `examples/` (optional): store large example payloads only when necessary.
+5. Validate (dry-run verification)
+   - Ensure `description.md` has `**Endpoint:**`, examples are present and small, and folder counts align with public actions.
+   - Optionally run unit tests or static validation (if present) and attempt to start the API (after ensuring no running process holds file locks) to fetch `/swagger/v1/swagger.json` and validate operation entries. Save swagger.json as an artifact for review.
+6. Apply changes
+   - After user approval, write files and create commits with a clear message, and if migrating write a migration manifest `migration-manifest-*.json`.
+7. Report back
+   - Provide the proposed mapping, list of created/updated files, diffs (or the commit/PR link), validation results, any assumptions/ambiguities, and the location of the verification artifacts (e.g., captured `swagger.json`).
+
+Constraints & Do-Not
+- **Do not** delete legacy files or perform a `migrate` phase unless the user explicitly instructs with an `Apply` flag. Default to non-destructive `create` or `update` modes.
+- Avoid using real PII or production data in examples; use safe placeholders only.
+- Preserve idempotency: repeated runs should not produce unexpected changes and should report no-op when nothing needs updating.
+- Ask for clarification when routes/HTTP methods are ambiguous or missing annotations rather than guessing.
+
+Agent prompt template (example)
+- "Controller: `src/MyApp.Api/Controllers/PropertiesController.cs` \nBlueprint: `src/MyApp.Api/ApiDocs/BLUEPRINT.md` \nMode: `create` \nDryRun: true \nPlease generate the proposed endpoint mapping and sample `description.md` for each endpoint."
+
+Acceptance criteria for agent-created PRs
+- Folders use `HTTPMETHOD.normalized-route` naming and contain `description.md` with an `**Endpoint:**` line.
+- `request.json` and `responses/*.json` include small, representative examples that appear in `/swagger/v1/swagger.json` as operation request/response examples.
+- `parameters.json` present for path/query parameters with example values and optional `sets` where applicable.
+- If a migration was performed, a `migration-manifest-*.json` is present and included in the commit.
+- Tests and verification steps are documented and verification artifacts (e.g., `swagger.json`) are attached or referenced in the PR.
+
+Examples — mapping and sample generated files
+---------------------------------------------
+Below are concise examples to show how controller routes map to endpoint folders, and a small sample `description.md` + supporting files an agent should generate for a given endpoint.
+
+Route → folder mapping (examples)
+- `GET /api/properties`               → `GET.properties`
+- `POST /api/properties`              → `POST.properties`
+- `GET /api/properties/{id}`          → `GET.properties.{id}`
+- `PUT /api/properties/{id}`          → `PUT.properties.{id}`
+- `PATCH /api/properties/{id}/status` → `PATCH.properties.{id}.status`
+- `GET /api/properties/{id}/template` → `GET.properties.{id}.template`
+
+Sample generated `description.md` (agent output example)
+````markdown
+---
+summary: Get a property by id
+description: |
+  Returns the property with the supplied `id`.
+  Includes basic details such as `name`, `address` and `status`.
+  Use `?include=units` to include unit summary in the result.
+tags: [Properties]
+---
+
+**Endpoint:** `GET /api/properties/{id}`
+
+Returns `200` with the property object. If the `id` is not found, returns `404`.
+````
+
+Sample generated `request.json` (if a body is required)
+```json
+{
+  "status": "active"
+}
+```
+
+Sample generated `responses/200.json`
+```json
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "id": "00000000-0000-0000-0000-000000000000", "name": "Example Property", "status": "active" } }
+      }
+    }
+  }
+}
+```
+
+Sample generated `parameters.json` (for path `id`)
+```json
+{
+  "id": { "in": "path", "example": "00000000-0000-0000-0000-000000000000" }
+}
+```
+
+Notes for agents generating examples
+- Prefer small, representative examples; use GUID placeholders or simple strings for IDs and avoid PII.
+- Keep `responses/*` examples minimal and add large payloads to `examples/` if needed.
+- Confirm `description.md` includes `**Endpoint:**` and that generated folder name follows `HTTPMETHOD.normalized-route` normalization rules.
 
 Contact
 -------
