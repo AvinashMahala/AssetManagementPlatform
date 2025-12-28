@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MyApp.Services;
 using MyApp.Repositories;
+using MyApp.Api.Swagger;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
@@ -94,6 +95,9 @@ builder.Services.AddSwaggerGen(options =>
             new string[] { }
         }
     });
+
+    // Load external per-endpoint docs from ApiDocs (see ApiDocs/README.md)
+    options.OperationFilter<ExternalDocsOperationFilter>();
 
     var xmlFile = System.IO.Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".xml");
     if (System.IO.File.Exists(xmlFile)) options.IncludeXmlComments(xmlFile);

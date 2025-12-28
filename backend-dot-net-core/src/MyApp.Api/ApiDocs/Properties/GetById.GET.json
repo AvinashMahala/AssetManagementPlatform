@@ -1,0 +1,20 @@
+{
+  "responses": {
+    "200": {
+      "description": "Property found",
+      "content": {
+        "application/json": {
+          "example": {
+            "id": 123,
+            "name": "Main St Apt 1",
+            "address": "123 Main St",
+            "units": 3
+          }
+        }
+      }
+    },
+    "404": {
+      "description": "Not found"
+    }
+  }
+}

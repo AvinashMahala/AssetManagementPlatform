@@ -20,8 +20,9 @@ public class PropertyFilesController : ControllerBase
 
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Upload(Guid propertyId, [FromForm] IFormFile file)
+    public async Task<IActionResult> Upload(Guid propertyId, [FromForm] FileUploadRequest request)
     {
+        var file = request.File;
         if (file is null) return BadRequest(new { error = "No file uploaded" });
 
         using var ms = new MemoryStream();
