@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -14,14 +15,22 @@ public class BulkOperationsService : IBulkOperationsService
     private readonly IExpenseRepository _expenses;
     private readonly IRentPaymentService _payments;
     private readonly IReceiptService _receipts;
+    private readonly IReceiptRepository _repo;
+    private readonly IServiceScopeFactory _scopes;
+    private readonly ICommunicationService _comm;
+    private readonly IFileStorageService _storage;
 
-    public BulkOperationsService(ILeaseRepository leases, IRentTransactionService transactions, IExpenseRepository expenses, IRentPaymentService payments, IReceiptService receipts)
+    public BulkOperationsService(ILeaseRepository leases, IRentTransactionService transactions, IExpenseRepository expenses, IRentPaymentService payments, IReceiptService receipts, IReceiptRepository repo, IServiceScopeFactory scopes, ICommunicationService comm, IFileStorageService storage)
     {
         _leases = leases;
         _transactions = transactions;
         _expenses = expenses;
         _payments = payments;
         _receipts = receipts;
+        _repo = repo;
+        _scopes = scopes;
+        _comm = comm;
+        _storage = storage;
     }
 
     public async Task<BulkOperationSummary> BulkRentCollectionAsync(IEnumerable<Guid> unitIds, DateTime start, DateTime end, bool applyExpenses, IEnumerable<Guid>? expenseIds, bool skipExisting)

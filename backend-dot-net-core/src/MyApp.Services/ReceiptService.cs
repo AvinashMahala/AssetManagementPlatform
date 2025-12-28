@@ -14,13 +14,15 @@ public class ReceiptService : IReceiptService
     private readonly IFileStorageService _storage;
     private readonly IEventBus _events;
     private readonly IServiceScopeFactory _scopes;
+    private readonly ICommunicationService _comm;
 
-    public ReceiptService(IReceiptRepository repo, IFileStorageService storage, IEventBus events, IServiceScopeFactory scopes)
+    public ReceiptService(IReceiptRepository repo, IFileStorageService storage, IEventBus events, IServiceScopeFactory scopes, ICommunicationService comm)
     {
         _repo = repo;
         _storage = storage;
         _events = events;
         _scopes = scopes;
+        _comm = comm;
 
         // Subscribe to transaction created events to generate receipts (use scoped services)
         _events.Subscribe<RentTransactionCreatedEvent>(async evt =>
@@ -50,6 +52,12 @@ public class ReceiptService : IReceiptService
     public Task<IEnumerable<Receipt>> ListAsync() => _repo.ListAsync();
 
     public Task<Receipt?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
+
+    public Task<Receipt?> GetByNumberAsync(string receiptNumber) => _repo.GetByNumberAsync(receiptNumber);
+
+    public Task<IEnumerable<Receipt>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
+
+    public Task<IEnumerable<Receipt>> ListByTenantAsync(Guid tenantId) => _repo.ListByTenantAsync(tenantId);
 
     public async Task<Receipt> GenerateReceiptForPaymentAsync(Guid rentPaymentId, decimal amount)
     {
@@ -85,6 +93,54 @@ public class ReceiptService : IReceiptService
         created.PdfStorageId = storageId;
         await _repo.UpdateAsync(created);
         return created;
+    }
+
+    public async Task<IEnumerable<Receipt>> GenerateBulkReceiptsAsync(Guid propertyId, int month, int year)
+    {
+        // Find payments for the property in the given month/year and generate receipts
+        var payments = await _scopes.CreateScope().ServiceProvider.GetRequiredService<IRentPaymentService>().ListByPropertyAsync(propertyId);
+        var filtered = System.Linq.Enumerable.Where(payments, p => p.CreatedAt.Month == month && p.CreatedAt.Year == year);
+        var created = new System.Collections.Generic.List<Receipt>();
+        foreach (var p in filtered)
+        {
+            var r = await GenerateReceiptForPaymentAsync(p.Id, p.Amount);
+            created.Add(r);
+        }
+        return created;
+    }
+
+    public async Task<bool> SendReceiptByEmailAsync(Guid id, string email)
+    {
+        var r = await _repo.GetByIdAsync(id);
+        if (r is null) return false;
+
+        // find tenant via payment or transaction
+        Guid? tenantId = null;
+        if (r.RentPaymentId != null)
+        {
+            var p = await _scopes.CreateScope().ServiceProvider.GetRequiredService<IRentPaymentRepository>().GetByIdAsync(r.RentPaymentId.Value);
+            if (p != null)
+            {
+                var lease = await _scopes.CreateScope().ServiceProvider.GetRequiredService<ILeaseRepository>().GetByIdAsync(p.LeaseId);
+                if (lease != null) tenantId = lease.TenantId;
+            }
+        }
+        if (tenantId == null && r.RentTransactionId != null)
+        {
+            var t = await _scopes.CreateScope().ServiceProvider.GetRequiredService<IRentTransactionRepository>().GetByIdAsync(r.RentTransactionId.Value);
+            if (t != null)
+            {
+                var lease = await _scopes.CreateScope().ServiceProvider.GetRequiredService<ILeaseRepository>().GetByIdAsync(t.LeaseId);
+                if (lease != null) tenantId = lease.TenantId;
+            }
+        }
+
+        if (tenantId == null) return false;
+
+        // Use CommunicationService to send an email; include the stored PDF as an attachment if available
+        var attachments = string.IsNullOrEmpty(r.PdfStorageId) ? null : new[] { r.PdfStorageId };
+        var ok = await _comm.SendToTenantAsync(tenantId.Value, "Your receipt", $"Please find attached receipt {r.ReceiptNumber}", new[] { "email" }, attachments);
+        return ok;
     }
 
     public async Task<byte[]?> DownloadReceiptPdfAsync(Guid id)

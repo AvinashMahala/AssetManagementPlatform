@@ -31,7 +31,7 @@ public class UserRepository : IUserRepository
         await _db.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<User>> GetAllAsync() => _db.Set<User>().ToListAsync();
+    public async Task<IEnumerable<User>> GetAllAsync() => await _db.Set<User>().ToListAsync();
 
     public async Task DeleteAsync(Guid id)
     {

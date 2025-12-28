@@ -4,6 +4,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MyApp.Services;
 using MyApp.Repositories;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +52,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 
 // Register FluentValidation and configure automatic 400 responses to match Express validation behavior
 // Register FluentValidation validators
+// Add FluentValidation integration (ensure package FluentValidation.AspNetCore is referenced in the project)
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<MyApp.Api.Controllers.TenantsController>();
 builder.Services.Configure<ApiBehaviorOptions>(options =>

@@ -22,7 +22,22 @@ public class ReceiptRepository : IReceiptRepository
 
     public async Task<IEnumerable<Receipt>> ListByRentPaymentAsync(Guid rentPaymentId)
         => await _db.Set<Receipt>().Where(r => r.RentPaymentId == rentPaymentId).ToListAsync();
+    public Task<Receipt?> GetByNumberAsync(string number) => _db.Set<Receipt>().FirstOrDefaultAsync(r => r.ReceiptNumber == number);
 
+    public async Task<IEnumerable<Receipt>> ListByPropertyAsync(Guid propertyId)
+    {
+        // Find payments and transactions for leases belonging to the property
+        var paymentIds = await _db.RentPayments.Where(p => _db.Leases.Any(l => l.Id == p.LeaseId && l.PropertyId == propertyId)).Select(p => p.Id).ToListAsync();
+        var txIds = await _db.RentTransactions.Where(t => _db.Leases.Any(l => l.Id == t.LeaseId && l.PropertyId == propertyId)).Select(t => t.Id).ToListAsync();
+        return await _db.Set<Receipt>().Where(r => (r.RentPaymentId != null && paymentIds.Contains(r.RentPaymentId.Value)) || (r.RentTransactionId != null && txIds.Contains(r.RentTransactionId.Value))).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Receipt>> ListByTenantAsync(Guid tenantId)
+    {
+        var paymentIds = await _db.RentPayments.Where(p => _db.Leases.Any(l => l.Id == p.LeaseId && l.TenantId == tenantId)).Select(p => p.Id).ToListAsync();
+        var txIds = await _db.RentTransactions.Where(t => _db.Leases.Any(l => l.Id == t.LeaseId && l.TenantId == tenantId)).Select(t => t.Id).ToListAsync();
+        return await _db.Set<Receipt>().Where(r => (r.RentPaymentId != null && paymentIds.Contains(r.RentPaymentId.Value)) || (r.RentTransactionId != null && txIds.Contains(r.RentTransactionId.Value))).ToListAsync();
+    }
     public async Task<Receipt> CreateAsync(Receipt r)
     {
         if (r.Id == Guid.Empty) r.Id = Guid.NewGuid();
