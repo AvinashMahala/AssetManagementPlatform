@@ -26,7 +26,7 @@ public class UnitTenantsIntegrationTests : IClassFixture<WebApplicationFactory<P
         var u = await unitResp.Content.ReadFromJsonAsync<Unit>();
 
         var tenant = new Tenant { FirstName = "Alice", LastName = "Smith" };
-        var tenantResp = await client.PostAsJsonAsync("/api/tenants", tenant);
+        var tenantResp = await client.PostAsJsonAsync("/api/v1/tenants", tenant);
         tenantResp.EnsureSuccessStatusCode();
         var t = await tenantResp.Content.ReadFromJsonAsync<Tenant>();
 

@@ -18,7 +18,7 @@ public class BulkOperationsIntegrationTests : IClassFixture<WebApplicationFactor
     {
         var client = _factory.CreateClient();
         var payload = new { unitIds = new string[] { Guid.NewGuid().ToString() }, billingPeriodStart = DateTime.UtcNow.AddMonths(-1), billingPeriodEnd = DateTime.UtcNow };
-        var resp = await client.PostAsJsonAsync("/api/bulk/rent-collection", payload);
+        var resp = await client.PostAsJsonAsync("/api/v1/bulkoperations/rent-collection", payload);
         resp.EnsureSuccessStatusCode();
     }
 }

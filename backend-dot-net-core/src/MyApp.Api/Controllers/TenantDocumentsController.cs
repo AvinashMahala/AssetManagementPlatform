@@ -6,7 +6,8 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/tenants/{tenantId:guid}/documents")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/tenants/{tenantId:guid}/documents")]
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class TenantDocumentsController : ControllerBase
 {

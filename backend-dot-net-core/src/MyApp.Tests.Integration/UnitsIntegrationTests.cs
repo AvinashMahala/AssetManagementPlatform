@@ -20,29 +20,29 @@ public class UnitsIntegrationTests : IClassFixture<WebApplicationFactory<Program
         var client = _factory.CreateClient();
 
         var unit = new Unit { PropertyId = Guid.NewGuid(), Name = "Unit A", Size = 42.5m };
-        var createResp = await client.PostAsJsonAsync("/api/units", unit);
+        var createResp = await client.PostAsJsonAsync("/api/v1/units", unit);
         createResp.EnsureSuccessStatusCode();
         var created = await createResp.Content.ReadFromJsonAsync<Unit>();
         Assert.NotNull(created);
         Assert.NotEqual(Guid.Empty, created!.Id);
 
-        var listResp = await client.GetAsync("/api/units");
+        var listResp = await client.GetAsync("/api/v1/units");
         listResp.EnsureSuccessStatusCode();
         var list = await listResp.Content.ReadFromJsonAsync<Unit[]>();
         Assert.Single(list, u => u.Id == created.Id);
 
-        var getResp = await client.GetAsync($"/api/units/{created.Id}");
+        var getResp = await client.GetAsync($"/api/v1/units/{created.Id}");
         getResp.EnsureSuccessStatusCode();
         var got = await getResp.Content.ReadFromJsonAsync<Unit>();
         Assert.NotNull(got);
         Assert.Equal(created.Id, got!.Id);
 
-        var updateResp = await client.PutAsJsonAsync($"/api/units/{created.Id}", new Unit { Name = "Unit A2", PropertyId = created.PropertyId, Size = 50 });
+        var updateResp = await client.PutAsJsonAsync($"/api/v1/units/{created.Id}", new Unit { Name = "Unit A2", PropertyId = created.PropertyId, Size = 50 });
         updateResp.EnsureSuccessStatusCode();
         var updated = await updateResp.Content.ReadFromJsonAsync<Unit>();
         Assert.Equal("Unit A2", updated!.Name);
 
-        var statusResp = await client.PatchAsync($"/api/units/{created.Id}/status", JsonContent.Create(new { status = "occupied" }));
+        var statusResp = await client.PatchAsync($"/api/v1/units/{created.Id}/status", JsonContent.Create(new { status = "occupied" }));
         Assert.Equal(System.Net.HttpStatusCode.NoContent, statusResp.StatusCode);
 
         var delResp = await client.DeleteAsync($"/api/units/{created.Id}");

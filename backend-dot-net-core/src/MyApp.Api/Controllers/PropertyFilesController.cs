@@ -10,7 +10,8 @@ using MyApp.Models;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/properties/{propertyId:guid}/files")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/properties/{propertyId:guid}/files")]
 [Authorize]
 public class PropertyFilesController : ControllerBase
 {

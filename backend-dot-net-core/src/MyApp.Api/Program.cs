@@ -137,6 +137,24 @@ builder.Services.AddSwaggerGen(options =>
     var xmlFile = System.IO.Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".xml");
     if (System.IO.File.Exists(xmlFile)) options.IncludeXmlComments(xmlFile);
 
+    // Only include endpoints that belong to the swagger document's API version group
+    // and whose path contains the version segment (e.g., "v1"). This prevents duplicate
+    // unversioned routes from appearing in the versioned docs.
+    options.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        if (apiDesc.GroupName != docName) return false;
+
+        // apiDesc.RelativePath usually looks like: "api/v1/files" or "api/files"
+        var relativePath = apiDesc.RelativePath ?? string.Empty;
+        // Ensure the path contains the group name (e.g., "v1") as a segment
+        if (!relativePath.Contains($"{docName}/") && !relativePath.EndsWith(docName, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    });
+
     // Register a Swagger document for each discovered API version
     var provider = builder.Services.BuildServiceProvider().GetRequiredService<Microsoft.AspNetCore.Mvc.ApiExplorer.IApiVersionDescriptionProvider>();
     foreach (var description in provider.ApiVersionDescriptions)

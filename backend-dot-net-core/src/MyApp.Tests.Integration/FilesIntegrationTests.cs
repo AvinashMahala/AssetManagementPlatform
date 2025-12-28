@@ -28,19 +28,19 @@ public class FilesIntegrationTests : IClassFixture<WebApplicationFactory<Program
         content.Add(new StringContent("property"), "entityType");
         content.Add(new StringContent("p1"), "entityId");
 
-        var up = await client.PostAsync("/api/files/upload", content);
+        var up = await client.PostAsync("/api/v1/files/upload", content);
         up.EnsureSuccessStatusCode();
         var meta = await up.Content.ReadFromJsonAsync<FileMetadata>();
         Assert.NotNull(meta);
 
-        var m2 = await (await client.GetAsync($"/api/files/{meta!.Id}/metadata")).Content.ReadFromJsonAsync<FileMetadata>();
+        var m2 = await (await client.GetAsync($"/api/v1/files/{meta!.Id}/metadata")).Content.ReadFromJsonAsync<FileMetadata>();
         Assert.NotNull(m2);
 
-        var dl = await client.GetAsync($"/api/files/{meta.Id}/download");
+        var dl = await client.GetAsync($"/api/v1/files/{meta.Id}/download");
         dl.EnsureSuccessStatusCode();
         var body = await dl.Content.ReadAsStringAsync();
         Assert.Equal("hello", body);
 
-        await client.DeleteAsync($"/api/files/{meta.Id}");
+        await client.DeleteAsync($"/api/v1/files/{meta.Id}");
     }
 }

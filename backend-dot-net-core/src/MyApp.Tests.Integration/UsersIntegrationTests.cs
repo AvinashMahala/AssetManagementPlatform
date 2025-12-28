@@ -19,15 +19,15 @@ public class UsersIntegrationTests : IClassFixture<WebApplicationFactory<Program
     {
         var client = _factory.CreateClient();
         var user = new User { DisplayName = "Admin User", Email = "admin@example.com" };
-        var createResp = await client.PostAsJsonAsync("/api/users", user);
+        var createResp = await client.PostAsJsonAsync("/api/v1/users", user);
         createResp.EnsureSuccessStatusCode();
         var created = await createResp.Content.ReadFromJsonAsync<User>();
         Assert.NotNull(created);
 
-        var listResp = await client.GetAsync("/api/users");
+        var listResp = await client.GetAsync("/api/v1/users");
         listResp.EnsureSuccessStatusCode();
 
-        var getResp = await client.GetAsync($"/api/users/{created!.Id}");
+        var getResp = await client.GetAsync($"/api/v1/users/{created!.Id}");
         getResp.EnsureSuccessStatusCode();
 
         var updateResp = await client.PutAsJsonAsync($"/api/users/{created.Id}", new User { DisplayName = "Admin X", Email = "adminx@example.com" });

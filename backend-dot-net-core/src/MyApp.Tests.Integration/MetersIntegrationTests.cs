@@ -19,16 +19,16 @@ public class MetersIntegrationTests : IClassFixture<WebApplicationFactory<Progra
     {
         var client = _factory.CreateClient();
         var meter = new Meter { Serial = "S-123", PropertyId = Guid.NewGuid() };
-        var mResp = await client.PostAsJsonAsync("/api/meters", meter);
+        var mResp = await client.PostAsJsonAsync("/api/v1/meters", meter);
         mResp.EnsureSuccessStatusCode();
         var created = await mResp.Content.ReadFromJsonAsync<Meter>();
 
         var reading = new MeterReading { MeterId = created!.Id, Value = 123.4m };
-        var rResp = await client.PostAsJsonAsync("/api/meterreadings", reading);
+        var rResp = await client.PostAsJsonAsync("/api/v1/meterreadings", reading);
         rResp.EnsureSuccessStatusCode();
         var createdR = await rResp.Content.ReadFromJsonAsync<MeterReading>();
 
-        var byMeter = await client.GetAsync($"/api/meterreadings/meter/{created.Id}");
+        var byMeter = await client.GetAsync($"/api/v1/meterreadings/meter/{created.Id}");
         byMeter.EnsureSuccessStatusCode();
     }
 }

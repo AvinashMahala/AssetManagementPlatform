@@ -20,15 +20,15 @@ public class ConditionalAuthIntegrationTests : IClassFixture<WebApplicationFacto
         var client = _factory.CreateClient();
 
         // anonymous
-        var anon = await client.GetAsync("/api/unittenants");
+        var anon = await client.GetAsync("/api/v1/unittenants");
         anon.EnsureSuccessStatusCode();
 
         // register + login to get token
         var reg = new { email = "condtest@example.com", password = "P@ssw0rd", displayName = "Cond" };
-        var regResp = await client.PostAsJsonAsync("/api/auth/register", reg);
+        var regResp = await client.PostAsJsonAsync("/api/v1/auth/register", reg);
         regResp.EnsureSuccessStatusCode();
         var login = new { email = "condtest@example.com", password = "P@ssw0rd" };
-        var loginResp = await client.PostAsJsonAsync("/api/auth/login", login);
+        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", login);
         loginResp.EnsureSuccessStatusCode();
         var payload = await loginResp.Content.ReadFromJsonAsync<dynamic>();
         string token = (string)payload.accessToken;

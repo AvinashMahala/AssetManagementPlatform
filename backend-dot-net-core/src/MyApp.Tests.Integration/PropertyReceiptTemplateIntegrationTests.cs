@@ -26,16 +26,16 @@ public class PropertyReceiptTemplateIntegrationTests : IClassFixture<WebApplicat
 
         var templateJson = "{\"logo\":\"x\"}";
         // Set
-        var setResp = await client.PostAsJsonAsync($"/api/properties/{prop!.Id}/receipt-template", templateJson);
+        var setResp = await client.PostAsJsonAsync($"/api/v1/properties/{prop!.Id}/receipt-template", templateJson);
         setResp.EnsureSuccessStatusCode();
 
-        var getResp = await client.GetAsync($"/api/properties/{prop.Id}/receipt-template");
+        var getResp = await client.GetAsync($"/api/v1/properties/{prop.Id}/receipt-template");
         getResp.EnsureSuccessStatusCode();
         var body = await getResp.Content.ReadFromJsonAsync<dynamic>();
         Assert.Contains("logo", (string)body.template);
 
         // Delete
-        var del = await client.DeleteAsync($"/api/properties/{prop.Id}/receipt-template");
+        var del = await client.DeleteAsync($"/api/v1/properties/{prop.Id}/receipt-template");
         del.EnsureSuccessStatusCode();
     }
 
@@ -50,7 +50,7 @@ public class PropertyReceiptTemplateIntegrationTests : IClassFixture<WebApplicat
         createResp.EnsureSuccessStatusCode();
         var prop = await createResp.Content.ReadFromJsonAsync<Property>();
 
-        var getResp = await client.GetAsync($"/api/properties/{prop!.Id}/receipt-template/upi-links?amount=100");
+        var getResp = await client.GetAsync($"/api/v1/properties/{prop!.Id}/receipt-template/upi-links?amount=100");
         getResp.EnsureSuccessStatusCode();
         var links = await getResp.Content.ReadFromJsonAsync<dynamic>();
         Assert.NotNull(links);

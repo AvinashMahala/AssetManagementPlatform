@@ -19,7 +19,7 @@ public class ValidationIntegrationTests : IClassFixture<WebApplicationFactory<Pr
     {
         var client = _factory.CreateClient();
         var tenant = new Tenant { FirstName = "", LastName = "" };
-        var resp = await client.PostAsJsonAsync("/api/tenants", tenant);
+        var resp = await client.PostAsJsonAsync("/api/v1/tenants", tenant);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
         var body = await resp.Content.ReadFromJsonAsync<dynamic>();
         Assert.False((bool)body.success);

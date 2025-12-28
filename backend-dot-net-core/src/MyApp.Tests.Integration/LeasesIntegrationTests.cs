@@ -20,18 +20,18 @@ public class LeasesIntegrationTests : IClassFixture<WebApplicationFactory<Progra
         var client = _factory.CreateClient();
 
         var lease = new Lease { PropertyId = "prop-1", TenantId = "tenant-1", StartDate = DateTime.UtcNow, Rent = 123.45m };
-        var createResp = await client.PostAsJsonAsync("/api/leases", lease);
+        var createResp = await client.PostAsJsonAsync("/api/v1/leases", lease);
         createResp.EnsureSuccessStatusCode();
         var created = await createResp.Content.ReadFromJsonAsync<Lease>();
         Assert.NotNull(created);
         Assert.NotEqual(Guid.Empty, created!.Id);
 
-        var listResp = await client.GetAsync("/api/leases");
+        var listResp = await client.GetAsync("/api/v1/leases");
         listResp.EnsureSuccessStatusCode();
         var list = await listResp.Content.ReadFromJsonAsync<Lease[]>();
         Assert.Single(list, l => l.Id == created.Id);
 
-        var getResp = await client.GetAsync($"/api/leases/{created.Id}");
+        var getResp = await client.GetAsync($"/api/v1/leases/{created.Id}");
         getResp.EnsureSuccessStatusCode();
         var got = await getResp.Content.ReadFromJsonAsync<Lease>();
         Assert.NotNull(got);

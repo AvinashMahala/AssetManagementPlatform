@@ -19,11 +19,11 @@ public class AuthIntegrationTests : IClassFixture<WebApplicationFactory<Program>
         var client = _factory.CreateClient();
 
         var register = new RegisterRequest("inttest@example.com", "P@ssw0rd", "Integration");
-        var regResp = await client.PostAsJsonAsync("/api/auth/register", register);
+        var regResp = await client.PostAsJsonAsync("/api/v1/auth/register", register);
         regResp.EnsureSuccessStatusCode();
 
         var login = new LoginRequest("inttest@example.com", "P@ssw0rd");
-        var loginResp = await client.PostAsJsonAsync("/api/auth/login", login);
+        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login", login);
         loginResp.EnsureSuccessStatusCode();
         var payload = await loginResp.Content.ReadFromJsonAsync<dynamic>();
         Assert.False(string.IsNullOrEmpty((string)payload.accessToken));

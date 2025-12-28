@@ -8,7 +8,6 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tenants")]
-[Route("api/tenants")]
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class TenantsController : ControllerBase
 {

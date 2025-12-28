@@ -19,14 +19,14 @@ public class FinanceIntegrationTests : IClassFixture<Microsoft.AspNetCore.Mvc.Te
 
         // 1) create a lease
         var leaseReq = new { PropertyId = "P-1", TenantId = "T-1", StartDate = DateTime.UtcNow, Rent = 100m };
-        var leaseResp = await client.PostAsJsonAsync("/api/leases", leaseReq);
+        var leaseResp = await client.PostAsJsonAsync("/api/v1/leases", leaseReq);
         leaseResp.EnsureSuccessStatusCode();
         var lease = await leaseResp.Content.ReadFromJsonAsync<dynamic>();
         Guid leaseId = Guid.Parse((string)lease.id.ToString());
 
         // 2) create a payment
         var paymentReq = new { LeaseId = leaseId, Amount = 100m };
-        var payResp = await client.PostAsJsonAsync("/api/rentpayments", paymentReq);
+        var payResp = await client.PostAsJsonAsync("/api/v1/rentpayments", paymentReq);
         payResp.EnsureSuccessStatusCode();
         var payment = await payResp.Content.ReadFromJsonAsync<dynamic>();
         Guid paymentId = Guid.Parse((string)payment.id.ToString());
@@ -36,7 +36,7 @@ public class FinanceIntegrationTests : IClassFixture<Microsoft.AspNetCore.Mvc.Te
         for (int i = 0; i < 20; i++)
         {
             await Task.Delay(200);
-            var txResp = await client.GetAsync("/api/renttransactions");
+            var txResp = await client.GetAsync("/api/v1/renttransactions");
             txResp.EnsureSuccessStatusCode();
             var txs = await txResp.Content.ReadFromJsonAsync<dynamic[]>();
             foreach (var t in txs)
@@ -57,7 +57,7 @@ public class FinanceIntegrationTests : IClassFixture<Microsoft.AspNetCore.Mvc.Te
         for (int i = 0; i < 20; i++)
         {
             await Task.Delay(200);
-            var rResp = await client.GetAsync("/api/receipts");
+            var rResp = await client.GetAsync("/api/v1/receipts");
             rResp.EnsureSuccessStatusCode();
             var rs = await rResp.Content.ReadFromJsonAsync<dynamic[]>();
             foreach (var r in rs)
@@ -74,7 +74,7 @@ public class FinanceIntegrationTests : IClassFixture<Microsoft.AspNetCore.Mvc.Te
         Assert.NotNull(receiptId);
 
         // 5) download PDF
-        var dl = await client.GetAsync($"/api/receipts/{receiptId}/download");
+        var dl = await client.GetAsync($"/api/v1/receipts/{receiptId}/download");
         dl.EnsureSuccessStatusCode();
         var bytes = await dl.Content.ReadAsByteArrayAsync();
         Assert.True(bytes.Length > 0);

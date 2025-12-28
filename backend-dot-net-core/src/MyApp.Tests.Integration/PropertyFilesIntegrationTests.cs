@@ -30,27 +30,27 @@ public class PropertyFilesIntegrationTests : IClassFixture<WebApplicationFactory
         byteContent.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
         content.Add(byteContent, "file", "hello.txt");
 
-        var up = await client.PostAsync($"/api/properties/{propertyId}/files", content);
+        var up = await client.PostAsync($"/api/v1/properties/{propertyId}/files", content);
         up.EnsureSuccessStatusCode();
         var meta = await up.Content.ReadFromJsonAsync<FileMetadata>();
         Assert.NotNull(meta);
         Assert.Equal(propertyId, meta!.EntityId);
 
-        var list = await client.GetFromJsonAsync<FileMetadata[]>($"/api/properties/{propertyId}/files");
+        var list = await client.GetFromJsonAsync<FileMetadata[]>($"/api/v1/properties/{propertyId}/files");
         Assert.NotNull(list);
         Assert.Contains(list, f => f.Id == meta.Id);
 
-        var dl = await client.GetAsync($"/api/properties/{propertyId}/files/{meta.Id}/download");
+        var dl = await client.GetAsync($"/api/v1/properties/{propertyId}/files/{meta.Id}/download");
         dl.EnsureSuccessStatusCode();
         var body = await dl.Content.ReadAsStringAsync();
         Assert.Equal("hello-property", body);
 
         // Update metadata
-        var put = await client.PutAsJsonAsync($"/api/properties/{propertyId}/files/{meta.Id}", new { fileName = "hello-updated.txt" });
+        var put = await client.PutAsJsonAsync($"/api/v1/properties/{propertyId}/files/{meta.Id}", new { fileName = "hello-updated.txt" });
         Assert.Equal(System.Net.HttpStatusCode.NoContent, put.StatusCode);
 
         // Delete
-        var del = await client.DeleteAsync($"/api/properties/{propertyId}/files/{meta.Id}");
+        var del = await client.DeleteAsync($"/api/v1/properties/{propertyId}/files/{meta.Id}");
         Assert.Equal(System.Net.HttpStatusCode.NoContent, del.StatusCode);
     }
 }

@@ -19,12 +19,12 @@ public class UnitUtilitiesIntegrationTests : IClassFixture<WebApplicationFactory
     {
         var client = _factory.CreateClient();
         var u = new UnitUtility { UnitId = Guid.NewGuid(), UtilityType = "water" };
-        var createResp = await client.PostAsJsonAsync("/api/unitutilities", u);
+        var createResp = await client.PostAsJsonAsync("/api/v1/unitutilities", u);
         createResp.EnsureSuccessStatusCode();
         var created = await createResp.Content.ReadFromJsonAsync<UnitUtility>();
         Assert.NotNull(created);
 
-        var toggleResp = await client.PatchAsync($"/api/unitutilities/{created!.Id}/toggle", null);
+        var toggleResp = await client.PatchAsync($"/api/v1/unitutilities/{created!.Id}/toggle", null);
         Assert.Equal(System.Net.HttpStatusCode.NoContent, toggleResp.StatusCode);
     }
 }

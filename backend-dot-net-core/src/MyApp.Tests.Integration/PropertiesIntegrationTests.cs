@@ -20,19 +20,19 @@ public class PropertiesIntegrationTests : IClassFixture<WebApplicationFactory<Pr
         var client = _factory.CreateClient();
 
         var createReq = new CreatePropertyRequest("Prop1","Addr1", null);
-        var createResp = await client.PostAsJsonAsync("/api/properties", createReq);
+        var createResp = await client.PostAsJsonAsync("/api/v1/properties", createReq);
         createResp.EnsureSuccessStatusCode();
         var created = await createResp.Content.ReadFromJsonAsync<Property>();
         Assert.NotNull(created);
 
-        var get = await (await client.GetAsync($"/api/properties/{created!.Id}")).Content.ReadFromJsonAsync<Property>();
+        var get = await (await client.GetAsync($"/api/v1/properties/{created!.Id}")).Content.ReadFromJsonAsync<Property>();
         Assert.Equal("Prop1", get!.Name);
 
-        var list = await (await client.GetAsync("/api/properties")).Content.ReadFromJsonAsync<Property[]>();
+        var list = await (await client.GetAsync("/api/v1/properties")).Content.ReadFromJsonAsync<Property[]>();
         Assert.Single(list, p => p.Id == created.Id);
 
         // Update
-        await client.PutAsJsonAsync($"/api/properties/{created.Id}", new UpdatePropertyRequest("Prop1b","Addr1b", null));
+        await client.PutAsJsonAsync($"/api/v1/properties/{created.Id}", new UpdatePropertyRequest("Prop1b","Addr1b", null));
         var got2 = await (await client.GetAsync($"/api/properties/{created.Id}")).Content.ReadFromJsonAsync<Property>();
         Assert.Equal("Prop1b", got2!.Name);
 

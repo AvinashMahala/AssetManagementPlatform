@@ -5,7 +5,8 @@ using MyApp.Interfaces;
 namespace MyApp.Api.Controllers;
 
 [ApiController]
-[Route("api/properties/{propertyId:guid}/receipt-template")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/properties/{propertyId:guid}/receipt-template")]
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class PropertyReceiptTemplateController : ControllerBase
 {

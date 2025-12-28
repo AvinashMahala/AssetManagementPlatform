@@ -20,29 +20,29 @@ public class TenantsIntegrationTests : IClassFixture<WebApplicationFactory<Progr
         var client = _factory.CreateClient();
 
         var tenant = new Tenant { FirstName = "John", LastName = "Doe", Email = "john@example.com" };
-        var createResp = await client.PostAsJsonAsync("/api/tenants", tenant);
+        var createResp = await client.PostAsJsonAsync("/api/v1/tenants", tenant);
         createResp.EnsureSuccessStatusCode();
         var created = await createResp.Content.ReadFromJsonAsync<Tenant>();
         Assert.NotNull(created);
         Assert.NotEqual(Guid.Empty, created!.Id);
 
-        var listResp = await client.GetAsync("/api/tenants");
+        var listResp = await client.GetAsync("/api/v1/tenants");
         listResp.EnsureSuccessStatusCode();
         var list = await listResp.Content.ReadFromJsonAsync<Tenant[]>();
         Assert.Single(list, t => t.Id == created.Id);
 
-        var getResp = await client.GetAsync($"/api/tenants/{created.Id}");
+        var getResp = await client.GetAsync($"/api/v1/tenants/{created.Id}");
         getResp.EnsureSuccessStatusCode();
         var got = await getResp.Content.ReadFromJsonAsync<Tenant>();
         Assert.NotNull(got);
         Assert.Equal(created.Id, got!.Id);
 
-        var updateResp = await client.PutAsJsonAsync($"/api/tenants/{created.Id}", new Tenant { FirstName = "Jane", LastName = "Doe", Email = "jane@example.com" });
+        var updateResp = await client.PutAsJsonAsync($"/api/v1/tenants/{created.Id}", new Tenant { FirstName = "Jane", LastName = "Doe", Email = "jane@example.com" });
         updateResp.EnsureSuccessStatusCode();
         var updated = await updateResp.Content.ReadFromJsonAsync<Tenant>();
         Assert.Equal("Jane", updated!.FirstName);
 
-        var delResp = await client.DeleteAsync($"/api/tenants/{created.Id}");
+        var delResp = await client.DeleteAsync($"/api/v1/tenants/{created.Id}");
         Assert.Equal(System.Net.HttpStatusCode.NoContent, delResp.StatusCode);
 
         var getAfterDel = await client.GetAsync($"/api/tenants/{created.Id}");
