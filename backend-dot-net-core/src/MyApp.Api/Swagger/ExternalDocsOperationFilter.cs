@@ -167,6 +167,40 @@ namespace MyApp.Api.Swagger
                             }
                         }
                     }
+
+                    // parameters.json or parameters/ (optional)
+                    var paramsPath = Path.Combine(endpointDir, "parameters.json");
+                    if (File.Exists(paramsPath))
+                    {
+                        try
+                        {
+                            var ptxt = File.ReadAllText(paramsPath);
+                            using var pdoc = JsonDocument.Parse(ptxt);
+                            ApplyParameterExamplesFromJson(pdoc.RootElement, operation);
+                        }
+                        catch
+                        {
+                            // ignore malformed parameters file
+                        }
+                    }
+
+                    var paramsDir = Path.Combine(endpointDir, "parameters");
+                    if (Directory.Exists(paramsDir))
+                    {
+                        foreach (var f in Directory.GetFiles(paramsDir, "*.json"))
+                        {
+                            try
+                            {
+                                var ptxt = File.ReadAllText(f);
+                                using var pdoc = JsonDocument.Parse(ptxt);
+                                ApplyParameterExamplesFromJson(pdoc.RootElement, operation);
+                            }
+                            catch
+                            {
+                                // ignore malformed param file
+                            }
+                        }
+                    }
                 }
             }
             catch
@@ -424,6 +458,106 @@ namespace MyApp.Api.Swagger
                     }
                 }
             }
+        }
+
+        internal void ApplyParameterExamplesFromJson(JsonElement root, OpenApiOperation operation)
+        {
+            // root expected shape:
+            // { "parameters": { "path": { "id": { "example": "..." } }, "query": { "page": { "example": 2 } } }, "sets": { "default": { "id": "..." } } }
+            if (root.ValueKind != JsonValueKind.Object) return;
+
+            if (root.TryGetProperty("parameters", out var pnode) && pnode.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var loc in pnode.EnumerateObject())
+                {
+                    var locName = loc.Name.ToLowerInvariant();
+                    if (loc.Value.ValueKind != JsonValueKind.Object) continue;
+
+                    if (!TryMapParameterLocation(locName, out var paramLoc)) continue;
+
+                    foreach (var prop in loc.Value.EnumerateObject())
+                    {
+                        var paramName = prop.Name;
+                        var paramObj = prop.Value;
+
+                        // pick example or first from examples
+                        IOpenApiAny? exampleAny = null;
+                        if (paramObj.TryGetProperty("example", out var ex))
+                        {
+                            exampleAny = JsonToOpenApiAnyConverter.Convert(ex);
+                        }
+                        else if (paramObj.TryGetProperty("examples", out var examples) && examples.ValueKind == JsonValueKind.Object)
+                        {
+                            foreach (var exkp in examples.EnumerateObject())
+                            {
+                                if (exkp.Value.ValueKind == JsonValueKind.Object && exkp.Value.TryGetProperty("value", out var ev))
+                                {
+                                    exampleAny = JsonToOpenApiAnyConverter.Convert(ev);
+                                    if (exkp.Name.Equals("default", StringComparison.InvariantCultureIgnoreCase)) break;
+                                }
+                            }
+                        }
+
+                        // attach to matching parameter or create one
+                        var existing = operation.Parameters.FirstOrDefault(p => p.Name == paramName && p.In == paramLoc);
+                        if (existing != null)
+                        {
+                            if (exampleAny != null) existing.Example = exampleAny;
+                        }
+                        else
+                        {
+                            var newParam = new OpenApiParameter { Name = paramName, In = paramLoc, Required = paramLoc == ParameterLocation.Path };
+                            if (exampleAny != null) newParam.Example = exampleAny;
+                            operation.Parameters.Add(newParam);
+                        }
+
+                        // preserve named examples as extensions
+                        if (paramObj.TryGetProperty("examples", out var namedExamples) && namedExamples.ValueKind == JsonValueKind.Object)
+                        {
+                            var dict = new OpenApiObject();
+                            foreach (var namedEx in namedExamples.EnumerateObject())
+                            {
+                                if (namedEx.Value.ValueKind == JsonValueKind.Object && namedEx.Value.TryGetProperty("value", out var ev))
+                                {
+                                    var converted = ev.GetRawText();
+                                    dict["x-example-" + namedEx.Name] = new OpenApiString(converted);
+                                }
+                            }
+
+                            // attach to operation as a hint as well
+                            foreach (var p in operation.Parameters.Where(p => p.Name == paramName && p.In == paramLoc))
+                            {
+                                foreach (var kv in dict) p.Extensions[kv.Key] = kv.Value;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // sets
+            if (root.TryGetProperty("sets", out var sets) && sets.ValueKind == JsonValueKind.Object)
+            {
+                var obj = new OpenApiObject();
+                foreach (var set in sets.EnumerateObject())
+                {
+                    obj[set.Name] = new OpenApiString(set.Value.GetRawText());
+                }
+
+                operation.Extensions["x-parameter-sets"] = obj;
+            }
+        }
+
+        private bool TryMapParameterLocation(string loc, out ParameterLocation result)
+        {
+            result = ParameterLocation.Query;
+            return loc switch
+            {
+                "path" => (result = ParameterLocation.Path) != null,
+                "query" => (result = ParameterLocation.Query) != null,
+                "header" => (result = ParameterLocation.Header) != null,
+                "cookie" => (result = ParameterLocation.Cookie) != null,
+                _ => false,
+            };
         }
     }
 }

@@ -91,6 +91,7 @@ Migration checklist (for a controller)
    - From project root: `powershell .\scripts\migrate-api-docs-to-folders.ps1 -Controller Properties` (adjust controller name)
    - The script will create endpoint folders, move/rename md files to `description.md`, and split combined JSON into `request.json` and `responses/<status>.json`.
 3. Review the created `description.md`, `request.json`, and `responses/*.json` files. Add or edit front-matter as needed.
+3.a If the endpoint accepts path/query/header/cookie parameters (especially path `id` params), add `parameters.json` (or a `parameters` folder with `{in}.{name}.json` files) containing per-parameter `example` or `examples` and optional `sets` for named parameter combinations.
 4. Remove or consolidate large example payloads into `examples/` if necessary.
 5. Verify that each endpoint `description.md` includes an **Endpoint:** line.
 6. Commit the migration changes on a branch (keep `.bak` files until verification is complete).
@@ -104,6 +105,7 @@ Manual verification:
 - Open `/swagger` and verify for the controller:
   - `description.md` content appears in the operation (summary/description)
   - `request.json` attaches as `operation.RequestBody` and examples are visible in the UI
+  - Parameter examples: `parameters.json` (or `parameters/*`) set per-parameter `example` values in the operation, named parameter examples are present as `x-example-{name}` extensions, and `x-parameter-sets` is present on operations when `sets` are provided.
   - `responses/<status>.json` populate `operation.Responses` and show examples
   - Tag docs render under their tag and do not duplicate the tag header
   - Operations are collapsed by default and Collapse/Expand All buttons are present in the UI (see `wwwroot/swagger-ui/swagger-custom.js`)
@@ -118,6 +120,7 @@ Automated tests (recommended)
   - `responses/<status>.json` create `operation.Responses[status]` with examples
   - Named examples in `responses/<status>.json` are converted to `OpenApiExample` entries
   - Backward-compatibility: `x-example-{name}` extensions are preserved on media objects (assert presence if examples provided)
+  - Parameter parsing: `parameters.json` and `parameters/*` correctly set `OpenApiParameter.Example`, create missing parameters (with `Required = true` for `path`), preserve named parameter examples as `x-example-{name}` on the parameter, and add `x-parameter-sets` operation extension when `sets` are present.
 - Add tests for `TagDocsDocumentFilter` to assert leading H1/H2 lines are stripped when they match the tag name.
 - Add an integration test that starts a minimal app with Swagger enabled and asserts `/swagger/v1/swagger.json` contains the expected example fields for a sample endpoint.
 
