@@ -25,6 +25,7 @@ Canonical rules
 ---------------
 - Loader behavior: the `ExternalDocsOperationFilter` reads only the canonical endpoint folder layout above. Legacy single-file sidecars are deprecated and are NOT relied upon by the filter.
 - Endpoint folder naming: `HTTPMETHOD.normalized-route` (e.g., `POST.properties`, `GET.properties.{id}`, `PUT.properties.{id}.template`). Normalization removes route constraints (e.g., `{id:guid}` -> `{id}`) and replaces slashes with dots. This ensures deterministic, route-centric folder names and disambiguates same path/different-method scenarios.
+- Controller folder mapping: Use the controller class name (without the `Controller` suffix) as the top-level `ApiDocs/{Controller}` folder. **Do not** place docs for a distinct controller under another controller's folder even if their routes overlap. Example: `PropertyFilesController` → `ApiDocs/PropertyFiles` (do **not** put property-file endpoints under `ApiDocs/Properties`). This keeps controller ownership explicit and avoids accidental mixing of unrelated controller docs.
 - `description.md`:
   - MAY include YAML front-matter block between `---` lines. Supported front-matter keys:
     - `summary` (string)
@@ -69,6 +70,43 @@ Author guidance:
     }
   - Use numeric file names (no prefix or suffix) so the loader can map status codes directly.
 - Tag docs: place long-form tag docs under `ApiDocs/Tags/{Tag}.md`. The `TagDocsDocumentFilter` will attach the tag doc and strip the leading H1/H2 if it matches the tag name to avoid duplicated headers in UI.
+
+Tag doc format (recommended)
+----------------------------
+Provide a concise, consistent tag doc for each controller under `ApiDocs/Tags/{Tag}.md`. A recommended structure helps reviewers and keeps UI rendering predictable:
+
+- **H1** with the Tag name (e.g., `# PropertyFiles`)
+- **Short description** (one paragraph)
+- **Controller:** `ControllerName` (e.g., `PropertyFilesController`)
+- **Authentication:** short note (e.g., `Bearer token required` or `Public`)
+- **Endpoints included:** bullet list of paths and one-line descriptions (e.g., `POST /api/properties/{propertyId}/files` — upload)
+- **Notes:** best practices, important caveats, and guidance for authors (e.g., avoid PII in examples, use `multipart/form-data` schema for uploads, move large examples to `examples/`)
+- A final `---` separator and a short line encouraging use of Swagger UI examples for testing
+
+Example tag doc content:
+
+```
+# PropertyFiles
+
+Property file endpoints for uploading, listing, downloading, and managing property-scoped files.
+
+- **Controller:** `PropertyFilesController`
+- **Authentication:** Bearer token required (endpoints are typically protected)
+- **Endpoints included:**
+  - `POST /api/properties/{propertyId}/files` — upload (multipart/form-data)
+  - `GET /api/properties/{propertyId}/files` — list metadata
+  - `GET /api/properties/{propertyId}/files/{fileId}/download` — download binary
+  - `PUT /api/properties/{propertyId}/files/{fileId}` — update metadata (JSON body with `fileName`)
+  - `DELETE /api/properties/{propertyId}/files/{fileId}` — delete file
+
+Notes:
+- Uploads use `multipart/form-data` and must include a `file` part. Keep examples small and avoid embedding binary in JSON examples; use a `multipart/form-data` `request.json` with a `binary` schema example instead.
+- These docs live under `ApiDocs/PropertyFiles` (controller-based folder). Do not add file-controller docs into `ApiDocs/Properties` — use a dedicated controller folder to avoid confusion.
+
+---
+
+Use the operation examples in Swagger UI to test upload and download flows.
+```
 
 Front-matter merging and precedence
 -----------------------------------
