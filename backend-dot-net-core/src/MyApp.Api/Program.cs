@@ -98,6 +98,7 @@ builder.Services.AddSwaggerGen(options =>
 
     // Load external per-endpoint docs from ApiDocs (see ApiDocs/README.md)
     options.OperationFilter<ExternalDocsOperationFilter>();
+    options.DocumentFilter<TagDocsDocumentFilter>();
 
     var xmlFile = System.IO.Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".xml");
     if (System.IO.File.Exists(xmlFile)) options.IncludeXmlComments(xmlFile);
@@ -124,7 +125,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        // Collapse sections by default
+        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+        // Inject custom JS to add Collapse All / Expand All buttons and force collapse
+        c.InjectJavascript("/swagger-ui/swagger-custom.js");
+    });
 }
 
 app.UseAuthentication();
