@@ -1,3 +1,11 @@
 {
-  "id": { "in": "path", "description": "Expense id (guid)", "examples": { "default": { "value": "00000000-0000-0000-0000-000000000000" } } }
+  "id": {
+    "in": "path",
+    "description": "Expense id (guid)",
+    "examples": {
+      "default": {
+        "value": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
 }

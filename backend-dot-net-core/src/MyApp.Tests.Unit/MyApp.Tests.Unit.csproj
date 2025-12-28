@@ -19,5 +19,6 @@
     <ProjectReference Include="..\MyApp.Interfaces\MyApp.Interfaces.csproj" />
     <ProjectReference Include="..\MyApp.Models\MyApp.Models.csproj" />
     <ProjectReference Include="..\MyApp.Repositories\MyApp.Repositories.csproj" />
+    <ProjectReference Include="..\MyApp.Api\MyApp.Api.csproj" />
   </ItemGroup>
 </Project>

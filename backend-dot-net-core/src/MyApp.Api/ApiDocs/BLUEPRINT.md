@@ -137,7 +137,7 @@ Migration checklist (for legacy controllers only)
    - From project root: `powershell .\scripts\migrate-api-docs-to-folders.ps1 -Controller Properties` (adjust controller name)
    - The script will create endpoint folders under `ApiDocs/Controllers/{Controller}`, move/rename md files to `description.md`, and split combined JSON into `request.json` and `responses/<status>.json`.
 3. Review the created `description.md`, `request.json`, and `responses/*.json` files. Add or edit front-matter as needed.
-3.a If the endpoint accepts path/query/header/cookie parameters (especially path `id` params), add `parameters.json` (or a `parameters` folder with `{in}.{name}.json` files) containing per-parameter `example` or `examples` and optional `sets` for named parameter combinations.
+3.a If the endpoint accepts path/query/header/cookie parameters (especially path `id` params), add `parameters.json` (or a `parameters` folder with `{in}.{name}.json` files) containing per-parameter `example` or `examples` and optional `sets` for named parameter combinations. Note: legacy short-form parameter files (a top-level map of `paramName` -> `{ "in": "path", "example": ... }`) are supported for backward compatibility, but for new or migrated endpoints prefer the canonical `{ "parameters": { "path": { ... } } }` shape.
 4. Remove or consolidate large example payloads into `examples/` if necessary.
 5. Verify that each endpoint `description.md` includes an **Endpoint:** line.
 6. Commit the migration changes on a branch (keep `.bak` files until verification is complete).
