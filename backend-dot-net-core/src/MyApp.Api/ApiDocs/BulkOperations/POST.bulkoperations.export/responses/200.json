@@ -1,0 +1,10 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "exportType": "transactions", "options": { "from": "2025-01-01", "to": "2025-01-31" }, "url": "/api/files/00000000-0000-0000-0000-0000000abc/download" } }
+      }
+    }
+  }
+}

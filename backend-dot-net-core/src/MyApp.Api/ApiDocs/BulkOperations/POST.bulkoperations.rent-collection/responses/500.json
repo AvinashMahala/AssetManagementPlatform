@@ -1,0 +1,10 @@
+{
+  "description": "Server error - all operations failed",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "processed": [], "errors": [{ "itemId": "11111111-1111-1111-1111-111111111111", "message": "Failed to create transactions" }] } }
+      }
+    }
+  }
+}

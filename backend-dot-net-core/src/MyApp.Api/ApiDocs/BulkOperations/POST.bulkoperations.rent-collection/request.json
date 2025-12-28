@@ -1,0 +1,8 @@
+{
+  "unitIds": ["00000000-0000-0000-0000-000000000000"],
+  "billingPeriodStart": "2025-01-01T00:00:00Z",
+  "billingPeriodEnd": "2025-01-31T23:59:59Z",
+  "applyExpenses": true,
+  "expenseIds": ["00000000-0000-0000-0000-000000000000"],
+  "skipUnitsWithExistingTransactions": false
+}

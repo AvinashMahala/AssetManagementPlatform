@@ -1,0 +1,10 @@
+{
+  "description": "Bad Request - unsupported export type",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Unsupported export type: 'foo'" } }
+      }
+    }
+  }
+}
