@@ -1,11 +1,4 @@
 {
-  "content": {
-    "application/json": {
-      "example": {
-        "unitId": "55555555-5555-5555-5555-555555555555",
-        "valid": true,
-        "issues": []
-      }
-    }
-  }
+  "description": "OK",
+  "content": { "application/json": { "examples": { "default": { "value": { "unitId": "55555555-5555-5555-5555-555555555555", "valid": true, "issues": [] } } } } }
 }

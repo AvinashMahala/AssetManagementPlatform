@@ -1,0 +1,6 @@
+{
+  "description": "No Content",
+  "content": {
+    "application/json": { "examples": { "default": { "value": {} } } }
+  }
+}

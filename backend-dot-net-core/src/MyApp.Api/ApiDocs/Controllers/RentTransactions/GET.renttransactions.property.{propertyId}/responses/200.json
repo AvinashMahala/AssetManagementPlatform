@@ -1,0 +1,6 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": { "examples": { "default": { "value": [ { "id": "t1-...", "propertyId": "3fa85f64-...", "amount": 1200.00 } ] } } }
+  }
+}

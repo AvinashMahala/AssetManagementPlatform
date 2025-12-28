@@ -1,0 +1,4 @@
+{
+  "name": "Updated Rent Receipt",
+  "settingsJson": "{ \"body\": \"<p>{{tenantName}} - Rent - UPDATED</p>\" }"
+}

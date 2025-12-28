@@ -23,7 +23,9 @@ function Normalize-Route($route) {
     return $r
 }
 
-foreach ($controllerDir in Get-ChildItem -Path $root -Directory) {
+$controllersRoot = Join-Path $root 'Controllers'
+if (-not (Test-Path $controllersRoot)) { $controllersRoot = $root }
+foreach ($controllerDir in Get-ChildItem -Path $controllersRoot -Directory) {
     foreach ($endpointDir in Get-ChildItem -Path $controllerDir.FullName -Directory) {
         $descPath = Join-Path $endpointDir.FullName 'description.md'
         if (-not (Test-Path $descPath)) {

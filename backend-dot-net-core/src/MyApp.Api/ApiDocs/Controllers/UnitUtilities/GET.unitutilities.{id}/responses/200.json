@@ -1,13 +1,4 @@
 {
-  "content": {
-    "application/json": {
-      "example": {
-        "id": "99999999-9999-9999-9999-999999999999",
-        "unitId": "55555555-5555-5555-5555-555555555555",
-        "name": "Water",
-        "enabled": true,
-        "rate": 15.0
-      }
-    }
-  }
+  "description": "OK",
+  "content": { "application/json": { "examples": { "default": { "value": { "id": "99999999-9999-9999-9999-999999999999", "unitId": "55555555-5555-5555-5555-555555555555", "name": "Water", "enabled": true, "rate": 15.0 } } } } }
 }

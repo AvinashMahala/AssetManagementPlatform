@@ -1,13 +1,4 @@
 {
-  "content": {
-    "application/json": {
-      "example": {
-        "id": "22222222-2222-2222-2222-222222222222",
-        "name": "Building A - Unit 2 (updated)",
-        "number": "A2",
-        "status": "inactive",
-        "floor": 2
-      }
-    }
-  }
+  "description": "OK",
+  "content": { "application/json": { "examples": { "default": { "value": { "id": "22222222-2222-2222-2222-222222222222", "name": "Building A - Unit 2 (updated)", "number": "A2", "status": "inactive", "floor": 2 } } } } }
 }

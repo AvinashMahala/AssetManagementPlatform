@@ -1,0 +1,6 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": { "examples": { "default": { "value": [ { "id": "d1-...", "fileName": "id_document.pdf", "contentType": "application/pdf", "url": "https://files.example.com/abc123", "verified": false } ] } } }
+  }
+}

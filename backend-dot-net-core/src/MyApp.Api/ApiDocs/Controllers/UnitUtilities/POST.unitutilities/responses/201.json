@@ -1,13 +1,4 @@
 {
-  "content": {
-    "application/json": {
-      "example": {
-        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-        "unitId": "55555555-5555-5555-5555-555555555555",
-        "name": "Electricity",
-        "enabled": true,
-        "rate": 45.5
-      }
-    }
-  }
+  "description": "Created",
+  "content": { "application/json": { "examples": { "default": { "value": { "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "unitId": "55555555-5555-5555-5555-555555555555", "name": "Electricity", "enabled": true, "rate": 45.5 } } } } }
 }

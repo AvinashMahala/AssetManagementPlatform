@@ -21,8 +21,8 @@
     "build:watch:backend": "yarn workspace backend build:watch",
     "test": "yarn workspaces run test",
     "lint": "yarn workspaces run lint",
-    "validate:apidocs": "powershell -NoProfile -NonInteractive -File backend-dot-net-core/scripts/validate-api-docs.ps1 -ApiDocsRoot 'backend-dot-net-core/src/MyApp.Api/ApiDocs'"
-    ,
+    "validate:apidocs": "powershell -NoProfile -NonInteractive -File backend-dot-net-core/scripts/validate-api-docs.ps1 -ApiDocsRoot backend-dot-net-core/src/MyApp.Api/ApiDocs",
+
     "seed:db": "python3 db/seeds/python/seed_to_db.py"
   },
   "devDependencies": {

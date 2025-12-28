@@ -1,0 +1,8 @@
+{
+  "leaseId": "a12f...",
+  "unitId": "u123...",
+  "tenantId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "amount": 1200.00,
+  "type": "payment",
+  "occurredAt": "2025-12-01T00:00:00Z"
+}

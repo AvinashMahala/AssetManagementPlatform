@@ -1,0 +1,6 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": { "examples": { "default": { "value": { "success": true } } } }
+  }
+}
