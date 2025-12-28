@@ -264,3 +264,21 @@ Notes for agents generating examples
 Contact
 -------
 If you need help migrating an additional controller or you'd like me to run the API and perform the UI verification, tell me which controller to migrate next and I’ll proceed.
+
+Linter — `validate-api-docs.ps1`
+--------------------------------
+- A PowerShell validator script is provided at `backend-dot-net-core/scripts/validate-api-docs.ps1`.
+- Run via npm: `npm run validate:apidocs` (or use the PowerShell call directly):
+
+  powershell -NoProfile -NonInteractive -File backend-dot-net-core/scripts/validate-api-docs.ps1 -ApiDocsRoot 'backend-dot-net-core/src/MyApp.Api/ApiDocs'
+
+- Flags:
+  - `-Fix`: attempt to auto-insert missing `**Endpoint:**` lines when folder names clearly indicate HTTP method and route.
+  - `-Json`: emit JSON output suitable for CI consumption.
+
+- Exit codes:
+  - `0` — no issues found
+  - `1` — issues found (printed to stdout)
+  - `2` — error (e.g., ApiDocs root not found)
+
+Please run the linter as part of your PR flow to ensure new `ApiDocs` folders conform to this blueprint.
