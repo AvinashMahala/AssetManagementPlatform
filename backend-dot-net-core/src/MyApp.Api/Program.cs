@@ -5,11 +5,30 @@ using Microsoft.OpenApi.Models;
 using MyApp.Services;
 using MyApp.Repositories;
 using MyApp.Api.Swagger;
+using Serilog;
+using System.IO;
+using MyApp.Api.Extensions;
+using Prometheus;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog from configuration and emit JSON logs (enrich with scope values such as CorrelationId)
+builder.Host.UseSerilog((ctx, services, loggerConfig) =>
+{
+    // Ensure logs directory exists (write to logs/backend by default)
+    var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs", "backend");
+    try { Directory.CreateDirectory(logPath); } catch { /* ignore if we cannot create */ }
+
+    loggerConfig.ReadFrom.Configuration(ctx.Configuration)
+                .Enrich.FromLogContext()
+                .WriteTo.Console(new Serilog.Formatting.Json.JsonFormatter());
+});
+
+// Register observability (OpenTelemetry tracing & metrics)
+builder.Services.AddMyAppObservability(builder.Configuration);
 
 // Map MAIN_DATABASE_URL (used by the Express backend) into ConnectionStrings:Default if present
 var mainUrl = builder.Configuration["MAIN_DATABASE_URL"] ?? builder.Configuration["MAIN_DATABASE_URL".ToLower()];
@@ -50,6 +69,19 @@ builder.Services.AddAuthorization();
 
 // Add validation and use problem details for consistent error responses
 builder.Services.AddControllers().AddNewtonsoftJson();
+
+builder.Services.Configure<MyApp.Api.Options.CorrelationIdOptions>(builder.Configuration.GetSection("CorrelationId"));
+builder.Services.Configure<MyApp.Api.Options.ExceptionHandlingOptions>(builder.Configuration.GetSection("ExceptionHandling"));
+builder.Services.Configure<MyApp.Api.Options.RateLimitingOptions>(builder.Configuration.GetSection("RateLimiting"));
+// Register rate limiting services (in-memory by default; replace with Redis in production)
+builder.Services.AddSingleton<MyApp.Api.Services.RateLimit.IRateLimitStore, MyApp.Api.Services.RateLimit.InMemoryRateLimitStore>();
+
+// Request logging options
+builder.Services.Configure<MyApp.Api.Options.RequestLoggingOptions>(builder.Configuration.GetSection("RequestLogging"));
+// Security headers options
+builder.Services.Configure<MyApp.Api.Options.SecurityHeadersOptions>(builder.Configuration.GetSection("SecurityHeaders"));
+// Maintenance options
+builder.Services.Configure<MyApp.Api.Options.MaintenanceOptions>(builder.Configuration.GetSection("Maintenance"));
 
 // Configure CORS for local development. Reads CORS_ORIGIN from configuration (comma-separated list)
 var corsOrigins = builder.Configuration["CORS_ORIGIN"] ?? "http://localhost:5173";
@@ -205,6 +237,28 @@ if (app.Environment.IsDevelopment())
 
 // Enable configured CORS policy so browser requests from local dev origins are allowed
 app.UseCors("LocalDev");
+
+// Correlation ID middleware must run early so later logging and error handling includes the id
+app.UseMiddleware<MyApp.Api.Middleware.CorrelationIdMiddleware>();
+
+// Security headers (early, after CORS)
+app.UseMiddleware<MyApp.Api.Middleware.SecurityHeadersMiddleware>();
+
+// Request logging should wrap downstream handlers so duration and status can be measured
+app.UseMiddleware<MyApp.Api.Middleware.RequestLoggingMiddleware>();
+
+// Global exception handling middleware (catches downstream exceptions and returns ProblemDetails)
+app.UseMiddleware<MyApp.Api.Middleware.ExceptionHandlingMiddleware>();
+
+// Rate limiting middleware enforces configured policies
+app.UseMiddleware<MyApp.Api.Middleware.RateLimitingMiddleware>();
+
+// Maintenance mode (short-circuit before auth)
+app.UseMiddleware<MyApp.Api.Middleware.MaintenanceMiddleware>();
+
+// Expose Prometheus metrics endpoint (prometheus-net) - should be accessible without auth
+app.UseHttpMetrics();
+app.UseMetricServer();
 
 app.UseAuthentication();
 // Conditional auth middleware must run after authentication so it can call AuthenticateAsync if header present
