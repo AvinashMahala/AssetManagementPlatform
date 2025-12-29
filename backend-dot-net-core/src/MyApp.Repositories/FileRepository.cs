@@ -38,7 +38,7 @@ public class FileRepository : IFileRepository
         if (!string.IsNullOrEmpty(entityType)) q = q.Where(f => f.EntityType == entityType);
         if (!string.IsNullOrEmpty(entityId) && Guid.TryParse(entityId, out var gid)) q = q.Where(f => f.EntityId == gid);
         var total = await q.CountAsync();
-        var items = await q.OrderByDescending(f => f.CreatedAt).Skip(offset).Take(limit).ToListAsync();
+        var items = await q.OrderByDescending(f => f.UploadedAt).Skip(offset).Take(limit).ToListAsync();
         return new PagedResult<FileMetadata>(items, total);
     }
 

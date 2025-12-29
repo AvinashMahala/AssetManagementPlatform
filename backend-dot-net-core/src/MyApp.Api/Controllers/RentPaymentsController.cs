@@ -15,7 +15,7 @@ namespace MyApp.Api.Controllers;
 /// <param name="service">The rent payment service.</param>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/rentpayments")]
+[Route("api/v{version:apiVersion}/rent-payments")]
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class RentPaymentsController(IRentPaymentService service) : ControllerBase
 {

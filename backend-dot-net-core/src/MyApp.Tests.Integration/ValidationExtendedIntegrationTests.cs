@@ -64,7 +64,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     public async Task MeterReadingCreate_Returns400_OnInvalid()
     {
         var client = _factory.CreateClient();
-        var r = new MeterReading { MeterId = Guid.Empty, Value = -1 };
+        var r = new MeterReading { MeterId = Guid.Empty, CurrentReading = -1 };
         var resp = await client.PostAsJsonAsync("/api/v1/meterreadings", r);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }

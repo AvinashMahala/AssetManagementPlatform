@@ -17,7 +17,7 @@ public class PropertyFileService : IPropertyFileService
         _repo = repo;
     }
 
-    public async Task<FileMetadata> UploadForEntityAsync(string entityType, string entityId, string fileName, string contentType, byte[] data, string createdBy)
+    public async Task<FileMetadata> UploadForEntityAsync(string entityType, string entityId, string fileName, string contentType, byte[] data, string uploadedBy)
     {
         var storageId = await _storage.StoreAsync(data, fileName);
         var meta = new FileMetadata
@@ -26,11 +26,12 @@ public class PropertyFileService : IPropertyFileService
             FileName = fileName,
             ContentType = contentType,
             Size = data.LongLength,
-            EntityType = entityType
+            EntityType = entityType,
+            UploadedAt = DateTime.UtcNow
         };
 
         if (!string.IsNullOrEmpty(entityId) && Guid.TryParse(entityId, out var gid)) meta.EntityId = gid;
-        if (!string.IsNullOrEmpty(createdBy) && Guid.TryParse(createdBy, out var cid)) meta.CreatedBy = cid;
+        if (!string.IsNullOrEmpty(uploadedBy) && Guid.TryParse(uploadedBy, out var cid)) meta.UploadedBy = cid;
 
         await _repo.AddAsync(meta);
         return meta;

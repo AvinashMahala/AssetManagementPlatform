@@ -7,7 +7,7 @@ namespace MyApp.Interfaces;
 
 public partial interface IPropertyFileService
 {
-    Task<FileMetadata> UploadForEntityAsync(string entityType, string entityId, string fileName, string contentType, byte[] data, string createdBy);
+    Task<FileMetadata> UploadForEntityAsync(string entityType, string entityId, string fileName, string contentType, byte[] data, string uploadedBy);
     Task<FileMetadata?> GetMetadataAsync(Guid id);
     Task<byte[]?> DownloadAsync(Guid id);
     Task<IEnumerable<FileMetadata>> ListForEntityAsync(string entityType, string entityId);

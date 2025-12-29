@@ -56,7 +56,7 @@ public class BulkOperationsService : IBulkOperationsService
                     if (applyExpenses)
                     {
                         var unitExpenses = await _expenses.ListByUnitAsync(lease.UnitId!.Value);
-                        var filtered = unitExpenses.Where(e => e.Date >= start && e.Date <= end);
+                        var filtered = unitExpenses.Where(e => e.StartDate >= start && e.StartDate <= end);
                         if (expenseIds != null && expenseIds.Any()) filtered = filtered.Where(e => expenseIds.Contains(e.Id));
                         amount += filtered.Sum(e => e.Amount);
                     }

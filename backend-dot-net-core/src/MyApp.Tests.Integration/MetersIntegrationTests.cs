@@ -23,7 +23,7 @@ public class MetersIntegrationTests : IClassFixture<WebApplicationFactory<Progra
         mResp.EnsureSuccessStatusCode();
         var created = await mResp.Content.ReadFromJsonAsync<Meter>();
 
-        var reading = new MeterReading { MeterId = created!.Id, Value = 123.4m };
+        var reading = new MeterReading { MeterId = created!.Id, CurrentReading = 123.4m };
         var rResp = await client.PostAsJsonAsync("/api/v1/meterreadings", reading);
         rResp.EnsureSuccessStatusCode();
         var createdR = await rResp.Content.ReadFromJsonAsync<MeterReading>();

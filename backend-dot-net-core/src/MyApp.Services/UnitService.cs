@@ -19,6 +19,9 @@ public class UnitService : IUnitService
     public async Task<Unit> CreateAsync(Unit unit)
     {
         if (unit.Id == Guid.Empty) unit.Id = Guid.NewGuid();
+        unit.CreatedAt = DateTime.UtcNow;
+        // Ensure defaults
+        if (string.IsNullOrWhiteSpace(unit.Status)) unit.Status = "available";
         await _repo.AddAsync(unit);
         return unit;
     }
@@ -27,8 +30,26 @@ public class UnitService : IUnitService
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing is null) return null;
-        existing.Name = unit.Name;
-        existing.Size = unit.Size;
+
+        // Copy updatable fields
+        existing.UnitNumber = unit.UnitNumber ?? existing.UnitNumber;
+        existing.Name = unit.Name ?? existing.Name;
+        existing.Description = unit.Description ?? existing.Description;
+        existing.UnitType = unit.UnitType ?? existing.UnitType;
+        existing.Floor = unit.Floor ?? existing.Floor;
+        existing.Area = unit.Area ?? existing.Area;
+        existing.Bedrooms = unit.Bedrooms ?? existing.Bedrooms;
+        existing.Bathrooms = unit.Bathrooms ?? existing.Bathrooms;
+        existing.Balconies = unit.Balconies ?? existing.Balconies;
+        existing.Furnished = unit.Furnished ?? existing.Furnished;
+        existing.MaxOccupants = unit.MaxOccupants ?? existing.MaxOccupants;
+        existing.UnitAmenities = unit.UnitAmenities ?? existing.UnitAmenities;
+        existing.UnitPhotos = unit.UnitPhotos ?? existing.UnitPhotos;
+        existing.MonthlyRent = unit.MonthlyRent ?? existing.MonthlyRent;
+        existing.SecurityDeposit = unit.SecurityDeposit ?? existing.SecurityDeposit;
+        existing.MaintenanceCharges = unit.MaintenanceCharges ?? existing.MaintenanceCharges;
+        existing.Status = unit.Status ?? existing.Status;
+
         existing.PropertyId = unit.PropertyId;
         existing.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(existing);
