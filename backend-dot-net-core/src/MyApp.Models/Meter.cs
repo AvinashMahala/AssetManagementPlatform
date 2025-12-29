@@ -12,8 +12,7 @@ public class Meter
 
     // Serial maps to DB `meter_number` (kept for compatibility with existing code)
     // Accept the frontend `meterNumber` JSON property for compatibility
-    [JsonProperty("meterNumber")]
-    public string Serial { get; set; } = string.Empty;
+    public string MeterNumber { get; set; } = string.Empty;
 
     // Meter attributes
     public string MeterType { get; set; } = string.Empty;

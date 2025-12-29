@@ -6,16 +6,22 @@ using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class TenantService : ITenantService
+/// <summary>
+/// Manages tenant records (CRUD).
+/// </summary>
+public class TenantService(ITenantRepository repo) : ITenantService
 {
-    private readonly ITenantRepository _repo;
-
-    public TenantService(ITenantRepository repo) => _repo = repo;
+    private readonly ITenantRepository _repo = repo ?? throw new ArgumentNullException(nameof(repo));
 
     public Task<Tenant?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 
     public Task<IEnumerable<Tenant>> ListAsync() => _repo.ListAsync();
 
+    /// <summary>
+    /// Creates a tenant record.
+    /// </summary>
+    /// <param name="tenant">Tenant data.</param>
+    /// <returns>The created <see cref="Tenant"/>.</returns>
     public async Task<Tenant> CreateAsync(Tenant tenant)
     {
         if (tenant.Id == Guid.Empty) tenant.Id = Guid.NewGuid();

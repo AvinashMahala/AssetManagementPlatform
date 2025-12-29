@@ -10,21 +10,15 @@ using System.Security.Cryptography;
 
 namespace MyApp.Services;
 
-public class JwtService : IJwtService
+/// <summary>
+/// Provides JWT generation utilities used by authentication flows.
+/// </summary>
+public class JwtService(IConfiguration configuration) : IJwtService
 {
-    private readonly string _key;
-    private readonly string _issuer;
-    private readonly string _audience;
-    private readonly byte[] _keyBytes;
-
-    public JwtService(IConfiguration configuration)
-    {
-        _key = configuration["Jwt:Key"] ?? "change_this_in_production";
-        _issuer = configuration["Jwt:Issuer"] ?? "MyApp";
-        _audience = configuration["Jwt:Audience"] ?? "MyAppUsers";
-
-        _keyBytes = DeriveKeyBytesFromSecret(_key);
-    }
+    private readonly string _key = configuration["Jwt:Key"] ?? "change_this_in_production";
+    private readonly string _issuer = configuration["Jwt:Issuer"] ?? "MyApp";
+    private readonly string _audience = configuration["Jwt:Audience"] ?? "MyAppUsers";
+    private readonly byte[] _keyBytes = DeriveKeyBytesFromSecret(configuration["Jwt:Key"] ?? "change_this_in_production");
 
     /// <summary>
     /// Derive the actual key bytes used for signing/validation from the configured secret.
@@ -55,6 +49,11 @@ public class JwtService : IJwtService
         return bytes;
     }
 
+    /// <summary>
+    /// Generates a signed JWT access token for the specified user.
+    /// </summary>
+    /// <param name="user">User to create the token for.</param>
+    /// <returns>A signed JWT access token string.</returns>
     public string GenerateAccessToken(User user)
     {
         var key = new SymmetricSecurityKey(_keyBytes);
@@ -75,6 +74,10 @@ public class JwtService : IJwtService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    /// <summary>
+    /// Generates a new cryptographically secure refresh token.
+    /// </summary>
+    /// <returns>A base64-encoded random token string.</returns>
     public string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));

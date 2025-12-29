@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MyApp.Services;
 
+/// <summary>
+/// Manages rent transactions and reacts to payment-created events to generate transactions automatically.
+/// </summary>
 public class RentTransactionService : IRentTransactionService
 {
     private readonly IRentTransactionRepository _repo;
@@ -35,15 +38,39 @@ public class RentTransactionService : IRentTransactionService
         });
     }
 
+    /// <summary>
+    /// Lists all transactions.
+    /// </summary>
     public Task<IEnumerable<RentTransaction>> ListAsync() => _repo.ListAsync();
 
+    /// <summary>
+    /// Lists transactions for a lease.
+    /// </summary>
     public Task<IEnumerable<RentTransaction>> ListByLeaseAsync(Guid leaseId) => _repo.ListByLeaseAsync(leaseId);
+
+    /// <summary>
+    /// Lists transactions for a property.
+    /// </summary>
     public Task<IEnumerable<RentTransaction>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
+
+    /// <summary>
+    /// Lists transactions for a tenant.
+    /// </summary>
     public Task<IEnumerable<RentTransaction>> ListByTenantAsync(Guid tenantId) => _repo.ListByTenantAsync(tenantId);
+
+    /// <summary>
+    /// Lists transactions for a unit.
+    /// </summary>
     public Task<IEnumerable<RentTransaction>> ListByUnitAsync(Guid unitId) => _repo.ListByUnitAsync(unitId);
 
+    /// <summary>
+    /// Gets a transaction by id.
+    /// </summary>
     public Task<RentTransaction?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 
+    /// <summary>
+    /// Creates a transaction and publishes a transaction-created event.
+    /// </summary>
     public async Task<RentTransaction> CreateAsync(RentTransaction t)
     {
         if (t.Id == Guid.Empty) t.Id = Guid.NewGuid();
@@ -54,15 +81,29 @@ public class RentTransactionService : IRentTransactionService
         return t;
     }
 
+    /// <summary>
+    /// Updates a transaction.
+    /// </summary>
     public Task UpdateAsync(RentTransaction t) => _repo.UpdateAsync(t);
 
+    /// <summary>
+    /// Deletes a transaction by id.
+    /// </summary>
     public Task DeleteAsync(Guid id) => _repo.DeleteAsync(id);
 
 }
 
+/// <summary>
+/// Event published when a rent transaction is created.
+/// </summary>
 public class RentTransactionCreatedEvent
 {
+    /// <summary>Transaction id.</summary>
     public Guid RentTransactionId { get; set; }
+
+    /// <summary>Associated lease id.</summary>
     public Guid LeaseId { get; set; }
+
+    /// <summary>Transaction amount.</summary>
     public decimal Amount { get; set; }
 }

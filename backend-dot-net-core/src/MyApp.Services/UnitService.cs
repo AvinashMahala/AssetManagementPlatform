@@ -6,16 +6,28 @@ using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class UnitService : IUnitService
+/// <summary>
+/// Manages units within properties (CRUD, status, analytics).
+/// </summary>
+public class UnitService(IUnitRepository repo) : IUnitService
 {
-    private readonly IUnitRepository _repo;
+    private readonly IUnitRepository _repo = repo ?? throw new ArgumentNullException(nameof(repo));
 
-    public UnitService(IUnitRepository repo) => _repo = repo;
-
+    /// <summary>
+    /// Gets a unit by id.
+    /// </summary>
     public Task<Unit?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 
+    /// <summary>
+    /// Lists all units.
+    /// </summary>
     public Task<IEnumerable<Unit>> ListAsync() => _repo.ListAsync();
 
+    /// <summary>
+    /// Creates a unit with defaults applied when necessary.
+    /// </summary>
+    /// <param name="unit">Unit to create.</param>
+    /// <returns>The created <see cref="Unit"/>.</returns>
     public async Task<Unit> CreateAsync(Unit unit)
     {
         if (unit.Id == Guid.Empty) unit.Id = Guid.NewGuid();

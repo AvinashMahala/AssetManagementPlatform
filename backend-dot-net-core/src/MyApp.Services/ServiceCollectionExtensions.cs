@@ -6,8 +6,17 @@ using MyApp.Core;
 
 namespace MyApp.Services;
 
+/// <summary>
+/// Extension methods for registering MyApp services into an <see cref="IServiceCollection"/>.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers the service implementations used by the application.
+    /// </summary>
+    /// <param name="services">The service collection to register services into.</param>
+    /// <param name="configuration">Application configuration (used for optional integrations like RabbitMQ).</param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for chaining.</returns>
     public static IServiceCollection AddMyAppServices(this IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
         services.AddScoped<ILeaseService, LeaseService>();

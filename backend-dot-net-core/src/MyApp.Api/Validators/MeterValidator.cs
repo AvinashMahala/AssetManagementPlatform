@@ -7,7 +7,7 @@ public class MeterValidator : AbstractValidator<Meter>
 {
     public MeterValidator()
     {
-        RuleFor(x => x.Serial)
+        RuleFor(x => x.MeterNumber)
             .NotEmpty().WithMessage("Meter number (Serial) is required")
             .MaximumLength(100).WithMessage("Serial must be 100 characters or fewer");
 

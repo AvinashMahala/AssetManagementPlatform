@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MyApp.Services;
 
+/// <summary>
+/// Handles receipt generation, storage and sending (including automatic generation from transactions).
+/// </summary>
 public class ReceiptService : IReceiptService
 {
     private readonly IReceiptRepository _repo;
@@ -49,16 +52,41 @@ public class ReceiptService : IReceiptService
         });
     }
 
+    /// <summary>
+    /// Lists all receipts.
+    /// </summary>
     public Task<IEnumerable<Receipt>> ListAsync() => _repo.ListAsync();
 
+    /// <summary>
+    /// Gets a receipt by id.
+    /// </summary>
+    /// <param name="id">Receipt id.</param>
+    /// <returns>The <see cref="Receipt"/> or null if not found.</returns>
     public Task<Receipt?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 
+    /// <summary>
+    /// Gets a receipt by its number.
+    /// </summary>
+    /// <param name="receiptNumber">Receipt number.</param>
+    /// <returns>The <see cref="Receipt"/> or null.</returns>
     public Task<Receipt?> GetByNumberAsync(string receiptNumber) => _repo.GetByNumberAsync(receiptNumber);
 
+    /// <summary>
+    /// Lists receipts for a property.
+    /// </summary>
     public Task<IEnumerable<Receipt>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
 
+    /// <summary>
+    /// Lists receipts for a tenant.
+    /// </summary>
     public Task<IEnumerable<Receipt>> ListByTenantAsync(Guid tenantId) => _repo.ListByTenantAsync(tenantId);
 
+    /// <summary>
+    /// Generates a receipt for a rent payment, stores the PDF and updates metadata.
+    /// </summary>
+    /// <param name="rentPaymentId">The payment id.</param>
+    /// <param name="amount">Amount to include on the receipt.</param>
+    /// <returns>The created <see cref="Receipt"/>.</returns>
     public async Task<Receipt> GenerateReceiptForPaymentAsync(Guid rentPaymentId, decimal amount)
     {
         var r = new Receipt { RentPaymentId = rentPaymentId, Amount = amount };
@@ -78,6 +106,12 @@ public class ReceiptService : IReceiptService
         return created;
     }
 
+    /// <summary>
+    /// Generates a receipt for a rent transaction, stores the generated PDF and updates metadata.
+    /// </summary>
+    /// <param name="rentTransactionId">Transaction id.</param>
+    /// <param name="amount">Amount to include on the receipt.</param>
+    /// <returns>The created <see cref="Receipt"/>.</returns>
     public async Task<Receipt> GenerateReceiptForTransactionAsync(Guid rentTransactionId, decimal amount)
     {
         var r = new Receipt { RentTransactionId = rentTransactionId, Amount = amount };
@@ -95,6 +129,13 @@ public class ReceiptService : IReceiptService
         return created;
     }
 
+    /// <summary>
+    /// Generates receipts in bulk for the provided property and month/year.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <param name="month">Month number.</param>
+    /// <param name="year">Year number.</param>
+    /// <returns>Created receipts.</returns>
     public async Task<IEnumerable<Receipt>> GenerateBulkReceiptsAsync(Guid propertyId, int month, int year)
     {
         // Find payments for the property in the given month/year and generate receipts
@@ -109,10 +150,17 @@ public class ReceiptService : IReceiptService
         return created;
     }
 
+    /// <summary>
+    /// Sends the receipt to the tenant by email if tenant and PDF exist.
+    /// </summary>
+    /// <param name="id">Receipt id.</param>
+    /// <param name="email">Target email address.</param>
+    /// <returns>True if sent; otherwise false.</returns>
     public async Task<bool> SendReceiptByEmailAsync(Guid id, string email)
     {
         var r = await _repo.GetByIdAsync(id);
         if (r is null) return false;
+
 
         // find tenant via payment or transaction
         Guid? tenantId = null;
@@ -143,6 +191,11 @@ public class ReceiptService : IReceiptService
         return ok;
     }
 
+    /// <summary>
+    /// Downloads a stored receipt PDF for the given receipt id.
+    /// </summary>
+    /// <param name="id">Receipt id.</param>
+    /// <returns>PDF bytes or null if not found.</returns>
     public async Task<byte[]?> DownloadReceiptPdfAsync(Guid id)
     {
         var r = await _repo.GetByIdAsync(id);

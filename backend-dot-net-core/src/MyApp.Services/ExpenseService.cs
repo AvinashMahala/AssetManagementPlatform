@@ -6,16 +6,31 @@ using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class ExpenseService : IExpenseService
+/// <summary>
+/// Manages expenses including create, update, list and delete operations.
+/// </summary>
+public class ExpenseService(IExpenseRepository repo) : IExpenseService
 {
-    private readonly IExpenseRepository _repo;
+    private readonly IExpenseRepository _repo = repo ?? throw new ArgumentNullException(nameof(repo));
 
-    public ExpenseService(IExpenseRepository repo) => _repo = repo;
-
+    /// <summary>
+    /// Gets an expense by id.
+    /// </summary>
+    /// <param name="id">Expense id.</param>
+    /// <returns>The <see cref="Expense"/> or null if not found.</returns>
     public Task<Expense?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 
+    /// <summary>
+    /// Lists all expenses.
+    /// </summary>
+    /// <returns>All <see cref="Expense"/> items.</returns>
     public Task<IEnumerable<Expense>> ListAsync() => _repo.ListAsync();
 
+    /// <summary>
+    /// Creates a new expense, applying sensible defaults where necessary.
+    /// </summary>
+    /// <param name="e">Expense to create.</param>
+    /// <returns>The created <see cref="Expense"/>.</returns>
     public async Task<Expense> CreateAsync(Expense e)
     {
         if (e.Id == Guid.Empty) e.Id = Guid.NewGuid();
@@ -28,6 +43,12 @@ public class ExpenseService : IExpenseService
         return e;
     }
 
+    /// <summary>
+    /// Updates an existing expense partially using non-null request values.
+    /// </summary>
+    /// <param name="id">Expense id.</param>
+    /// <param name="e">Expense update payload.</param>
+    /// <returns>The updated <see cref="Expense"/>, or null if not found.</returns>
     public async Task<Expense?> UpdateAsync(Guid id, Expense e)
     {
         var existing = await _repo.GetByIdAsync(id);
@@ -49,6 +70,11 @@ public class ExpenseService : IExpenseService
         return existing;
     }
 
+    /// <summary>
+    /// Deletes the expense with the given id.
+    /// </summary>
+    /// <param name="id">Expense id.</param>
+    /// <returns>True if deleted; false if not found.</returns>
     public async Task<bool> DeleteAsync(Guid id)
     {
         var existing = await _repo.GetByIdAsync(id);
@@ -57,6 +83,17 @@ public class ExpenseService : IExpenseService
         return true;
     }
 
+    /// <summary>
+    /// Lists expenses for a property.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <returns>Expenses for the property.</returns>
     public Task<IEnumerable<Expense>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
+
+    /// <summary>
+    /// Lists expenses for a unit.
+    /// </summary>
+    /// <param name="unitId">Unit id.</param>
+    /// <returns>Expenses for the unit.</returns>
     public Task<IEnumerable<Expense>> ListByUnitAsync(Guid unitId) => _repo.ListByUnitAsync(unitId);
 }

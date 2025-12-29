@@ -6,22 +6,41 @@ using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class ReceiptTemplateService : IReceiptTemplateService
+/// <summary>
+/// Manages receipt templates (CRUD, import/export, duplication and placeholders).
+/// </summary>
+public class ReceiptTemplateService(IReceiptTemplateRepository repo) : IReceiptTemplateService
 {
-    private readonly IReceiptTemplateRepository _repo;
+    private readonly IReceiptTemplateRepository _repo = repo ?? throw new ArgumentNullException(nameof(repo));
 
-    public ReceiptTemplateService(IReceiptTemplateRepository repo) => _repo = repo;
-
+    /// <summary>
+    /// Lists all receipt templates.
+    /// </summary>
     public Task<IEnumerable<ReceiptTemplate>> ListAsync() => _repo.ListAsync();
 
+    /// <summary>
+    /// Gets a receipt template by id.
+    /// </summary>
     public Task<ReceiptTemplate?> GetByIdAsync(Guid id) => _repo.GetByIdAsync(id);
 
+    /// <summary>
+    /// Creates a new receipt template.
+    /// </summary>
     public Task<ReceiptTemplate> CreateAsync(ReceiptTemplate template) => _repo.CreateAsync(template);
 
+    /// <summary>
+    /// Updates an existing template.
+    /// </summary>
     public Task<ReceiptTemplate?> UpdateAsync(Guid id, ReceiptTemplate updates) => _repo.UpdateAsync(id, updates);
 
+    /// <summary>
+    /// Deletes a template by id.
+    /// </summary>
     public Task DeleteAsync(Guid id) => _repo.DeleteAsync(id);
 
+    /// <summary>
+    /// Exports a template payload for external storage/transfer.
+    /// </summary>
     public async Task<object> ExportTemplateAsync(Guid id)
     {
         var t = await _repo.GetByIdAsync(id);
@@ -29,6 +48,9 @@ public class ReceiptTemplateService : IReceiptTemplateService
         return new { id = t.Id, name = t.Name, settings = t.SettingsJson };
     }
 
+    /// <summary>
+    /// Imports a template from an arbitrary payload.
+    /// </summary>
     public async Task<ReceiptTemplate> ImportTemplateAsync(object payload)
     {
         // Accept arbitrary payload and store as SettingsJson
@@ -36,6 +58,9 @@ public class ReceiptTemplateService : IReceiptTemplateService
         return await _repo.CreateAsync(t);
     }
 
+    /// <summary>
+    /// Creates a copy of the specified template.
+    /// </summary>
     public async Task<ReceiptTemplate> DuplicateTemplateAsync(Guid id)
     {
         var t = await _repo.GetByIdAsync(id);
@@ -44,6 +69,9 @@ public class ReceiptTemplateService : IReceiptTemplateService
         return await _repo.CreateAsync(dup);
     }
 
+    /// <summary>
+    /// Returns a (minimal) set of placeholders supported by templates.
+    /// </summary>
     public Task<IEnumerable<string>> GetAvailablePlaceholdersAsync()
     {
         // Minimal implementation

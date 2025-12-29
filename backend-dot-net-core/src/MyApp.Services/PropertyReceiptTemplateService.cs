@@ -4,11 +4,12 @@ using MyApp.Interfaces;
 
 namespace MyApp.Services;
 
-public class PropertyReceiptTemplateService : IPropertyReceiptTemplateService
+/// <summary>
+/// Provides helpers for property-level receipt templates, including UPI link generation.
+/// </summary>
+public class PropertyReceiptTemplateService(IPropertyService propertyService) : IPropertyReceiptTemplateService
 {
-    private readonly IPropertyService _propertyService;
-
-    public PropertyReceiptTemplateService(IPropertyService propertyService) => _propertyService = propertyService;
+    private readonly IPropertyService _propertyService = propertyService ?? throw new ArgumentNullException(nameof(propertyService));
 
     public Task SetTemplateAsync(Guid propertyId, string templateJson) => _propertyService.SetTemplateAsync(propertyId, templateJson);
 
@@ -16,6 +17,12 @@ public class PropertyReceiptTemplateService : IPropertyReceiptTemplateService
 
     public Task RemoveTemplateAsync(Guid propertyId) => _propertyService.RemoveTemplateAsync(propertyId);
 
+    /// <summary>
+    /// Generates UPI payment links from the property's receipt template wallets configuration.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <param name="amount">Optional amount to embed in the UPI link.</param>
+    /// <returns>An object containing a collection of generated links.</returns>
     public async Task<object> GenerateUPILinksAsync(Guid propertyId, decimal? amount)
     {
         var t = await _propertyService.GetTemplateAsync(propertyId);

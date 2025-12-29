@@ -15,7 +15,7 @@ public class MeterConfiguration : IEntityTypeConfiguration<Meter>
         builder.Property(m => m.UnitId).HasColumnName("unit_id");
 
         // Serial maps to meter_number in DB
-        builder.Property(m => m.Serial).HasColumnName("meter_number").HasMaxLength(100);
+        builder.Property(m => m.MeterNumber).HasColumnName("meter_number").HasMaxLength(100);
         builder.Property(m => m.MeterType).HasColumnName("meter_type").HasMaxLength(50);
         builder.Property(m => m.MeterName).HasColumnName("meter_name").HasMaxLength(255);
 

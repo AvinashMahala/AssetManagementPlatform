@@ -6,18 +6,24 @@ using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class AuthService : IAuthService
+/// <summary>
+/// Provides authentication-related operations such as user registration, login,
+/// refresh token management, and profile updates.
+/// </summary>
+/// <remarks>
+/// Uses <see cref="IUserRepository"/> for user persistence and <see cref="IJwtService"/> for token generation.
+/// </remarks>
+public class AuthService(IUserRepository userRepo, IJwtService jwtService) : IAuthService
 {
-    private readonly IUserRepository _userRepo;
-    private readonly IJwtService _jwtService;
+    private readonly IUserRepository _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
+    private readonly IJwtService _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
 
-    public AuthService(IUserRepository userRepo, IJwtService jwtService)
-    {
-        _userRepo = userRepo;
-        _jwtService = jwtService;
-    }
-
-    public async Task<UserDto> RegisterAsync(RegisterRequest request)
+    /// <summary>
+    /// Registers a new user.
+    /// </summary>
+    /// <param name="request">The registration request containing email, password and display name.</param>
+    /// <returns>The newly created <see cref="UserDto"/>.</returns>
+  public async Task<UserDto> RegisterAsync(RegisterRequest request)
     {
         var existing = await _userRepo.FindByEmailAsync(request.Email);
         if (existing is not null) throw new InvalidOperationException("Email already registered");
@@ -36,6 +42,12 @@ public class AuthService : IAuthService
         return new UserDto(user.Id, user.Email, user.DisplayName);
     }
 
+    /// <summary>
+    /// Authenticates a user and returns access and refresh tokens.
+    /// </summary>
+    /// <param name="request">The login request containing email and password.</param>
+    /// <returns>A tuple with AccessToken and RefreshToken.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when credentials are invalid.</exception>
     public async Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginRequest request)
     {
         var user = await _userRepo.FindByEmailAsync(request.Email);
@@ -110,6 +122,12 @@ public class AuthService : IAuthService
         return (access, refresh);
     }
 
+    /// <summary>
+    /// Exchanges a valid refresh token for a new access and refresh token pair.
+    /// </summary>
+    /// <param name="request">The refresh request.</param>
+    /// <returns>A tuple with new AccessToken and RefreshToken.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the refresh token is invalid or expired.</exception>
     public async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(RefreshRequest request)
     {
         var user = await _userRepo.FindByRefreshTokenAsync(request.RefreshToken);
@@ -124,6 +142,11 @@ public class AuthService : IAuthService
         return (access, refresh);
     }
 
+    /// <summary>
+    /// Retrieves a user's profile by id.
+    /// </summary>
+    /// <param name="userId">The user's id.</param>
+    /// <returns>The user's profile as <see cref="UserDto"/>, or null if not found.</returns>
     public async Task<UserDto?> GetProfileAsync(Guid userId)
     {
         var user = await _userRepo.FindByIdAsync(userId);
@@ -131,6 +154,12 @@ public class AuthService : IAuthService
         return new UserDto(user.Id, user.Email, user.DisplayName);
     }
 
+    /// <summary>
+    /// Updates a user's display name.
+    /// </summary>
+    /// <param name="userId">The user's id.</param>
+    /// <param name="displayName">The new display name (nullable).</param>
+    /// <returns>The updated <see cref="UserDto"/>, or null if user not found.</returns>
     public async Task<UserDto?> UpdateProfileAsync(Guid userId, string? displayName)
     {
         var user = await _userRepo.FindByIdAsync(userId);
