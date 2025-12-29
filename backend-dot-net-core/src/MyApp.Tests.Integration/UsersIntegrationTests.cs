@@ -30,10 +30,10 @@ public class UsersIntegrationTests : IClassFixture<WebApplicationFactory<Program
         var getResp = await client.GetAsync($"/api/v1/users/{created!.Id}");
         getResp.EnsureSuccessStatusCode();
 
-        var updateResp = await client.PutAsJsonAsync($"/api/users/{created.Id}", new User { DisplayName = "Admin X", Email = "adminx@example.com" });
+        var updateResp = await client.PutAsJsonAsync($"/api/v1/users/{created.Id}", new User { DisplayName = "Admin X", Email = "adminx@example.com" });
         updateResp.EnsureSuccessStatusCode();
 
-        var delResp = await client.DeleteAsync($"/api/users/{created.Id}");
+        var delResp = await client.DeleteAsync($"/api/v1/users/{created.Id}");
         Assert.Equal(System.Net.HttpStatusCode.NoContent, delResp.StatusCode);
     }
 }

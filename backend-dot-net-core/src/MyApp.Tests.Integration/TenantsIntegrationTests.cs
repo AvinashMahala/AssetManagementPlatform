@@ -45,7 +45,7 @@ public class TenantsIntegrationTests : IClassFixture<WebApplicationFactory<Progr
         var delResp = await client.DeleteAsync($"/api/v1/tenants/{created.Id}");
         Assert.Equal(System.Net.HttpStatusCode.NoContent, delResp.StatusCode);
 
-        var getAfterDel = await client.GetAsync($"/api/tenants/{created.Id}");
+        var getAfterDel = await client.GetAsync($"/api/v1/tenants/{created.Id}");
         Assert.Equal(System.Net.HttpStatusCode.NotFound, getAfterDel.StatusCode);
     }
 }

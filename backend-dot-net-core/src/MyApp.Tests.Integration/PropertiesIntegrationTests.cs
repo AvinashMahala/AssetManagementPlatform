@@ -33,20 +33,20 @@ public class PropertiesIntegrationTests : IClassFixture<WebApplicationFactory<Pr
 
         // Update
         await client.PutAsJsonAsync($"/api/v1/properties/{created.Id}", new UpdatePropertyRequest("Prop1b","Addr1b", null));
-        var got2 = await (await client.GetAsync($"/api/properties/{created.Id}")).Content.ReadFromJsonAsync<Property>();
+        var got2 = await (await client.GetAsync($"/api/v1/properties/{created.Id}")).Content.ReadFromJsonAsync<Property>();
         Assert.Equal("Prop1b", got2!.Name);
 
         // Template
-        await client.PutAsJsonAsync($"/api/properties/{created.Id}/template", new SetTemplateRequest("{\"a\":1}"));
-        var tmpl = await (await client.GetAsync($"/api/properties/{created.Id}/template")).Content.ReadFromJsonAsync<dynamic>();
+        await client.PutAsJsonAsync($"/api/v1/properties/{created.Id}/template", new SetTemplateRequest("{\"a\":1}"));
+        var tmpl = await (await client.GetAsync($"/api/v1/properties/{created.Id}/template")).Content.ReadFromJsonAsync<dynamic>();
         Assert.Contains("\"a\":1", (string)tmpl.template);
 
         // Remove template
-        var delT = await client.DeleteAsync($"/api/properties/{created.Id}/template");
+        var delT = await client.DeleteAsync($"/api/v1/properties/{created.Id}/template");
         delT.EnsureSuccessStatusCode();
 
         // Delete property
-        var del = await client.DeleteAsync($"/api/properties/{created.Id}");
+        var del = await client.DeleteAsync($"/api/v1/properties/{created.Id}");
         del.EnsureSuccessStatusCode();
     }
 }

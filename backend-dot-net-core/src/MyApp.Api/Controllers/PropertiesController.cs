@@ -5,19 +5,33 @@ using MyApp.Models;
 
 namespace MyApp.Api.Controllers;
 
+/// <summary>
+/// Controller for managing properties.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="PropertiesController"/> class.
+/// </remarks>
+/// <param name="service">Service for managing properties.</param>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/properties")]
 [Microsoft.AspNetCore.Authorization.Authorize]
-public class PropertiesController : ControllerBase
+public class PropertiesController(IPropertyService service) : ControllerBase
 {
-    private readonly IPropertyService _service;
+    private readonly IPropertyService _service = service;
 
-    public PropertiesController(IPropertyService service) => _service = service;
-
-    [HttpGet]
+  /// <summary>
+  /// Lists properties.
+  /// </summary>
+  /// <returns>200 OK with list of properties.</returns>
+  [HttpGet]
     public async Task<IActionResult> List() => Ok(await _service.ListAsync());
 
+    /// <summary>
+    /// Gets a property by id.
+    /// </summary>
+    /// <param name="id">Property id.</param>
+    /// <returns>200 OK with property; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
@@ -26,6 +40,11 @@ public class PropertiesController : ControllerBase
         return Ok(p);
     }
 
+    /// <summary>
+    /// Creates a new property.
+    /// </summary>
+    /// <param name="req">Create property payload.</param>
+    /// <returns>201 Created with created property.</returns>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePropertyRequest req)
     {
@@ -33,6 +52,12 @@ public class PropertiesController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Updates an existing property.
+    /// </summary>
+    /// <param name="id">Property id.</param>
+    /// <param name="req">Updated property payload.</param>
+    /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePropertyRequest req)
     {
@@ -40,6 +65,11 @@ public class PropertiesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Deletes a property.
+    /// </summary>
+    /// <param name="id">Property id.</param>
+    /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -47,6 +77,12 @@ public class PropertiesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Updates the status of a property.
+    /// </summary>
+    /// <param name="id">Property id.</param>
+    /// <param name="body">JSON body containing new 'status'.</param>
+    /// <returns>204 No Content on success; 400 Bad Request when status missing/invalid.</returns>
     [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] dynamic body)
     {
@@ -60,6 +96,12 @@ public class PropertiesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Sets a receipt template for a property.
+    /// </summary>
+    /// <param name="id">Property id.</param>
+    /// <param name="req">Template payload.</param>
+    /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}/template")]
     public async Task<IActionResult> SetTemplate(Guid id, [FromBody] SetTemplateRequest req)
     {
@@ -67,6 +109,11 @@ public class PropertiesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Gets the receipt template for a property.
+    /// </summary>
+    /// <param name="id">Property id.</param>
+    /// <returns>200 OK with template; 404 Not Found if none set.</returns>
     [HttpGet("{id:guid}/template")]
     public async Task<IActionResult> GetTemplate(Guid id)
     {
@@ -75,6 +122,11 @@ public class PropertiesController : ControllerBase
         return Ok(new { template = t });
     }
 
+    /// <summary>
+    /// Removes the receipt template for a property.
+    /// </summary>
+    /// <param name="id">Property id.</param>
+    /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}/template")]
     public async Task<IActionResult> RemoveTemplate(Guid id)
     {

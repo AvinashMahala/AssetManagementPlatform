@@ -45,7 +45,7 @@ public class UnitsIntegrationTests : IClassFixture<WebApplicationFactory<Program
         var statusResp = await client.PatchAsync($"/api/v1/units/{created.Id}/status", JsonContent.Create(new { status = "occupied" }));
         Assert.Equal(System.Net.HttpStatusCode.NoContent, statusResp.StatusCode);
 
-        var delResp = await client.DeleteAsync($"/api/units/{created.Id}");
+        var delResp = await client.DeleteAsync($"/api/v1/units/{created.Id}");
         Assert.Equal(System.Net.HttpStatusCode.NoContent, delResp.StatusCode);
     }
 }

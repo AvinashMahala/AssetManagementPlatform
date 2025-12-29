@@ -34,7 +34,7 @@ public class ConditionalAuthIntegrationTests : IClassFixture<WebApplicationFacto
         string token = (string)payload.accessToken;
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var authResp = await client.GetAsync("/api/unittenants");
+        var authResp = await client.GetAsync("/api/v1/unittenants");
         authResp.EnsureSuccessStatusCode();
     }
 
@@ -43,7 +43,7 @@ public class ConditionalAuthIntegrationTests : IClassFixture<WebApplicationFacto
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "this-is-invalid");
-        var resp = await client.GetAsync("/api/unittenants");
+        var resp = await client.GetAsync("/api/v1/unittenants");
         // should not be 401; should proceed as anonymous
         resp.EnsureSuccessStatusCode();
     }

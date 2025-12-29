@@ -20,7 +20,7 @@ public class PropertyReceiptTemplateIntegrationTests : IClassFixture<WebApplicat
 
         // Create property
         var createReq = new CreatePropertyRequest("PropTpl","Addr","owner");
-        var createResp = await client.PostAsJsonAsync("/api/properties", createReq);
+        var createResp = await client.PostAsJsonAsync("/api/v1/properties", createReq);
         createResp.EnsureSuccessStatusCode();
         var prop = await createResp.Content.ReadFromJsonAsync<Property>();
 
@@ -46,7 +46,7 @@ public class PropertyReceiptTemplateIntegrationTests : IClassFixture<WebApplicat
 
         // Create property
         var createReq = new CreatePropertyRequest("PropUPI","Addr","owner");
-        var createResp = await client.PostAsJsonAsync("/api/properties", createReq);
+        var createResp = await client.PostAsJsonAsync("/api/v1/properties", createReq);
         createResp.EnsureSuccessStatusCode();
         var prop = await createResp.Content.ReadFromJsonAsync<Property>();
 

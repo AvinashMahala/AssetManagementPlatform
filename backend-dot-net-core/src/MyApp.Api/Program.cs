@@ -65,10 +65,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-// API Versioning (URL segment style, default to v1)
+// API Versioning (URL segment style) - require explicit version segment in URL
 builder.Services.AddApiVersioning(options =>
 {
-    options.AssumeDefaultVersionWhenUnspecified = true;
+    // Do NOT assume a default version when the client omits the version segment.
+    // This ensures requests to unversioned paths (e.g., /api/files) do not resolve to v1.
+    options.AssumeDefaultVersionWhenUnspecified = false;
     options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
     options.ReportApiVersions = true;
     options.ApiVersionReader = new Microsoft.AspNetCore.Mvc.Versioning.UrlSegmentApiVersionReader();

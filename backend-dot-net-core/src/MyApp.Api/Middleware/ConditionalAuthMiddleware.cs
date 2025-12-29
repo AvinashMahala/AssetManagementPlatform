@@ -15,12 +15,23 @@ public class ConditionalAuthMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ConditionalAuthMiddleware> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConditionalAuthMiddleware"/> class.
+    /// </summary>
+    /// <param name="next">The next middleware in the pipeline.</param>
+    /// <param name="logger">The logger used to record authentication events.</param>
     public ConditionalAuthMiddleware(RequestDelegate next, ILogger<ConditionalAuthMiddleware> logger)
     {
         _next = next;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Tries to authenticate the request if an Authorization header is present.
+    /// It will not short-circuit the request on failure; instead it logs and continues.
+    /// </summary>
+    /// <param name="context">The HTTP context for the current request.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task InvokeAsync(HttpContext context)
     {
         // Only attempt if Authorization header exists

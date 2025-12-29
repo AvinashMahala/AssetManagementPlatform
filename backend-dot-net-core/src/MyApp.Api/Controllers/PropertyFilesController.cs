@@ -9,17 +9,28 @@ using MyApp.Models;
 
 namespace MyApp.Api.Controllers;
 
+/// <summary>
+/// Controller for managing files scoped to a specific property.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="PropertyFilesController"/> class.
+/// </remarks>
+/// <param name="service">The property file service.</param>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/properties/{propertyId:guid}/files")]
 [Authorize]
-public class PropertyFilesController : ControllerBase
+public class PropertyFilesController(IPropertyFileService service) : ControllerBase
 {
-    private readonly IPropertyFileService _service;
+    private readonly IPropertyFileService _service = service;
 
-    public PropertyFilesController(IPropertyFileService service) => _service = service;
-
-    [HttpPost]
+  /// <summary>
+  /// Uploads a file for the specified property.
+  /// </summary>
+  /// <param name="propertyId">Property id.</param>
+  /// <param name="request">Upload request containing the file.</param>
+  /// <returns>201 Created with metadata on success; 400 Bad Request when no file provided.</returns>
+  [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Upload(Guid propertyId, [FromForm] FileUploadRequest request)
     {
@@ -34,6 +45,11 @@ public class PropertyFilesController : ControllerBase
         return CreatedAtAction("GetMetadata", "Files", new { id = meta.Id }, meta);
     }
 
+    /// <summary>
+    /// Lists files for the specified property.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <returns>200 OK with list of files for the property.</returns>
     [HttpGet]
     public async Task<IActionResult> List(Guid propertyId)
     {
@@ -41,6 +57,12 @@ public class PropertyFilesController : ControllerBase
         return Ok(list);
     }
 
+    /// <summary>
+    /// Downloads a file for the property by file id.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <param name="fileId">File id.</param>
+    /// <returns>File content or 404 Not Found.</returns>
     [HttpGet("{fileId:guid}/download")]
     public async Task<IActionResult> Download(Guid propertyId, Guid fileId)
     {
@@ -53,6 +75,13 @@ public class PropertyFilesController : ControllerBase
         return File(data, meta.ContentType, meta.FileName);
     }
 
+    /// <summary>
+    /// Updates metadata for a file belonging to a property.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <param name="fileId">File id.</param>
+    /// <param name="body">JSON body with metadata fields to update.</param>
+    /// <returns>204 No Content on success; 404 Not Found when not found.</returns>
     [HttpPut("{fileId:guid}")]
     public async Task<IActionResult> UpdateMetadata(Guid propertyId, Guid fileId, [FromBody] object body)
     {
@@ -65,6 +94,12 @@ public class PropertyFilesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Deletes a file from a property.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <param name="fileId">File id.</param>
+    /// <returns>204 No Content on success; 404 Not Found when not found.</returns>
     [HttpDelete("{fileId:guid}")]
     public async Task<IActionResult> Delete(Guid propertyId, Guid fileId)
     {

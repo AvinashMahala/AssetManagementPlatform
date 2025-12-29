@@ -5,19 +5,33 @@ using MyApp.Models;
 
 namespace MyApp.Api.Controllers;
 
+/// <summary>
+/// Controller for managing receipt templates and previewing/ importing/exporting templates.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ReceiptTemplatesController"/> class.
+/// </remarks>
+/// <param name="service">The receipt template service.</param>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/receipttemplates")]
 [Microsoft.AspNetCore.Authorization.Authorize]
-public class ReceiptTemplatesController : ControllerBase
+public class ReceiptTemplatesController(IReceiptTemplateService service) : ControllerBase
 {
-    private readonly IReceiptTemplateService _service;
+    private readonly IReceiptTemplateService _service = service;
 
-    public ReceiptTemplatesController(IReceiptTemplateService service) => _service = service;
-
-    [HttpGet]
+  /// <summary>
+  /// Lists all receipt templates.
+  /// </summary>
+  /// <returns>200 OK with list of templates.</returns>
+  [HttpGet]
     public async Task<IActionResult> List() => Ok(await _service.ListAsync());
 
+    /// <summary>
+    /// Gets a template by id.
+    /// </summary>
+    /// <param name="id">Template id.</param>
+    /// <returns>200 OK with template; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
@@ -26,6 +40,11 @@ public class ReceiptTemplatesController : ControllerBase
         return Ok(t);
     }
 
+    /// <summary>
+    /// Creates a new receipt template.
+    /// </summary>
+    /// <param name="template">Receipt template payload.</param>
+    /// <returns>201 Created with created template.</returns>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ReceiptTemplate template)
     {
@@ -33,8 +52,16 @@ public class ReceiptTemplatesController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Request for template preview, allowing either TemplateId or TemplateBody and optional sample data.
+    /// </summary>
     public record PreviewRequest(Guid? TemplateId, string? TemplateBody, System.Collections.Generic.Dictionary<string,string>? SampleData);
 
+    /// <summary>
+    /// Renders a preview of a template using provided body or template id and optional sample data replacements.
+    /// </summary>
+    /// <param name="req">Preview request payload.</param>
+    /// <returns>HTML content representing the rendered template.</returns>
     [HttpPost("preview")]
     public async Task<IActionResult> Preview([FromBody] PreviewRequest req)
     {
@@ -67,6 +94,11 @@ public class ReceiptTemplatesController : ControllerBase
         return Content(body, "text/html");
     }
 
+    /// <summary>
+    /// Exports a template by id.
+    /// </summary>
+    /// <param name="id">Template id.</param>
+    /// <returns>Export payload for the template.</returns>
     [HttpGet("templates/{id:guid}/export")]
     public async Task<IActionResult> ExportTemplate(Guid id)
     {
@@ -74,6 +106,11 @@ public class ReceiptTemplatesController : ControllerBase
         return Ok(e);
     }
 
+    /// <summary>
+    /// Imports a template from an export payload.
+    /// </summary>
+    /// <param name="payload">Import payload.</param>
+    /// <returns>201 Created with the imported template.</returns>
     [HttpPost("templates/import")]
     public async Task<IActionResult> ImportTemplate([FromBody] object payload)
     {
@@ -81,6 +118,11 @@ public class ReceiptTemplatesController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Duplicates an existing template.
+    /// </summary>
+    /// <param name="id">The template id to duplicate.</param>
+    /// <returns>201 Created with the new duplicate template.</returns>
     [HttpPost("templates/{id:guid}/duplicate")]
     public async Task<IActionResult> DuplicateTemplate(Guid id)
     {
@@ -88,9 +130,19 @@ public class ReceiptTemplatesController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Gets available placeholders for templates.
+    /// </summary>
+    /// <returns>200 OK with list of placeholders.</returns>
     [HttpGet("templates/placeholders/available")]
     public async Task<IActionResult> GetAvailablePlaceholders() => Ok(await _service.GetAvailablePlaceholdersAsync());
 
+    /// <summary>
+    /// Updates a template.
+    /// </summary>
+    /// <param name="id">Template id.</param>
+    /// <param name="updates">Updated template payload.</param>
+    /// <returns>200 OK with updated template; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] ReceiptTemplate updates)
     {
@@ -99,6 +151,11 @@ public class ReceiptTemplatesController : ControllerBase
         return Ok(updated);
     }
 
+    /// <summary>
+    /// Deletes a template.
+    /// </summary>
+    /// <param name="id">Template id.</param>
+    /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

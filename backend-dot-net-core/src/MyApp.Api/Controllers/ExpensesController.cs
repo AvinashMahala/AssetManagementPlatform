@@ -5,6 +5,9 @@ using MyApp.Models;
 
 namespace MyApp.Api.Controllers;
 
+/// <summary>
+/// Controller for managing expenses.
+/// </summary>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/expenses")]
@@ -13,11 +16,24 @@ public class ExpensesController : ControllerBase
 {
     private readonly IExpenseService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExpensesController"/> class.
+    /// </summary>
+    /// <param name="service">The expense service to use for expense operations.</param>
     public ExpensesController(IExpenseService service) => _service = service;
 
+    /// <summary>
+    /// Lists all expenses.
+    /// </summary>
+    /// <returns>200 OK with a list of expenses.</returns>
     [HttpGet]
     public async Task<IActionResult> List() => Ok(new { success = true, data = await _service.ListAsync() });
 
+    /// <summary>
+    /// Gets an expense by id.
+    /// </summary>
+    /// <param name="id">Expense id.</param>
+    /// <returns>200 OK with expense; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
@@ -26,6 +42,11 @@ public class ExpensesController : ControllerBase
         return Ok(new { success = true, data = e });
     }
 
+    /// <summary>
+    /// Creates a new expense.
+    /// </summary>
+    /// <param name="req">Expense payload.</param>
+    /// <returns>201 Created with the created expense.</returns>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Expense req)
     {
@@ -33,6 +54,12 @@ public class ExpensesController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, new { success = true, data = created });
     }
 
+    /// <summary>
+    /// Updates an existing expense.
+    /// </summary>
+    /// <param name="id">Expense id.</param>
+    /// <param name="req">Updated expense payload.</param>
+    /// <returns>200 OK with updated expense; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] Expense req)
     {
@@ -41,6 +68,11 @@ public class ExpensesController : ControllerBase
         return Ok(new { success = true, data = updated });
     }
 
+    /// <summary>
+    /// Deletes an expense by id.
+    /// </summary>
+    /// <param name="id">Expense id to delete.</param>
+    /// <returns>200 OK on success; 404 Not Found if missing.</returns>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -49,9 +81,19 @@ public class ExpensesController : ControllerBase
         return Ok(new { success = true, message = "Expense deleted" });
     }
 
+    /// <summary>
+    /// Lists expenses for a specific property.
+    /// </summary>
+    /// <param name="propertyId">Property id.</param>
+    /// <returns>200 OK with list of expenses for the property.</returns>
     [HttpGet("property/{propertyId}")]
     public async Task<IActionResult> ByProperty(Guid propertyId) => Ok(new { success = true, data = await _service.ListByPropertyAsync(propertyId) });
 
+    /// <summary>
+    /// Lists expenses for a specific unit.
+    /// </summary>
+    /// <param name="unitId">Unit id.</param>
+    /// <returns>200 OK with list of expenses for the unit.</returns>
     [HttpGet("unit/{unitId}")]
     public async Task<IActionResult> ByUnit(Guid unitId) => Ok(new { success = true, data = await _service.ListByUnitAsync(unitId) });
 }

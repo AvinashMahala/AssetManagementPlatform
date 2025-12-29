@@ -39,10 +39,10 @@ public class LeasesIntegrationTests : IClassFixture<WebApplicationFactory<Progra
 
         // Terminate
         var end = DateTime.UtcNow.AddMonths(3);
-        var termResp = await client.PostAsJsonAsync($"/api/leases/{created.Id}/terminate", new { endDate = end });
+        var termResp = await client.PostAsJsonAsync($"/api/v1/leases/{created.Id}/terminate", new { endDate = end });
         termResp.EnsureSuccessStatusCode();
 
-        var got2 = await (await client.GetAsync($"/api/leases/{created.Id}")).Content.ReadFromJsonAsync<Lease>();
+        var got2 = await (await client.GetAsync($"/api/v1/leases/{created.Id}")).Content.ReadFromJsonAsync<Lease>();
         Assert.NotNull(got2);
         Assert.True(Math.Abs((got2!.EndDate!.Value - end).TotalSeconds) <= 1);
     }

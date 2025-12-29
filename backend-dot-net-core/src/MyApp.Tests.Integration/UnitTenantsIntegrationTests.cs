@@ -21,7 +21,7 @@ public class UnitTenantsIntegrationTests : IClassFixture<WebApplicationFactory<P
 
         // Create unit and tenant
         var unit = new Unit { PropertyId = Guid.NewGuid(), Name = "Unit for assignment" };
-        var unitResp = await client.PostAsJsonAsync("/api/units", unit);
+        var unitResp = await client.PostAsJsonAsync("/api/v1/units", unit);
         unitResp.EnsureSuccessStatusCode();
         var u = await unitResp.Content.ReadFromJsonAsync<Unit>();
 
@@ -31,25 +31,25 @@ public class UnitTenantsIntegrationTests : IClassFixture<WebApplicationFactory<P
         var t = await tenantResp.Content.ReadFromJsonAsync<Tenant>();
 
         var assign = new UnitTenant { UnitId = u!.Id, TenantId = t!.Id };
-        var assignResp = await client.PostAsJsonAsync("/api/unittenants", assign);
+        var assignResp = await client.PostAsJsonAsync("/api/v1/unittenants", assign);
         assignResp.EnsureSuccessStatusCode();
         var created = await assignResp.Content.ReadFromJsonAsync<UnitTenant>();
         Assert.NotNull(created);
 
-        var listResp = await client.GetAsync($"/api/unittenants?unitId={u.Id}");
+        var listResp = await client.GetAsync($"/api/v1/unittenants?unitId={u.Id}");
         listResp.EnsureSuccessStatusCode();
         var assignments = await listResp.Content.ReadFromJsonAsync<UnitTenant[]>();
         Assert.Single(assignments);
 
-        var updateResp = await client.PutAsJsonAsync($"/api/unittenants/{u.Id}/{t.Id}", new UnitTenant { EndDate = DateTime.UtcNow.AddMonths(6) });
+        var updateResp = await client.PutAsJsonAsync($"/api/v1/unittenants/{u.Id}/{t.Id}", new UnitTenant { EndDate = DateTime.UtcNow.AddMonths(6) });
         updateResp.EnsureSuccessStatusCode();
         var updated = await updateResp.Content.ReadFromJsonAsync<UnitTenant>();
         Assert.NotNull(updated!.EndDate);
 
-        var delResp = await client.DeleteAsync($"/api/unittenants/{u.Id}/{t.Id}");
+        var delResp = await client.DeleteAsync($"/api/v1/unittenants/{u.Id}/{t.Id}");
         delResp.EnsureSuccessStatusCode();
 
-        var listAfter = await client.GetAsync($"/api/unittenants?unitId={u.Id}");
+        var listAfter = await client.GetAsync($"/api/v1/unittenants?unitId={u.Id}");
         listAfter.EnsureSuccessStatusCode();
         var assignmentsAfter = await listAfter.Content.ReadFromJsonAsync<UnitTenant[]>();
         Assert.Empty(assignmentsAfter);

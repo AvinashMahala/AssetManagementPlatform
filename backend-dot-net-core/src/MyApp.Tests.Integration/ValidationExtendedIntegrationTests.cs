@@ -20,7 +20,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     {
         var client = _factory.CreateClient();
         var unit = new Unit { PropertyId = Guid.Empty, Name = "" };
-        var resp = await client.PostAsJsonAsync("/api/units", unit);
+        var resp = await client.PostAsJsonAsync("/api/v1/units", unit);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
@@ -29,7 +29,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     {
         var client = _factory.CreateClient();
         var lease = new Lease { PropertyId = Guid.Empty, TenantId = Guid.Empty, StartDate = DateTime.MinValue, Rent = 0 };
-        var resp = await client.PostAsJsonAsync("/api/leases", lease);
+        var resp = await client.PostAsJsonAsync("/api/v1/leases", lease);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
@@ -38,7 +38,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     {
         var client = _factory.CreateClient();
         var req = new BulkRentCollectionRequest { UnitIds = new Guid[0], BillingPeriodStart = DateTime.UtcNow, BillingPeriodEnd = DateTime.UtcNow.AddDays(-1) };
-        var resp = await client.PostAsJsonAsync("/api/bulk/rent-collection", req);
+        var resp = await client.PostAsJsonAsync("/api/v1/bulkoperations/rent-collection", req);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
@@ -47,7 +47,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     {
         var client = _factory.CreateClient();
         var req = new BulkPaymentsRequest { TransactionIds = new Guid[0], Amount = 0m, PaymentMethod = "", PaymentDate = DateTime.MinValue };
-        var resp = await client.PostAsJsonAsync("/api/bulk/payments", req);
+        var resp = await client.PostAsJsonAsync("/api/v1/bulkoperations/payments", req);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
@@ -56,7 +56,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     {
         var client = _factory.CreateClient();
         var m = new Meter { Serial = "", PropertyId = Guid.Empty };
-        var resp = await client.PostAsJsonAsync("/api/meters", m);
+        var resp = await client.PostAsJsonAsync("/api/v1/meters", m);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
@@ -65,7 +65,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     {
         var client = _factory.CreateClient();
         var r = new MeterReading { MeterId = Guid.Empty, Value = -1 };
-        var resp = await client.PostAsJsonAsync("/api/meterreadings", r);
+        var resp = await client.PostAsJsonAsync("/api/v1/meterreadings", r);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
@@ -74,7 +74,7 @@ public class ValidationExtendedIntegrationTests : IClassFixture<WebApplicationFa
     {
         var client = _factory.CreateClient();
         var u = new User { DisplayName = "", Email = "not-an-email" };
-        var resp = await client.PostAsJsonAsync("/api/users", u);
+        var resp = await client.PostAsJsonAsync("/api/v1/users", u);
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
     }
 }

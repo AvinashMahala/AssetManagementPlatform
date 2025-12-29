@@ -7,28 +7,50 @@ using MyApp.Models;
 
 namespace MyApp.Api.Controllers;
 
+/// <summary>
+/// Request model for uploading a file using multipart/form-data.
+/// </summary>
 public class FileUploadRequest
 {
+    /// <summary>
+    /// The uploaded file.
+    /// </summary>
     [FromForm(Name = "file")]
     public IFormFile? File { get; set; }
 
+    /// <summary>
+    /// The type of the entity the file is associated with (e.g., "property").
+    /// </summary>
     [FromForm]
     public string? EntityType { get; set; }
 
+    /// <summary>
+    /// The id of the entity the file is associated with.
+    /// </summary>
     [FromForm]
     public string? EntityId { get; set; }
 }
 
+/// <summary>
+/// Controller for file upload, download and metadata management.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="FilesController"/> class.
+/// </remarks>
+/// <param name="service">The property file service used by the controller.</param>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/files")]
-public class FilesController : ControllerBase
+public class FilesController(IPropertyFileService service) : ControllerBase
 {
-    private readonly IPropertyFileService _service;
+    private readonly IPropertyFileService _service = service;
 
-    public FilesController(IPropertyFileService service) => _service = service;
-
-    [HttpPost("upload")]
+  /// <summary>
+  /// Uploads a file for a specific entity.
+  /// </summary>
+  /// <param name="request">The upload request containing file and entity identifiers.</param>
+  /// <returns>201 Created with file metadata on success; 400 Bad Request when no file provided.</returns>
+  [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> Upload([FromForm] FileUploadRequest request)
@@ -47,6 +69,11 @@ public class FilesController : ControllerBase
         return CreatedAtAction(nameof(GetMetadata), new { id = meta.Id }, meta);
     }
 
+    /// <summary>
+    /// Retrieves metadata for a file by id.
+    /// </summary>
+    /// <param name="id">The file id.</param>
+    /// <returns>200 OK with metadata; 404 Not Found if not found.</returns>
     [HttpGet("{id:guid}/metadata")]
     public async Task<IActionResult> GetMetadata(Guid id)
     {
@@ -55,6 +82,11 @@ public class FilesController : ControllerBase
         return Ok(meta);
     }
 
+    /// <summary>
+    /// Downloads the file content for the given id.
+    /// </summary>
+    /// <param name="id">The file id.</param>
+    /// <returns>File stream with appropriate content type; 404 Not Found when missing.</returns>
     [HttpGet("{id:guid}/download")]
     public async Task<IActionResult> Download(Guid id)
     {
@@ -65,6 +97,11 @@ public class FilesController : ControllerBase
         return File(data, meta.ContentType, meta.FileName);
     }
 
+    /// <summary>
+    /// Deletes a file by id.
+    /// </summary>
+    /// <param name="id">The file id to delete.</param>
+    /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
     [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> Delete(Guid id)
@@ -73,6 +110,14 @@ public class FilesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Lists files with pagination and optional entity filters.
+    /// </summary>
+    /// <param name="page">Page number (default 1).</param>
+    /// <param name="limit">Items per page (default 20).</param>
+    /// <param name="entityType">Optional entity type filter.</param>
+    /// <param name="entityId">Optional entity id filter.</param>
+    /// <returns>200 OK with paged file list and pagination metadata.</returns>
     [HttpGet]
     [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? entityType = null, [FromQuery] string? entityId = null)
@@ -101,6 +146,12 @@ public class FilesController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Lists files for a specific entity.
+    /// </summary>
+    /// <param name="entityType">The entity type.</param>
+    /// <param name="entityId">The entity id.</param>
+    /// <returns>200 OK with list of files for the entity.</returns>
     [HttpGet("entity/{entityType}/{entityId}")]
     public async Task<IActionResult> ListForEntity(string entityType, string entityId)
     {
@@ -108,6 +159,12 @@ public class FilesController : ControllerBase
         return Ok(list);
     }
 
+    /// <summary>
+    /// Updates metadata for a file (e.g., file name).
+    /// </summary>
+    /// <param name="id">The file id.</param>
+    /// <param name="body">A JSON body containing metadata fields to update.</param>
+    /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
     [Microsoft.AspNetCore.Authorization.Authorize]
     public async Task<IActionResult> UpdateMetadata(Guid id, [FromBody] object body)

@@ -5,19 +5,33 @@ using MyApp.Models;
 
 namespace MyApp.Api.Controllers;
 
+/// <summary>
+/// Controller for managing tenants.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="TenantsController"/> class.
+/// </remarks>
+/// <param name="service">Tenant service.</param>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tenants")]
 [Microsoft.AspNetCore.Authorization.Authorize]
-public class TenantsController : ControllerBase
+public class TenantsController(ITenantService service) : ControllerBase
 {
-    private readonly ITenantService _service;
+    private readonly ITenantService _service = service;
 
-    public TenantsController(ITenantService service) => _service = service;
-
-    [HttpGet]
+  /// <summary>
+  /// Lists tenants.
+  /// </summary>
+  /// <returns>200 OK with list of tenants.</returns>
+  [HttpGet]
     public async Task<IActionResult> List() => Ok(await _service.ListAsync());
 
+    /// <summary>
+    /// Gets a tenant by id.
+    /// </summary>
+    /// <param name="id">Tenant id.</param>
+    /// <returns>200 OK with tenant; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
@@ -26,6 +40,11 @@ public class TenantsController : ControllerBase
         return Ok(t);
     }
 
+    /// <summary>
+    /// Creates a new tenant.
+    /// </summary>
+    /// <param name="req">Tenant payload.</param>
+    /// <returns>201 Created with created tenant.</returns>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Tenant req)
     {
@@ -33,6 +52,12 @@ public class TenantsController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Updates a tenant.
+    /// </summary>
+    /// <param name="id">Tenant id.</param>
+    /// <param name="req">Updated tenant payload.</param>
+    /// <returns>200 OK with updated tenant; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] Tenant req)
     {
@@ -41,6 +66,11 @@ public class TenantsController : ControllerBase
         return Ok(updated);
     }
 
+    /// <summary>
+    /// Deletes a tenant.
+    /// </summary>
+    /// <param name="id">Tenant id.</param>
+    /// <returns>204 No Content on success; 404 Not Found if missing.</returns>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
