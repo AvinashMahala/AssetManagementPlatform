@@ -42,7 +42,7 @@ class FileService {
 
     // For file uploads, we need to use fetch directly to handle FormData
     // Read token from sessionStorage (primary) with a fallback to localStorage for compatibility
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = apiClient.getAuthToken() || localStorage.getItem('token'); // prefer in-memory token
     const headers: Record<string, string> = {};
     if (token) {
       headers.Authorization = `Bearer ${token}`;

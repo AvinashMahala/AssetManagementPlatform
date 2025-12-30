@@ -75,6 +75,9 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IEventBus, InMemoryEventBus>();
         }
 
+        // Auth helper: refresh token hasher (SHA256 + optional pepper)
+        services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
+
         return services;
     }
 }

@@ -31,4 +31,5 @@ public class AppDbContext : DbContext
     public DbSet<MyApp.Models.UnitUtility> UnitUtilities => Set<MyApp.Models.UnitUtility>();
     public DbSet<MyApp.Models.Meter> Meters => Set<MyApp.Models.Meter>();
     public DbSet<MyApp.Models.MeterReading> MeterReadings => Set<MyApp.Models.MeterReading>();
+    public DbSet<MyApp.Models.SessionToken> SessionTokens => Set<MyApp.Models.SessionToken>();
 }

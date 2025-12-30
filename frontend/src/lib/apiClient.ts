@@ -4,13 +4,15 @@ import { logger, logApiCall } from '../utils/logger';
 
 class ApiClient {
   private baseURL: string;
+  private _authToken: string | null = null;
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
   }
 
-  private getAuthToken(): string | null {
-    return sessionStorage.getItem('token');
+  // Expose current in-memory token for use in other modules (e.g., downloads)
+  getAuthToken(): string | null {
+    return this._authToken;
   }
 
   private getHeaders(additionalHeaders?: Record<string, string>, skipContentType?: boolean): Record<string, string> {
@@ -156,6 +158,7 @@ class ApiClient {
         headers,
         body: body as BodyInit,
         signal: controller.signal,
+        credentials: 'include', // include cookies for refresh token flows
         ...config,
       });
 
@@ -237,12 +240,11 @@ class ApiClient {
 
   // Utility method to set auth token
   setAuthToken(token: string | null): void {
+    this._authToken = token;
     if (token) {
-      sessionStorage.setItem('token', token);
-      logger.debug('Auth token set', { hasToken: true });
+      logger.debug('Auth token set (in-memory)', { hasToken: true });
     } else {
-      sessionStorage.removeItem('token');
-      logger.debug('Auth token removed');
+      logger.debug('Auth token removed (in-memory)');
     }
   }
 
@@ -274,6 +276,7 @@ class ApiClient {
         method,
         headers,
         signal: controller.signal,
+        credentials: 'include',
         ...config,
       });
 

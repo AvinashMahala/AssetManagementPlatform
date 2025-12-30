@@ -42,6 +42,7 @@ namespace MyApp.Api.Swagger
 
                 // Load external per-endpoint docs from ApiDocs (see ApiDocs/README.md)
                 options.OperationFilter<ExternalDocsOperationFilter>();
+                options.OperationFilter<AddDeviceHeaderOperationFilter>();
                 options.DocumentFilter<TagDocsDocumentFilter>();
                 // Lowercase path keys so controller segments appear in lower case in Swagger UI (e.g. /api/v1/auth/login)
                 options.DocumentFilter<LowercasePathsDocumentFilter>();

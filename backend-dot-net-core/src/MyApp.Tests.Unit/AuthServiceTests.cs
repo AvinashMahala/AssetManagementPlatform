@@ -22,7 +22,13 @@ public class AuthServiceTests
         jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
-        var svc = new AuthService(repoMock.Object, jwtMock.Object);
+        var sessionRepoMock = new Mock<MyApp.Interfaces.Repositories.ISessionRepository>();
+        sessionRepoMock.Setup(r => r.CreateAsync(It.IsAny<MyApp.Models.SessionToken>())).Returns(Task.CompletedTask);
+
+        var hasherMock = new Mock<MyApp.Services.IRefreshTokenHasher>();
+        hasherMock.Setup(h => h.Hash(It.IsAny<string>())).Returns("refreshhash");
+
+        var svc = new AuthService(repoMock.Object, jwtMock.Object, sessionRepoMock.Object, hasherMock.Object);
 
         var dto = await svc.RegisterAsync(new RegisterRequest("x@y.com", "P@ssw0rd", "Me"));
 
@@ -46,13 +52,19 @@ public class AuthServiceTests
         jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
-        var svc = new AuthService(repoMock.Object, jwtMock.Object);
+        var sessionRepoMock = new Mock<MyApp.Interfaces.Repositories.ISessionRepository>();
+        sessionRepoMock.Setup(r => r.CreateAsync(It.IsAny<MyApp.Models.SessionToken>())).Returns(Task.CompletedTask);
+
+        var hasherMock = new Mock<MyApp.Services.IRefreshTokenHasher>();
+        hasherMock.Setup(h => h.Hash("refresh")).Returns("refreshhash");
+
+        var svc = new AuthService(repoMock.Object, jwtMock.Object, sessionRepoMock.Object, hasherMock.Object);
 
         var tokens = await svc.LoginAsync(new LoginRequest("x@y.com", "P@ssw0rd"));
 
         Assert.Equal("token", tokens.AccessToken);
         Assert.Equal("refresh", tokens.RefreshToken);
-        repoMock.Verify(r => r.UpdateAsync(It.Is<User>(u => u.RefreshToken == "refresh")), Times.Once);
+        sessionRepoMock.Verify(r => r.CreateAsync(It.Is<MyApp.Models.SessionToken>(s => s.RefreshTokenHash == "refreshhash")), Times.Once);
     }
 
     [Fact]
@@ -135,7 +147,13 @@ public class AuthServiceTests
         jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
-        var svc = new AuthService(repoMock.Object, jwtMock.Object);
+        var sessionRepoMock = new Mock<MyApp.Interfaces.Repositories.ISessionRepository>();
+        sessionRepoMock.Setup(r => r.CreateAsync(It.IsAny<MyApp.Models.SessionToken>())).Returns(Task.CompletedTask);
+
+        var hasherMock = new Mock<MyApp.Services.IRefreshTokenHasher>();
+        hasherMock.Setup(h => h.Hash(It.IsAny<string>())).Returns("refreshhash");
+
+        var svc = new AuthService(repoMock.Object, jwtMock.Object, sessionRepoMock.Object, hasherMock.Object);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await svc.LoginAsync(new LoginRequest("x@y.com", "P@ssw0rd")));
     }

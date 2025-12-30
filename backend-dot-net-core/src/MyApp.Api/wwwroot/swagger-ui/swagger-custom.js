@@ -111,4 +111,27 @@
   // Expose helpers for debugging
   window.swaggerCollapseAll = collapseAll;
   window.swaggerExpandAll = expandAll;
+
+  // Ensure Swagger UI sends cookies (so HttpOnly refresh cookie can be used by the browser)
+  // Sets fetch/XHR request to include credentials.
+  function enableSwaggerIncludeCredentials() {
+    try {
+      if (window.ui && typeof window.ui.getConfigs === 'function') {
+        const cfg = window.ui.getConfigs() || {};
+        const prev = cfg.requestInterceptor;
+        cfg.requestInterceptor = function (req) {
+          // For fetch-based requests
+          if (req && typeof req === 'object') {
+            req.credentials = 'include';
+          }
+          if (prev) return prev(req);
+          return req;
+        };
+        // Apply back to UI config
+        try { window.ui.initOAuth && window.ui.initOAuth(cfg); } catch (e) { /* ignore */ }
+      }
+    } catch (e) { /* ignore */ }
+  }
+  // Attempt to enable credentials after render
+  setTimeout(enableSwaggerIncludeCredentials, 500);
 })();

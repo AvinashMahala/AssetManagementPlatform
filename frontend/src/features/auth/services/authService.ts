@@ -152,8 +152,9 @@ class AuthService {
   }
 
   // Token refresh
-  async refreshToken(refreshToken: string): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh-token', { refreshToken });
+  // Cookie-based refresh: no body required. Browser will send HttpOnly cookie automatically.
+  async refreshToken(): Promise<AuthResponse> {
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh-token');
     if (!response.success || !response.data) {
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Token refresh failed' });
     }

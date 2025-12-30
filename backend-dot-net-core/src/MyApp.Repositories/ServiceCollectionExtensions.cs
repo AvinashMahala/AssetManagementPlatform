@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyApp.Interfaces;
+using MyApp.Interfaces.Repositories;
 
 namespace MyApp.Repositories;
 
@@ -31,6 +32,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ILeaseRepository, LeaseRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IPropertyRepository, PropertyRepository>();
         // Repositories for files and templates
         services.AddScoped<IFileRepository, FileRepository>();

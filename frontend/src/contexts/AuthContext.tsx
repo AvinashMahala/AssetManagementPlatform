@@ -86,28 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { showError } = useNotifications();
 
   useEffect(() => {
-    // Initialize token and user data from sessionStorage on app start
-    const storedToken = sessionStorage.getItem('token');
-    const storedUser = sessionStorage.getItem('user');
-    
-    if (storedToken) {
-      apiClient.setAuthToken(storedToken);
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setIsAuthenticated(true);
-          setLoading(false);
-          // Verify token in background without blocking UI
-          checkAuth(true).catch(console.error);
-          return;
-        } catch (e) {
-          console.warn('Invalid stored user data, falling back to auth check');
-        }
-      }
-    }
-    
-    // Check if we should bypass auth in development
+    // On app start: prefer using an existing access token from sessionStorage to avoid unnecessary refreshes.
     const disableAuth = import.meta.env.VITE_DISABLE_AUTH === 'true';
     if (disableAuth) {
       // Automatically authenticate with dev user
@@ -127,9 +106,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       apiClient.setAuthToken('dev-mode-token');
       sessionStorage.setItem('user', JSON.stringify(devUser));
       setLoading(false);
-    } else {
-      checkAuth();
+      return;
     }
+
+    // If an access token exists in sessionStorage and is not expired, reuse it
+    const storedToken = sessionStorage.getItem('accessToken');
+    const storedExp = sessionStorage.getItem('accessTokenExp');
+    if (storedToken && storedExp) {
+      const expMs = parseInt(storedExp, 10);
+      if (!Number.isNaN(expMs) && Date.now() < expMs - 30000) { // keep a 30s buffer
+        apiClient.setAuthToken(storedToken);
+        // Verify token by fetching profile in background
+        (async () => {
+          try {
+            const userData = await authService.getProfile();
+            setUser(userData);
+            setIsAuthenticated(true);
+            sessionStorage.setItem('user', JSON.stringify(userData));
+          } catch (err) {
+            // If token isn't valid, fall back to silent refresh
+            console.warn('Stored token invalid, attempting silent refresh', err);
+            try {
+              const refreshSuccess = await refreshToken();
+              if (refreshSuccess) {
+                await checkAuth(true);
+                return;
+              }
+            } catch (e) {
+              console.warn('Silent refresh failed', e);
+            }
+            await checkAuth();
+          } finally {
+            setLoading(false);
+          }
+        })();
+        return;
+      }
+    }
+
+    // No valid stored token -> try silent refresh via cookie
+    (async () => {
+      try {
+        const refreshSuccess = await refreshToken();
+        if (refreshSuccess) {
+          await checkAuth(true);
+          return;
+        }
+      } catch (err) {
+        console.warn('Silent refresh failed', err);
+      }
+      await checkAuth();
+    })();
   }, []);
 
   const checkAuth = async (silent: boolean = false) => {
@@ -198,8 +225,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       apiClient.setAuthToken(authResponse.tokens.accessToken);
-      // Store refresh token
-      sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      // Persist access token and expiry so reloads don't immediately trigger refresh
+      try {
+        const expMs = getJwtExpiryMs(authResponse.tokens.accessToken);
+        if (expMs) {
+          sessionStorage.setItem('accessToken', authResponse.tokens.accessToken);
+          sessionStorage.setItem('accessTokenExp', String(expMs));
+        }
+      } catch (_e) {
+        // ignore parsing errors
+      }
+      // Refresh token is set in an HttpOnly cookie by the backend; do not store it in JS storage.
 
       // If backend returned user directly, use it; otherwise fetch profile
       if (authResponse.user) {
@@ -246,8 +282,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
       apiClient.setAuthToken(null);
-      sessionStorage.removeItem('refreshToken');
+      // Server clears cookie; remove stored user info and tokens
       sessionStorage.removeItem('user');
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('accessTokenExp');
     }
   };
 
@@ -360,8 +398,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(authResponse.user);
       setIsAuthenticated(true);
       apiClient.setAuthToken(authResponse.tokens.accessToken);
-      sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
+      // Persist access token and expiry so reloads don't immediately refresh
+      try {
+        const expMs = getJwtExpiryMs(authResponse.tokens.accessToken);
+        if (expMs) {
+          sessionStorage.setItem('accessToken', authResponse.tokens.accessToken);
+          sessionStorage.setItem('accessTokenExp', String(expMs));
+        }
+      } catch (_e) {
+        // ignore
+      }
       sessionStorage.setItem('user', JSON.stringify(authResponse.user));
+      // Notify other tabs
+      if (bc) bc.postMessage({ type: 'refreshed' });
       return true;
     } catch (error) {
       console.error('[AuthContext.googleAuth] Error:', error);
@@ -369,23 +418,184 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Cross-tab refresh lock + notification
+  const REFRESH_LOCK_KEY = 'auth:refresh_lock';
+  const LOCK_TIMEOUT_MS = 10000; // consider lock stale after 10s
+  const ACQUIRE_TIMEOUT_MS = 4000; // wait up to 4s to acquire lock
+  const POLL_INTERVAL_MS = 200;
+  const tabId = React.useMemo(() => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`, []);
+  const bc = React.useMemo(() => (typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('auth-refresh') : null), []);
+
+  React.useEffect(() => {
+    if (!bc) return undefined;
+    const onMsg = (ev: MessageEvent) => {
+      if (ev?.data?.type === 'refreshed') {
+        // Another tab refreshed: read stored access token and apply
+        const storedToken = sessionStorage.getItem('accessToken');
+        const storedExp = sessionStorage.getItem('accessTokenExp');
+        if (storedToken && storedExp) {
+          apiClient.setAuthToken(storedToken);
+          setIsAuthenticated(true);
+          // Try to refresh user profile non-blocking
+          authService.getProfile().then(u => {
+            setUser(u);
+            sessionStorage.setItem('user', JSON.stringify(u));
+          }).catch(() => {
+            // If profile fails, we'll let the app's normal checks handle it
+          });
+        }
+      }
+    };
+    bc.addEventListener('message', onMsg as any);
+    return () => bc.removeEventListener('message', onMsg as any);
+  }, [bc]);
+
+  const acquireRefreshLock = async (timeout = ACQUIRE_TIMEOUT_MS): Promise<boolean> => {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+      const raw = localStorage.getItem(REFRESH_LOCK_KEY);
+      if (!raw) {
+        localStorage.setItem(REFRESH_LOCK_KEY, JSON.stringify({ tabId, ts: Date.now() }));
+        // confirm we own it
+        const check = localStorage.getItem(REFRESH_LOCK_KEY);
+        if (check) {
+          const obj = JSON.parse(check);
+          if (obj.tabId === tabId) return true;
+        }
+      } else {
+        try {
+          const obj = JSON.parse(raw);
+          if (Date.now() - (obj.ts || 0) > LOCK_TIMEOUT_MS) {
+            // stale - steal
+            localStorage.setItem(REFRESH_LOCK_KEY, JSON.stringify({ tabId, ts: Date.now() }));
+            const check = localStorage.getItem(REFRESH_LOCK_KEY);
+            if (check) {
+              const obj2 = JSON.parse(check);
+              if (obj2.tabId === tabId) return true;
+            }
+          }
+        } catch (_e) {
+          // corrupt value - overwrite
+          localStorage.setItem(REFRESH_LOCK_KEY, JSON.stringify({ tabId, ts: Date.now() }));
+          const check = localStorage.getItem(REFRESH_LOCK_KEY);
+          if (check) {
+            const obj2 = JSON.parse(check);
+            if (obj2.tabId === tabId) return true;
+          }
+        }
+      }
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+    }
+    return false;
+  };
+
+  const releaseRefreshLock = (): void => {
+    const raw = localStorage.getItem(REFRESH_LOCK_KEY);
+    if (!raw) return;
+    try {
+      const obj = JSON.parse(raw);
+      if (obj.tabId === tabId) {
+        localStorage.removeItem(REFRESH_LOCK_KEY);
+        if (bc) bc.postMessage({ type: 'refreshed' });
+      }
+    } catch (_e) {
+      localStorage.removeItem(REFRESH_LOCK_KEY);
+      if (bc) bc.postMessage({ type: 'refreshed' });
+    }
+  };
+
+  // Wait for another tab's refresh notification up to timeout
+  const waitForRefreshNotification = async (timeout = 5000): Promise<boolean> => {
+    if (!bc) return false;
+    return new Promise((resolve) => {
+      let done = false;
+      const timer = setTimeout(() => {
+        if (!done) {
+          done = true;
+          resolve(false);
+        }
+      }, timeout);
+      const onMsg = (ev: MessageEvent) => {
+        if (ev?.data?.type === 'refreshed') {
+          if (!done) {
+            done = true;
+            clearTimeout(timer);
+            resolve(true);
+          }
+        }
+      };
+      bc.addEventListener('message', onMsg as any);
+      // Cleanup handler after promise resolves
+      (async () => {
+        const res = await Promise.resolve();
+        if (res) { /* noop to satisfy lint */ }
+      })();
+    });
+  };
+
+  const saveAccessToken = (token: string) => {
+    apiClient.setAuthToken(token);
+    const exp = getJwtExpiryMs(token);
+    if (exp) {
+      sessionStorage.setItem('accessToken', token);
+      sessionStorage.setItem('accessTokenExp', String(exp));
+    }
+  };
+
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const refreshTokenValue = sessionStorage.getItem('refreshToken');
-      if (!refreshTokenValue) {
-        return false;
+      // Acquire cross-tab lock so only one tab attempts refresh
+      const locked = await acquireRefreshLock();
+      if (locked) {
+        try {
+          const authResponse = await authService.refreshToken();
+          if (!authResponse || !authResponse.tokens || !authResponse.tokens.accessToken) {
+            releaseRefreshLock();
+            return false;
+          }
+          saveAccessToken(authResponse.tokens.accessToken);
+          // Notify other tabs
+          if (bc) bc.postMessage({ type: 'refreshed' });
+          return true;
+        } finally {
+          releaseRefreshLock();
+        }
+      } else {
+        // Another tab is likely refreshing; wait for notification
+        const notified = await waitForRefreshNotification();
+        if (notified) {
+          // Assume token refreshed by other tab; attempt to read new access token from storage
+          const storedToken = sessionStorage.getItem('accessToken');
+          if (storedToken) {
+            apiClient.setAuthToken(storedToken);
+            try {
+              const userData = await authService.getProfile();
+              setUser(userData);
+              setIsAuthenticated(true);
+              sessionStorage.setItem('user', JSON.stringify(userData));
+              return true;
+            } catch (_err) {
+              return false;
+            }
+          }
+          return false;
+        }
+        // No notification - fallback to trying to refresh ourselves once
+        const locked2 = await acquireRefreshLock();
+        if (!locked2) return false;
+        try {
+          const authResponse = await authService.refreshToken();
+          if (!authResponse || !authResponse.tokens || !authResponse.tokens.accessToken) {
+            return false;
+          }
+          saveAccessToken(authResponse.tokens.accessToken);
+          if (bc) bc.postMessage({ type: 'refreshed' });
+          return true;
+        } finally {
+          releaseRefreshLock();
+        }
       }
-
-      const authResponse = await authService.refreshToken(refreshTokenValue);
-      if (!authResponse || !authResponse.tokens || !authResponse.tokens.accessToken) {
-        // Invalid/empty response from refresh endpoint
-        return false;
-      }
-      apiClient.setAuthToken(authResponse.tokens.accessToken);
-      sessionStorage.setItem('refreshToken', authResponse.tokens.refreshToken);
-      return true;
     } catch (_error) {
-      // Token refresh failed, return false (don't logout here, let caller handle it)
       return false;
     }
   };
@@ -432,8 +642,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       // Set a mock token for API calls
       apiClient.setAuthToken('dev-mode-token');
+      sessionStorage.setItem('accessToken', 'dev-mode-token');
+      sessionStorage.setItem('accessTokenExp', String(Date.now() + 60 * 60 * 1000));
       // Store mock user data
       sessionStorage.setItem('user', JSON.stringify(mockUser));
+    }
+  };
+
+  // Utility: decode JWT expiry (exp in seconds) -> milliseconds since epoch
+  const getJwtExpiryMs = (token: string): number | null => {
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      const payload = parts[1];
+      // base64 url -> base64
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = base64.length % 4;
+      const padded = base64 + (pad ? '='.repeat(4 - pad) : '');
+      const json = JSON.parse(atob(padded));
+      if (!json.exp) return null;
+      return json.exp * 1000;
+    } catch {
+      return null;
     }
   };
 

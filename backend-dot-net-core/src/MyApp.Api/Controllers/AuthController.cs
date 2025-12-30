@@ -1,9 +1,11 @@
 using System;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Interfaces;
 using MyApp.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace MyApp.Api.Controllers;
 
@@ -17,9 +19,11 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]
-public class AuthController(IAuthService service) : ControllerBase
+public class AuthController(IAuthService service, Microsoft.Extensions.Configuration.IConfiguration configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env) : ControllerBase
 {
     private readonly IAuthService _service = service;
+    private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration = configuration;
+    private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env = env;
 
   /// <summary>
   /// Registers a new user.
@@ -52,8 +56,39 @@ public class AuthController(IAuthService service) : ControllerBase
     {
         try
         {
-            var tokens = await _service.LoginAsync(req);
-            return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
+            // Collect client metadata (used for session record)
+            // Prefer X-Forwarded-For when behind a proxy; otherwise use remote IP
+            string? ip = null;
+            if (Request.Headers.ContainsKey("X-Forwarded-For"))
+            {
+                var fwd = Request.Headers["X-Forwarded-For"].ToString();
+                if (!string.IsNullOrEmpty(fwd)) ip = fwd.Split(',')[0].Trim();
+            }
+            if (ip is null) ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var userAgent = Request.Headers.ContainsKey("User-Agent") ? Request.Headers["User-Agent"].ToString() : null;
+            var deviceInfo = Request.Headers.ContainsKey("X-Device-Info") ? Request.Headers["X-Device-Info"].ToString() : userAgent;
+
+            var tokens = await _service.LoginAsync(req, ip, userAgent, deviceInfo);
+
+            // Set HttpOnly refresh token cookie (cookie-based refresh flow)
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps, // use secure cookies on HTTPS; allow non-secure in local HTTP dev
+                // Allow cross-origin fetches from SPA dev origin (credentials included). In production, ensure HTTPS and review SameSite policy.
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(30)
+            };
+            Response.Cookies.Append("refreshToken", tokens.RefreshToken, cookieOptions);
+
+            // Return access token in body; refresh token returned in cookie. Expose refresh token in body only in dev or when explicitly enabled.
+            var exposeRefresh = (_configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || _env.IsDevelopment();
+            if (exposeRefresh)
+            {
+                return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
+            }
+            return Ok(new { tokens = new { accessToken = tokens.AccessToken } });
         }
         catch (InvalidOperationException ex)
         {
@@ -68,12 +103,43 @@ public class AuthController(IAuthService service) : ControllerBase
     /// <returns>200 OK with new tokens on success; 401 Unauthorized on failure.</returns>
     [HttpPost("refresh-token")]
     [AllowAnonymous]
-    public async Task<IActionResult> Refresh([FromBody] RefreshRequest req)
+    public async Task<IActionResult> Refresh([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] RefreshRequest? req)
     {
         try
         {
-            var tokens = await _service.RefreshTokenAsync(req);
-            return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
+            // Prefer token from request body, otherwise read from HttpOnly cookie (cookie-based flow)
+            var raw = req?.RefreshToken;
+            if (string.IsNullOrWhiteSpace(raw) && Request.Cookies.ContainsKey("refreshToken"))
+            {
+                raw = Request.Cookies["refreshToken"];
+                req = new RefreshRequest(raw);
+            }
+
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return BadRequest(new { message = "No refresh token provided" });
+            }
+
+            var tokens = await _service.RefreshTokenAsync(req!);
+
+            // Rotate cookie value with the new refresh token
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps, // use secure cookies on HTTPS; allow non-secure in local HTTP dev
+                // Allow cross-origin fetches from SPA dev origin (credentials included). In production, ensure HTTPS and review SameSite policy.
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(30)
+            };
+            Response.Cookies.Append("refreshToken", tokens.RefreshToken, cookieOptions);
+
+            var exposeRefresh = (_configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || _env.IsDevelopment();
+            if (exposeRefresh)
+            {
+                return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
+            }
+            return Ok(new { tokens = new { accessToken = tokens.AccessToken } });
         }
         catch (InvalidOperationException ex)
         {
@@ -97,10 +163,29 @@ public class AuthController(IAuthService service) : ControllerBase
             if (!Guid.TryParse(sub2, out var id2)) return Unauthorized();
             id = id2;
         }
-
         var user = await _service.GetProfileAsync(id);
         if (user == null) return NotFound();
         return Ok(user);
+    }
+
+    /// <summary>
+    /// Logs out the current session by revoking the refresh token and clearing cookie.
+    /// </summary>
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        // Read refresh cookie if present and revoke session
+        if (Request.Cookies.ContainsKey("refreshToken"))
+        {
+            var raw = Request.Cookies["refreshToken"];
+            await _service.RevokeRefreshTokenAsync(raw);
+        }
+
+        // Clear cookie client-side
+        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.None });
+
+        return Ok(new { message = "Logged out" });
     }
 
     /// <summary>
