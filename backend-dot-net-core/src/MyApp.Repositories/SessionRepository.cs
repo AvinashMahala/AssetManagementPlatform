@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MyApp.Interfaces.Repositories;
 using MyApp.Models;
 using Prometheus;
