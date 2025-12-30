@@ -204,6 +204,52 @@ Most free hosting services provide PostgreSQL databases. For initial data setup:
   2. Keep the browser session; call POST `/api/v1/auth/refresh-token` without providing a body — the server will read the cookie and issue new tokens.
   3. If you need the server to return the refresh token in the JSON body (for tooling), enable `Auth:ExposeRefreshTokenInBody=true` in development only; do not enable in production unless you understand the security implications.
 
+### Rate-limiting & Alerts (recommended)
+- Recommended per-route policy for refresh endpoint (example): `POST:/api/v1/auth/refresh-token` — Limit=10, WindowSeconds=60, BurstCapacity=2, ApplyTo=IP
+- Example Prometheus alert rules (add to your Prometheus recording/alert rules):
+
+```yaml
+- alert: AuthRefreshHighFailureRate
+  expr: increase(auth_refresh_failed_total[5m]) > 20
+  for: 2m
+  labels:
+    severity: warning
+  annotations:
+    summary: "High refresh failure rate detected"
+    description: "{{ $labels.instance }}: {{ $value }} failures in the last 5 minutes"
+
+- alert: AuthRefreshAnomalySpike
+  expr: increase(auth_refresh_anomaly_total[5m]) > 0
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Anomalous refresh activity detected"
+    description: "Refresh failure anomaly triggered - investigate possible abuse or credential stuffing"
+
+- alert: AuthRefreshRateLimitedSpikes
+  expr: increase(auth_refresh_rate_limited_total[5m]) > 50
+  for: 2m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Refresh endpoint rate-limit spike"
+    description: "The refresh endpoint is being rate limited frequently; review traffic patterns and CSRF/cookie usage"
+```
+
+- Grafana: add a dashboard panel showing `rate(auth_refresh_failed_total[5m])`, `increase(auth_refresh_rate_limited_total[5m])`, and `increase(refresh_token_reuse_total[5m])` to monitor trends.
+- Prometheus scrape example (add to prometheus.yml):
+
+```yaml
+scrape_configs:
+  - job_name: 'myapp-backend'
+    static_configs:
+      - targets: ['your-backend-host:5001']
+    metrics_path: '/metrics'
+```
+
+- Runbook: on alert, block offending IP(s), revoke affected sessions, check logs for reuse events and rotate secrets if necessary.
+
 
 ## 💡 Pro Tips
 

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Interfaces.Repositories;
 using MyApp.Models;
+using Prometheus;
 
 namespace MyApp.Repositories;
 
@@ -12,6 +13,7 @@ public class SessionRepository : ISessionRepository
     private readonly Microsoft.Extensions.Logging.ILogger<SessionRepository> _logger;
     private static readonly System.Diagnostics.Metrics.Meter _meter = new("MyApp.SessionTokens", "1.0");
     private readonly System.Diagnostics.Metrics.Counter<long> _reuseCounter;
+    private static readonly Prometheus.Counter _reusePromCounter = Metrics.CreateCounter("refresh_token_reuse_total", "Number of detected refresh token reuse events");
 
     public SessionRepository(AppDbContext db, Microsoft.Extensions.Logging.ILogger<SessionRepository> logger)
     {
@@ -84,6 +86,7 @@ public class SessionRepository : ISessionRepository
             // Detected reuse or previously replaced token — revoke all sessions for the user and surface a warning
             _logger.LogWarning("Refresh token reuse detected for user {UserId} (session {SessionId}). Revoking all sessions.", old.UserId, old.Id);
             _reuseCounter.Add(1, new KeyValuePair<string, object?>("userId", old.UserId.ToString()));
+            _reusePromCounter.Inc();
             await RevokeAllForUserAsync(old.UserId);
             await tx.CommitAsync();
             throw new InvalidOperationException("Refresh token reuse detected");
@@ -122,6 +125,7 @@ public class SessionRepository : ISessionRepository
         {
             _logger.LogWarning("Refresh token reuse detected for user {UserId} (session {SessionId}). Revoking all sessions.", s.UserId, s.Id);
             _reuseCounter.Add(1, new KeyValuePair<string, object?>("userId", s.UserId.ToString()));
+            _reusePromCounter.Inc();
             await RevokeAllForUserAsync(s.UserId);
             await tx.CommitAsync();
             throw new InvalidOperationException("Refresh token reuse detected");

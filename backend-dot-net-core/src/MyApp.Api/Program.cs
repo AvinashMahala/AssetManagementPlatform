@@ -73,6 +73,14 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.Configure<MyApp.Api.Options.CorrelationIdOptions>(builder.Configuration.GetSection("CorrelationId"));
 builder.Services.Configure<MyApp.Api.Options.ExceptionHandlingOptions>(builder.Configuration.GetSection("ExceptionHandling"));
 builder.Services.Configure<MyApp.Api.Options.RateLimitingOptions>(builder.Configuration.GetSection("RateLimiting"));// Request logging, security headers and maintenance options
+// Ensure a conservative default for the refresh endpoint if not configured explicitly
+builder.Services.PostConfigure<MyApp.Api.Options.RateLimitingOptions>(opts => {
+    var key = "POST:/api/v1/auth/refresh-token";
+    if (!opts.PerRoutePolicies.ContainsKey(key))
+    {
+        opts.PerRoutePolicies[key] = new MyApp.Api.Options.RateLimitPolicy { Limit = 10, WindowSeconds = 60, BurstCapacity = 2, ApplyTo = "IP" };
+    }
+});
 builder.Services.Configure<MyApp.Api.Options.RequestLoggingOptions>(builder.Configuration.GetSection("RequestLogging"));
 builder.Services.Configure<MyApp.Api.Options.SecurityHeadersOptions>(builder.Configuration.GetSection("SecurityHeaders"));
 builder.Services.Configure<MyApp.Api.Options.MaintenanceOptions>(builder.Configuration.GetSection("Maintenance"));
@@ -80,6 +88,8 @@ builder.Services.Configure<MyApp.Api.Options.MaintenanceOptions>(builder.Configu
 // Register maintenance service and rate limiting services
 builder.Services.AddSingleton<MyApp.Api.Services.Maintenance.IMaintenanceService, MyApp.Api.Services.Maintenance.MaintenanceService>();// Register rate limiting services (in-memory by default; replace with Redis in production)
 builder.Services.AddSingleton<MyApp.Api.Services.RateLimit.IRateLimitStore, MyApp.Api.Services.RateLimit.InMemoryRateLimitStore>();
+// Failure tracker used to detect rapid failure spikes (e.g., refresh endpoint abuse)
+builder.Services.AddSingleton<MyApp.Api.Security.FailureTracker>();
 
 // Configure CORS for local development. Reads CORS_ORIGIN from configuration (comma-separated list)
 var corsOrigins = builder.Configuration["CORS_ORIGIN"] ?? "http://localhost:5173";
