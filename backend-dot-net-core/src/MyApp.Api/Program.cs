@@ -72,16 +72,14 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.Configure<MyApp.Api.Options.CorrelationIdOptions>(builder.Configuration.GetSection("CorrelationId"));
 builder.Services.Configure<MyApp.Api.Options.ExceptionHandlingOptions>(builder.Configuration.GetSection("ExceptionHandling"));
-builder.Services.Configure<MyApp.Api.Options.RateLimitingOptions>(builder.Configuration.GetSection("RateLimiting"));
-// Register rate limiting services (in-memory by default; replace with Redis in production)
-builder.Services.AddSingleton<MyApp.Api.Services.RateLimit.IRateLimitStore, MyApp.Api.Services.RateLimit.InMemoryRateLimitStore>();
-
-// Request logging options
+builder.Services.Configure<MyApp.Api.Options.RateLimitingOptions>(builder.Configuration.GetSection("RateLimiting"));// Request logging, security headers and maintenance options
 builder.Services.Configure<MyApp.Api.Options.RequestLoggingOptions>(builder.Configuration.GetSection("RequestLogging"));
-// Security headers options
 builder.Services.Configure<MyApp.Api.Options.SecurityHeadersOptions>(builder.Configuration.GetSection("SecurityHeaders"));
-// Maintenance options
 builder.Services.Configure<MyApp.Api.Options.MaintenanceOptions>(builder.Configuration.GetSection("Maintenance"));
+
+// Register maintenance service and rate limiting services
+builder.Services.AddSingleton<MyApp.Api.Services.Maintenance.IMaintenanceService, MyApp.Api.Services.Maintenance.MaintenanceService>();// Register rate limiting services (in-memory by default; replace with Redis in production)
+builder.Services.AddSingleton<MyApp.Api.Services.RateLimit.IRateLimitStore, MyApp.Api.Services.RateLimit.InMemoryRateLimitStore>();
 
 // Configure CORS for local development. Reads CORS_ORIGIN from configuration (comma-separated list)
 var corsOrigins = builder.Configuration["CORS_ORIGIN"] ?? "http://localhost:5173";
@@ -241,10 +239,13 @@ app.UseCors("LocalDev");
 // Correlation ID middleware must run early so later logging and error handling includes the id
 app.UseMiddleware<MyApp.Api.Middleware.CorrelationIdMiddleware>();
 
-// Security headers (early, after CORS)
+// Security headers should be applied early (after CORS)
 app.UseMiddleware<MyApp.Api.Middleware.SecurityHeadersMiddleware>();
 
-// Request logging should wrap downstream handlers so duration and status can be measured
+// Maintenance mode should be checked before most request processing
+app.UseMiddleware<MyApp.Api.Middleware.MaintenanceMiddleware>();
+
+// Request logging - capture start/end around downstream processing
 app.UseMiddleware<MyApp.Api.Middleware.RequestLoggingMiddleware>();
 
 // Global exception handling middleware (catches downstream exceptions and returns ProblemDetails)
@@ -252,9 +253,6 @@ app.UseMiddleware<MyApp.Api.Middleware.ExceptionHandlingMiddleware>();
 
 // Rate limiting middleware enforces configured policies
 app.UseMiddleware<MyApp.Api.Middleware.RateLimitingMiddleware>();
-
-// Maintenance mode (short-circuit before auth)
-app.UseMiddleware<MyApp.Api.Middleware.MaintenanceMiddleware>();
 
 // Expose Prometheus metrics endpoint (prometheus-net) - should be accessible without auth
 app.UseHttpMetrics();

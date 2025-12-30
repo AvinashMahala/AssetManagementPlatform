@@ -35,6 +35,7 @@ public class RateLimitingMiddlewareTests
             if (i < 2) Assert.Equal(200, context.Response.StatusCode);
             else Assert.Equal(429, context.Response.StatusCode);
         }
+        }
 
         [Fact]
         public async Task Returns_429_When_DefaultBurst_Allows_only_limit_one()

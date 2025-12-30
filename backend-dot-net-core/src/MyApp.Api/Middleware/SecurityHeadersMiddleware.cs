@@ -16,28 +16,30 @@ namespace MyApp.Api.Middleware
         {
             _next = next;
             _logger = logger;
-            _options = options.Value;
+            _options = options?.Value ?? new SecurityHeadersOptions();
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if (_options.Enabled)
+            context.Response.OnStarting(() =>
             {
-                if (!string.IsNullOrEmpty(_options.ContentSecurityPolicy))
-                    context.Response.Headers["Content-Security-Policy"] = _options.ContentSecurityPolicy;
+                if (_options.EnableCsp && !string.IsNullOrEmpty(_options.CspValue))
+                    context.Response.Headers["Content-Security-Policy"] = _options.CspValue;
 
-                if (_options.StrictTransportSecurity)
-                    context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+                if (_options.EnableHsts && !string.IsNullOrEmpty(_options.HstsValue))
+                    context.Response.Headers["Strict-Transport-Security"] = _options.HstsValue;
 
-                if (!string.IsNullOrEmpty(_options.XContentTypeOptions))
-                    context.Response.Headers["X-Content-Type-Options"] = _options.XContentTypeOptions;
+                if (_options.EnableXContentTypeOptions && !string.IsNullOrEmpty(_options.XContentTypeOptionsValue))
+                    context.Response.Headers["X-Content-Type-Options"] = _options.XContentTypeOptionsValue;
 
-                if (!string.IsNullOrEmpty(_options.XFrameOptions))
-                    context.Response.Headers["X-Frame-Options"] = _options.XFrameOptions;
+                if (_options.EnableXFrameOptions && !string.IsNullOrEmpty(_options.XFrameOptionsValue))
+                    context.Response.Headers["X-Frame-Options"] = _options.XFrameOptionsValue;
 
-                if (!string.IsNullOrEmpty(_options.ReferrerPolicy))
-                    context.Response.Headers["Referrer-Policy"] = _options.ReferrerPolicy;
-            }
+                if (_options.EnableReferrerPolicy && !string.IsNullOrEmpty(_options.ReferrerPolicyValue))
+                    context.Response.Headers["Referrer-Policy"] = _options.ReferrerPolicyValue;
+
+                return System.Threading.Tasks.Task.CompletedTask;
+            });
 
             await _next(context);
         }
