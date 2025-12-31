@@ -3,13 +3,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { RegisterForm } from './RegisterForm';
 
-// Mock useAuthContext
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuthContext: () => ({
-    register: vi.fn().mockResolvedValue({ success: true }),
-    loading: false,
-  }),
-}));
+// Mock useAuthContext with a mutable mock object so individual tests can override behavior
+const authMock = {
+  register: vi.fn().mockResolvedValue({ success: true }),
+  loading: false,
+};
+vi.mock('@/contexts/AuthContext', () => ({ useAuthContext: () => authMock }));
 
 const showSuccessMock = vi.fn();
 const showErrorMock = vi.fn();
@@ -63,7 +62,8 @@ describe('RegisterForm', () => {
   it('shows error notification with server message on failure', async () => {
     // Replace the mocked register to return a failure with message
     const mockRegister = vi.fn().mockResolvedValue({ success: false, error: 'Email already exists' });
-    vi.mocked(require('@/contexts/AuthContext').useAuthContext).mockReturnValue({ register: mockRegister, loading: false });
+    // Override the registered mock
+    authMock.register = mockRegister;
 
     render(<RegisterForm />);
 

@@ -23,8 +23,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (credentials: UserCredentials) => Promise<{ success: boolean; error?: string }>;
-  register: (userData: UserRegistrationInput) => Promise<{ success: boolean; error?: string }>; 
+  login: (credentials: UserCredentials) => Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }>;
+  register: (userData: UserRegistrationInput) => Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }>; 
   logout: () => Promise<void>;
   checkAuth: (silent?: boolean) => Promise<void>;
   verifyEmail: (token: string) => Promise<boolean>;
@@ -36,8 +36,8 @@ interface AuthContextType {
   disableResetMethod: (methodType: string) => Promise<boolean>;
   setupSecurityQuestions: (questions: SecurityQuestionSetup) => Promise<boolean>;
   generateRecoveryCodes: (count?: number) => Promise<string[]>;
-  resetPasswordViaSecurityQuestions: (data: PasswordResetViaSecurityQuestions) => Promise<boolean>;
-  resetPasswordViaRecoveryCode: (data: PasswordResetViaRecoveryCode) => Promise<boolean>;
+  resetPasswordViaSecurityQuestions: (data: PasswordResetViaSecurityQuestions) => Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }>;
+  resetPasswordViaRecoveryCode: (data: PasswordResetViaRecoveryCode) => Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }>;
   adminResetPassword: (data: AdminPasswordReset) => Promise<string>;
   googleAuth: (profile: GoogleUserProfile) => Promise<boolean>;
   refreshToken: () => Promise<boolean>;
@@ -51,7 +51,7 @@ const defaultAuthContext: AuthContextType = {
   isAuthenticated: false,
   loading: true,
   login: async () => ({ success: false, error: 'AuthProvider not initialized' }),
-  register: async () => ({ success: false, error: 'AuthProvider not initialized' }),
+  register: async () => ({ success: false, error: 'AuthProvider not initialized' as string }),
   logout: async () => {},
   checkAuth: async () => {},
   verifyEmail: async () => false,
@@ -63,8 +63,8 @@ const defaultAuthContext: AuthContextType = {
   disableResetMethod: async () => false,
   setupSecurityQuestions: async () => false,
   generateRecoveryCodes: async () => [],
-  resetPasswordViaSecurityQuestions: async () => false,
-  resetPasswordViaRecoveryCode: async () => false,
+  resetPasswordViaSecurityQuestions: async () => ({ success: false, error: 'AuthProvider not initialized' }),
+  resetPasswordViaRecoveryCode: async () => ({ success: false, error: 'AuthProvider not initialized' }),
   adminResetPassword: async () => '',
   googleAuth: async () => false,
   refreshToken: async () => false,
@@ -251,7 +251,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (credentials: UserCredentials): Promise<{ success: boolean; error?: string }> => {
+  const login = async (credentials: UserCredentials): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }> => {
     setLoading(true);
     try {
       const authResponse = await authService.login(credentials);
@@ -299,26 +299,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: true };
     } catch (error: any) {
       const errorMessage = error?.message || 'Login failed';
+      let fieldErrors: Record<string, string[]> | undefined = undefined;
+      if (error instanceof ApiException) {
+        const fe = error.getFieldErrors?.();
+        if (fe) fieldErrors = fe;
+      }
       showError('Login Failed', errorMessage);
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, fieldErrors };
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (userData: UserRegistrationInput): Promise<{ success: boolean; error?: string }> => {
+  const register = async (userData: UserRegistrationInput): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }> => {
     try {
       await authService.register(userData);
       // Registration successful, but user needs to verify email/phone
       return { success: true };
     } catch (error: any) {
       let errorMessage = 'Registration failed. Please try again.';
-      if (error instanceof ApiException && error.message) {
-        errorMessage = error.message;
+      let fieldErrors: Record<string, string[]> | undefined = undefined;
+      if (error instanceof ApiException) {
+        if (error.message) errorMessage = error.message;
+        const fe = error.getFieldErrors?.();
+        if (fe) fieldErrors = fe;
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, fieldErrors };
     }
   }; 
 
@@ -421,21 +429,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return response.codes;
   };
 
-  const resetPasswordViaSecurityQuestions = async (data: PasswordResetViaSecurityQuestions): Promise<boolean> => {
+  const resetPasswordViaSecurityQuestions = async (data: PasswordResetViaSecurityQuestions): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }> => {
     try {
       await authService.resetPasswordViaSecurityQuestions(data);
-      return true;
-    } catch (_error) {
-      return false;
+      return { success: true };
+    } catch (error: any) {
+      let errorMessage = 'Password reset failed';
+      let fieldErrors: Record<string, string[]> | undefined = undefined;
+      if (error instanceof ApiException) {
+        if (error.message) errorMessage = error.message;
+        const fe = error.getFieldErrors?.();
+        if (fe) fieldErrors = fe;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      return { success: false, error: errorMessage, fieldErrors };
     }
   };
 
-  const resetPasswordViaRecoveryCode = async (data: PasswordResetViaRecoveryCode): Promise<boolean> => {
+  const resetPasswordViaRecoveryCode = async (data: PasswordResetViaRecoveryCode): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string[]> }> => {
     try {
       await authService.resetPasswordViaRecoveryCode(data);
-      return true;
-    } catch (_error) {
-      return false;
+      return { success: true };
+    } catch (error: any) {
+      let errorMessage = 'Password reset failed';
+      let fieldErrors: Record<string, string[]> | undefined = undefined;
+      if (error instanceof ApiException) {
+        if (error.message) errorMessage = error.message;
+        const fe = error.getFieldErrors?.();
+        if (fe) fieldErrors = fe;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      return { success: false, error: errorMessage, fieldErrors };
     }
   };
 

@@ -29,8 +29,17 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
   /// <summary>
   /// Registers a new user.
   /// </summary>
+  /// <remarks>
+  /// Username behavior:
+  /// - If `Username` is supplied it will be accepted when it is either a simple username (letters, numbers, underscores) or a valid email address.
+  /// - If the requested username collides with an existing user, the server will append a numeric suffix to make it unique (e.g. `sam` -> `sam1` or `john@example.com` -> `john1@example.com`).
+  /// - If `Username` is not supplied the server will generate one from `DisplayName` or the local-part of `Email` and ensure uniqueness.
+  /// - Username validation: max length 255; format rules apply (validated server-side).
+  /// </remarks>
   /// <param name="req">The registration request.</param>
   /// <returns>201 Created with the created user on success; 400 Bad Request on validation errors.</returns>
+  [ProducesResponseType(typeof(MyApp.Models.UserDto), StatusCodes.Status201Created)]
+  [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
   [HttpPost("register")]
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest req)

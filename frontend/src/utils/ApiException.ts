@@ -21,4 +21,19 @@ export class ApiException extends Error {
   isNetworkError(): boolean {
     return this.code === 'NETWORK_ERROR' || this.code === 'TIMEOUT_ERROR';
   }
+
+  // If server returned validation errors, return them as a field->messages map
+  getFieldErrors(): Record<string, string[]> | undefined {
+    const d = this.details as any;
+    if (!d) return undefined;
+    if (Array.isArray(d.errors)) {
+      const map: Record<string, string[]> = {};
+      for (const item of d.errors) {
+        if (!item || !item.field) continue;
+        map[item.field] = item.errors || [];
+      }
+      return map;
+    }
+    return undefined;
+  }
 }

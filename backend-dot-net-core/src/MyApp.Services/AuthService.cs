@@ -34,12 +34,15 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         var existing = await _userRepo.FindByEmailAsync(request.Email);
         if (existing is not null) throw new InvalidOperationException("Email already registered");
 
-        var username = await GenerateUniqueUsernameAsync(request.Username, request.DisplayName, request.Email);
+        // Choose username: prefer provided username, otherwise generate from displayName or email local-part.
+        // GenerateUniqueUsernameAsync will sanitize and ensure uniqueness by appending a suffix if needed.
+        var email = request.Email ?? throw new InvalidOperationException("Invalid email");
+        var username = request.Username ?? request.Email;
 
         var user = new User
         {
             Id = Guid.NewGuid(),
-            Email = request.Email,
+            Email = email,
             DisplayName = request.DisplayName,
             Username = username
         };
@@ -57,10 +60,23 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         var baseCandidate = GenerateUsername(requested, displayName, email);
         var candidate = baseCandidate;
         var suffix = 0;
+        // If the base candidate looks like an email (contains '@'), then when appending a suffix
+        // insert it into the local-part: local -> local1@domain
+        var isEmailLike = baseCandidate.Contains('@');
         while (await _userRepo.FindByUsernameAsync(candidate) != null)
         {
             suffix++;
-            candidate = $"{baseCandidate}{suffix}";
+            if (isEmailLike)
+            {
+                var idx = baseCandidate.IndexOf('@');
+                var local = baseCandidate.Substring(0, idx);
+                var domain = baseCandidate.Substring(idx + 1);
+                candidate = $"{local}{suffix}@{domain}";
+            }
+            else
+            {
+                candidate = $"{baseCandidate}{suffix}";
+            }
             if (suffix > 10000) throw new InvalidOperationException("Unable to generate a unique username");
         }
         return candidate;
@@ -338,13 +354,48 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
     // Helper to generate username when missing or sanitise input
     private static string GenerateUsername(string? requested, string? displayName, string email)
     {
+        // If the client requested an email-like username, accept it as-is (lowercased)
+        if (!string.IsNullOrWhiteSpace(requested))
+        {
+            var emailAttr = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+            if (emailAttr.IsValid(requested))
+            {
+                return requested.Trim().ToLowerInvariant();
+            }
+        }
+
         var candidate = requested?.Trim();
         if (string.IsNullOrWhiteSpace(candidate))
         {
-            candidate = !string.IsNullOrWhiteSpace(displayName) ? displayName : email.Split('@')[0];
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                // Use displayName when provided (sanitise)
+                candidate = displayName.Trim().ToLowerInvariant();
+                candidate = Regex.Replace(candidate, "[^a-z0-9_]", "");
+            }
+            else
+            {
+                // Default to the full email address when username is not provided
+                candidate = email.Trim().ToLowerInvariant();
+                // leave email intact (allow '@' and domain)
+            }
         }
-        candidate = candidate.ToLowerInvariant();
-        candidate = Regex.Replace(candidate, "[^a-z0-9_]", "");
+        else
+        {
+            // For non-email candidates, sanitise to allowed chars
+            var emailAttr = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+            if (!emailAttr.IsValid(candidate))
+            {
+                candidate = candidate.ToLowerInvariant();
+                candidate = Regex.Replace(candidate, "[^a-z0-9_]", "");
+                if (string.IsNullOrWhiteSpace(candidate)) candidate = "user";
+            }
+            else
+            {
+                candidate = candidate.ToLowerInvariant();
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(candidate)) candidate = "user";
         return candidate;
     }

@@ -190,3 +190,20 @@ export const itemSchemas = {
 The API documentation is available at `/api-docs` when the server is running.
 
 You can also fetch the raw OpenAPI JSON at `/openapi.json`. The Swagger UI includes an "OpenAPI (JSON)" selector that points to this URL for easy download or external consumption.
+
+---
+
+## Username rules (Auth Register)
+
+Clients should be aware of how the service interprets and enforces `Username` in the registration request:
+
+- If the client provides `Username`, it may be either:
+  - a **simple username** (letters, numbers and underscores), or
+  - a **full email address** (email-style username is accepted and treated as a single value).
+- The service will sanitize and validate the requested username and enforce uniqueness.
+- If the requested username already exists, the server will append a numeric suffix to make it unique (examples: `sam` → `sam1`, `john@example.com` → `john1@example.com`).
+- If no `Username` is provided the server will generate one from `DisplayName` or from the local-part of the `Email` and ensure it is unique.
+- Validation: usernames have a maximum length of **255 characters** and must match the allowed formats; invalid values will cause the API to return a `400 Bad Request` with validation errors.
+
+Tip: After registration, inspect the returned `UserDto.username` to see the final username assigned by the service.
+

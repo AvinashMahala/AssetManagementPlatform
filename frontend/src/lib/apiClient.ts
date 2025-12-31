@@ -93,10 +93,13 @@ class ApiClient {
     }
 
     // Handle error responses
-    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string };
+    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string; errors?: Array<{ field: string; errors: string[] }>; };
     let errorMessage: string;
-    
-    if (typeof errorData?.error === 'string') {
+
+    // If API returned validation errors in `errors` array (FluentValidation shape from server), map them
+    if (Array.isArray((errorData as any)?.errors) && (errorData as any).errors.length > 0) {
+      errorMessage = 'Validation failed';
+    } else if (typeof errorData?.error === 'string') {
       // Backend sends { success: false, error: "error message" }
       errorMessage = errorData.error;
     } else if (errorData?.error?.message) {
@@ -109,11 +112,11 @@ class ApiClient {
       // Final fallback to HTTP status
       errorMessage = `HTTP ${response.status}: ${response.statusText}`;
     }
-    
+
     const error: ApiError = {
-      code: (typeof errorData?.error === 'object' ? errorData.error.code : undefined) || `HTTP_${response.status}`,
+      code: (Array.isArray((errorData as any)?.errors) ? 'VALIDATION_ERROR' : (typeof errorData?.error === 'object' ? errorData.error.code : undefined)) || `HTTP_${response.status}`,
       message: errorMessage,
-      details: (typeof errorData?.error === 'object' ? errorData.error.details : undefined) as Record<string, unknown> | undefined,
+      details: (Array.isArray((errorData as any)?.errors) ? { errors: (errorData as any).errors } : (typeof errorData?.error === 'object' ? errorData.error.details : undefined)) as Record<string, unknown> | undefined,
     };
 
     return {
