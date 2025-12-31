@@ -12,6 +12,8 @@ public partial interface IAuthService
     Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(RefreshRequest request);
     Task RevokeRefreshTokenAsync(string rawRefreshToken);
     Task RevokeSessionAsync(Guid sessionId);
+    Task<System.Collections.Generic.IEnumerable<MyApp.Models.SessionInfoDto>> GetSessionsAsync(Guid userId);
     Task<UserDto?> GetProfileAsync(Guid userId);
     Task<UserDto?> UpdateProfileAsync(Guid userId, string? displayName);
+    Task LogoutAllSessionsAsync(Guid userId);
 }

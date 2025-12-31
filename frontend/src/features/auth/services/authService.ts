@@ -181,6 +181,33 @@ class AuthService {
     return response.data;
   }
 
+  // Sessions: list active sessions for current user
+  async getSessions(): Promise<{ sessions: SessionInfo[] }> {
+    const response = await apiClient.get<{ sessions: SessionInfo[] }>('/api/v1/auth/sessions');
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get sessions failed' });
+    }
+    return response.data;
+  }
+
+  // Revoke a specific session
+  async revokeSession(id: string): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/api/v1/auth/sessions/${id}`);
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Revoke session failed' });
+    }
+    return response.data;
+  }
+
+  // Logout all sessions for current user
+  async logoutAll(): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/api/v1/auth/logout-all');
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Logout all failed' });
+    }
+    return response.data;
+  }
+
   // Link Google account
   async linkGoogle(googleId: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/v1/auth/link-google', { googleId });

@@ -51,6 +51,9 @@ public class SessionRepository : ISessionRepository
         await _db.SaveChangesAsync();
     }
 
+    public Task<System.Collections.Generic.IEnumerable<SessionToken>> FindByUserIdAsync(Guid userId) =>
+        _db.Set<SessionToken>().Where(s => s.UserId == userId && !s.Revoked).ToListAsync().ContinueWith(t => (System.Collections.Generic.IEnumerable<SessionToken>)t.Result);
+
     public async Task ReplaceSessionAsync(SessionToken oldSession, SessionToken newSession)
     {
         oldSession.Revoked = true;

@@ -112,3 +112,14 @@ export interface UpdateProfileRequest {
 export interface LinkGoogleRequest {
   googleId: string;
 }
+
+// Session info for active sessions per user (returned by /api/v1/auth/sessions)
+export interface SessionInfo {
+  id: string; // GUID
+  deviceInfo?: string | null;
+  ipAddress?: string | null;
+  issuedAt: string; // ISO timestamp
+  expiresAt: string; // ISO timestamp
+  lastUsedAt?: string | null;
+  revoked: boolean;
+}

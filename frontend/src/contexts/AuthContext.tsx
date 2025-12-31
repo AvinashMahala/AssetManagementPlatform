@@ -231,6 +231,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (expMs) {
           sessionStorage.setItem('accessToken', authResponse.tokens.accessToken);
           sessionStorage.setItem('accessTokenExp', String(expMs));
+          try {
+            const sid = getJwtClaim(authResponse.tokens.accessToken, 'sid');
+            if (sid) sessionStorage.setItem('sessionId', sid);
+          } catch (_e) { }
         }
       } catch (_e) {
         // ignore parsing errors
@@ -273,19 +277,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Clear local auth state without calling server
+  const clearLocalAuth = (): void => {
+    setUser(null);
+    setIsAuthenticated(false);
+    apiClient.setAuthToken(null);
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('accessTokenExp');
+    sessionStorage.removeItem('sessionId');
+  };
+
   const logout = async (): Promise<void> => {
     try {
       await authService.logout();
+      // Notify other tabs
+      try { if (typeof BroadcastChannel !== 'undefined') new BroadcastChannel('auth-refresh').postMessage({ type: 'logged-out' }); } catch (_e) {}
     } catch (_error) {
       // Continue with logout even if API call fails
     } finally {
-      setUser(null);
-      setIsAuthenticated(false);
-      apiClient.setAuthToken(null);
-      // Server clears cookie; remove stored user info and tokens
-      sessionStorage.removeItem('user');
-      sessionStorage.removeItem('accessToken');
-      sessionStorage.removeItem('accessTokenExp');
+      clearLocalAuth();
     }
   };
 
@@ -404,6 +415,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (expMs) {
           sessionStorage.setItem('accessToken', authResponse.tokens.accessToken);
           sessionStorage.setItem('accessTokenExp', String(expMs));
+          try { const sid = getJwtClaim(authResponse.tokens.accessToken, 'sid'); if (sid) sessionStorage.setItem('sessionId', sid); } catch (_e) { }
         }
       } catch (_e) {
         // ignore
@@ -424,12 +436,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const ACQUIRE_TIMEOUT_MS = 4000; // wait up to 4s to acquire lock
   const POLL_INTERVAL_MS = 200;
   const tabId = React.useMemo(() => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`, []);
+  // BroadcastChannel used across the app for auth events. We also listen for session-specific events.
   const bc = React.useMemo(() => (typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('auth-refresh') : null), []);
 
   React.useEffect(() => {
     if (!bc) return undefined;
     const onMsg = (ev: MessageEvent) => {
-      if (ev?.data?.type === 'refreshed') {
+      const data = ev?.data as any;
+      if (!data || !data.type) return;
+      if (data.type === 'refreshed') {
         // Another tab refreshed: read stored access token and apply
         const storedToken = sessionStorage.getItem('accessToken');
         const storedExp = sessionStorage.getItem('accessTokenExp');
@@ -444,6 +459,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // If profile fails, we'll let the app's normal checks handle it
           });
         }
+        return;
+      }
+
+      if (data.type === 'session-revoked') {
+        try {
+          const currentSession = sessionStorage.getItem('sessionId');
+          if (currentSession && currentSession === String(data.sessionId)) {
+            // Our active session was revoked elsewhere — clear local auth immediately
+            clearLocalAuth();
+          }
+        } catch (_e) {
+          // ignore
+        }
+        return;
+      }
+
+      if (data.type === 'logged-out' || data.type === 'logout-all') {
+        // Another tab logged out or logged out all sessions — clear local state without calling server
+        clearLocalAuth();
+        return;
       }
     };
     bc.addEventListener('message', onMsg as any);
@@ -539,6 +574,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (exp) {
       sessionStorage.setItem('accessToken', token);
       sessionStorage.setItem('accessTokenExp', String(exp));
+      try {
+        const sid = getJwtClaim(token, 'sid');
+        if (sid) sessionStorage.setItem('sessionId', sid);
+      } catch (_e) { }
     }
   };
 
@@ -662,6 +701,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const json = JSON.parse(atob(padded));
       if (!json.exp) return null;
       return json.exp * 1000;
+    } catch {
+      return null;
+    }
+  };
+
+  // Read an arbitrary claim from a JWT payload (no validation, just base64 decode)
+  const getJwtClaim = (token: string, claimName: string): string | null => {
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      const payload = parts[1];
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = base64.length % 4;
+      const padded = base64 + (pad ? '='.repeat(4 - pad) : '');
+      const json = JSON.parse(atob(padded));
+      const val = json[claimName];
+      if (val == null) return null;
+      return String(val);
     } catch {
       return null;
     }

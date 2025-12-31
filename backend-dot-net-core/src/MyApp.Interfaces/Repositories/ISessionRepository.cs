@@ -33,4 +33,9 @@ public interface ISessionRepository
     /// Find a session by id.
     /// </summary>
     Task<SessionToken?> FindByIdAsync(Guid id);
+
+    /// <summary>
+    /// Find all active sessions for a user.
+    /// </summary>
+    Task<System.Collections.Generic.IEnumerable<SessionToken>> FindByUserIdAsync(Guid userId);
 }

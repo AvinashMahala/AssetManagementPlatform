@@ -56,7 +56,7 @@ public class JwtService(IConfiguration configuration) : IJwtService
     /// <param name="user">User to create the token for.</param>
     /// <param name="sessionId">Optional session id to bind the token to a server-side session.</param>
     /// <returns>A signed JWT access token string.</returns>
-    public string GenerateAccessToken(User user, Guid? sessionId = null)
+    public string GenerateAccessToken(User user, Guid? sessionId = null, string? jti = null)
     {
         var key = new SymmetricSecurityKey(_keyBytes);
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -71,6 +71,11 @@ public class JwtService(IConfiguration configuration) : IJwtService
         {
             // 'sid' is commonly used for session identifier claims
             claimsList.Add(new Claim("sid", sessionId.Value.ToString()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(jti))
+        {
+            claimsList.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
         }
 
         var token = new JwtSecurityToken(

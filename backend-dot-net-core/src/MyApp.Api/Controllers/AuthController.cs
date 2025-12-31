@@ -196,6 +196,60 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
     }
 
     /// <summary>
+    /// Get active sessions for the current user.
+    /// </summary>
+    [HttpGet("sessions")]
+    [Authorize]
+    public async Task<IActionResult> Sessions()
+    {
+        var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
+        if (!Guid.TryParse(sub, out var userId)) return Unauthorized();
+        var sessions = await _service.GetSessionsAsync(userId);
+        return Ok(new { sessions = sessions });
+    }
+
+    /// <summary>
+    /// Revoke a specific session for the user (logout a device).
+    /// </summary>
+    [HttpDelete("sessions/{id}")]
+    [Authorize]
+    public async Task<IActionResult> RevokeSession(Guid id)
+    {
+        var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
+        if (!Guid.TryParse(sub, out var userId)) return Unauthorized();
+
+        var sessions = await _service.GetSessionsAsync(userId);
+        var found = System.Linq.Enumerable.FirstOrDefault(sessions, s => s.Id == id);
+        if (found == null) return NotFound();
+
+        await _service.RevokeSessionAsync(id);
+
+        // If revoking the current session, clear cookie
+        var currentSid = User.FindFirst("sid")?.Value;
+        if (!string.IsNullOrWhiteSpace(currentSid) && Guid.TryParse(currentSid, out var cur) && cur == id)
+        {
+            Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.None });
+        }
+
+        return Ok(new { message = "Session revoked" });
+    }
+
+    /// <summary>
+    /// Logout all sessions for the current user.
+    /// </summary>
+    [HttpPost("logout-all")]
+    [Authorize]
+    public async Task<IActionResult> LogoutAll()
+    {
+        var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
+        if (!Guid.TryParse(sub, out var userId)) return Unauthorized();
+
+        await _service.LogoutAllSessionsAsync(userId);
+        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.None });
+        return Ok(new { message = "Logged out of all sessions" });
+    }
+
+    /// <summary>
     /// Updates the current authenticated user's profile.
     /// </summary>
     /// <param name="body">The request containing updated profile data.</param>

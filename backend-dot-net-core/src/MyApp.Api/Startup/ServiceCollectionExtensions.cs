@@ -67,6 +67,22 @@ namespace MyApp.Api
                                     if (session == null || session.Revoked || session.ExpiresAt < DateTime.UtcNow)
                                     {
                                         context.Fail("Session invalid or revoked");
+                                        return;
+                                    }
+
+                                    // Optionally update last used timestamp
+                                    await repo.UpdateLastUsedAsync(sessionId, DateTime.UtcNow);
+
+                                    // JTI allowlist check (optional, behind config)
+                                    var useJti = configuration.GetValue<bool>("Auth:UseJtiAllowlist", false);
+                                    if (useJti)
+                                    {
+                                        var jti = context.Principal?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti)?.Value;
+                                        if (string.IsNullOrWhiteSpace(jti)) { context.Fail("Missing jti"); return; }
+                                        var jtiStore = context.HttpContext.RequestServices.GetService<MyApp.Services.IJtiStore>();
+                                        if (jtiStore == null) { context.Fail("JTI store not configured"); return; }
+                                        var ok = await jtiStore.ValidateJtiAsync(jti, sessionId);
+                                        if (!ok) { context.Fail("Invalid or revoked token"); return; }
                                     }
                                 }
                             }
@@ -80,6 +96,19 @@ namespace MyApp.Api
                 });
 
             services.AddAuthorization();
+
+            // JTI allowlist setup: register IJtiStore implementation based on configuration.
+            // If Redis connection string present, use RedisJtiStore; otherwise fallback to DB-backed store.
+            var redisCs = configuration["Redis:ConnectionString"];
+            if (!string.IsNullOrEmpty(redisCs))
+            {
+                services.AddSingleton<IJtiStore, MyApp.Services.RedisJtiStore>();
+            }
+            else
+            {
+                services.AddScoped<IJtiStore, MyApp.Services.DbFallbackJtiStore>();
+            }
+
             return services;
         }
 

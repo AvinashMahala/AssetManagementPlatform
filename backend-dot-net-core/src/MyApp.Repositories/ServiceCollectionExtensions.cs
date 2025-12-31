@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILeaseRepository, LeaseRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<ISessionJtiRepository, SessionJtiRepository>();
         services.AddScoped<IPropertyRepository, PropertyRepository>();
         // Repositories for files and templates
         services.AddScoped<IFileRepository, FileRepository>();

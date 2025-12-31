@@ -14,12 +14,13 @@ namespace MyApp.Services;
 /// <remarks>
 /// Uses <see cref="IUserRepository"/> for user persistence and <see cref="IJwtService"/> for token generation.
 /// </remarks>
-public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp.Interfaces.Repositories.ISessionRepository? sessionRepo = null, IRefreshTokenHasher? hasher = null, Microsoft.Extensions.Logging.ILogger<AuthService>? logger = null) : IAuthService
+public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp.Interfaces.Repositories.ISessionRepository? sessionRepo = null, IRefreshTokenHasher? hasher = null, IJtiStore? jtiStore = null, Microsoft.Extensions.Logging.ILogger<AuthService>? logger = null) : IAuthService
 {
     private readonly IUserRepository _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
     private readonly IJwtService _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
     private readonly MyApp.Interfaces.Repositories.ISessionRepository? _sessionRepo = sessionRepo;
     private readonly IRefreshTokenHasher? _hasher = hasher;
+    private readonly IJtiStore? _jtiStore = jtiStore;
     private readonly Microsoft.Extensions.Logging.ILogger<AuthService>? _logger = logger;
 
     /// <summary>
@@ -139,8 +140,15 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             await _sessionRepo.CreateAsync(session);
             _logger?.LogInformation("Created session {SessionId} for user {UserId} from ip {Ip} device {Device}", session.Id, user.Id, ipAddress, deviceInfo);
 
-            // Generate access token bound to the session id so we can validate against it later
-            var access = _jwtService.GenerateAccessToken(user, session.Id);
+            // Create a JTI for the access token and store in IJtiStore (if available)
+            var jti = Guid.NewGuid().ToString();
+            if (_jtiStore != null)
+            {
+                await _jtiStore.AddJtiAsync(jti, session.Id, TimeSpan.FromHours(1));
+            }
+
+            // Generate access token bound to the session id and jti so we can validate against it later
+            var access = _jwtService.GenerateAccessToken(user, session.Id, jti);
             return (access, refresh);
         }
         else
@@ -173,8 +181,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         var user = await _userRepo.FindByIdAsync(session.UserId);
         if (user is null) throw new InvalidOperationException("Invalid refresh token");
 
-        // Generate new access token and rotate refresh token
-        var access = _jwtService.GenerateAccessToken(user);
+        // Rotate refresh token and issue a new access token bound to session with jti
         var refresh = _jwtService.GenerateRefreshToken();
 
         if (_sessionRepo != null && _hasher != null)
@@ -199,6 +206,15 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
                 var updated = await _sessionRepo.RotateSessionWithLockAsync(session.RefreshTokenHash, newHash, DateTime.UtcNow, DateTime.UtcNow.AddDays(30));
                 await _sessionRepo.UpdateLastUsedAsync(updated.Id, DateTime.UtcNow);
                 _logger?.LogInformation("Rotated refresh token for user {UserId} (session {SessionId})", updated.UserId, updated.Id);
+
+                // Create and store a new JTI for the rotated session and issue access token with it
+                var jti = Guid.NewGuid().ToString();
+                if (_jtiStore != null)
+                {
+                    await _jtiStore.AddJtiAsync(jti, updated.Id, TimeSpan.FromHours(1));
+                }
+                var access = _jwtService.GenerateAccessToken(user, updated.Id, jti);
+                return (access, refresh);
             }
             catch (InvalidOperationException ex)
             {
@@ -214,9 +230,10 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             user.RefreshToken = newHashless;
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
             await _userRepo.UpdateAsync(user);
-        }
 
-        return (access, refresh);
+            var access = _jwtService.GenerateAccessToken(user);
+            return (access, refresh);
+        }
     }
 
     /// <summary>
@@ -252,6 +269,11 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         {
             await _sessionRepo.RevokeAsync(sessionId);
         }
+
+        if (_jtiStore != null)
+        {
+            await _jtiStore.RemoveAllForSessionAsync(sessionId);
+        }
     }
 
     /// <summary>
@@ -264,6 +286,18 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         var user = await _userRepo.FindByIdAsync(userId);
         if (user is null) return null;
         return new UserDto(user.Id, user.Email, user.DisplayName);
+    }
+
+    public async Task<System.Collections.Generic.IEnumerable<MyApp.Models.SessionInfoDto>> GetSessionsAsync(Guid userId)
+    {
+        if (_sessionRepo == null) return System.Array.Empty<MyApp.Models.SessionInfoDto>();
+        var sessions = await _sessionRepo.FindByUserIdAsync(userId);
+        var result = new System.Collections.Generic.List<MyApp.Models.SessionInfoDto>();
+        foreach (var s in sessions)
+        {
+            result.Add(new MyApp.Models.SessionInfoDto(s.Id, s.DeviceInfo, s.IpAddress, s.IssuedAt, s.ExpiresAt, s.LastUsedAt, s.Revoked));
+        }
+        return result;
     }
 
     /// <summary>
@@ -279,5 +313,19 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         user.DisplayName = displayName;
         await _userRepo.UpdateAsync(user);
         return new UserDto(user.Id, user.Email, user.DisplayName);
+    }
+
+    public async Task LogoutAllSessionsAsync(Guid userId)
+    {
+        if (_sessionRepo == null) return;
+        var sessions = await _sessionRepo.FindByUserIdAsync(userId);
+        foreach (var s in sessions)
+        {
+            await _sessionRepo.RevokeAsync(s.Id);
+            if (_jtiStore != null)
+            {
+                await _jtiStore.RemoveAllForSessionAsync(s.Id);
+            }
+        }
     }
 }
