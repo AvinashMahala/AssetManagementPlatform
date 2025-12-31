@@ -14,6 +14,8 @@ public class UserRepository : IUserRepository
 
     public Task<User?> FindByEmailAsync(string email) => _db.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
 
+    public Task<User?> FindByUsernameAsync(string username) => _db.Set<User>().FirstOrDefaultAsync(u => u.Username == username);
+
     public Task<User?> FindByIdAsync(Guid id) => _db.Set<User>().FirstOrDefaultAsync(u => u.Id == id);
 
     public Task<User?> FindByRefreshTokenAsync(string refreshToken) => _db.Set<User>().FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);

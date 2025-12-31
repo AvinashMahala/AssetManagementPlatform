@@ -5,6 +5,7 @@ import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import type { UserRegistrationInput } from '@/features/auth/types/auth';
 import type { GoogleCredentialResponse } from '@/features/auth/hooks/useGoogleOAuth';
 
@@ -18,6 +19,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSwitchToLogin
 }) => {
   const { register, loading } = useAuthContext();
+  const { showSuccess, showError } = useNotifications();
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitError, setSubmitError] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -68,11 +70,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         phone: data.phone || '',
         registrationMethod: data.registrationMethod || 'email'
       };
-      const success = await register(registrationData);
-      if (success) {
+      const result = await register(registrationData);
+      if (result.success) {
+        showSuccess('Account Created', 'Please check your email or phone to verify your account.');
         onSuccess?.();
       } else {
-        setSubmitError('Registration failed. Please try again.');
+        const msg = result.error ?? 'Registration failed. Please try again.';
+        setSubmitError(msg);
+        showError('Registration Failed', msg);
       }
     } catch (_error) {
       setSubmitError('An error occurred during registration. Please try again.');
@@ -89,7 +94,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       setSubmitError('');
       // Decode the JWT token to get user profile
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      const success = await register({
+      const result = await register({
         username: payload.name.replace(/\s+/g, '').toLowerCase() + Math.random().toString(36).substr(2, 4),
         name: payload.name, // Store the full display name
         email: payload.email,
@@ -99,10 +104,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         googleId: payload.sub
       });
 
-      if (success) {
+      if (result.success) {
+        showSuccess('Account Created', 'Google registration succeeded. Check your inbox if verification is required.');
         onSuccess?.();
       } else {
-        setSubmitError('Google registration failed');
+        const msg = result.error ?? 'Google registration failed';
+        setSubmitError(msg);
+        showError('Google Registration Failed', msg);
       }
     } catch (_error) {
       setSubmitError('An error occurred during Google registration. Please try again.');

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using MyApp.Interfaces;
@@ -33,19 +34,37 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         var existing = await _userRepo.FindByEmailAsync(request.Email);
         if (existing is not null) throw new InvalidOperationException("Email already registered");
 
+        var username = await GenerateUniqueUsernameAsync(request.Username, request.DisplayName, request.Email);
+
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
-            DisplayName = request.DisplayName
+            DisplayName = request.DisplayName,
+            Username = username
         };
 
         var hasher = new PasswordHasher<User>();
         user.PasswordHash = hasher.HashPassword(user, request.Password);
 
         await _userRepo.AddAsync(user);
-        return new UserDto(user.Id, user.Email, user.DisplayName);
+        return new UserDto(user.Id, user.Email, user.DisplayName, user.Username);
     }
+
+    // Generate a unique username by appending a numeric suffix if required
+    private async Task<string> GenerateUniqueUsernameAsync(string? requested, string? displayName, string email)
+    {
+        var baseCandidate = GenerateUsername(requested, displayName, email);
+        var candidate = baseCandidate;
+        var suffix = 0;
+        while (await _userRepo.FindByUsernameAsync(candidate) != null)
+        {
+            suffix++;
+            candidate = $"{baseCandidate}{suffix}";
+            if (suffix > 10000) throw new InvalidOperationException("Unable to generate a unique username");
+        }
+        return candidate;
+    } 
 
     /// <summary>
     /// Authenticates a user and returns access and refresh tokens.
@@ -285,12 +304,13 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
     {
         var user = await _userRepo.FindByIdAsync(userId);
         if (user is null) return null;
-        return new UserDto(user.Id, user.Email, user.DisplayName);
+        return new UserDto(user.Id, user.Email, user.DisplayName, user.Username);
     }
 
     public async Task<System.Collections.Generic.IEnumerable<MyApp.Models.SessionInfoDto>> GetSessionsAsync(Guid userId)
     {
         if (_sessionRepo == null) return System.Array.Empty<MyApp.Models.SessionInfoDto>();
+
         var sessions = await _sessionRepo.FindByUserIdAsync(userId);
         var result = new System.Collections.Generic.List<MyApp.Models.SessionInfoDto>();
         foreach (var s in sessions)
@@ -312,7 +332,21 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         if (user is null) return null;
         user.DisplayName = displayName;
         await _userRepo.UpdateAsync(user);
-        return new UserDto(user.Id, user.Email, user.DisplayName);
+        return new UserDto(user.Id, user.Email, user.DisplayName, user.Username);
+    }
+
+    // Helper to generate username when missing or sanitise input
+    private static string GenerateUsername(string? requested, string? displayName, string email)
+    {
+        var candidate = requested?.Trim();
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            candidate = !string.IsNullOrWhiteSpace(displayName) ? displayName : email.Split('@')[0];
+        }
+        candidate = candidate.ToLowerInvariant();
+        candidate = Regex.Replace(candidate, "[^a-z0-9_]", "");
+        if (string.IsNullOrWhiteSpace(candidate)) candidate = "user";
+        return candidate;
     }
 
     public async Task LogoutAllSessionsAsync(Guid userId)

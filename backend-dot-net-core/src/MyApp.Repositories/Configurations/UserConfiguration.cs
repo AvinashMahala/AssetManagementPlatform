@@ -12,6 +12,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Id).HasColumnName("id");
         builder.Property(u => u.Email).HasColumnName("email");
+        builder.Property(u => u.Username).HasColumnName("username").IsRequired().HasMaxLength(255);
         builder.Property(u => u.PasswordHash).HasColumnName("password");
         builder.Property(u => u.DisplayName).HasColumnName("name");
         builder.Property(u => u.GoogleId).HasColumnName("google_id");

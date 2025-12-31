@@ -24,7 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   login: (credentials: UserCredentials) => Promise<{ success: boolean; error?: string }>;
-  register: (userData: UserRegistrationInput) => Promise<boolean>;
+  register: (userData: UserRegistrationInput) => Promise<{ success: boolean; error?: string }>; 
   logout: () => Promise<void>;
   checkAuth: (silent?: boolean) => Promise<void>;
   verifyEmail: (token: string) => Promise<boolean>;
@@ -51,7 +51,7 @@ const defaultAuthContext: AuthContextType = {
   isAuthenticated: false,
   loading: true,
   login: async () => ({ success: false, error: 'AuthProvider not initialized' }),
-  register: async () => false,
+  register: async () => ({ success: false, error: 'AuthProvider not initialized' }),
   logout: async () => {},
   checkAuth: async () => {},
   verifyEmail: async () => false,
@@ -306,15 +306,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (userData: UserRegistrationInput): Promise<boolean> => {
+  const register = async (userData: UserRegistrationInput): Promise<{ success: boolean; error?: string }> => {
     try {
       await authService.register(userData);
       // Registration successful, but user needs to verify email/phone
-      return true;
-    } catch (_error) {
-      return false;
+      return { success: true };
+    } catch (error: any) {
+      let errorMessage = 'Registration failed. Please try again.';
+      if (error instanceof ApiException && error.message) {
+        errorMessage = error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      return { success: false, error: errorMessage };
     }
-  };
+  }; 
 
   // Clear local auth state without calling server
   const clearLocalAuth = (): void => {

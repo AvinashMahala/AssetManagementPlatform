@@ -38,6 +38,64 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task Register_Should_Generate_Username_When_Not_Provided()
+    {
+        var repoMock = new Mock<IUserRepository>();
+        User? savedUser = null;
+        repoMock.Setup(r => r.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
+        repoMock.Setup(r => r.AddAsync(It.IsAny<User>())).Callback<User>(u => savedUser = u).Returns(Task.CompletedTask);
+
+        var jwtMock = new Mock<IJwtService>();
+        var svc = new AuthService(repoMock.Object, jwtMock.Object);
+
+        var dto = await svc.RegisterAsync(new RegisterRequest("a@b.com", "P@ssw0rd", "Me"));
+
+        Assert.NotNull(savedUser);
+        Assert.Equal("me", savedUser.Username);
+        Assert.Equal("me", dto.Username);
+    }
+
+    [Fact]
+    public async Task Register_Should_Use_Provided_Username()
+    {
+        var repoMock = new Mock<IUserRepository>();
+        User? savedUser = null;
+        repoMock.Setup(r => r.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
+        repoMock.Setup(r => r.AddAsync(It.IsAny<User>())).Callback<User>(u => savedUser = u).Returns(Task.CompletedTask);
+
+        var jwtMock = new Mock<IJwtService>();
+        var svc = new AuthService(repoMock.Object, jwtMock.Object);
+
+        var dto = await svc.RegisterAsync(new RegisterRequest("a@b.com", "P@ssw0rd", "Me", "sam123"));
+
+        Assert.NotNull(savedUser);
+        Assert.Equal("sam123", savedUser.Username);
+        Assert.Equal("sam123", dto.Username);
+    }
+
+    [Fact]
+    public async Task Register_Should_Append_Suffix_When_Username_Exists()
+    {
+        var repoMock = new Mock<IUserRepository>();
+        User? savedUser = null;
+        repoMock.Setup(r => r.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
+        // First username check returns existing user, second returns null (available)
+        repoMock.SetupSequence(r => r.FindByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(new User { Id = Guid.NewGuid(), Username = "me" })
+            .ReturnsAsync((User?)null);
+        repoMock.Setup(r => r.AddAsync(It.IsAny<User>())).Callback<User>(u => savedUser = u).Returns(Task.CompletedTask);
+
+        var jwtMock = new Mock<IJwtService>();
+        var svc = new AuthService(repoMock.Object, jwtMock.Object);
+
+        var dto = await svc.RegisterAsync(new RegisterRequest("a@b.com", "P@ssw0rd", "Me"));
+
+        Assert.NotNull(savedUser);
+        Assert.Equal("me1", savedUser.Username);
+        Assert.Equal("me1", dto.Username);
+    }
+
+    [Fact]
     public async Task Login_Should_Return_Tokens_When_Credentials_Are_Valid()
     {
         var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
