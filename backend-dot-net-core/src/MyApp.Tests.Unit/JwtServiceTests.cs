@@ -82,4 +82,20 @@ public class JwtServiceTests
         Assert.NotNull(principal);
         Assert.Equal("validate@me", principal.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value);
     }
+
+    [Fact]
+    public void GenerateAccessToken_Includes_Sid_When_Supplied()
+    {
+        var cfg = new ConfigurationBuilder().AddInMemoryCollection(new System.Collections.Generic.Dictionary<string,string?> {
+            { "Jwt:Key", "shortkey123" }, { "Jwt:Issuer", "iss" }, { "Jwt:Audience", "aud" }
+        }).Build();
+        var svc = new JwtService(cfg);
+        var user = new MyApp.Models.User { Id = Guid.NewGuid(), Email = "sid@me" };
+        var sid = Guid.NewGuid();
+        var token = svc.GenerateAccessToken(user, sid);
+
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(token);
+        Assert.Equal(sid.ToString(), jwt.Claims.FirstOrDefault(c => c.Type == "sid")?.Value);
+    }
 }

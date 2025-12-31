@@ -153,4 +153,10 @@ public class SessionRepository : ISessionRepository
         _db.Set<SessionToken>().Update(s);
         await _db.SaveChangesAsync();
     }
+
+    public async Task<SessionToken?> FindByIdAsync(Guid id)
+    {
+        var s = await _db.Set<SessionToken>().FindAsync(id);
+        return s;
+    }
 }

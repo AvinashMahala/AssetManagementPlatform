@@ -33,6 +33,50 @@ namespace MyApp.Api
                         IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
                         ValidateLifetime = true
                     };
+
+                    // Validate session bound to access token (sid claim) to support immediate logout/invalidation
+                    var requireSid = configuration.GetValue<bool>("Auth:RequireSidInAccessToken", false);
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = async context =>
+                        {
+                            try
+                            {
+                                var sid = context.Principal?.FindFirst("sid")?.Value;
+
+                                // If SID is required but missing or invalid, reject immediately
+                                if (string.IsNullOrWhiteSpace(sid))
+                                {
+                                    if (requireSid)
+                                    {
+                                        context.Fail("Access tokens must include session id (sid) claim");
+                                    }
+                                    return; // nothing to validate further
+                                }
+
+                                if (!Guid.TryParse(sid, out var sessionId))
+                                {
+                                    context.Fail("Invalid session id in token");
+                                    return;
+                                }
+
+                                var repo = context.HttpContext.RequestServices.GetService<MyApp.Interfaces.Repositories.ISessionRepository>();
+                                if (repo != null)
+                                {
+                                    var session = await repo.FindByIdAsync(sessionId);
+                                    if (session == null || session.Revoked || session.ExpiresAt < DateTime.UtcNow)
+                                    {
+                                        context.Fail("Session invalid or revoked");
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Any exception during validation should reject the token
+                                context.Fail("Session validation failed");
+                            }
+                        }
+                    };
                 });
 
             services.AddAuthorization();

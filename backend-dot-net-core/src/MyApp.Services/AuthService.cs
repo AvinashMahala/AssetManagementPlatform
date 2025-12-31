@@ -118,9 +118,9 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             }
         }
 
-        var access = _jwtService.GenerateAccessToken(user);
+        // Generate refresh token (stored server-side hashed for sessions)
         var refresh = _jwtService.GenerateRefreshToken();
-        // Create and persist a session-backed refresh token (store hashed value)
+
         if (_sessionRepo != null && _hasher != null)
         {
             var hash = _hasher.Hash(refresh);
@@ -138,6 +138,10 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             };
             await _sessionRepo.CreateAsync(session);
             _logger?.LogInformation("Created session {SessionId} for user {UserId} from ip {Ip} device {Device}", session.Id, user.Id, ipAddress, deviceInfo);
+
+            // Generate access token bound to the session id so we can validate against it later
+            var access = _jwtService.GenerateAccessToken(user, session.Id);
+            return (access, refresh);
         }
         else
         {
@@ -145,9 +149,10 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             user.RefreshToken = refresh;
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(30);
             await _userRepo.UpdateAsync(user);
-        }
 
-        return (access, refresh);
+            var access = _jwtService.GenerateAccessToken(user);
+            return (access, refresh);
+        }
     }
 
     /// <summary>
@@ -235,6 +240,17 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             user.RefreshToken = null;
             user.RefreshTokenExpiry = null;
             await _userRepo.UpdateAsync(user);
+        }
+    }
+
+    /// <summary>
+    /// Revoke a session by id (used for logout when the access token is provided).
+    /// </summary>
+    public async Task RevokeSessionAsync(Guid sessionId)
+    {
+        if (_sessionRepo != null)
+        {
+            await _sessionRepo.RevokeAsync(sessionId);
         }
     }
 

@@ -19,7 +19,7 @@ public class AuthServiceTests
         repoMock.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
         var jwtMock = new Mock<IJwtService>();
-        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
+        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>(), It.IsAny<Guid?>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
         var sessionRepoMock = new Mock<MyApp.Interfaces.Repositories.ISessionRepository>();
@@ -49,7 +49,7 @@ public class AuthServiceTests
         repoMock.Setup(r => r.UpdateAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
         var jwtMock = new Mock<IJwtService>();
-        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
+        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>(), It.IsAny<Guid?>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
         var sessionRepoMock = new Mock<MyApp.Interfaces.Repositories.ISessionRepository>();
@@ -79,7 +79,7 @@ public class AuthServiceTests
         repoMock.Setup(r => r.UpdateAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
         var jwtMock = new Mock<IJwtService>();
-        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
+        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>(), It.IsAny<Guid?>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
         var svc = new AuthService(repoMock.Object, jwtMock.Object);
@@ -114,7 +114,7 @@ public class AuthServiceTests
 
         
         var jwtMock = new Mock<IJwtService>();
-        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
+        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>(), It.IsAny<Guid?>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
         var svc = new AuthService(repoMock.Object, jwtMock.Object);
@@ -144,7 +144,7 @@ public class AuthServiceTests
         repoMock.Setup(r => r.UpdateAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
         var jwtMock = new Mock<IJwtService>();
-        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>())).Returns("token");
+        jwtMock.Setup(j => j.GenerateAccessToken(It.IsAny<User>(), It.IsAny<Guid?>())).Returns("token");
         jwtMock.Setup(j => j.GenerateRefreshToken()).Returns("refresh");
 
         var sessionRepoMock = new Mock<MyApp.Interfaces.Repositories.ISessionRepository>();

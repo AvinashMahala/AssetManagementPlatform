@@ -28,4 +28,9 @@ public interface ISessionRepository
     /// Returns the updated session.
     /// </summary>
     Task<SessionToken> RotateSessionWithLockAsync(string oldRefreshTokenHash, string newRefreshTokenHash, DateTime newIssuedAt, DateTime newExpiresAt);
+
+    /// <summary>
+    /// Find a session by id.
+    /// </summary>
+    Task<SessionToken?> FindByIdAsync(Guid id);
 }

@@ -7,6 +7,7 @@ using MyApp.Interfaces;
 using MyApp.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
+using System.Collections.Generic;
 
 namespace MyApp.Services;
 
@@ -53,21 +54,29 @@ public class JwtService(IConfiguration configuration) : IJwtService
     /// Generates a signed JWT access token for the specified user.
     /// </summary>
     /// <param name="user">User to create the token for.</param>
+    /// <param name="sessionId">Optional session id to bind the token to a server-side session.</param>
     /// <returns>A signed JWT access token string.</returns>
-    public string GenerateAccessToken(User user)
+    public string GenerateAccessToken(User user, Guid? sessionId = null)
     {
         var key = new SymmetricSecurityKey(_keyBytes);
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[] {
+        var claimsList = new List<Claim>
+        {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email)
         };
 
+        if (sessionId.HasValue)
+        {
+            // 'sid' is commonly used for session identifier claims
+            claimsList.Add(new Claim("sid", sessionId.Value.ToString()));
+        }
+
         var token = new JwtSecurityToken(
             issuer: _issuer,
             audience: _audience,
-            claims: claims,
+            claims: claimsList,
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds);
 

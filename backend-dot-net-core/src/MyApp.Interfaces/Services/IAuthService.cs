@@ -11,6 +11,7 @@ public partial interface IAuthService
     Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginRequest request, string? ipAddress = null, string? userAgent = null, string? deviceInfo = null);
     Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(RefreshRequest request);
     Task RevokeRefreshTokenAsync(string rawRefreshToken);
+    Task RevokeSessionAsync(Guid sessionId);
     Task<UserDto?> GetProfileAsync(Guid userId);
     Task<UserDto?> UpdateProfileAsync(Guid userId, string? displayName);
 }

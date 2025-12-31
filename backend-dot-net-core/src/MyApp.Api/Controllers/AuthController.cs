@@ -182,6 +182,13 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             await _service.RevokeRefreshTokenAsync(raw);
         }
 
+        // Also revoke session referenced by the access token (if present)
+        var sid = User.FindFirst("sid")?.Value;
+        if (!string.IsNullOrWhiteSpace(sid) && Guid.TryParse(sid, out var sessionId))
+        {
+            await _service.RevokeSessionAsync(sessionId);
+        }
+
         // Clear cookie client-side
         Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.None });
 
