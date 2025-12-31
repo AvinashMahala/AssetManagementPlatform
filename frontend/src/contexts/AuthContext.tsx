@@ -144,9 +144,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
 
-    // No valid stored token -> try silent refresh via cookie
+    // No valid stored token -> try silent refresh via cookie (or request token from other tab)
     (async () => {
       try {
+        // First, actively ask other tabs to provide an existing access token so we can avoid triggering a refresh.
+        // This reduces duplicate refreshes and therefore extra JTI entries when opening new tabs.
+        const provided = await requestTokenFromOtherTab(1000);
+        if (provided) {
+          // Token received from another tab — apply and verify profile
+          apiClient.setAuthToken(provided.token);
+          sessionStorage.setItem('accessToken', provided.token);
+          if (provided.accessTokenExp) sessionStorage.setItem('accessTokenExp', String(provided.accessTokenExp));
+          try {
+            const userData = await authService.getProfile();
+            setUser(userData);
+            setIsAuthenticated(true);
+            sessionStorage.setItem('user', JSON.stringify(userData));
+            setLoading(false);
+            return;
+          } catch (_err) {
+            // If profile fetch fails, fall through to attempt refresh
+          }
+        }
+
+        // If no token was provided by other tabs, wait briefly to see if another tab refreshes and broadcasts the new token.
+        const notified = await waitForRefreshNotification(1000); // wait up to 1s for other tab to refresh
+        if (notified) {
+          const storedToken = sessionStorage.getItem('accessToken');
+          if (storedToken) {
+            apiClient.setAuthToken(storedToken);
+            try {
+              const userData = await authService.getProfile();
+              setUser(userData);
+              setIsAuthenticated(true);
+              sessionStorage.setItem('user', JSON.stringify(userData));
+              setLoading(false);
+              return;
+            } catch (_err) {
+              // If profile fetch fails, fall through to attempt refresh
+            }
+          }
+        }
+
         const refreshSuccess = await refreshToken();
         if (refreshSuccess) {
           await checkAuth(true);
@@ -480,6 +519,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         clearLocalAuth();
         return;
       }
+
+      if (data.type === 'request-token') {
+        // Another tab is asking for an access token. Respond only if we have a valid token and are authenticated.
+        try {
+          if (!data.requester || data.requester === tabId) return; // ignore self
+          const token = apiClient.getAuthToken() || sessionStorage.getItem('accessToken');
+          if (!token) return;
+          const expMs = sessionStorage.getItem('accessTokenExp') ? Number(sessionStorage.getItem('accessTokenExp')) : getJwtExpiryMs(token);
+          // Only share if token has at least 30s remaining to avoid sending nearly-expired tokens
+          if (!expMs || (expMs - Date.now() < 30000)) return;
+          // Target the response to the requesting tab
+          bc.postMessage({ type: 'provide-token', token, accessTokenExp: expMs, requester: data.requester });
+        } catch (_e) {
+          // ignore
+        }
+        return;
+      }
+
+      if (data.type === 'provide-token') {
+        // A token has been provided in response to our request; only act when it's targeted to this tab
+        try {
+          if (!data.requester || data.requester !== tabId) return;
+          const token = data.token as string | undefined;
+          const exp = data.accessTokenExp ? Number(data.accessTokenExp) : undefined;
+          if (!token) return;
+
+          // Apply token and fetch profile non-blocking
+          apiClient.setAuthToken(token);
+          if (exp) sessionStorage.setItem('accessTokenExp', String(exp));
+          sessionStorage.setItem('accessToken', token);
+          authService.getProfile().then(u => {
+            setUser(u);
+            setIsAuthenticated(true);
+            sessionStorage.setItem('user', JSON.stringify(u));
+          }).catch(() => { /* ignore */ });
+        } catch (_e) {
+          // ignore
+        }
+        return;
+      }
     };
     bc.addEventListener('message', onMsg as any);
     return () => bc.removeEventListener('message', onMsg as any);
@@ -565,6 +644,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const res = await Promise.resolve();
         if (res) { /* noop to satisfy lint */ }
       })();
+    });
+  };
+
+  // Request an existing access token from other tabs. Returns { token, accessTokenExp } or null if none provided within timeout
+  const requestTokenFromOtherTab = async (timeout = 1000): Promise<{ token: string; accessTokenExp?: number } | null> => {
+    if (!bc) return null;
+    return new Promise((resolve) => {
+      let done = false;
+      const timer = setTimeout(() => {
+        if (!done) {
+          done = true;
+          resolve(null);
+        }
+      }, timeout);
+
+      const onMsg = (ev: MessageEvent) => {
+        const data = ev?.data as any;
+        if (!data || data.type !== 'provide-token') return;
+        // Only accept tokens targeted to this tab
+        if (data.requester !== tabId) return;
+        if (!done) {
+          done = true;
+          clearTimeout(timer);
+          try {
+            const token = data.token as string;
+            const exp = data.accessTokenExp ? Number(data.accessTokenExp) : undefined;
+            resolve({ token, accessTokenExp: exp });
+          } catch (_e) {
+            resolve(null);
+          }
+        }
+      };
+
+      bc.addEventListener('message', onMsg as any);
+      // Broadcast request to other tabs
+      bc.postMessage({ type: 'request-token', requester: tabId });
+
+      // Cleanup is handled by timer resolution/path above
     });
   };
 

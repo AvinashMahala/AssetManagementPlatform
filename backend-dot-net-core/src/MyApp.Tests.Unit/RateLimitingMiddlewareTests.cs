@@ -7,6 +7,7 @@ using Xunit;
 using MyApp.Api.Middleware;
 using MyApp.Api.Options;
 using MyApp.Api.Services.RateLimit;
+using MyApp.Api.Security;
 
 namespace MyApp.Tests.Unit;
 
@@ -20,11 +21,12 @@ public class RateLimitingMiddlewareTests
         var logger = loggerFactory.CreateLogger<RateLimitingMiddleware>();
         var store = new InMemoryRateLimitStore();
 
+        var failureTracker = new FailureTracker(TimeSpan.FromMinutes(5), 10);
         var middleware = new RateLimitingMiddleware(async ctx =>
         {
             ctx.Response.StatusCode = 200;
             await ctx.Response.WriteAsync("ok");
-        }, logger, options, store);
+        }, logger, options, store, failureTracker);
 
         for (int i = 0; i < 3; i++)
         {
@@ -35,34 +37,34 @@ public class RateLimitingMiddlewareTests
             if (i < 2) Assert.Equal(200, context.Response.StatusCode);
             else Assert.Equal(429, context.Response.StatusCode);
         }
-        }
+    }
 
-        [Fact]
-        public async Task Returns_429_When_DefaultBurst_Allows_only_limit_one()
+    [Fact]
+    public async Task Returns_429_When_DefaultBurst_Allows_only_limit_one()
+    {
+        // Default BurstCapacity is not set explicitly here — it should be 1 by default
+        var options = Options.Create(new RateLimitingOptions { Enabled = true, DefaultPolicy = new RateLimitPolicy { Limit = 1, WindowSeconds = 60 } });
+        var loggerFactory = LoggerFactory.Create(builder => builder.AddDebug());
+        var logger = loggerFactory.CreateLogger<RateLimitingMiddleware>();
+        var store = new InMemoryRateLimitStore();
+
+        var failureTracker = new FailureTracker(TimeSpan.FromMinutes(5), 10);
+        var middleware = new RateLimitingMiddleware(async ctx =>
         {
-            // Default BurstCapacity is not set explicitly here — it should be 1 by default
-            var options = Options.Create(new RateLimitingOptions { Enabled = true, DefaultPolicy = new RateLimitPolicy { Limit = 1, WindowSeconds = 60 } });
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddDebug());
-            var logger = loggerFactory.CreateLogger<RateLimitingMiddleware>();
-            var store = new InMemoryRateLimitStore();
+            ctx.Response.StatusCode = 200;
+            await ctx.Response.WriteAsync("ok");
+        }, logger, options, store, failureTracker);
 
-            var middleware = new RateLimitingMiddleware(async ctx =>
-            {
-                ctx.Response.StatusCode = 200;
-                await ctx.Response.WriteAsync("ok");
-            }, logger, options, store);
+        // First request allowed
+        var context1 = new DefaultHttpContext();
+        context1.Response.Body = new MemoryStream();
+        await middleware.InvokeAsync(context1);
+        Assert.Equal(200, context1.Response.StatusCode);
 
-            // First request allowed
-            var context1 = new DefaultHttpContext();
-            context1.Response.Body = new MemoryStream();
-            await middleware.InvokeAsync(context1);
-            Assert.Equal(200, context1.Response.StatusCode);
-
-            // Second request should be denied (429)
-            var context2 = new DefaultHttpContext();
-            context2.Response.Body = new MemoryStream();
-            await middleware.InvokeAsync(context2);
-            Assert.Equal(429, context2.Response.StatusCode);
-        }
+        // Second request should be denied (429)
+        var context2 = new DefaultHttpContext();
+        context2.Response.Body = new MemoryStream();
+        await middleware.InvokeAsync(context2);
+        Assert.Equal(429, context2.Response.StatusCode);
     }
 }

@@ -6,6 +6,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Threading.Tasks;
 using MyApp.Services;
 
 namespace MyApp.Api
@@ -38,6 +39,15 @@ namespace MyApp.Api
                     var requireSid = configuration.GetValue<bool>("Auth:RequireSidInAccessToken", false);
                     options.Events = new JwtBearerEvents
                     {
+                        OnMessageReceived = ctx =>
+                        {
+                            // Prefer Authorization header, but fall back to HttpOnly cookie named `accessToken` when present
+                            if (string.IsNullOrEmpty(ctx.Token) && ctx.Request?.Cookies != null && ctx.Request.Cookies.TryGetValue("accessToken", out var cookieToken))
+                            {
+                                ctx.Token = cookieToken;
+                            }
+                            return Task.CompletedTask;
+                        },
                         OnTokenValidated = async context =>
                         {
                             try

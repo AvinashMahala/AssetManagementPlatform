@@ -19,6 +19,8 @@ namespace MyApp.Services
 
         public async Task AddJtiAsync(string jti, Guid sessionId, TimeSpan ttl)
         {
+            // Ensure only one active JTI exists per session to avoid unbounded growth when multiple tabs refresh.
+            await _repo.RemoveAllForSessionAsync(sessionId);
             var row = new SessionJti { SessionId = sessionId, Jti = jti, ExpiresAt = DateTime.UtcNow.Add(ttl) };
             await _repo.AddAsync(row);
         }

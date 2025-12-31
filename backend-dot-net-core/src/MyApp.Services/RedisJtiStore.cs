@@ -28,6 +28,8 @@ namespace MyApp.Services
 
         public async Task AddJtiAsync(string jti, Guid sessionId, TimeSpan ttl)
         {
+            // Ensure only one active JTI exists per session to avoid unbounded growth when multiple tabs refresh.
+            await RemoveAllForSessionAsync(sessionId);
             // store mapping jti -> sessionId with TTL
             await _db.StringSetAsync(JtiKey(jti), sessionId.ToString(), ttl);
             // add to session set (no expiry; we'll remove entries on RemoveAll)

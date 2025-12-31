@@ -19,11 +19,12 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]
-public class AuthController(IAuthService service, Microsoft.Extensions.Configuration.IConfiguration configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env) : ControllerBase
+public class AuthController(IAuthService service, Microsoft.Extensions.Configuration.IConfiguration configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env, Microsoft.Extensions.Logging.ILogger<AuthController>? logger = null) : ControllerBase
 {
     private readonly IAuthService _service = service;
     private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration = configuration;
     private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env = env;
+    private readonly Microsoft.Extensions.Logging.ILogger<AuthController>? _logger = logger;
 
   /// <summary>
   /// Registers a new user.
@@ -71,16 +72,28 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             var tokens = await _service.LoginAsync(req, ip, userAgent, deviceInfo);
 
             // Set HttpOnly refresh token cookie (cookie-based refresh flow)
-            var cookieOptions = new CookieOptions
+            var refreshCookieOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps, // use secure cookies on HTTPS; allow non-secure in local HTTP dev
-                // Allow cross-origin fetches from SPA dev origin (credentials included). In production, ensure HTTPS and review SameSite policy.
-                SameSite = SameSiteMode.None,
+                // Allow cross-origin fetches from SPA dev origin (credentials included).
+                // Use SameSite=None only when request is HTTPS; otherwise fall back to Lax for local HTTP dev to avoid browsers dropping the cookie.
+                SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax,
                 Path = "/",
                 Expires = DateTime.UtcNow.AddDays(30)
             };
-            Response.Cookies.Append("refreshToken", tokens.RefreshToken, cookieOptions);
+            Response.Cookies.Append("refreshToken", tokens.RefreshToken, refreshCookieOptions);
+
+            // Also set access token in an HttpOnly cookie so browser automatically sends it with requests
+            var accessCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddHours(1)
+            };
+            Response.Cookies.Append("accessToken", tokens.AccessToken, accessCookieOptions);
 
             // Return access token in body; refresh token returned in cookie. Expose refresh token in body only in dev or when explicitly enabled.
             var exposeRefresh = (_configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || _env.IsDevelopment();
@@ -109,10 +122,18 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         {
             // Prefer token from request body, otherwise read from HttpOnly cookie (cookie-based flow)
             var raw = req?.RefreshToken;
-            if (string.IsNullOrWhiteSpace(raw) && Request.Cookies.ContainsKey("refreshToken"))
+            var cookiePresent = Request.Cookies.ContainsKey("refreshToken");
+            if (string.IsNullOrWhiteSpace(raw) && cookiePresent)
             {
                 raw = Request.Cookies["refreshToken"];
                 req = new RefreshRequest(raw);
+            }
+
+            // Dev/debug assistance: log and expose a light header to help determine whether cookie was sent
+            _logger?.LogDebug("Refresh endpoint invoked. refresh cookie present={present}", cookiePresent);
+            if (_env.IsDevelopment())
+            {
+                Response.Headers["X-Debug-Refresh-Cookie"] = cookiePresent ? "present" : "absent";
             }
 
             if (string.IsNullOrWhiteSpace(raw))
@@ -127,12 +148,23 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps, // use secure cookies on HTTPS; allow non-secure in local HTTP dev
-                // Allow cross-origin fetches from SPA dev origin (credentials included). In production, ensure HTTPS and review SameSite policy.
-                SameSite = SameSiteMode.None,
+                // Allow cross-origin fetches from SPA dev origin (credentials included). Use None only when request is HTTPS; otherwise fall back to Lax for local HTTP dev to avoid browsers dropping the cookie.
+                SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax,
                 Path = "/",
                 Expires = DateTime.UtcNow.AddDays(30)
             };
             Response.Cookies.Append("refreshToken", tokens.RefreshToken, cookieOptions);
+
+            // Update access token cookie to match new access token
+            var accessCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddHours(1)
+            };
+            Response.Cookies.Append("accessToken", tokens.AccessToken, accessCookieOptions);
 
             var exposeRefresh = (_configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || _env.IsDevelopment();
             if (exposeRefresh)
@@ -143,6 +175,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         }
         catch (InvalidOperationException ex)
         {
+            _logger?.LogInformation("Refresh token invalid or reused: {msg}", ex.Message);
             return Unauthorized(new { message = ex.Message });
         }
     }
@@ -189,8 +222,9 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             await _service.RevokeSessionAsync(sessionId);
         }
 
-        // Clear cookie client-side
-        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.None });
+        // Clear cookies client-side
+        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
+        Response.Cookies.Delete("accessToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
 
         return Ok(new { message = "Logged out" });
     }
@@ -224,11 +258,12 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
 
         await _service.RevokeSessionAsync(id);
 
-        // If revoking the current session, clear cookie
+// If revoking the current session, clear cookies
         var currentSid = User.FindFirst("sid")?.Value;
         if (!string.IsNullOrWhiteSpace(currentSid) && Guid.TryParse(currentSid, out var cur) && cur == id)
         {
-            Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.None });
+            Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
+            Response.Cookies.Delete("accessToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
         }
 
         return Ok(new { message = "Session revoked" });
@@ -245,7 +280,8 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         if (!Guid.TryParse(sub, out var userId)) return Unauthorized();
 
         await _service.LogoutAllSessionsAsync(userId);
-        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.None });
+        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
+        Response.Cookies.Delete("accessToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
         return Ok(new { message = "Logged out of all sessions" });
     }
 
