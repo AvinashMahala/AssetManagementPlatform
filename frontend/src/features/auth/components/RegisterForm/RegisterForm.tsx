@@ -23,6 +23,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitError, setSubmitError] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const formRef = React.useRef<HTMLFormElement | null>(null);
 
   const handleSubmit = async (data: Record<string, any>) => {
     setSubmitError('');
@@ -70,10 +71,17 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         phone: data.phone || '',
         registrationMethod: data.registrationMethod || 'email'
       };
-      const result = await register(registrationData);
+        const result = await register(registrationData);
       if (result.success) {
         showSuccess('Account Created', 'Please check your email or phone to verify your account.');
+        // Clear form fields and local state
+        try { formRef.current?.reset(); } catch (_e) {}
+        setConfirmPassword('');
+        setSubmitError('');
+        setErrors({});
         onSuccess?.();
+        // Switch to Sign In tab if requested
+        onSwitchToLogin?.();
       } else {
         const msg = result.error ?? 'Registration failed. Please try again.';
         setSubmitError(msg);
@@ -123,7 +131,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <Form onSubmit={handleSubmit} loading={loading}>
+      <Form ref={formRef} onSubmit={handleSubmit} loading={loading}>
         <div>
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
             Create Account

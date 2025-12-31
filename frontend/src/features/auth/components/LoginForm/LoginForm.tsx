@@ -11,6 +11,7 @@ interface LoginFormProps {
   onSuccess?: () => void;
   onSwitchToRegister?: () => void;
   onForgotPassword?: () => void;
+  emailRef?: React.RefObject<HTMLInputElement>;
 }
 
 interface LoginFormData {
@@ -25,7 +26,8 @@ interface GoogleAuthResponse {
 export const LoginForm: React.FC<LoginFormProps> = ({
   onSuccess,
   onSwitchToRegister,
-  onForgotPassword
+  onForgotPassword,
+  emailRef
 }) => {
   const { login, googleAuth, loading, devModeLogin } = useAuthContext();
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
@@ -124,6 +126,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
               type="email"
               error={errors.email}
               placeholder="Enter your email"
+              ref={emailRef}
             />
           </FormField>
 

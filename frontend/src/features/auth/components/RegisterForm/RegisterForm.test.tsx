@@ -27,13 +27,14 @@ describe('RegisterForm', () => {
     showErrorMock.mockClear();
   });
 
-  it('shows success notification on successful registration', async () => {
-    render(<RegisterForm />);
+  it('shows success notification on successful registration and clears form + switches to login', async () => {
+    const onSwitchToLoginMock = vi.fn();
+    render(<RegisterForm onSwitchToLogin={onSwitchToLoginMock} />);
 
-    const username = screen.getByPlaceholderText('Choose a username');
-    const email = screen.getByPlaceholderText('Enter your email');
-    const password = screen.getByPlaceholderText('Create a password');
-    const confirmPassword = screen.getByPlaceholderText('Confirm your password');
+    const username = screen.getByPlaceholderText('Choose a username') as HTMLInputElement;
+    const email = screen.getByPlaceholderText('Enter your email') as HTMLInputElement;
+    const password = screen.getByPlaceholderText('Create a password') as HTMLInputElement;
+    const confirmPassword = screen.getByPlaceholderText('Confirm your password') as HTMLInputElement;
     const submit = screen.getByRole('button', { name: /create account/i });
 
     fireEvent.change(username, { target: { value: 'testuser' } });
@@ -49,6 +50,13 @@ describe('RegisterForm', () => {
         'Account Created',
         'Please check your email or phone to verify your account.'
       );
+
+      // Ensure provided onSwitchToLogin handler is called
+      expect(onSwitchToLoginMock).toHaveBeenCalledTimes(1);
+
+      // Form inputs should be cleared
+      expect(username.value).toBe('');
+      expect(email.value).toBe('');
     });
   });
 
