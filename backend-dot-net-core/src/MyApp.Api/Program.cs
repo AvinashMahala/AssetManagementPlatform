@@ -38,6 +38,23 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.Configure<MyApp.Api.Options.CorrelationIdOptions>(builder.Configuration.GetSection("CorrelationId"));
 builder.Services.Configure<MyApp.Api.Options.ExceptionHandlingOptions>(builder.Configuration.GetSection("ExceptionHandling"));
+
+// Enable detailed errors & stack traces in development by default unless explicitly configured via settings or env vars
+if (builder.Environment.IsDevelopment())
+{
+    var section = builder.Configuration.GetSection("ExceptionHandling");
+    // If ShowDetailedErrors not explicitly set, enable it for dev (but allow explicit override)
+    var explicitSetting = section.GetValue<bool?>("ShowDetailedErrors");
+    if (!explicitSetting.HasValue)
+    {
+        builder.Configuration["ExceptionHandling:ShowDetailedErrors"] = "true";
+    }
+    var explicitStack = section.GetValue<bool?>("ShowExceptionStackTrace");
+    if (!explicitStack.HasValue)
+    {
+        builder.Configuration["ExceptionHandling:ShowExceptionStackTrace"] = "true";
+    }
+}
 builder.Services.Configure<MyApp.Api.Options.RateLimitingOptions>(builder.Configuration.GetSection("RateLimiting"));// Request logging, security headers and maintenance options
 // Ensure a conservative default for the refresh endpoint if not configured explicitly
 builder.Services.AddMyAppRateLimitingDefaults();

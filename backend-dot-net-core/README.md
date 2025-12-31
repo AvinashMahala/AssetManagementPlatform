@@ -12,3 +12,6 @@ Next steps:
 - Add EF Core provider and migrations
 - Translate Node routes → Controller actions
 - Add tests and CI integration
+
+Notes:
+- Exception handling is configurable via the `ExceptionHandling` section in appsettings / env vars. In development the code will enable `ExceptionHandling:ShowDetailedErrors` and `ExceptionHandling:ShowExceptionStackTrace` by default (unless explicitly overridden) so clients can see full errors while debugging. In production these remain off by default to avoid leaking sensitive info.

@@ -51,6 +51,17 @@ namespace MyApp.Api.Middleware
                     Detail = _options.ShowDetailedErrors ? ex.Message : "An error occurred while processing the request."
                 };
 
+                // If configured to show stack traces, include full exception text in extensions
+                if (_options.ShowExceptionStackTrace)
+                {
+                    // Avoid modifying the core 'detail' used by client UX; expose details under extensions
+                    problem.Extensions["exception"] = ex.ToString();
+                    if (ex.InnerException != null)
+                    {
+                        problem.Extensions["innerException"] = ex.InnerException.ToString();
+                    }
+                }
+
                 context.Response.Clear();
                 context.Response.StatusCode = status;
                 context.Response.ContentType = "application/problem+json";
