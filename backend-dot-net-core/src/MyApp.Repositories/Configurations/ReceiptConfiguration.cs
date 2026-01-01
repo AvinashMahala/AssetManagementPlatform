@@ -19,7 +19,6 @@ public class ReceiptConfiguration : IEntityTypeConfiguration<Receipt>
         builder.Property(r => r.ReceiptNumber).HasColumnName("receipt_number");
         builder.Property(r => r.Amount).HasColumnName("amount");
         builder.Property(r => r.PdfStorageId).HasColumnName("pdf_url");
-        builder.Property(r => r.PdfUrl).HasColumnName("pdf_url");
         builder.Property(r => r.PropertyId).HasColumnName("property_id");
         builder.Property(r => r.TenantId).HasColumnName("tenant_id");
         builder.Property(r => r.ReceiptDate).HasColumnName("receipt_date");

@@ -79,7 +79,6 @@ public class Receipt
 
     // PDF metadata
     public string PdfStorageId { get; set; } = string.Empty; // maps to `pdf_url`
-    public string? PdfUrl { get; set; }
     public long? FileSize { get; set; }
 
     public string Status { get; set; } = "generated";

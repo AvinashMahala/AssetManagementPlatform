@@ -80,7 +80,7 @@ class FileService {
           reject(new Error('Network error'));
         });
 
-        xhr.open('POST', `${API_BASE_URL}/api/files/upload`);
+        xhr.open('POST', `${API_BASE_URL}/api/v1/files/upload`);
         Object.entries(headers).forEach(([key, value]) => {
           xhr.setRequestHeader(key, value);
         });
@@ -119,7 +119,7 @@ class FileService {
    */
   async downloadFile(fileId: string): Promise<Blob> {
     try {
-      const response = await apiClient.download(`/api/files/${fileId}/download`);
+      const response = await apiClient.download(`/api/v1/files/${fileId}/download`);
       return response.blob();
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : 'Download failed');
@@ -130,21 +130,21 @@ class FileService {
    * Get file metadata
    */
   async getFileMetadata(fileId: string): Promise<ApiResponse<FileMetadata>> {
-    return apiClient.get<FileMetadata>(`/api/files/${fileId}/metadata`);
+    return apiClient.get<FileMetadata>(`/api/v1/files/${fileId}/metadata`);
   }
 
   /**
    * List files for an entity
    */
   async listEntityFiles(entityType: string, entityId: string): Promise<ApiResponse<FileListResponse>> {
-    return apiClient.get<FileListResponse>(`/api/files/entity/${entityType}/${entityId}`);
+    return apiClient.get<FileListResponse>(`/api/v1/files/entity/${entityType}/${entityId}`);
   }
 
   /**
    * Delete a file
    */
   async deleteFile(fileId: string): Promise<ApiResponse<{ success: boolean; message: string }>> {
-    return apiClient.delete<{ success: boolean; message: string }>(`/api/files/${fileId}`);
+    return apiClient.delete<{ success: boolean; message: string }>(`/api/v1/files/${fileId}`);
   }
 
   /**
@@ -158,7 +158,7 @@ class FileService {
    * Get download URL for a file (for use in img src, etc.)
    */
   getDownloadUrl(fileId: string): string {
-    return `${API_BASE_URL}/api/files/${fileId}/download`;
+    return `${API_BASE_URL}/api/v1/files/${fileId}/download`;
   }
 
   /**
@@ -180,7 +180,7 @@ class FileService {
     if (filters?.offset) params.append('offset', filters.offset.toString());
 
     const queryString = params.toString();
-    const url = queryString ? `/api/files?${queryString}` : '/api/v1/files';
+    const url = queryString ? `/api/v1/files?${queryString}` : '/api/v1/files';
 
     return apiClient.get<FileListResponse>(url);
   }

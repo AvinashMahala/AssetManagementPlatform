@@ -47,7 +47,45 @@ class MeterService {
     }
 
     if (params.toString()) url += `?${params.toString()}`;
-    return apiClient.get<PaginationResult<Meter>>(url);
+
+    // Backend may return either a paginated object or a raw array of meters.
+    const res = await apiClient.get<Meter[] | PaginationResult<Meter>>(url);
+
+    if (!res.success) {
+      return res as any;
+    }
+
+    // If backend returned an array, normalize into PaginationResult
+    if (Array.isArray(res.data)) {
+      const arr = res.data as Meter[];
+      const page = options?.page ?? 1;
+      const limit = options?.limit ?? (arr.length || 10);
+      const total = arr.length;
+      const totalPages = limit > 0 ? Math.ceil(total / limit) : 1;
+      const pagination: PaginationResult<Meter> = {
+        data: arr,
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      };
+      return {
+        success: true,
+        data: pagination,
+        message: res.message,
+        requestId: res.requestId,
+      };
+    }
+
+    // Already a PaginationResult
+    return {
+      success: true,
+      data: res.data as PaginationResult<Meter>,
+      message: res.message,
+      requestId: res.requestId,
+    };
   }
 
   /**

@@ -32,6 +32,7 @@ public class Lease
     // Payment and periods
     public int? GracePeriodDays { get; set; }
     public int? PaymentDueDay { get; set; }
+    public int? RentDueDay { get; set; }
     public string? PaymentFrequency { get; set; }
     public int? NoticePeriodDays { get; set; }
 
