@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyApp.Models;
 
@@ -53,10 +54,40 @@ public class RentTransaction
 public class Receipt
 {
     public Guid Id { get; set; }
+
+    // Related entities
+    public Guid PropertyId { get; set; }
+    public Guid? TenantId { get; set; }
+
+    // Optional linkage to payment/transaction
     public Guid? RentPaymentId { get; set; }
     public Guid? RentTransactionId { get; set; }
+
     public string ReceiptNumber { get; set; } = string.Empty;
+    public DateTime? ReceiptDate { get; set; }
+
     public decimal Amount { get; set; }
+
+    // JSON data used to generate the PDF
+    public string? ReceiptData { get; set; }
+    [NotMapped]
+    public System.Text.Json.Nodes.JsonNode? ReceiptDataJson
+    {
+        get => string.IsNullOrEmpty(ReceiptData) ? null : System.Text.Json.Nodes.JsonNode.Parse(ReceiptData);
+        set => ReceiptData = value?.ToJsonString();
+    }
+
+    // PDF metadata
+    public string PdfStorageId { get; set; } = string.Empty; // maps to `pdf_url`
+    public string? PdfUrl { get; set; }
+    public long? FileSize { get; set; }
+
+    public string Status { get; set; } = "generated";
+
+    public Guid? GeneratedBy { get; set; }
+    public string? SentTo { get; set; }
+    public DateTime? SentAt { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public string PdfStorageId { get; set; } = string.Empty; // storage id
+    public DateTime? UpdatedAt { get; set; }
 }

@@ -34,6 +34,12 @@ public class AppDbContext : DbContext
     public DbSet<MyApp.Models.SessionToken> SessionTokens => Set<MyApp.Models.SessionToken>();
     public DbSet<MyApp.Models.SessionJti> SessionJtis => Set<MyApp.Models.SessionJti>();
 
+    // Auth helper tables
+    public DbSet<MyApp.Models.PhoneVerificationCode> PhoneVerificationCodes => Set<MyApp.Models.PhoneVerificationCode>();
+    public DbSet<MyApp.Models.PasswordResetMethod> PasswordResetMethods => Set<MyApp.Models.PasswordResetMethod>();
+    public DbSet<MyApp.Models.SecurityQuestion> SecurityQuestions => Set<MyApp.Models.SecurityQuestion>();
+    public DbSet<MyApp.Models.RecoveryCode> RecoveryCodes => Set<MyApp.Models.RecoveryCode>();
+
     // RBAC / PoC entities
     public DbSet<MyApp.Models.Role> Roles => Set<MyApp.Models.Role>();
     public DbSet<MyApp.Models.Permission> Permissions => Set<MyApp.Models.Permission>();
@@ -46,4 +52,7 @@ public class AppDbContext : DbContext
 
     // Export tokens for pre-signed downloads
     public DbSet<MyApp.Models.ExportToken> ExportTokens => Set<MyApp.Models.ExportToken>();
+
+    // Property-specific templates
+    public DbSet<MyApp.Models.PropertyReceiptTemplate> PropertyReceiptTemplates => Set<MyApp.Models.PropertyReceiptTemplate>();
 }

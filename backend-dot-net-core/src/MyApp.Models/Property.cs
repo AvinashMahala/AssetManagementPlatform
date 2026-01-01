@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyApp.Models;
 
@@ -26,8 +28,15 @@ public class Property
     public int? YearBuilt { get; set; }
     public int? ParkingSpaces { get; set; }
 
-    // Amenities & template/receipt settings JSON blobs
+    // Amenities & template/receipt settings JSON blobs (stored as JSONB in DB)
     public string? Amenities { get; set; }
+    [NotMapped]
+    public PropertyAmenities? AmenitiesObject
+    {
+        get => string.IsNullOrEmpty(Amenities) ? null : JsonSerializer.Deserialize<PropertyAmenities>(Amenities);
+        set => Amenities = value is null ? null : JsonSerializer.Serialize(value);
+    }
+
     public string? TemplateJson { get; set; } // maps to template_overrides
     public Guid? TemplateId { get; set; }
     public string? ReceiptSettings { get; set; }
@@ -36,9 +45,29 @@ public class Property
     public Guid? OwnerId { get; set; }
     public string? OwnerName { get; set; }
     public string? OwnerMobileNumbers { get; set; }
+    [NotMapped]
+    public string[] OwnerMobileNumbersArray
+    {
+        get => string.IsNullOrEmpty(OwnerMobileNumbers) ? Array.Empty<string>() : JsonSerializer.Deserialize<string[]>(OwnerMobileNumbers)!;
+        set => OwnerMobileNumbers = JsonSerializer.Serialize(value);
+    }
+
     public string? OwnerEmailIds { get; set; }
+    [NotMapped]
+    public string[] OwnerEmailIdsArray
+    {
+        get => string.IsNullOrEmpty(OwnerEmailIds) ? Array.Empty<string>() : JsonSerializer.Deserialize<string[]>(OwnerEmailIds)!;
+        set => OwnerEmailIds = JsonSerializer.Serialize(value);
+    }
+
     public string? OwnerWebsite { get; set; }
     public string? CoOwners { get; set; }
+    [NotMapped]
+    public Guid[] CoOwnersArray
+    {
+        get => string.IsNullOrEmpty(CoOwners) ? Array.Empty<Guid>() : JsonSerializer.Deserialize<Guid[]>(CoOwners)!;
+        set => CoOwners = JsonSerializer.Serialize(value);
+    }
 
     public string Status { get; set; } = "active";
 

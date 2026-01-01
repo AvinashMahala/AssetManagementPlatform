@@ -19,6 +19,16 @@ public class ReceiptConfiguration : IEntityTypeConfiguration<Receipt>
         builder.Property(r => r.ReceiptNumber).HasColumnName("receipt_number");
         builder.Property(r => r.Amount).HasColumnName("amount");
         builder.Property(r => r.PdfStorageId).HasColumnName("pdf_url");
+        builder.Property(r => r.PdfUrl).HasColumnName("pdf_url");
+        builder.Property(r => r.PropertyId).HasColumnName("property_id");
+        builder.Property(r => r.TenantId).HasColumnName("tenant_id");
+        builder.Property(r => r.ReceiptDate).HasColumnName("receipt_date");
+        builder.Property(r => r.FileSize).HasColumnName("file_size");
+        builder.Property(r => r.Status).HasColumnName("status");
+        builder.Property(r => r.GeneratedBy).HasColumnName("generated_by");
+        builder.Property(r => r.SentTo).HasColumnName("sent_to");
+        builder.Property(r => r.SentAt).HasColumnName("sent_at");
+        builder.Property(r => r.ReceiptData).HasColumnName("receipt_data");
         builder.Property(r => r.CreatedAt).HasColumnName("created_at");
 
         // receipt_data is mapped in queries as JSON when needed
