@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS users (
     
     -- Tracking
     last_login TIMESTAMP,
+    refresh_token VARCHAR(255),
+    refresh_token_expiry TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -44,3 +46,5 @@ COMMENT ON COLUMN users.password_reset_token IS 'Token for password reset';
 COMMENT ON COLUMN users.password_reset_expires IS 'Expiration time for password reset token';
 COMMENT ON COLUMN users.profile_picture IS 'URL to user profile picture';
 COMMENT ON COLUMN users.last_login IS 'Last login timestamp';
+COMMENT ON COLUMN users.refresh_token IS 'Optional legacy refresh token (JWT string) retained for compatibility';
+COMMENT ON COLUMN users.refresh_token_expiry IS 'Expiration timestamp for per-user refresh token';
