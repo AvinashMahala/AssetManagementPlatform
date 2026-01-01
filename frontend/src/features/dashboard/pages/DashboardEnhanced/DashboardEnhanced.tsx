@@ -24,8 +24,23 @@ const DashboardEnhanced: React.FC = () => {
   if (!canView) {
     return (
       <AppLayout title="Dashboard">
-        <div className="flex items-center justify-center py-20">
-          <div className="text-gray-600">You do not have permission to view the dashboard.</div>
+        <div className="space-y-3 dashboard-enhanced">
+          {/* Keep page layout but show message in right column */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 py-6">
+            <div className="col-span-2">
+              {/* Left content area left intentionally blank for users without access */}
+              <div className="h-40 flex items-center justify-center text-gray-400">
+                Dashboard content is restricted.
+              </div>
+            </div>
+            <div className="col-span-1">
+              <div className="border rounded p-4 bg-gray-50 text-gray-700">
+                <h3 className="font-semibold mb-2">Access Denied</h3>
+                <p className="text-sm mb-3">You don't have permission to view the dashboard.</p>
+                <p className="text-xs text-gray-500">Required permission: <code>dashboard:dashboard:view</code></p>
+              </div>
+            </div>
+          </div>
         </div>
       </AppLayout>
     );
