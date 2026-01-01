@@ -10,7 +10,8 @@ public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
     {
         builder.ToTable("permissions");
 
-        builder.Property(p => p.Id).HasColumnName("id");
+        // Id column and DB default
+        builder.Property(p => p.Id).HasColumnName("id").HasDefaultValueSql("gen_random_uuid()");
         builder.Property(p => p.Name).HasColumnName("name").IsRequired().HasMaxLength(255);
         builder.Property(p => p.Description).HasColumnName("description");
 
