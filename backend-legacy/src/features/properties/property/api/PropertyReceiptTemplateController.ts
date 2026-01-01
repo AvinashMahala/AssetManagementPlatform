@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { GetPropertyByIdUseCase } from '../core/use-cases/GetPropertyById.usecase.js';
-import { PropertyReceiptTemplateService } from '../core/services/PropertyReceiptTemplateService';
+import { PropertyReceiptTemplateService } from '../core/services/PropertyReceiptTemplateService.js';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 

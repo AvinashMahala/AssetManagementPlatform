@@ -2,12 +2,12 @@ import { Router, RequestHandler } from 'express';
 import { defaultMemoryUploader } from '@/shared/utils/uploads';
 import { PropertyController } from './PropertyController.js';
 import { conditionalAuth } from '@/shared/middleware/authMiddleware.js';
-import { IPropertyFileController, IReceiptTemplateController, UserServiceLike } from '../types';
-import { createPropertyFilesRouter } from './property.files.routes';
-import { createPropertyTemplatesRouter } from './property.templates.routes';
+import { IPropertyFileController, IReceiptTemplateController, UserServiceLike } from '../types.js';
+import { createPropertyFilesRouter } from './property.files.routes.js';
+import { createPropertyTemplatesRouter } from './property.templates.routes.js';
 import { validateZodRequest } from '@/shared/middleware/validationMiddleware';
 import { asyncHandler } from '@/shared/middleware/errorHandler';
-import { createPropertySchema, updatePropertySchema, updatePropertyStatusSchema, setPropertyTemplateSchema, getPropertySchema } from './property.validation';
+import { createPropertySchema, updatePropertySchema, updatePropertyStatusSchema, setPropertyTemplateSchema, getPropertySchema } from './property.validation.js';
 
 /**
  * Property routes factory

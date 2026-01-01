@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '@/shared/middleware/authMiddleware';
 import { GetPropertyByIdUseCase } from '../core/use-cases/GetPropertyById.usecase.js';
 import { FileStorageService } from '@/features/files/file-storage/core/services/FileStorageService';
-import { PropertyFileService } from '../core/services/PropertyFileService';
+import { PropertyFileService } from '../core/services/PropertyFileService.js';
 import { ResponseUtils } from '@/shared/utils/response.js';
 import { ErrorUtils } from '@/shared/utils/error.js';
 

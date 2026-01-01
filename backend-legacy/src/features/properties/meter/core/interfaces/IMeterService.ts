@@ -1,6 +1,6 @@
 import { Meter, MeterInput } from '../types/meter.types';
 import { PaginationOptions, PaginationResult } from '@/shared/types/pagination';
-import { MeterFilters } from '../interfaces/IMeterRepository';
+import { MeterFilters } from './IMeterRepository';
 
 export interface IMeterService {
   getAllMeters(): Promise<Meter[]>;

@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { IUnitTenantRepository } from './interfaces/IUnitTenantRepository.js';
 import { UnitTenant, UnitTenantInput } from '../models/unit-tenant.types.js';
-import { UnitTenantMapper } from './mappers/UnitTenantMapper';
-import { UnitTenantRow } from './types/UnitTenantRow';
+import { UnitTenantMapper } from './mappers/UnitTenantMapper.js';
+import { UnitTenantRow } from './types/UnitTenantRow.js';
 import { TABLES, COLUMNS } from '@/shared/constants/database.js';
 import { RepositoryError } from '@/shared/errors/RepositoryError.js';
 
