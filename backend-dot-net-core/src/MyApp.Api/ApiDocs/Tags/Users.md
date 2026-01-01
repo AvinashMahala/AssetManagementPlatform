@@ -1,7 +1,7 @@
 # Users
 
 Administrative endpoints for managing user accounts.
-
+<!-- 
 - **Controller:** `UsersController`
 - **Authentication:** Bearer token required (admin-level actions typically protected)
 
@@ -19,4 +19,4 @@ Administrative endpoints for managing user accounts.
 
 ---
 
-Use the operation examples in Swagger UI to test user management flows.
+Use the operation examples in Swagger UI to test user management flows. -->

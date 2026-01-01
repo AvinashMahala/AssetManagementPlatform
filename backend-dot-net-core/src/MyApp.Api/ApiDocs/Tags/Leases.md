@@ -1,7 +1,7 @@
 # Leases
 
 Lease endpoints for creating, updating and terminating leases.
-
+<!-- 
 - **Controller:** `LeasesController`
 - **Authentication:** Bearer token required
 - **Endpoints included:**
@@ -16,4 +16,4 @@ Notes:
 
 ---
 
-Use the example terminate request in the endpoint to simulate lease termination.
+Use the example terminate request in the endpoint to simulate lease termination. -->

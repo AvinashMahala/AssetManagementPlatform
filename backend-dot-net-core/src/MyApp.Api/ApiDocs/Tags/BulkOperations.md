@@ -1,7 +1,7 @@
 # BulkOperations
 
 Batch and administrative workflows for processing multiple items in a single operation (rent collection, payments, receipts, communications, exports, validation).
-
+<!-- 
 - **Controller:** `BulkOperationsController`
 - **Authentication:** Bearer token required (endpoints are typically protected)
 
@@ -20,4 +20,4 @@ Batch and administrative workflows for processing multiple items in a single ope
 
 ---
 
-Use the operation examples in Swagger UI to test bulk workflows and inspect the `BulkOperationSummary` structure.
+Use the operation examples in Swagger UI to test bulk workflows and inspect the `BulkOperationSummary` structure. -->

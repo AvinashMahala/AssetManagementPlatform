@@ -1,7 +1,7 @@
 # RentPayments
 
 Endpoints for recording and managing rent payments.
-
+<!-- 
 - **Controller:** `RentPaymentsController`
 - **Authentication:** Public
 - **Endpoints included:**
@@ -19,4 +19,4 @@ Notes:
 
 ---
 
-Use example requests to verify creation/update flows in Swagger UI.
+Use example requests to verify creation/update flows in Swagger UI. -->

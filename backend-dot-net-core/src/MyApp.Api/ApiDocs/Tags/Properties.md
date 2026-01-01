@@ -1,7 +1,7 @@
 # Properties
 
 Detailed documentation and guidelines for working with property resources (create, read, update, delete, and listing).
-
+<!-- 
 - **Controller:** `PropertiesController`
 - **Authentication:** Bearer token required
 - **Common permissions:** Read-Property, Write-Property
@@ -24,4 +24,4 @@ Detailed documentation and guidelines for working with property resources (creat
 
 ---
 
-Use the examples in each operation to test request/response shapes in Swagger UI.
+Use the examples in each operation to test request/response shapes in Swagger UI. -->

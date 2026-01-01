@@ -1,7 +1,7 @@
 # Tenants
 
 Tenant management endpoints (CRUD).
-
+<!-- 
 - **Controller:** `TenantsController`
 - **Authentication:** Bearer token required
 - **Endpoints included:**
@@ -16,4 +16,4 @@ Notes:
 
 ---
 
-Try creating a test tenant in Swagger UI using the sample request.
+Try creating a test tenant in Swagger UI using the sample request. -->

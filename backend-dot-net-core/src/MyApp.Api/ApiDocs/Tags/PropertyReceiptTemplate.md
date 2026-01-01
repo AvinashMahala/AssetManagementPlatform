@@ -1,7 +1,7 @@
 # PropertyReceiptTemplate
 
 Endpoints to manage property-scoped receipt templates and utilities (e.g., UPI link generation).
-
+<!-- 
 - **Controller:** `PropertyReceiptTemplateController`
 - **Authentication:** Typically protected
 - **Endpoints included:**
@@ -16,4 +16,4 @@ Notes:
 
 ---
 
-Use the UPI links endpoint to preview generated payment link payloads.
+Use the UPI links endpoint to preview generated payment link payloads. -->

@@ -1,7 +1,7 @@
 # Meters
 
 Meter endpoints for CRUD and list by property/unit.
-
+<!-- 
 - **Controller:** `MetersController`
 - **Authentication:** Bearer token required
 - **Endpoints included:**
@@ -18,4 +18,4 @@ Notes:
 
 ---
 
-Swagger examples show minimal payloads for testing.
+Swagger examples show minimal payloads for testing. -->

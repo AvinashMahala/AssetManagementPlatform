@@ -1,7 +1,7 @@
 # Auth
 
 Authentication and user management endpoints (register, login, refresh tokens, and profile management).
-
+<!-- 
 - **Controller:** `AuthController`
 - **Authentication:** `POST /api/auth/login` and `POST /api/auth/register` are public; use `Authorization: Bearer <token>` for protected endpoints such as `GET /api/auth/profile`.
 
@@ -19,4 +19,4 @@ Authentication and user management endpoints (register, login, refresh tokens, a
 
 ---
 
-Use the operation examples in Swagger UI to obtain tokens and test authenticated flows.
+Use the operation examples in Swagger UI to obtain tokens and test authenticated flows. -->

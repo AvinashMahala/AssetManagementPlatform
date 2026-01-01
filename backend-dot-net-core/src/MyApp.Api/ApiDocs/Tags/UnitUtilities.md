@@ -1,7 +1,7 @@
 # UnitUtilities
 
 Endpoints for configuring and calculating utilities associated with units (water, electricity, etc.).
-
+<!-- 
 - **Controller:** `UnitUtilitiesController`
 - **Authentication:** Bearer token required (endpoints are typically protected)
 
@@ -23,4 +23,4 @@ Endpoints for configuring and calculating utilities associated with units (water
 
 ---
 
-Use the operation examples in Swagger UI to run charge calculations and validate configurations.
+Use the operation examples in Swagger UI to run charge calculations and validate configurations. -->

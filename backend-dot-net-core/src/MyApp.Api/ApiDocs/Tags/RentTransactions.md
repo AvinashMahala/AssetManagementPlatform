@@ -1,7 +1,7 @@
 # RentTransactions
 
 Ledger-style transactions for rent (payments, refunds, adjustments).
-
+<!-- 
 - **Controller:** `RentTransactionsController`
 - **Authentication:** Public
 - **Endpoints included:**
@@ -20,4 +20,4 @@ Notes:
 
 ---
 
-Preview transactions with example payloads in Swagger UI.
+Preview transactions with example payloads in Swagger UI. -->

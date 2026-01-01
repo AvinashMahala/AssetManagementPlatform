@@ -1,7 +1,7 @@
 # Units
 
 Endpoints for managing building units and their basic metadata.
-
+<!-- 
 - **Controller:** `UnitsController`
 - **Authentication:** Bearer token required (endpoints are typically protected)
 
@@ -21,4 +21,4 @@ Endpoints for managing building units and their basic metadata.
 
 ---
 
-Use the operation examples in Swagger UI to explore list, create, update, and analytics flows.
+Use the operation examples in Swagger UI to explore list, create, update, and analytics flows. -->

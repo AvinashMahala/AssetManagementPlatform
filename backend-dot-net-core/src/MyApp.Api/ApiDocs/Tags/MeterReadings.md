@@ -1,7 +1,7 @@
 # MeterReadings
 
 Meter reading endpoints for recording and reviewing utility readings.
-
+<!-- 
 - **Controller:** `MeterReadingsController`
 - **Authentication:** Bearer token required
 - **Endpoints included:**
@@ -17,4 +17,4 @@ Notes:
 
 ---
 
-Use Swagger examples to create and verify readings.
+Use Swagger examples to create and verify readings. -->

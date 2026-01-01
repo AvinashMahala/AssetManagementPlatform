@@ -1,7 +1,7 @@
 # ReceiptTemplates
 
 Templates used to render receipts and previewed content for emails and PDF generation.
-
+<!-- 
 - **Controller:** `ReceiptTemplatesController`
 - **Authentication:** Public
 - **Endpoints included:**
@@ -22,4 +22,4 @@ Notes:
 
 ---
 
-Try preview examples in Swagger UI to validate placeholder substitutions.
+Try preview examples in Swagger UI to validate placeholder substitutions. -->

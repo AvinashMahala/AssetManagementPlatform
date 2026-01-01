@@ -1,7 +1,7 @@
 # Receipts
 
 Receipt-related endpoints for generating, viewing, downloading, and emailing receipts.
-
+<!-- 
 - **Controller:** `ReceiptsController`
 - **Authentication:** Public
 - **Endpoints included:**
@@ -21,4 +21,4 @@ Notes:
 
 ---
 
-Use Swagger UI examples to test receipt generation and downloads.
+Use Swagger UI examples to test receipt generation and downloads. -->

@@ -1,7 +1,7 @@
 # TenantDocuments
 
 Tenant-scoped document management (upload, list, update, delete, verify).
-
+<!-- 
 - **Controller:** `TenantDocumentsController`
 - **Authentication:** Bearer token required
 - **Endpoints included:**
@@ -17,4 +17,4 @@ Notes:
 
 ---
 
-Use the provided request examples to test upload/list/verify flows in Swagger UI.
+Use the provided request examples to test upload/list/verify flows in Swagger UI. -->

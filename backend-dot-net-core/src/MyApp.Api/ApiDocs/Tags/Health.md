@@ -1,7 +1,7 @@
 # Health
 
 Simple health check endpoint used by monitoring.
-
+<!-- 
 - **Controller:** `HealthController`
 - **Authentication:** Public
 - **Endpoints included:**
@@ -12,4 +12,4 @@ Notes:
 
 ---
 
-Useful for readiness and liveness probes.
+Useful for readiness and liveness probes. -->

@@ -1,7 +1,7 @@
 # Files
 
 File endpoints for uploading, listing, downloading, and managing files.
-
+<!-- 
 - **Controller:** `FilesController`
 - **Authentication:** Bearer token required for protected endpoints (uploads/deletes/updates)
 - **Endpoints included:**
@@ -19,4 +19,4 @@ Notes:
 
 ---
 
-Use the operations in Swagger UI to test upload and download flows.
+Use the operations in Swagger UI to test upload and download flows. -->

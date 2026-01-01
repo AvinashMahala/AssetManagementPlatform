@@ -1,7 +1,7 @@
 # Expenses
 
 Endpoints for managing expense records.
-
+<!-- 
 - **Controller:** `ExpensesController`
 - **Authentication:** Bearer token required
 - **Endpoints included:**
@@ -16,4 +16,4 @@ Notes:
 
 ---
 
-Use the operations in Swagger UI to test create/update/delete flows.
+Use the operations in Swagger UI to test create/update/delete flows. -->

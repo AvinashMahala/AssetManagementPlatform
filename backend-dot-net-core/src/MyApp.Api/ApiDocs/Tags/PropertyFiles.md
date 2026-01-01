@@ -1,7 +1,7 @@
 # PropertyFiles
 
 Property file endpoints for uploading, listing, downloading, and managing property-scoped files.
-
+<!-- 
 - **Controller:** `PropertyFilesController`
 - **Authentication:** Bearer token required (endpoints are typically protected)
 - **Endpoints included:**
@@ -18,4 +18,4 @@ Notes:
 
 ---
 
-Use these operation examples in Swagger UI to test upload and download flows.
+Use these operation examples in Swagger UI to test upload and download flows. -->

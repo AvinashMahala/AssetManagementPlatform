@@ -1,7 +1,7 @@
 # UnitTenants
 
 Endpoints for managing tenant assignments to units.
-
+<!-- 
 - **Controller:** `UnitTenantsController`
 - **Authentication:** Bearer token required (endpoints are typically protected)
 
@@ -19,4 +19,4 @@ Endpoints for managing tenant assignments to units.
 
 ---
 
-Use the operation examples in Swagger UI to test assignment, update, and removal flows.
+Use the operation examples in Swagger UI to test assignment, update, and removal flows. -->
