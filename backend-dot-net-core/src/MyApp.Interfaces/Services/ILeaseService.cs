@@ -12,4 +12,5 @@ public partial interface ILeaseService
     Task CreateLeaseAsync(Lease lease);
     Task UpdateLeaseAsync(Guid id, Lease lease);
     Task TerminateLeaseAsync(Guid id, DateTime endDate);
-}
+    Task<bool> DeleteLeaseAsync(Guid id);
+} 

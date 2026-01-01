@@ -101,7 +101,8 @@ public class LeasesController(ILeaseService service) : ControllerBase
     [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteLeaseAsync(id);
+        var ok = await _service.DeleteLeaseAsync(id);
+        if (!ok) return NotFound();
         return NoContent();
     }
 }

@@ -11,4 +11,5 @@ public partial interface ILeaseRepository
     Task<Lease?> GetByIdAsync(Guid id);
     Task AddAsync(Lease lease);
     Task UpdateAsync(Lease lease);
-}
+    Task<bool> DeleteAsync(Guid id);
+} 

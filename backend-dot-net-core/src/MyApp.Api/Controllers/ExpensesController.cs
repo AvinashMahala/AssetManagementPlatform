@@ -45,18 +45,6 @@ public class ExpensesController : ControllerBase
         return Ok(new { success = true, data = e });
     }
 
-    /// <summary>
-    /// Gets an expense by id.
-    /// </summary>
-    /// <param name="id">Expense id.</param>
-    /// <returns>200 OK with expense; 404 Not Found if missing.</returns>
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id)
-    {
-        var e = await _service.GetByIdAsync(id);
-        if (e is null) return NotFound(new { success = false, message = "Expense not found" });
-        return Ok(new { success = true, data = e });
-    }
 
     /// <summary>
     /// Creates a new expense.

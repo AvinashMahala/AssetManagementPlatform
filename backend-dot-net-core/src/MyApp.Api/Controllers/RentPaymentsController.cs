@@ -54,37 +54,6 @@ public class RentPaymentsController(IRentPaymentService service) : ControllerBas
         return Ok(await _service.ListByTenantAsync(tid));
     }
 
-    /// <summary>
-    /// Lists rent payments for a specific lease.
-    /// </summary>
-    /// <param name="leaseId">Lease id.</param>
-    /// <returns>200 OK with list of payments for the lease.</returns>
-    [HttpGet("lease/{leaseId}")]
-    public async Task<IActionResult> GetByLease(Guid leaseId) => Ok(await _service.ListByLeaseAsync(leaseId));
-
-    /// <summary>
-    /// Lists rent payments for a given property.
-    /// </summary>
-    /// <param name="propertyId">Property id (GUID string).</param>
-    /// <returns>200 OK with list of payments for the property; 400 Bad Request on invalid id.</returns>
-    [HttpGet("property/{propertyId}")]
-    public async Task<IActionResult> GetByProperty(string propertyId)
-    {
-        if (!Guid.TryParse(propertyId, out var pid)) return BadRequest("Invalid propertyId");
-        return Ok(await _service.ListByPropertyAsync(pid));
-    }
-
-    /// <summary>
-    /// Lists rent payments for a tenant.
-    /// </summary>
-    /// <param name="tenantId">Tenant id (GUID string).</param>
-    /// <returns>200 OK with list of payments for the tenant; 400 Bad Request on invalid id.</returns>
-    [HttpGet("tenant/{tenantId}")]
-    public async Task<IActionResult> GetByTenant(string tenantId)
-    {
-        if (!Guid.TryParse(tenantId, out var tid)) return BadRequest("Invalid tenantId");
-        return Ok(await _service.ListByTenantAsync(tid));
-    }
 
     /// <summary>
     /// Gets a rent payment by id.

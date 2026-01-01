@@ -31,4 +31,13 @@ public class LeaseRepository : ILeaseRepository
         _db.Leases.Update(lease);
         await _db.SaveChangesAsync();
     }
-}
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var lease = await _db.Leases.FindAsync(id);
+        if (lease is null) return false;
+        _db.Leases.Remove(lease);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+} 

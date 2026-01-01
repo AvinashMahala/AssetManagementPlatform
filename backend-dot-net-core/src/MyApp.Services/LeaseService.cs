@@ -61,4 +61,6 @@ public class LeaseService(ILeaseRepository repo) : ILeaseService
         lease.EndDate = endDate;
         await _repo.UpdateAsync(lease);
     }
-}
+
+    public Task<bool> DeleteLeaseAsync(Guid id) => _repo.DeleteAsync(id);
+} 
