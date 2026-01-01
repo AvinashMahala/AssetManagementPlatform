@@ -1,4 +1,4 @@
--- 028_session_jtis.sql
+-- 029_session_jtis.sql
 -- Adds persistent storage for access token JTIs (JTI allowlist fallback to DB).
 
 CREATE TABLE IF NOT EXISTS session_jtis (

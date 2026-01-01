@@ -1,4 +1,4 @@
--- 027_session_tokens.sql
+-- 028_session_tokens.sql
 -- Adds a per-device/session-backed refresh token store.
 -- Postgres-friendly SQL that should work with the project's DB setup.
 

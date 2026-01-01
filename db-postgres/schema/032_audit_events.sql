@@ -1,4 +1,4 @@
--- 031_audit_events.sql
+-- 032_audit_events.sql
 -- Table for audit/event logging
 
 CREATE TABLE IF NOT EXISTS audit_events (

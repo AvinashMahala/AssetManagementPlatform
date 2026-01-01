@@ -1,4 +1,4 @@
--- 030_permissions.sql
+-- 031_permissions.sql
 -- Tables for permissions and categories (RBAC)
 
 CREATE TABLE IF NOT EXISTS permission_categories (

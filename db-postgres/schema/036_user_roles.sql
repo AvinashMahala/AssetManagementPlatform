@@ -1,4 +1,4 @@
--- 033_user_roles.sql
+-- 036_user_roles.sql
 -- Join table for users -> roles assignment
 
 CREATE TABLE IF NOT EXISTS user_roles (

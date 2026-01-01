@@ -1,4 +1,4 @@
--- 032_roles.sql
+-- 034_roles.sql
 -- Add roles table used by RBAC system
 
 CREATE TABLE IF NOT EXISTS roles (

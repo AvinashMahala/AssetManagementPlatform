@@ -1,4 +1,4 @@
--- 029_export_tokens.sql
+-- 030_export_tokens.sql
 -- Table for pre-signed export tokens
 
 CREATE TABLE IF NOT EXISTS export_tokens (
