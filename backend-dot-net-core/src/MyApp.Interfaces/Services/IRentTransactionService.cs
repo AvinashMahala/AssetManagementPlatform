@@ -16,4 +16,7 @@ public partial interface IRentTransactionService
     Task<RentTransaction> CreateAsync(RentTransaction t);
     Task UpdateAsync(RentTransaction t);
     Task DeleteAsync(Guid id);
+
+    // Get last meter readings (latest reading per meter) for a unit
+    Task<IEnumerable<MyApp.Models.LastMeterReading>> GetLastMeterReadingsByUnitAsync(Guid unitId);
 }

@@ -27,4 +27,21 @@ public class UnitUtilitiesIntegrationTests : IClassFixture<WebApplicationFactory
         var toggleResp = await client.PatchAsync($"/api/v1/unitutilities/{created!.Id}/toggle", null);
         Assert.Equal(System.Net.HttpStatusCode.NoContent, toggleResp.StatusCode);
     }
+
+    [Fact]
+    public async Task List_FilterByUnitId_ReturnsCreated()
+    {
+        var client = _factory.CreateClient();
+        var unitId = Guid.NewGuid();
+        var u = new UnitUtility { UnitId = unitId, UtilityType = "electricity" };
+        var createResp = await client.PostAsJsonAsync("/api/v1/unitutilities", u);
+        createResp.EnsureSuccessStatusCode();
+        var created = await createResp.Content.ReadFromJsonAsync<UnitUtility>();
+        Assert.NotNull(created);
+
+        var listResp = await client.GetAsync($"/api/v1/unit-utilities?unitId={unitId}");
+        listResp.EnsureSuccessStatusCode();
+        var list = await listResp.Content.ReadFromJsonAsync<UnitUtility[]>();
+        Assert.Contains(list, x => x.Id == created!.Id);
+    }
 }

@@ -13,6 +13,8 @@ export const UnitDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: analytics, loading, error } = useUnitAnalytics(id!);
+  // Evaluate RBAC permissions unconditionally to preserve Hooks order
+  const canCreateMeters = useCan('meters:meter:create');
 
   if (loading) {
     return (
@@ -32,7 +34,39 @@ export const UnitDashboardPage: React.FC = () => {
     );
   }
 
-  const { unit, financialSummary, occupancyAnalytics, paymentHistory, utilityAnalytics, currentTenants } = analytics;
+  const {
+    unit,
+    financialSummary = {
+      monthlyRent: 0,
+      securityDeposit: 0,
+      maintenanceCharges: 0,
+      totalMonthlyCharges: 0
+    },
+    occupancyAnalytics = {
+      currentStatus: 'unknown',
+      occupancyStatus: 'vacant',
+      tenantCount: 0,
+      maxOccupants: 1,
+      hasActiveLease: false
+    },
+    paymentHistory = {
+      totalPayments: 0,
+      totalAmount: 0,
+      onTimePayments: 0,
+      latePayments: 0,
+      averagePaymentTime: 0,
+      recentPayments: [],
+      paymentTrends: []
+    },
+    utilityAnalytics = {
+      hasMeters: false,
+      meters: [],
+      totalCosts: { monthly: 0 },
+      consumptionTrends: [],
+      efficiency: null
+    },
+    currentTenants = []
+  } = analytics;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -57,8 +91,8 @@ export const UnitDashboardPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Unit {unit.unitNumber} Dashboard</h1>
-          <p className="mt-2 text-gray-600">{unit.unitName || 'Unit Analytics & Insights'}</p>
+          <h1 className="text-3xl font-bold text-gray-900">Unit {unit?.unitNumber || 'Unknown'} Dashboard</h1>
+          <p className="mt-2 text-gray-600">{unit?.unitName || 'Unit Analytics & Insights'}</p>
         </div>
         <div className="flex gap-3">
           <Button
@@ -266,15 +300,17 @@ export const UnitDashboardPage: React.FC = () => {
           <h2 className="text-xl font-semibold">Utility Consumption</h2>
           <div className="flex gap-3">
             <Button
-              onClick={() => navigate(`/leases/create-tabbed?propertyId=${unit.propertyId}&unitId=${id}`)}
+              onClick={() => navigate(`/leases/create-tabbed?propertyId=${unit?.propertyId || ''}&unitId=${id}`)}
               className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={!unit?.propertyId}
             >
               Create Lease
             </Button>
-            {useCan('meters:meter:create') && (
+            {canCreateMeters && (
               <Button
-                onClick={() => navigate(`/meters/create?propertyId=${unit.propertyId}&unitId=${id}`)}
+                onClick={() => navigate(`/meters/create?propertyId=${unit?.propertyId || ''}&unitId=${id}`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={!unit?.propertyId}
               >
                 Add Meter
               </Button>

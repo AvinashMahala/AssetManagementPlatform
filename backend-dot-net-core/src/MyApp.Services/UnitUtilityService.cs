@@ -23,6 +23,9 @@ public class UnitUtilityService(IUnitUtilityRepository repo) : IUnitUtilityServi
     /// </summary>
     public Task<IEnumerable<UnitUtility>> ListAsync() => _repo.ListAsync();
 
+    public Task<IEnumerable<UnitUtility>> ListByUnitAsync(Guid unitId) => _repo.ListByUnitAsync(unitId);
+
+
     /// <summary>
     /// Creates a unit utility entry.
     /// </summary>

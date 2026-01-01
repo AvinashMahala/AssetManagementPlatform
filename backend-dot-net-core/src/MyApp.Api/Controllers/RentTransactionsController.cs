@@ -73,6 +73,17 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     }
 
     /// <summary>
+    /// Gets last meter readings for a unit (one entry per meter attached to the unit).
+    /// </summary>
+    /// <param name="unitId">Unit id (GUID string).</param>
+    [HttpGet("unit/{unitId}/last-meter-readings")]
+    public async Task<IActionResult> GetLastMeterReadings(string unitId)
+    {
+        if (!Guid.TryParse(unitId, out var uid)) return BadRequest("Invalid unitId");
+        return Ok(await _service.GetLastMeterReadingsByUnitAsync(uid));
+    }
+
+    /// <summary>
     /// Gets a transaction by id.
     /// </summary>
     /// <param name="id">Transaction id.</param>

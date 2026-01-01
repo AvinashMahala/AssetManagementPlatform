@@ -15,17 +15,21 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/unitutilities")]
+[Route("api/v{version:apiVersion}/unit-utilities")]
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBase
 {
     private readonly IUnitUtilityService _service = service;
 
   /// <summary>
-  /// Lists unit utilities.
+  /// Lists unit utilities. Supports optional query parameters `unitId` or `propertyId`.
   /// </summary>
-  /// <returns>200 OK with list of unit utilities.</returns>
   [HttpGet]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List([FromQuery] Guid? unitId)
+    {
+        if (unitId.HasValue) return Ok(await _service.ListByUnitAsync(unitId.Value));
+        return Ok(await _service.ListAsync());
+    }
 
     /// <summary>
     /// Gets a unit utility by id.

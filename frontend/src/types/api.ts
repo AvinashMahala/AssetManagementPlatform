@@ -36,6 +36,13 @@ export interface RequestConfig extends Omit<RequestInit, 'body' | 'headers'> {
   params?: Record<string, unknown>;
   data?: unknown;
   headers?: Record<string, string>;
+  /**
+   * When true, treat HTTP 404 responses as non-errors and return `fallback` instead of logging an API error.
+   * Useful for optional endpoints where missing resources are expected.
+   */
+  ignore404?: boolean;
+  /** Fallback value to return when `ignore404` is true and a 404 occurs */
+  fallback?: unknown;
 }
 
 // HTTP methods

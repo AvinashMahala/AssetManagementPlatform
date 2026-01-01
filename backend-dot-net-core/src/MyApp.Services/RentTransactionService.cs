@@ -16,12 +16,16 @@ public class RentTransactionService : IRentTransactionService
     private readonly IRentTransactionRepository _repo;
     private readonly IEventBus _events;
     private readonly IServiceScopeFactory _scopes;
+    private readonly IMeterRepository _meterRepo;
+    private readonly IMeterReadingRepository _readingRepo;
 
-    public RentTransactionService(IRentTransactionRepository repo, IEventBus events, IServiceScopeFactory scopes)
+    public RentTransactionService(IRentTransactionRepository repo, IEventBus events, IServiceScopeFactory scopes, IMeterRepository meterRepo, IMeterReadingRepository readingRepo)
     {
         _repo = repo;
         _events = events;
         _scopes = scopes;
+        _meterRepo = meterRepo ?? throw new ArgumentNullException(nameof(meterRepo));
+        _readingRepo = readingRepo ?? throw new ArgumentNullException(nameof(readingRepo));
 
         // Subscribe to payment created events to create transactions using a scoped resolver
         _events.Subscribe<RentPaymentCreatedEvent>(async evt =>
@@ -90,6 +94,32 @@ public class RentTransactionService : IRentTransactionService
     /// Deletes a transaction by id.
     /// </summary>
     public Task DeleteAsync(Guid id) => _repo.DeleteAsync(id);
+
+    /// <summary>
+    /// Gets last meter readings for a unit (one entry per meter attached to the unit).
+    /// </summary>
+    public async Task<IEnumerable<LastMeterReading>> GetLastMeterReadingsByUnitAsync(Guid unitId)
+    {
+        var meters = await _meterRepo.ListByUnitAsync(unitId);
+        var result = new List<LastMeterReading>();
+        foreach (var m in meters)
+        {
+            var readings = await _readingRepo.ListByMeterAsync(m.Id);
+            var last = readings == null ? null : System.Linq.Enumerable.OrderByDescending(readings, r => r.ReadingDate).FirstOrDefault();
+            result.Add(new LastMeterReading
+            {
+                MeterId = m.Id,
+                MeterName = m.MeterName,
+                MeterType = m.MeterType,
+                MeterNumber = m.MeterNumber,
+                LastReading = last?.CurrentReading,
+                ReadingDate = last?.ReadingDate,
+                CostPerUnit = m.CostPerUnit,
+                FixedCharge = m.FixedCharge
+            });
+        }
+        return result;
+    }
 
 }
 

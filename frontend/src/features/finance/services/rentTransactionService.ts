@@ -108,7 +108,8 @@ class RentTransactionService {
     costPerUnit: number;
     fixedCharge: number;
   }[]>> {
-    return apiClient.get<any[]>(`/api/v1/renttransactions/unit/${unitId}/last-meter-readings`);
+    // Some installations may not have meter readings endpoint; ignore 404 and return empty
+    return apiClient.get<any[]>(`/api/v1/renttransactions/unit/${unitId}/last-meter-readings`, { ignore404: true, fallback: [] });
   }
 
   /**

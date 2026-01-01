@@ -14,7 +14,8 @@ class UnitUtilityService {
       url += `?${params.toString()}`;
     }
 
-    return apiClient.get<UnitUtility[]>(url);
+    // Tell apiClient to ignore 404s and return an empty list
+    return apiClient.get<UnitUtility[]>(url, { ignore404: true, fallback: [] });
   }
 
   async getById(id: string): Promise<ApiResponse<UnitUtility>> {

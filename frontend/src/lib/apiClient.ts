@@ -182,6 +182,23 @@ class ApiClient {
       const result = await this.handleResponse<T>(response);
 
       // Log response
+      // If the caller explicitly wanted 404s to be treated as non-errors, handle it here
+      if (!result.success && config?.ignore404 && result.error && String(result.error.code).toUpperCase().startsWith('HTTP_404')) {
+        logger.info(`API Not Found (ignored): ${method} ${endpoint}`, {
+          status: response.status,
+          requestId: result.requestId,
+        });
+        // Mark perf as ended successfully (endpoint intentionally missing)
+        perfLogger.end({ status: response.status });
+
+        return {
+          success: true,
+          data: (config as any).fallback as T,
+          message: undefined,
+          requestId: result.requestId,
+        } as ApiResponse<T>;
+      }
+
       if (result.success) {
         logger.info(`API Success: ${method} ${endpoint}`, {
           status: response.status,
@@ -199,7 +216,7 @@ class ApiClient {
           { status: response.status, error: result.error }
         );
       }
-      
+
       return result;
     } catch (_error) {
       clearTimeout(timeoutId);

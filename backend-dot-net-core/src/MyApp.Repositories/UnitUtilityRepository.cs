@@ -16,6 +16,8 @@ public class UnitUtilityRepository : IUnitUtilityRepository
 
     public async Task<IEnumerable<UnitUtility>> ListAsync() => await _db.Set<UnitUtility>().ToListAsync();
 
+    public async Task<IEnumerable<UnitUtility>> ListByUnitAsync(Guid unitId) => await _db.Set<UnitUtility>().Where(u => u.UnitId == unitId).ToListAsync();
+
     public Task<UnitUtility?> GetByIdAsync(Guid id) => _db.Set<UnitUtility>().FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task AddAsync(UnitUtility u)

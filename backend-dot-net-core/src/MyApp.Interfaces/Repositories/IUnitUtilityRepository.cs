@@ -8,6 +8,7 @@ namespace MyApp.Interfaces;
 public interface IUnitUtilityRepository
 {
     Task<IEnumerable<UnitUtility>> ListAsync();
+    Task<IEnumerable<UnitUtility>> ListByUnitAsync(Guid unitId);
     Task<UnitUtility?> GetByIdAsync(Guid id);
     Task AddAsync(UnitUtility u);
     Task UpdateAsync(UnitUtility u);
