@@ -14,6 +14,7 @@ export const expensesRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.EXPENSES,
     element: <ExpenseListPageEnhanced />,
     isProtected: true,
+    requiredPermission: 'expenses:expense:view'
   },
   {
     path: ROUTE_PATHS.EXPENSES_CREATE,
@@ -24,15 +25,18 @@ export const expensesRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.EXPENSES_CREATE_TABBED,
     element: <ExpenseCreatePageTabbedEnhanced />,
     isProtected: true,
+    requiredPermission: 'expenses:expense:create'
   },
   {
     path: ROUTE_PATHS.EXPENSE_DETAIL,
     element: <ExpenseDetailPage />,
     isProtected: true,
+    requiredPermission: 'expenses:expense:view'
   },
   {
     path: ROUTE_PATHS.EXPENSE_EDIT,
     element: <ExpenseEditPage />,
     isProtected: true,
+    requiredPermission: 'expenses:expense:update'
   },
 ];

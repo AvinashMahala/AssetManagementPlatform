@@ -17,6 +17,14 @@ namespace MyApp.Api.Controllers;
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class BulkOperationsController : ControllerBase
 {
+    // Permission constants for bulk operations
+    public const string _rentCollectionPerm = "bulk:rent-collection:execute";
+    public const string _paymentsPerm = "bulk:payments:execute";
+    public const string _receiptsPerm = "bulk:receipts:execute";
+    public const string _communicationPerm = "bulk:communication:execute";
+    public const string _exportPerm = "bulk:export:execute";
+    public const string _validatePerm = "bulk:validate-receipts:view";
+
     private readonly IBulkOperationsService _service;
 
     /// <summary>
@@ -31,6 +39,7 @@ public class BulkOperationsController : ControllerBase
     /// <param name="request">Bulk rent collection request payload.</param>
     /// <returns>200 OK on full success, 207 Multi-Status when some items failed, 500 on full failure.</returns>
     [HttpPost("rent-collection")]
+    [MyApp.Api.Authorization.AuthorizePermission(_rentCollectionPerm)]
     public async Task<IActionResult> RentCollection([FromBody] MyApp.Api.Requests.BulkRentCollectionRequest request)
     {
         var result = await _service.BulkRentCollectionAsync(request.UnitIds, request.BillingPeriodStart, request.BillingPeriodEnd, request.ApplyExpenses, request.ExpenseIds, request.SkipUnitsWithExistingTransactions);
@@ -45,6 +54,7 @@ public class BulkOperationsController : ControllerBase
     /// <param name="request">Bulk payments request payload.</param>
     /// <returns>200 OK with processing result; 207 or 500 depending on partial/full failures.</returns>
     [HttpPost("payments")]
+    [MyApp.Api.Authorization.AuthorizePermission(_paymentsPerm)]
     public async Task<IActionResult> Payments([FromBody] MyApp.Api.Requests.BulkPaymentsRequest request)
     {
         var result = await _service.BulkPaymentsAsync(request.TransactionIds, request.Amount, request.PaymentMethod, request.PaymentDate, request.PaymentReference);
@@ -59,6 +69,7 @@ public class BulkOperationsController : ControllerBase
     /// <param name="body">A JSON object containing transactionIds (array of GUID strings) and optional regenerateExisting flag.</param>
     /// <returns>200 OK with operation result.</returns>
     [HttpPost("receipts")]
+    [MyApp.Api.Authorization.AuthorizePermission(_receiptsPerm)]
     public async Task<IActionResult> Receipts([FromBody] dynamic body)
     {
         var txIds = ((IEnumerable<string>)body.transactionIds).Select(Guid.Parse);
@@ -73,6 +84,7 @@ public class BulkOperationsController : ControllerBase
     /// <param name="body">A JSON object with tenantIds, subject, message, channels and optional attachments.</param>
     /// <returns>200 OK with operation result.</returns>
     [HttpPost("communication")]
+    [MyApp.Api.Authorization.AuthorizePermission(_communicationPerm)]
     public async Task<IActionResult> Communication([FromBody] dynamic body)
     {
         var tenantIds = ((IEnumerable<string>)body.tenantIds).Select(Guid.Parse);
@@ -90,6 +102,7 @@ public class BulkOperationsController : ControllerBase
     /// <param name="body">A JSON object containing exportType and optional options dictionary.</param>
     /// <returns>200 OK with export result.</returns>
     [HttpPost("export")]
+    [MyApp.Api.Authorization.AuthorizePermission(_exportPerm)]
     public async Task<IActionResult> Export([FromBody] dynamic body)
     {
         var exportType = (string)body.exportType;
@@ -113,6 +126,7 @@ public class BulkOperationsController : ControllerBase
     /// <param name="propertyId">Optional property id to scope validation.</param>
     /// <returns>200 OK with validation results.</returns>
     [HttpGet("validate-receipts")]
+    [MyApp.Api.Authorization.AuthorizePermission(_validatePerm)]
     public async Task<IActionResult> ValidateReceipts([FromQuery] Guid? propertyId)
     {
         var r = await _service.ValidateReceiptsAsync(propertyId);

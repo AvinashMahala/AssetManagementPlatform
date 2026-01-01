@@ -7,6 +7,7 @@ import fileService from '@/features/files/services/fileService';
 import type { FileMetadata } from '@/features/files/types';
 import type { FileTableProps } from './FileTable.types';
 import './FileTable.scss';
+import { useCan } from '@/contexts/RBACContext';
 
 export const FileTable: React.FC<FileTableProps> = ({
   files,
@@ -17,6 +18,9 @@ export const FileTable: React.FC<FileTableProps> = ({
   filters,
   onUploadClick
 }) => {
+  const canDownload = useCan('files:file:download');
+  const canDelete = useCan('files:file:delete');
+  const canUpload = useCan('files:file:upload');
   const getFileIcon = (file: FileMetadata) => {
     if (file.mimeType.startsWith('image/')) return <Image className="h-6 w-6 text-blue-500" />;
     if (file.mimeType.startsWith('video/')) return <FileVideo className="h-6 w-6 text-purple-500" />;
@@ -129,24 +133,28 @@ export const FileTable: React.FC<FileTableProps> = ({
               </TableCell>
               <TableCell className="actions-cell px-2 py-1 text-xs">
                 <div className="flex space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
-                    className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900"
-                    title="Download"
-                  >
-                    <Download className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDeleteFile(file.id)}
-                    className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900"
-                    title="Delete"
-                  >
-                    <Trash2 className="h-3 w-3 text-red-600" />
-                  </Button>
+                  {canDownload && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
+                      className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900"
+                      title="Download"
+                    >
+                      <Download className="h-3 w-3" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteFile(file.id)}
+                      className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3 w-3 text-red-600" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
@@ -163,10 +171,12 @@ export const FileTable: React.FC<FileTableProps> = ({
               'Try adjusting your filters or upload some files.' :
               'Upload your first file to get started.'}
           </p>
-          <Button onClick={onUploadClick}>
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Files
-          </Button>
+          {canUpload && (
+            <Button onClick={onUploadClick}>
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Files
+            </Button>
+          )}
         </div>
       )}
     </div>

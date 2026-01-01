@@ -15,25 +15,30 @@ export const leasesRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.LEASES,
     element: <LeaseListPageEnhanced />,
     isProtected: true,
+    requiredPermission: 'leases:lease:view'
   },
   {
     path: ROUTE_PATHS.LEASES_CREATE,
     element: <Navigate to={ROUTE_PATHS.LEASES_CREATE_TABBED} replace />,
     isProtected: true,
+    requiredPermission: 'leases:lease:create'
   },
   {
     path: ROUTE_PATHS.LEASES_CREATE_TABBED,
     element: <LeaseCreatePageTabbedEnhanced />,
     isProtected: true,
+    requiredPermission: 'leases:lease:create'
   },
   {
     path: ROUTE_PATHS.LEASE_DETAIL,
     element: <AppLayout><LeaseDetailPage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'leases:lease:view'
   },
   {
     path: ROUTE_PATHS.LEASE_EDIT,
     element: <LeaseEditPage />,
     isProtected: true,
+    requiredPermission: 'leases:lease:update'
   },
 ];

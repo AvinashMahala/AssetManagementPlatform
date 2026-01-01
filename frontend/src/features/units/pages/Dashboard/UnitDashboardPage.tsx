@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUnitAnalytics } from '@/features/units/hooks/useUnits';
+import { useCan } from '@/contexts/RBACContext';
 import { Card } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { RevenueTrendChart } from '@/componentDesignLibrary';
@@ -270,12 +271,14 @@ export const UnitDashboardPage: React.FC = () => {
             >
               Create Lease
             </Button>
-            <Button
-              onClick={() => navigate(`/meters/create?propertyId=${unit.propertyId}&unitId=${id}`)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Add Meter
-            </Button>
+            {useCan('meters:meter:create') && (
+              <Button
+                onClick={() => navigate(`/meters/create?propertyId=${unit.propertyId}&unitId=${id}`)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Add Meter
+              </Button>
+            )}
           </div>
         </div>
         

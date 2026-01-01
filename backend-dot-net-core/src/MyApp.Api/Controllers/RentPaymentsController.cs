@@ -19,6 +19,11 @@ namespace MyApp.Api.Controllers;
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class RentPaymentsController(IRentPaymentService service) : ControllerBase
 {
+    public const string _viewPerm = "payments:payment:view";
+    public const string _createPerm = "payments:payment:create";
+    public const string _updatePerm = "payments:payment:update";
+    public const string _deletePerm = "payments:payment:delete";
+
     private readonly IRentPaymentService _service = service;
 
   /// <summary>
@@ -26,7 +31,28 @@ public class RentPaymentsController(IRentPaymentService service) : ControllerBas
   /// </summary>
   /// <returns>200 OK with list of rent payments.</returns>
   [HttpGet]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+
+    [HttpGet("lease/{leaseId}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> GetByLease(Guid leaseId) => Ok(await _service.ListByLeaseAsync(leaseId));
+
+    [HttpGet("property/{propertyId}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> GetByProperty(string propertyId)
+    {
+        if (!Guid.TryParse(propertyId, out var pid)) return BadRequest("Invalid propertyId");
+        return Ok(await _service.ListByPropertyAsync(pid));
+    }
+
+    [HttpGet("tenant/{tenantId}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> GetByTenant(string tenantId)
+    {
+        if (!Guid.TryParse(tenantId, out var tid)) return BadRequest("Invalid tenantId");
+        return Ok(await _service.ListByTenantAsync(tid));
+    }
 
     /// <summary>
     /// Lists rent payments for a specific lease.
@@ -66,6 +92,7 @@ public class RentPaymentsController(IRentPaymentService service) : ControllerBas
     /// <param name="id">Payment id.</param>
     /// <returns>200 OK with payment; 404 Not Found if missing.</returns>
     [HttpGet("{id}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
         var p = await _service.GetByIdAsync(id);
@@ -79,6 +106,7 @@ public class RentPaymentsController(IRentPaymentService service) : ControllerBas
     /// <param name="request">Rent payment payload.</param>
     /// <returns>201 Created with created payment.</returns>
     [HttpPost]
+    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
     public async Task<IActionResult> Create([FromBody] RentPayment request)
     {
         var created = await _service.CreateAsync(request);
@@ -92,6 +120,7 @@ public class RentPaymentsController(IRentPaymentService service) : ControllerBas
     /// <param name="payload">Updated payment payload.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] RentPayment payload)
     {
         payload.Id = id;
@@ -105,6 +134,7 @@ public class RentPaymentsController(IRentPaymentService service) : ControllerBas
     /// <param name="id">Payment id.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _service.DeleteAsync(id);

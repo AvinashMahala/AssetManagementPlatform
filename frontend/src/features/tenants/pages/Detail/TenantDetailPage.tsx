@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTenant, useDeleteTenant } from '@/features/tenants/hooks/useTenants';
 import navigateBackOrFallback from '@/utils/navigation';
 import { Button } from '@/componentDesignLibrary';
+import { useCan } from '@/contexts/RBACContext';
 import { Card } from '@/componentDesignLibrary';
 import { ReceiptList } from '@/features/finance/components/receipts';
 import { getErrorMessage } from '@/types/api';
@@ -12,6 +13,8 @@ const TenantDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: tenant, loading, error } = useTenant(id!);
   const { mutate: deleteTenant, loading: deleteLoading } = useDeleteTenant();
+  const canUpdate = useCan('tenants:tenant:update');
+  const canDelete = useCan('tenants:tenant:delete');
 
   const handleDelete = async () => {
     if (!tenant) return;
@@ -65,10 +68,8 @@ const TenantDetailPage: React.FC = () => {
             Back to List
           </Button>
           <Button onClick={() => navigate(`/tenants/${id}/dashboard`)}>View Dashboard</Button>
-          <Button onClick={() => navigate(`/tenants/${id}/edit`)}>Edit</Button>
-          <Button variant="destructive" onClick={handleDelete} loading={deleteLoading}>
-            Delete
-          </Button>
+          {canUpdate && <Button onClick={() => navigate(`/tenants/${id}/edit`)}>Edit</Button>}
+          {canDelete && <Button variant="destructive" onClick={handleDelete} loading={deleteLoading}>Delete</Button>}
         </div>
       </div>
 

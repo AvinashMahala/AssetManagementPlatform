@@ -14,10 +14,22 @@ namespace MyApp.Api.Controllers.Admin;
 [Authorize]
 public class RolesController(IRoleAdminService svc, ILogger<RolesController> logger) : ControllerBase
 {
+    // Permission constants
+    public const string _viewPerm = "admin:roles:view";
+    public const string _createPerm = "admin:roles:create";
+    public const string _updatePerm = "admin:roles:update";
+    public const string _deletePerm = "admin:roles:delete";
+    public const string _setPermissionsPerm = "admin:roles:set_permissions";
+    public const string _assignUserPerm = "admin:roles:assign_user";
+    public const string _exportPerm = "admin:roles:export";
+    public const string _searchUsersPerm = "admin:roles:search_users";
+    public const string _removeUserPerm = "admin:roles:remove_user";
+
     private readonly IRoleAdminService _svc = svc;
     private readonly ILogger<RolesController> _logger = logger;
 
     [HttpGet]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List([FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
@@ -42,6 +54,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpGet("permissions")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Permissions()
     {
         // Return permissions with category metadata
@@ -68,6 +81,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpGet("users")]
+    [MyApp.Api.Authorization.AuthorizePermission(_searchUsersPerm)]
     public async Task<IActionResult> SearchUsers([FromQuery] string? q)
     {
         var users = await _svc.SearchUsersAsync(q);
@@ -76,6 +90,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpPost]
+    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
     public async Task<IActionResult> Create([FromBody] CreateRoleRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Name)) return BadRequest(new { error = "Name is required" });
@@ -86,6 +101,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpGet("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
         var r = await _svc.GetByIdAsync(id);
@@ -102,6 +118,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpPut("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateRoleRequest req)
     {
         await _svc.UpdateRoleAsync(id, req.Name, req.Description);
@@ -111,6 +128,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpDelete("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _svc.DeleteRoleAsync(id);
@@ -120,6 +138,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpPost("{id:guid}/permissions")]
+    [MyApp.Api.Authorization.AuthorizePermission(_setPermissionsPerm)]
     public async Task<IActionResult> SetPermissions(Guid id, [FromBody] Guid[] permissionIds)
     {
         if (permissionIds == null) return BadRequest(new { error = "permissionIds is required" });
@@ -146,6 +165,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpPost("{id:guid}/users")]
+    [MyApp.Api.Authorization.AuthorizePermission(_assignUserPerm)]
     public async Task<IActionResult> AssignUser(Guid id, [FromBody] AssignUserRequest req)
     {
         await _svc.AssignUserToRoleAsync(id, req.UserId);
@@ -155,6 +175,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpGet("export")]
+    [MyApp.Api.Authorization.AuthorizePermission(_exportPerm)]
     public async Task<IActionResult> Export([FromQuery] string? ids = null, [FromQuery] string? q = null)
     {
         // ids: comma separated list of GUIDs (optional), q: search query (optional)
@@ -210,6 +231,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpDelete("{id:guid}/users/{userId:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_removeUserPerm)]
     public async Task<IActionResult> RemoveUser(Guid id, Guid userId)
     {
         await _svc.RemoveUserFromRoleAsync(id, userId);

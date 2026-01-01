@@ -7,6 +7,7 @@ import {
 import { useDashboardStats } from '@/features/dashboard/hooks/useDashboardStats';
 import { useActivityItems } from '@/features/dashboard/hooks/useActivityItems';
 import { useChartCarousel } from '@/features/dashboard/hooks/useChartCarousel';
+import { useCan } from '@/contexts/RBACContext';
 import { ActivityCard, StatsSection, AlertsSection } from '../../components';
 const ChartsCarousel = React.lazy(() => import('../../components/ChartsCarousel/ChartsCarousel'));
 import { ErrorBoundary } from '@/componentDesignLibrary';
@@ -18,6 +19,17 @@ const DashboardEnhanced: React.FC = () => {
   const { stats, chartData, loading, error } = useDashboardStats();
   const { activeLeases, pendingPayments } = useActivityItems();
   const { scrollLeft, scrollRight } = useChartCarousel();
+  const canView = useCan('dashboard:dashboard:view');
+
+  if (!canView) {
+    return (
+      <AppLayout title="Dashboard">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-600">You do not have permission to view the dashboard.</div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (error) {
     return (

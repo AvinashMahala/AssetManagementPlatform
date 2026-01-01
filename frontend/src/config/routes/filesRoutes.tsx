@@ -10,5 +10,6 @@ export const filesRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.FILES,
     element: <FilesPage />,
     isProtected: true,
+    requiredPermission: 'files:file:view'
   },
 ];

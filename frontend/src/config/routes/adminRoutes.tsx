@@ -28,7 +28,7 @@ export const adminRoutes: RouteConfig[] = [
       </React.Suspense>
     ),
     isProtected: true,
-    requiredPermission: 'admin:roles:manage',
+    requiredPermission: 'admin:roles:view',
   },
   {
     path: ROUTE_PATHS.ADMIN_ROLE_EDIT,
@@ -38,7 +38,7 @@ export const adminRoutes: RouteConfig[] = [
       </React.Suspense>
     ),
     isProtected: true,
-    requiredPermission: 'admin:roles:manage',
+    requiredPermission: 'admin:roles:update',
   },
   {
     path: ROUTE_PATHS.ADMIN_PERMISSIONS,
@@ -48,7 +48,7 @@ export const adminRoutes: RouteConfig[] = [
       </React.Suspense>
     ),
     isProtected: true,
-    requiredPermission: 'admin:roles:manage',
+    requiredPermission: 'admin:roles:view',
   },
   {
     path: ROUTE_PATHS.ADMIN_USERS,
@@ -58,7 +58,7 @@ export const adminRoutes: RouteConfig[] = [
       </React.Suspense>
     ),
     isProtected: true,
-    requiredPermission: 'admin:roles:manage',
+    requiredPermission: 'admin:roles:search_users',
   },
   {
     path: ROUTE_PATHS.ADMIN_AUDIT,
@@ -68,7 +68,7 @@ export const adminRoutes: RouteConfig[] = [
       </React.Suspense>
     ),
     isProtected: true,
-    requiredPermission: 'admin:roles:manage',
+    requiredPermission: 'admin:roles:view',
   },
   {
     path: ROUTE_PATHS.ADMIN_EXPORTS,
@@ -78,6 +78,6 @@ export const adminRoutes: RouteConfig[] = [
       </React.Suspense>
     ),
     isProtected: true,
-    requiredPermission: 'admin:roles:manage',
+    requiredPermission: 'admin:roles:export',
   },
 ];

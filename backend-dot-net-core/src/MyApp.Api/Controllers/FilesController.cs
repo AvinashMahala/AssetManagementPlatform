@@ -43,6 +43,13 @@ public class FileUploadRequest
 [Route("api/v{version:apiVersion}/files")]
 public class FilesController(IPropertyFileService service) : ControllerBase
 {
+    // Permission constants
+    public const string _viewPerm = "files:file:view";
+    public const string _uploadPerm = "files:file:upload";
+    public const string _downloadPerm = "files:file:download";
+    public const string _updatePerm = "files:file:update";
+    public const string _deletePerm = "files:file:delete";
+
     private readonly IPropertyFileService _service = service;
 
   /// <summary>
@@ -52,7 +59,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
   /// <returns>201 Created with file metadata on success; 400 Bad Request when no file provided.</returns>
   [HttpPost("upload")]
     [Consumes("multipart/form-data")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [MyApp.Api.Authorization.AuthorizePermission(_uploadPerm)]
     public async Task<IActionResult> Upload([FromForm] FileUploadRequest request)
     {
         var file = request.File;
@@ -75,6 +82,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="id">The file id.</param>
     /// <returns>200 OK with metadata; 404 Not Found if not found.</returns>
     [HttpGet("{id:guid}/metadata")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> GetMetadata(Guid id)
     {
         var meta = await _service.GetMetadataAsync(id);
@@ -88,6 +96,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="id">The file id.</param>
     /// <returns>File stream with appropriate content type; 404 Not Found when missing.</returns>
     [HttpGet("{id:guid}/download")]
+    [MyApp.Api.Authorization.AuthorizePermission(_downloadPerm)]
     public async Task<IActionResult> Download(Guid id)
     {
         var meta = await _service.GetMetadataAsync(id);
@@ -103,7 +112,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="id">The file id to delete.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _service.DeleteAsync(id);
@@ -119,7 +128,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="entityId">Optional entity id filter.</param>
     /// <returns>200 OK with paged file list and pagination metadata.</returns>
     [HttpGet]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? entityType = null, [FromQuery] string? entityId = null)
     {
         // validate and sanitize
@@ -153,6 +162,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="entityId">The entity id.</param>
     /// <returns>200 OK with list of files for the entity.</returns>
     [HttpGet("entity/{entityType}/{entityId}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> ListForEntity(string entityType, string entityId)
     {
         var list = await _service.ListForEntityAsync(entityType, entityId);
@@ -166,7 +176,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="body">A JSON body containing metadata fields to update.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> UpdateMetadata(Guid id, [FromBody] object body)
     {
         string? fileName = (body as dynamic)?.fileName;

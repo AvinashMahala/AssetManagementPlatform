@@ -14,6 +14,12 @@ namespace MyApp.Api.Controllers;
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class ExpensesController : ControllerBase
 {
+    // Permission constants
+    public const string _viewPerm = "expenses:expense:view";
+    public const string _createPerm = "expenses:expense:create";
+    public const string _updatePerm = "expenses:expense:update";
+    public const string _deletePerm = "expenses:expense:delete";
+
     private readonly IExpenseService _service;
 
     /// <summary>
@@ -27,7 +33,17 @@ public class ExpensesController : ControllerBase
     /// </summary>
     /// <returns>200 OK with a list of expenses.</returns>
     [HttpGet]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List() => Ok(new { success = true, data = await _service.ListAsync() });
+
+    [HttpGet("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var e = await _service.GetByIdAsync(id);
+        if (e is null) return NotFound(new { success = false, message = "Expense not found" });
+        return Ok(new { success = true, data = e });
+    }
 
     /// <summary>
     /// Gets an expense by id.
@@ -48,6 +64,7 @@ public class ExpensesController : ControllerBase
     /// <param name="req">Expense payload.</param>
     /// <returns>201 Created with the created expense.</returns>
     [HttpPost]
+    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
     public async Task<IActionResult> Create([FromBody] Expense req)
     {
         var created = await _service.CreateAsync(req);
@@ -61,6 +78,7 @@ public class ExpensesController : ControllerBase
     /// <param name="req">Updated expense payload.</param>
     /// <returns>200 OK with updated expense; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] Expense req)
     {
         var updated = await _service.UpdateAsync(id, req);
@@ -74,6 +92,7 @@ public class ExpensesController : ControllerBase
     /// <param name="id">Expense id to delete.</param>
     /// <returns>200 OK on success; 404 Not Found if missing.</returns>
     [HttpDelete("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var ok = await _service.DeleteAsync(id);

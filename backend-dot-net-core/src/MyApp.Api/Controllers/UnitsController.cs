@@ -18,6 +18,12 @@ namespace MyApp.Api.Controllers;
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class UnitsController(IUnitService service) : ControllerBase
 {
+    // Permission constants
+    private const string _viewPerm = "units:unit:view";
+    private const string _createPerm = "units:unit:create";
+    private const string _updatePerm = "units:unit:update";
+    private const string _deletePerm = "units:unit:delete";
+
     private readonly IUnitService _service = service;
 
   /// <summary>
@@ -25,6 +31,7 @@ public class UnitsController(IUnitService service) : ControllerBase
   /// </summary>
   /// <returns>200 OK with list of units.</returns>
   [HttpGet]
+  [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List() => Ok(await _service.ListAsync());
 
     /// <summary>
@@ -33,6 +40,7 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="id">Unit id.</param>
     /// <returns>200 OK with unit; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
         var u = await _service.GetByIdAsync(id);
@@ -46,6 +54,7 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="req">Unit payload.</param>
     /// <returns>201 Created with created unit.</returns>
     [HttpPost]
+    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
     public async Task<IActionResult> Create([FromBody] Unit req)
     {
         var created = await _service.CreateAsync(req);
@@ -59,6 +68,7 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="req">Updated unit payload.</param>
     /// <returns>200 OK with updated unit; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] Unit req)
     {
         var updated = await _service.UpdateAsync(id, req);
@@ -72,6 +82,7 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="id">Unit id.</param>
     /// <returns>204 No Content on success; 404 Not Found if missing.</returns>
     [HttpDelete("{id:guid}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var ok = await _service.DeleteAsync(id);
@@ -86,6 +97,7 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="body">JSON body with a 'status' field.</param>
     /// <returns>204 No Content on success; 400 Bad Request when status missing/invalid.</returns>
     [HttpPatch("{id:guid}/status")]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] dynamic body)
     {
         string? status = body?.status;
@@ -100,6 +112,7 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="id">Unit id.</param>
     /// <returns>200 OK with analytics payload.</returns>
     [HttpGet("{id:guid}/analytics")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Analytics(Guid id)
     {
         var a = await _service.GetAnalyticsAsync(id);

@@ -10,5 +10,6 @@ export const bulkOperationsRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.BULK_OPERATIONS,
     element: <BulkOperationsDashboard />,
     isProtected: true,
+    requiredPermission: 'bulk:operations:execute'
   },
 ];

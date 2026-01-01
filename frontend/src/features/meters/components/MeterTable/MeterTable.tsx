@@ -5,6 +5,7 @@ import { MeterType } from '@/features/meters/types';
 import { Card, CardContent } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
+import { useCan } from '@/contexts/RBACContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
 import styles from './MeterTable.module.scss';
 
@@ -42,6 +43,8 @@ export const MeterTable: React.FC<MeterTableProps> = ({
   filters,
 }) => {
   const navigate = useNavigate();
+  const canUpdate = useCan('meters:meter:update');
+  const canDelete = useCan('meters:meter:delete');
 
   const getMeterTypeLabel = (type: MeterType) => {
     return type.charAt(0).toUpperCase() + type.slice(1);
@@ -142,41 +145,47 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                             <Eye className="h-4 w-4" />
                           </Button>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={styles['table-action-button']}
-                            onClick={() => onToggleStatus(meter.id, meter.isActive)}
-                            disabled={updatingStatus}
-                            title={meter.isActive ? 'Deactivate meter' : 'Activate meter'}
-                          >
-                            {meter.isActive ? (
-                              <PowerOff className="h-4 w-4 text-red-600" />
-                            ) : (
-                              <Power className="h-4 w-4 text-green-600" />
-                            )}
-                          </Button>
+                          {canUpdate && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={styles['table-action-button']}
+                              onClick={() => onToggleStatus(meter.id, meter.isActive)}
+                              disabled={updatingStatus}
+                              title={meter.isActive ? 'Deactivate meter' : 'Activate meter'}
+                            >
+                              {meter.isActive ? (
+                                <PowerOff className="h-4 w-4 text-red-600" />
+                              ) : (
+                                <Power className="h-4 w-4 text-green-600" />
+                              )}
+                            </Button>
+                          )}
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={styles['table-action-button']}
-                            onClick={() => navigate(`/meters/${meter.id}/edit`)}
-                            title="Edit meter"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          {canUpdate && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={styles['table-action-button']}
+                              onClick={() => navigate(`/meters/${meter.id}/edit`)}
+                              title="Edit meter"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={`${styles['table-action-button']} ${styles['delete-button']}`}
-                            onClick={() => onDelete(meter.id)}
-                            disabled={deleting}
-                            title="Delete meter"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canDelete && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`${styles['table-action-button']} ${styles['delete-button']}`}
+                              onClick={() => onDelete(meter.id)}
+                              disabled={deleting}
+                              title="Delete meter"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -193,10 +202,16 @@ export const MeterTable: React.FC<MeterTableProps> = ({
                             : 'Get started by adding your first utility meter'}
                         </p>
                         {!searchTerm && !filters?.meterType && !filters?.status && (
-                          <Button className={styles['empty-action-button']} onClick={() => navigate('/meters/create-tabbed')}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Meter
-                          </Button>
+                          useCan('meters:meter:create') ? (
+                            <Button className={styles['empty-action-button']} onClick={() => navigate('/meters/create-tabbed')}>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add Meter
+                            </Button>
+                          ) : (
+                            <div className={styles['empty-action-help']}>
+                              Contact your administrator to add meters
+                            </div>
+                          )
                         )}
                       </div>
                     </TableCell>

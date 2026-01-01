@@ -5,6 +5,7 @@ import { getRoles, deleteRole, createRoleExport } from '../services/adminService
 import type { RoleDto } from '../types/roles';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/contexts';
+import { useCan } from '@/contexts/RBACContext';
 const RoleCreateModal = React.lazy(() => import('../components/RoleCreateModal').then(m => ({ default: m.RoleCreateModal })));
 
 
@@ -22,6 +23,10 @@ export const RolesList: React.FC = () => {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotifications();
+  const canCreate = useCan('admin:roles:create');
+  const canUpdate = useCan('admin:roles:update');
+  const canDelete = useCan('admin:roles:delete');
+  const canExport = useCan('admin:roles:export');
 
   useEffect(() => {
     let active = true;
@@ -105,9 +110,9 @@ export const RolesList: React.FC = () => {
           <h2 className="text-xl font-semibold">Roles</h2>
           <div className="flex items-center gap-2">
             <input className="input" placeholder="Search roles" value={q} onChange={e => { setQ(e.target.value); setPage(1); }} />
-            <Button onClick={openCreate} disabled={loading}>Create Role</Button>
-            <Button onClick={exportSelected} disabled={loading}>Export CSV</Button>
-            <Button onClick={async () => {
+            {canCreate && <Button onClick={openCreate} disabled={loading}>Create Role</Button>}
+            {canExport && <Button onClick={exportSelected} disabled={loading}>Export CSV</Button>}
+            {canExport && <Button onClick={async () => {
               try {
                 const ids = Object.keys(selected).filter(k => selected[k]);
                 const resp = await createRoleExport(ids.length ? ids : undefined, q || undefined);
@@ -117,7 +122,7 @@ export const RolesList: React.FC = () => {
                 console.error(e);
                 showError('Export failed', 'Could not create export token');
               }
-            }} disabled={loading}>Export (Server)</Button>
+            }} disabled={loading}>Export (Server)</Button>}
           </div>
         </div>
         {loading ? <div>Loading...</div> : (
@@ -149,8 +154,8 @@ export const RolesList: React.FC = () => {
                       <td className="p-3">{(r.permissions || r.rolePermissions || []).length}</td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" onClick={() => navigate(`/admin/roles/${r.id}`)} disabled={!!deletingId}>Edit</Button>
-                          <Button variant="destructive" onClick={() => confirmDelete(r.id, r.name)} disabled={!!deletingId}> {deletingId === r.id ? 'Deleting...' : 'Delete'}</Button>
+                          {canUpdate && <Button variant="ghost" onClick={() => navigate(`/admin/roles/${r.id}`)} disabled={!!deletingId}>Edit</Button>}
+                          {canDelete && <Button variant="destructive" onClick={() => confirmDelete(r.id, r.name)} disabled={!!deletingId}> {deletingId === r.id ? 'Deleting...' : 'Delete'}</Button>}
                         </div>
                       </td>
                     </tr>

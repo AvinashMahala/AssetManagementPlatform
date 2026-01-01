@@ -7,6 +7,7 @@ import type { RoleDto, PermissionDto } from '../types/roles';
 import { useNotifications } from '@/contexts';
 import PermissionSearchList from '../components/PermissionSearchList';
 import UserPickerModal from '../components/UserPickerModal';
+import { useCan } from '@/contexts/RBACContext';
 
 export const RoleEdit: React.FC = () => {
   const { id } = useParams();
@@ -40,9 +41,12 @@ export const RoleEdit: React.FC = () => {
   };
 
   const [savingPerms, setSavingPerms] = useState(false);
+  const canSetPermissions = useCan('admin:roles:set_permissions');
+  const canAssignUser = useCan('admin:roles:assign_user');
+  const canRemoveUser = useCan('admin:roles:remove_user');
 
   const savePerms = async () => {
-    if (!id) return;
+    if (!id || !canSetPermissions) return;
     const ids = Object.entries(checked).filter(([_, v]) => v).map(([k]) => k);
     setSavingPerms(true);
     try {
@@ -100,20 +104,20 @@ export const RoleEdit: React.FC = () => {
                 <PermissionSearchList permissions={perms} checked={checked} onToggle={toggle} />
               </div>
               <div className="mt-3">
-                <Button onClick={savePerms} disabled={savingPerms}>{savingPerms ? 'Saving...' : 'Save Permissions'}</Button>
+                <Button onClick={savePerms} disabled={savingPerms || !canSetPermissions}>{savingPerms ? 'Saving...' : 'Save Permissions'}</Button>
               </div>
             </div>
 
             <div>
               <h4 className="font-semibold">Users</h4>
               <div className="mt-2">
-                <Button onClick={() => setUserPickerOpen(true)}>Assign User</Button>
+                {canAssignUser && <Button onClick={() => setUserPickerOpen(true)}>Assign User</Button>}
                 <div className="mt-2 space-y-2">
                   {(role?.userRoles || []).map((ur) => (
                     <div key={`${ur.userId}`} className="flex items-center gap-2 py-1 justify-between">
                       <div className="text-sm text-gray-800">{ur.userId}</div>
                       <div>
-                        <Button variant="ghost" onClick={() => handleRemoveUser(ur.userId)}>Remove</Button>
+                        {canRemoveUser && <Button variant="ghost" onClick={() => handleRemoveUser(ur.userId)}>Remove</Button>}
                       </div>
                     </div>
                   ))}

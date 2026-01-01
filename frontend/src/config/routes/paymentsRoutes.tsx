@@ -15,6 +15,13 @@ export const paymentsRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.PAYMENTS,
     element: <PaymentListPageEnhanced />,
     isProtected: true,
+    requiredPermission: 'payments:payment:view'
+  },
+  {
+    path: ROUTE_PATHS.PAYMENTS_CREATE_TABBED,
+    element: <PaymentCreatePageTabbedEnhanced />,
+    isProtected: true,
+    requiredPermission: 'payments:payment:create'
   },
   {
     path: ROUTE_PATHS.PAYMENTS_CREATE,
@@ -30,6 +37,13 @@ export const paymentsRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.PAYMENT_DETAIL,
     element: <AppLayout><PaymentDetailPage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'payments:payment:view'
+  },
+  {
+    path: ROUTE_PATHS.PAYMENT_EDIT,
+    element: <PaymentEditPage />,
+    isProtected: true,
+    requiredPermission: 'payments:payment:update'
   },
   {
     path: ROUTE_PATHS.PAYMENT_EDIT,

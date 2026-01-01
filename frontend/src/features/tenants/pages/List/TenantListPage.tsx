@@ -19,6 +19,7 @@ import { Pagination } from '@/componentDesignLibrary';
 import { useTenants, useDeleteTenant } from '@/features/tenants/hooks/useTenants';
 import { useNotifications } from '@/contexts';
 import { AppLayout } from '@/components/layout';
+import { useCan } from '@/contexts/RBACContext';
 import './TenantListPage.module.scss';
 
 const TenantListPageEnhanced: React.FC = () => {
@@ -36,6 +37,9 @@ const TenantListPageEnhanced: React.FC = () => {
   const { tenants, loading } = useTenants();
   const { mutate: deleteTenant, loading: deleteLoading } = useDeleteTenant();
   const { showSuccess, showError } = useNotifications();
+  const canCreate = useCan('tenants:tenant:create');
+  const canUpdate = useCan('tenants:tenant:update');
+  const canDelete = useCan('tenants:tenant:delete');
 
   const filteredTenants = Array.isArray(tenants) ? tenants.filter(t => {
     const matchesSearch = `${t.firstName} ${t.lastName} ${t.email || ''} ${t.phone || ''}`.toLowerCase().includes(search.toLowerCase());
@@ -232,14 +236,16 @@ const TenantListPageEnhanced: React.FC = () => {
             <Button variant="outline" onClick={() => navigate('/templates')}>
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-              onClick={() => navigate('/tenants/create-tabbed')}
-              title="Step-by-step guided form with progress tracking"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Tenant
-            </Button>
+            {canCreate && (
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                onClick={() => navigate('/tenants/create-tabbed')}
+                title="Step-by-step guided form with progress tracking"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Tenant
+              </Button>
+            )}
           </div>
         </div>
 
@@ -359,6 +365,7 @@ const TenantListPageEnhanced: React.FC = () => {
                   </Button>
                 </div>
                 <div className="flex items-center space-x-2">
+                  {canUpdate && (
                   <Button
                     variant="destructive"
                     size="sm"
@@ -372,6 +379,8 @@ const TenantListPageEnhanced: React.FC = () => {
                     )}
                     Deactivate Selected
                   </Button>
+                )}
+                {canDelete && (
                   <Button
                     variant="destructive"
                     size="sm"
@@ -385,6 +394,7 @@ const TenantListPageEnhanced: React.FC = () => {
                     )}
                     Delete Selected
                   </Button>
+                )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -525,30 +535,34 @@ const TenantListPageEnhanced: React.FC = () => {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/tenants/${tenant.id}/edit`);
-                                  }}
-                                  title="Edit tenant"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteClick(tenant.id, `${tenant.firstName} ${tenant.lastName}`);
-                                  }}
-                                  title="Delete tenant"
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-600" />
-                                </Button>
+                                {canUpdate && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/tenants/${tenant.id}/edit`);
+                                    }}
+                                    title="Edit tenant"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {canDelete && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteClick(tenant.id, `${tenant.firstName} ${tenant.lastName}`);
+                                    }}
+                                    title="Delete tenant"
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
