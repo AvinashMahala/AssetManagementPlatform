@@ -225,6 +225,15 @@ class AuthService {
     }
     return response.data;
   }
+
+  // Fetch compact session payload containing roles and effective permissions for current user
+  async getSession(): Promise<{ userId: string; roles: string[]; permissions: string[] }> {
+    const response = await apiClient.get<{ userId: string; roles: string[]; permissions: string[] }>('/api/v1/auth/session');
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get session failed' });
+    }
+    return response.data;
+  }
   async getAllUsers(): Promise<{ users: User[] }> {
     const response = await apiClient.get<{ users: User[] }>('/api/v1/auth');
     if (!response.success || !response.data) {

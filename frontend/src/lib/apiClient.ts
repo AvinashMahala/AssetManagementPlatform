@@ -80,10 +80,22 @@ class ApiClient {
     }
 
     if (response.ok || response.status === 304) {
-      // Backend returns {success: true, data: {...}}
-      // Extract the data field from the backend response
-      const backendResponse = responseData as { success?: boolean; data?: T; message?: string };
-      
+      // Backend may return {success: true|false, data: {...}, message?: string}
+      const backendResponse = responseData as { success?: boolean; data?: T; message?: string; error?: string | { message?: string } };
+
+      // If backend explicitly indicates failure via success: false, treat it as an API error
+      if (backendResponse && backendResponse.success === false) {
+        const msg = backendResponse.message || (typeof backendResponse.error === 'string' ? backendResponse.error : (backendResponse.error && backendResponse.error.message)) || `HTTP ${response.status}`;
+        return {
+          success: false,
+          error: {
+            code: 'API_ERROR',
+            message: msg,
+          },
+          requestId,
+        };
+      }
+
       return {
         success: true,
         data: backendResponse?.data || (responseData as T),

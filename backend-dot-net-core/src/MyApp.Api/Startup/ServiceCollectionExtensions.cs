@@ -107,6 +107,15 @@ namespace MyApp.Api
 
             services.AddAuthorization();
 
+            // RBAC services for dynamic permission policies (PoC)
+            services.AddMemoryCache();
+            services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, MyApp.Api.Authorization.PermissionPolicyProvider>();
+            services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, MyApp.Api.Authorization.PermissionHandler>();
+            services.AddScoped<MyApp.Api.Authorization.PermissionEvaluator>();
+
+            // RBAC invalidation subscriber (wires event bus -> evaluator)
+            services.AddSingleton<MyApp.Api.Startup.RbacInvalidationSubscriber>();
+
             // JTI allowlist setup: register IJtiStore implementation based on configuration.
             // If Redis connection string present, use RedisJtiStore; otherwise fallback to DB-backed store.
             var redisCs = configuration["Redis:ConnectionString"];

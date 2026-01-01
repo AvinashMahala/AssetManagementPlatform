@@ -12,4 +12,7 @@ public class User
     public string? GoogleId { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }
+
+    // RBAC navigation
+    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

@@ -34,7 +34,10 @@ builder.Services.AddMyAppServices(builder.Configuration);
 builder.Services.AddMyAppJwtAuthentication(builder.Configuration);
 
 // Add validation and use problem details for consistent error responses
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers().AddNewtonsoftJson(options => {
+    // Avoid self-referencing loop errors when serializing EF navigation properties in PoC responses
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+});
 
 builder.Services.Configure<MyApp.Api.Options.CorrelationIdOptions>(builder.Configuration.GetSection("CorrelationId"));
 builder.Services.Configure<MyApp.Api.Options.ExceptionHandlingOptions>(builder.Configuration.GetSection("ExceptionHandling"));

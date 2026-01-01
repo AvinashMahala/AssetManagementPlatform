@@ -72,19 +72,19 @@ public class AuthIntegrationTests : IClassFixture<WebApplicationFactory<Program>
             { "Auth:RequireSidInAccessToken", "true" }
         };
 
-n        var factory = _factory.WithWebHostBuilder(builder =>
+        var factory = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureAppConfiguration((ctx, cb) => cb.AddInMemoryCollection(dict));
         });
 
-n        var client = factory.CreateClient();
+        var client = factory.CreateClient();
 
         // Generate a token without sid (legacy token)
         var cfg = new Microsoft.Extensions.Configuration.ConfigurationBuilder().AddInMemoryCollection(dict).Build();
         var jwt = new MyApp.Services.JwtService(cfg);
         var token = jwt.GenerateAccessToken(new MyApp.Models.User { Id = System.Guid.NewGuid(), Email = "legacy@me" });
 
-n        var req = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/profile");
+        var req = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/profile");
         req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         var resp = await client.SendAsync(req);
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, resp.StatusCode);
@@ -99,7 +99,7 @@ n        var req = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/profile"
         var jwt = new MyApp.Services.JwtService(cfg);
         var token = jwt.GenerateAccessToken(new MyApp.Models.User { Id = System.Guid.NewGuid(), Email = "legacy2@me" });
 
-n        var req = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/profile");
+        var req = new HttpRequestMessage(HttpMethod.Get, "/api/v1/auth/profile");
         req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         var resp = await client.SendAsync(req);
         // Token accepted by auth; controller will attempt to fetch profile for the user and return NotFound

@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +8,7 @@ using MyApp.Interfaces;
 using MyApp.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Api.Controllers;
 
@@ -19,12 +22,14 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]
-public class AuthController(IAuthService service, Microsoft.Extensions.Configuration.IConfiguration configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env, Microsoft.Extensions.Logging.ILogger<AuthController>? logger = null) : ControllerBase
+public class AuthController(IAuthService service, Microsoft.Extensions.Configuration.IConfiguration configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env, MyApp.Repositories.AppDbContext db, MyApp.Api.Authorization.PermissionEvaluator? evaluator = null, Microsoft.Extensions.Logging.ILogger<AuthController>? logger = null) : ControllerBase
 {
     private readonly IAuthService _service = service;
     private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration = configuration;
     private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env = env;
     private readonly Microsoft.Extensions.Logging.ILogger<AuthController>? _logger = logger;
+    private readonly MyApp.Repositories.AppDbContext _db = db;
+    private readonly MyApp.Api.Authorization.PermissionEvaluator? _evaluator = evaluator;
 
   /// <summary>
   /// Registers a new user.
@@ -208,6 +213,40 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         var user = await _service.GetProfileAsync(id);
         if (user == null) return NotFound();
         return Ok(user);
+    }
+
+    /// <summary>
+    /// Returns a compact session payload with roles and effective permissions for the current user.
+    /// </summary>
+    [HttpGet("session")]
+    [Authorize]
+    public async Task<IActionResult> Session()
+    {
+        var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(sub, out var id)) return Unauthorized();
+
+        // Roles
+        var roles = await (from ur in _db.UserRoles
+                           join r in _db.Roles on ur.RoleId equals r.Id
+                           where ur.UserId == id
+                           select r.Name).ToListAsync();
+
+        // Permissions (via evaluator; if not available, compute inline)
+        IEnumerable<string> perms;
+        if (_evaluator != null)
+        {
+            perms = await _evaluator.GetEffectivePermissionsAsync(id);
+        }
+        else
+        {
+            perms = await (from ur in _db.UserRoles
+                           join rp in _db.RolePermissions on ur.RoleId equals rp.RoleId
+                           join p in _db.Permissions on rp.PermissionId equals p.Id
+                           where ur.UserId == id && rp.Allowed
+                           select p.Name).ToListAsync();
+        }
+
+        return Ok(new { userId = id, roles = roles, permissions = perms });
     }
 
     /// <summary>

@@ -84,6 +84,14 @@ This project supports server-side per-session refresh tokens stored in the `sess
 psql <your-connection-string> -f db/schema/027_session_tokens.sql
 ```
 
+## RBAC / Permissions
+
+The project includes RBAC tables for permissions and categories. If you're creating a fresh database or restoring, apply the RBAC schema file:
+
+```bash
+psql <your-connection-string> -f db/schema/030_permissions.sql
+```
+
 Notes:
 - The SQL uses `gen_random_uuid()` by default (PG `pgcrypto`); if your Postgres instance uses `uuid-ossp`, you can replace it with `uuid_generate_v4()` or generate UUIDs in the application layer.
 - If you previously relied on the legacy per-user refresh token (stored on the `users` table), both approaches are supported during migration. See `DEPLOYMENT.md` for operational guidance on rotating refresh tokens and the `Auth:RefreshTokenPepper` setting.

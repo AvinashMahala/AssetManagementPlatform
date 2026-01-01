@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Api.Authorization;
 
 namespace MyApp.Api.Controllers;
 
@@ -18,13 +19,20 @@ namespace MyApp.Api.Controllers;
 [Microsoft.AspNetCore.Authorization.Authorize]
 public class PropertiesController(IPropertyService service) : ControllerBase
 {
+    // For easier attribute usage
+    private const string _viewPerm = "properties:property:view";
+    private const string _createPerm = "properties:property:create";
+    private const string _updatePerm = "properties:property:update";
+    private const string _deletePerm = "properties:property:delete";
+
     private readonly IPropertyService _service = service;
 
-  /// <summary>
-  /// Lists properties.
-  /// </summary>
-  /// <returns>200 OK with list of properties.</returns>
-  [HttpGet]
+    /// <summary>
+    /// Lists properties.
+    /// </summary>
+    /// <returns>200 OK with list of properties.</returns>
+    [HttpGet]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List() => Ok(await _service.ListAsync());
 
     /// <summary>
@@ -33,6 +41,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <param name="id">Property id.</param>
     /// <returns>200 OK with property; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
         var p = await _service.GetByIdAsync(id);
@@ -46,6 +55,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <param name="req">Create property payload.</param>
     /// <returns>201 Created with created property.</returns>
     [HttpPost]
+    [AuthorizePermission(_createPerm)]
     public async Task<IActionResult> Create([FromBody] CreatePropertyRequest req)
     {
         var created = await _service.CreateAsync(req);
@@ -59,6 +69,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <param name="req">Updated property payload.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePropertyRequest req)
     {
         await _service.UpdateAsync(id, req);
@@ -71,6 +82,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <param name="id">Property id.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
         await _service.DeleteAsync(id);
@@ -84,6 +96,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <param name="body">JSON body containing new 'status'.</param>
     /// <returns>204 No Content on success; 400 Bad Request when status missing/invalid.</returns>
     [HttpPatch("{id:guid}/status")]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] dynamic body)
     {
         string? status = body?.status;
@@ -103,6 +116,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <param name="req">Template payload.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}/template")]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> SetTemplate(Guid id, [FromBody] SetTemplateRequest req)
     {
         await _service.SetTemplateAsync(id, req.TemplateJson);
@@ -115,6 +129,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <param name="id">Property id.</param>
     /// <returns>200 OK with template; 404 Not Found if none set.</returns>
     [HttpGet("{id:guid}/template")]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> GetTemplate(Guid id)
     {
         var t = await _service.GetTemplateAsync(id);

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Suspense } from 'react';
 import { AuthProvider, ThemeProvider, NotificationProvider } from './contexts';
+import { RBACProvider } from './contexts/RBACContext';
 import { ProtectedRoute, PublicRoute } from '@/features/auth/components';
 import { ErrorBoundary, ConsentDialog, DevTools } from '@/componentDesignLibrary';
 import { Toast } from '@/componentDesignLibrary';
@@ -26,18 +27,19 @@ function App() {
           <NotificationProvider maxNotifications={5}>
             {/* Authentication provider for user session management */}
             <AuthProvider>
-              {/* Consent dialog for production error reporting */}
-              <ConsentDialog />
-              
-              {/* Dev tools for development mode */}
-              <DevTools />
-              
-              {/* Toast notifications component */}
-              <Toast />
-              
-              {/* Suspense wrapper for lazy-loaded components */}
-              <Suspense fallback={<div>Loading...</div>}>
-                <Routes>
+              <RBACProvider>
+                {/* Consent dialog for production error reporting */}
+                <ConsentDialog />
+                
+                {/* Dev tools for development mode */}
+                <DevTools />
+                
+                {/* Toast notifications component */}
+                <Toast />
+                
+                {/* Suspense wrapper for lazy-loaded components */}
+                <Suspense fallback={<div>Loading...</div>}>
+                  <Routes>
                   {/* Map over route configuration to render each route */}
                   {routes.map((route) => (
                     <Route
@@ -48,9 +50,11 @@ function App() {
                         route.isPublic ? (
                           <PublicRoute>{route.element}</PublicRoute>
                         ) : route.isProtected ? (
-                          // Protected routes require authentication and optionally specific roles
+                          // Protected routes require authentication and optionally specific roles or permissions
                           route.requiredRole ? (
                             <ProtectedRoute requiredRole={route.requiredRole}>{route.element}</ProtectedRoute>
+                          ) : route.requiredPermission ? (
+                            <ProtectedRoute requiredPermission={route.requiredPermission}>{route.element}</ProtectedRoute>
                           ) : (
                             <ProtectedRoute>{route.element}</ProtectedRoute>
                           )
@@ -63,6 +67,7 @@ function App() {
                   ))}
                 </Routes>
               </Suspense>
+            </RBACProvider>
           </AuthProvider>
         </NotificationProvider>
       </ThemeProvider>

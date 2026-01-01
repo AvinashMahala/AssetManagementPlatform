@@ -78,6 +78,9 @@ public static class ServiceCollectionExtensions
         // Auth helper: refresh token hasher (SHA256 + optional pepper)
         services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
 
+        // RBAC admin service (PoC)
+        services.AddScoped<IRoleAdminService, RoleAdminService>();
+
         return services;
     }
 }

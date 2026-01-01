@@ -33,4 +33,17 @@ public class AppDbContext : DbContext
     public DbSet<MyApp.Models.MeterReading> MeterReadings => Set<MyApp.Models.MeterReading>();
     public DbSet<MyApp.Models.SessionToken> SessionTokens => Set<MyApp.Models.SessionToken>();
     public DbSet<MyApp.Models.SessionJti> SessionJtis => Set<MyApp.Models.SessionJti>();
+
+    // RBAC / PoC entities
+    public DbSet<MyApp.Models.Role> Roles => Set<MyApp.Models.Role>();
+    public DbSet<MyApp.Models.Permission> Permissions => Set<MyApp.Models.Permission>();
+    public DbSet<MyApp.Models.RolePermission> RolePermissions => Set<MyApp.Models.RolePermission>();
+    public DbSet<MyApp.Models.UserRole> UserRoles => Set<MyApp.Models.UserRole>();
+
+    // Permission categories and audit events
+    public DbSet<MyApp.Models.PermissionCategory> PermissionCategories => Set<MyApp.Models.PermissionCategory>();
+    public DbSet<MyApp.Models.AuditEvent> AuditEvents => Set<MyApp.Models.AuditEvent>();
+
+    // Export tokens for pre-signed downloads
+    public DbSet<MyApp.Models.ExportToken> ExportTokens => Set<MyApp.Models.ExportToken>();
 }
