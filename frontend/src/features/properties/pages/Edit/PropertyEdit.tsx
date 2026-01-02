@@ -9,10 +9,9 @@ import { Card, CardContent } from '@/componentDesignLibrary';
 import type { PropertyInput } from '@/features/properties/types';
 import { useNotifications } from '@/contexts/NotificationContext';
 
+const PropertyEdit: React.FC = () => {
   const [auditOpen, setAuditOpen] = React.useState(false);
   const [auditData, setAuditData] = React.useState<any | null>(null);
-
-const PropertyEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: property, loading: fetchLoading } = useProperty(id!);

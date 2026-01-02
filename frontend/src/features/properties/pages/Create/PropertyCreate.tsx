@@ -7,11 +7,10 @@ import { AdminAuditModal } from '@/features/common/components/AdminAuditModal';
 import { AppLayout } from '@/components/layout/AppLayout';
 import type { PropertyInput } from '@/features/properties/types';
 
+const PropertyCreate: React.FC = () => {
   const [auditOpen, setAuditOpen] = React.useState(false);
   const [auditData, setAuditData] = React.useState<any | null>(null);
   const [createdId, setCreatedId] = React.useState<string | null>(null);
-
-const PropertyCreate: React.FC = () => {
   const navigate = useNavigate();
   const { mutate: createProperty, loading, error } = useCreateProperty();
 

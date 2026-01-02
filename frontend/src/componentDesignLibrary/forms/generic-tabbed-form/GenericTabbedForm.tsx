@@ -138,6 +138,13 @@ export const GenericTabbedForm: React.FC<GenericTabbedFormProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Mobile: render footer center content inline near action buttons so it's visible on small screens */}
+            {footerCenter && (
+              <div className="sm:hidden ml-2">
+                {footerCenter}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">

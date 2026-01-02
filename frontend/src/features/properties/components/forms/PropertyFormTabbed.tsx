@@ -45,7 +45,10 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { roles } = useRBACContext();
-  const isAdmin = !!(roles?.includes('admin') || currentUser?.role === 'admin');
+  const isAdmin = !!(
+    roles?.some(r => String(r || '').toLowerCase() === 'admin') ||
+    String(currentUser?.role || '').toLowerCase() === 'admin'
+  );
 
   const { data: owner, loading: ownerLoading } = useUser(
     initialData?.ownerId && initialData.ownerId.trim()

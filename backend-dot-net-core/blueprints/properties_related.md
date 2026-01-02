@@ -9,6 +9,7 @@ Purpose: A compact reference describing what we changed for the Property create 
 - Implemented deduplication (normalized key lookup + unique DB index script) + safe race handling (map DB unique violation to 409 conflict).
 - Added **data-loss reporting** (audit): the API can return a `dataAudit` object comparing requested vs stored values when `?audit=true` (supported on both Create and Update).
 - Edit endpoint (`PUT /api/v1/properties/{id}?audit=true`) now returns an audit envelope when requested.
+- Frontend: added an **admin-only** "Run data audit" checkbox (footer and header toggle) in Property Create/Edit forms; when selected the frontend appends `?audit=true` and, if the returned `dataAudit.success === false`, shows an **AdminAuditModal** displaying `dataAudit.issues` and a "View record" action.
 - Added unit tests and a SQL script to detect duplicates and create a normalized unique index concurrently.
 
 ---
@@ -23,6 +24,7 @@ Purpose: A compact reference describing what we changed for the Property create 
 - Controller: `src/MyApp.Api/Controllers/PropertiesController.cs` (supports `?audit=true`, returns 409 on duplicate)
 - Duplicate SQL script: `db-postgres/sql-scripts/005_properties_dedupe_and_unique_index.sql`
 - Unit tests: `src/MyApp.Tests.Unit/PropertyServiceTests.cs` (added `AuditCreation_Should_Report_Issues_When_Different`)
+- Frontend UI: `src/features/properties/components/forms/PropertyFormTabbed.tsx` (admin-only audit toggle + footer checkbox), `src/componentDesignLibrary/forms/generic-tabbed-form/*` (added `footerCenter` slot), `src/features/common/components/AdminAuditModal/AdminAuditModal.tsx` (modal to render `dataAudit.issues`), `src/features/properties/pages/Create/PropertyCreate.tsx` and `src/features/properties/pages/Edit/PropertyEdit.tsx` (open modal on audit failure).
 
 ---
 
@@ -79,6 +81,16 @@ PUT (edit) testing with audit
    - Update `currency` to empty string to confirm defaulting behavior.
    - Update owner arrays and check JSON differences.
    - Modify fields in ways that cause normalization/truncation; ensure audit reports the problems.
+
+Frontend & UX testing (manual + E2E)
+1. As an **admin** (role includes `admin`): open Create or Edit Property form and verify an **admin-only** "Run data audit" checkbox is visible in the footer and header toggle.
+2. Check the checkbox and submit the form; the client will call the API with `?audit=true`.
+3. If the API responds with `dataAudit` and `success === false`, verify the `AdminAuditModal` opens showing `dataAudit.issues` (field, requested, stored, reason), and that the "View record" action navigates to the edit page for review.
+4. If `dataAudit.success === true`, verify a success notification is shown and the modal does not open.
+5. If the form is submitted without the audit checkbox, verify the API does not include a `dataAudit` object in the response and the user flows behave as before (navigation to created entity or listing). 
+6. Add an E2E test that:
+   - Logs in as an admin, opens the Create Property form, checks the audit checkbox, posts a payload that triggers defaulting/truncation mismatches, and asserts the modal opens with the expected issue list and View action.
+7. Add tests that assert Duplicate property returns `409` and the UI surfaces an inline error instead of opening the modal.
 
 ---
 

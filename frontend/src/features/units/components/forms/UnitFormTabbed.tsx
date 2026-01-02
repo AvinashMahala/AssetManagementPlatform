@@ -78,7 +78,10 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   const { roles } = useRBACContext();
   const [auditChecked, setAuditChecked] = useState(false);
 
-  const isAdmin = !!(roles?.includes('Admin') || currentUser?.role === 'Admin');
+  const isAdmin = !!(
+    roles?.some(r => String(r || '').toLowerCase() === 'admin') ||
+    String(currentUser?.role || '').toLowerCase() === 'admin'
+  );
 
   // Debug: log current user and roles to help diagnose visibility of admin-only features
   useEffect(() => {
