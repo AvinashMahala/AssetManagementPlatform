@@ -112,8 +112,8 @@ class PropertyService {
       totalFloors: propertyData.totalFloors,
       yearBuilt: propertyData.yearBuilt,
       parkingSpaces: propertyData.parkingSpaces,
-      amenitiesObject,
-      amenities: JSON.stringify(amenitiesObject),
+      // Send amenities as an object so the API can bind to UpdatePropertyRequest.Amenities
+      amenities: amenitiesObject,
       ownerId: propertyData.ownerId,
       ownerName: propertyData.ownerDetails?.name,
       ownerMobileNumbersArray: propertyData.ownerDetails?.mobileNumbers,

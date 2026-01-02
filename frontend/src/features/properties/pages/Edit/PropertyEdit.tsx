@@ -6,12 +6,14 @@ import PropertyFormTabbed from '@/features/properties/components/forms/PropertyF
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/componentDesignLibrary';
 import type { PropertyInput } from '@/features/properties/types';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 const PropertyEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: property, loading: fetchLoading } = useProperty(id!);
   const { mutate: updateProperty, loading: updateLoading, error: updateError } = useUpdateProperty();
+  const { showSuccess, showError } = useNotifications();
 
   const handleSubmit = async (data: PropertyInput) => {
     if (!id) {
@@ -20,11 +22,15 @@ const PropertyEdit: React.FC = () => {
 
     try {
       await updateProperty({ id, data });
-      alert('Property updated successfully!');
+      // Show success toast and navigate to dashboard
+      showSuccess('Property updated', 'Property updated successfully');
       navigate(`/properties/${id}/dashboard`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update property:', error);
-      throw error; // Re-throw to let the form handle it
+      // Stay on the same page and show error toast
+      const message = error?.message || 'Failed to update property';
+      showError('Update failed', message);
+      // Do not re-throw; keep user on the edit form so they can fix issues
     }
   };
 
