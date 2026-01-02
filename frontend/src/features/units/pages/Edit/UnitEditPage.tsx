@@ -16,11 +16,31 @@ export const UnitEditPage: React.FC = () => {
   const { data: unit, loading: loadingUnit, error: loadError } = useUnit(id!);
   const { mutate: updateUnit, loading: updating } = useUpdateUnit();
 
-  const handleSubmit = async (data: UnitInput) => {
+  const handleSubmit = async (data: UnitInput, options?: { audit?: boolean }) => {
     if (!id) return;
 
     try {
-      await updateUnit({ id, data });
+      const resp = await updateUnit({ id, data, audit: options?.audit });
+
+      if (!resp.success) {
+        if (resp.error && String(resp.error.code).toUpperCase() === 'DUPLICATE_UNIT') {
+          // Surface duplicate error to the form
+          throw new Error(resp.error.message || 'Duplicate unit exists');
+        }
+        throw new Error(resp.error?.message || 'Failed to update unit');
+      }
+
+      const respData = resp.data;
+      if (options?.audit && respData && (respData as any).dataAudit) {
+        const audit = (respData as any).dataAudit;
+        if (!audit.success) {
+          // Keep update but inform user
+          navigateBackOrFallback(navigate, '/units', { state: { message: 'Unit updated with audit mismatches (check logs)' } });
+          console.info('Data Audit Issues:', audit.issues);
+          return;
+        }
+      }
+
       navigateBackOrFallback(navigate, '/units', { state: { message: 'Unit updated successfully!' } });
     } catch (error) {
       console.error('Failed to update unit:', error);

@@ -10,12 +10,14 @@ import { Badge } from '@/componentDesignLibrary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { useProperties, useProperty } from '@/features/properties/hooks/useProperties';
+import { useAuth } from '@/features/auth/hooks/useUsers';
+import { useRBACContext } from '@/contexts/RBACContext';
 import type { UnitInput } from '@/features/units/types';
 import { UnitStatus, UnitType } from '@/features/units/types';
 
 interface UnitFormTabbedProps {
   initialData?: Partial<UnitInput>;
-  onSubmit: (data: UnitInput) => Promise<void>;
+  onSubmit: (data: UnitInput, options?: { audit?: boolean }) => Promise<void>;
   loading?: boolean;
   isEdit?: boolean;
   unitId?: string;
@@ -72,6 +74,23 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { user: currentUser } = useAuth();
+  const { roles } = useRBACContext();
+  const [auditChecked, setAuditChecked] = useState(false);
+
+  const isAdmin = !!(roles?.includes('Admin') || currentUser?.role === 'Admin');
+
+  // Debug: log current user and roles to help diagnose visibility of admin-only features
+  useEffect(() => {
+    try {
+      // Use console.info so it's easier to filter in browser console
+      console.info('[UnitFormTabbed] currentUser:', currentUser);
+      console.info('[UnitFormTabbed] rbac roles:', roles);
+      console.info('[UnitFormTabbed] isAdmin:', isAdmin);
+    } catch (e) {
+      // Swallow any logging errors
+    }
+  }, [currentUser, roles, isAdmin]);
 
   // Track if the user manually edited the unit name so we don't auto-overwrite it
   const [unitNameEdited, setUnitNameEdited] = useState(false);
@@ -220,7 +239,13 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
       balconies: formData.balconies !== undefined && formData.balconies !== '' ? Number(formData.balconies) : undefined,
     };
 
-    await onSubmit(payload);
+    try {
+      await onSubmit(payload, { audit: auditChecked });
+    } catch (err: any) {
+      console.error('Submit failed:', err);
+      const msg = err?.message || 'Failed to save unit. Please try again.';
+      setErrors(prev => ({ ...prev, submit: msg }));
+    }
   };
 
   const handleCancel = () => {
@@ -244,7 +269,25 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
         <p className="text-gray-600">
           {isEdit ? 'Update unit information across different sections.' : 'Complete each section to create your unit step by step.'}
         </p>
+        {isAdmin && (
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setAuditChecked(prev => !prev)}
+              className="text-sm text-blue-600 hover:underline"
+              aria-pressed={auditChecked}
+            >
+              {auditChecked ? 'Audit: ON (admin)' : 'Audit: OFF (admin)'}
+            </button>
+          </div>
+        )}
       </div>
+
+      {errors.submit && (
+        <div role="alert" className="p-4 mb-4 rounded bg-red-50 text-red-700">
+          {errors.submit}
+        </div>
+      )}
 
       {/* Progress Indicator */}
       <div className="mb-8">
@@ -632,7 +675,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
 
 
         {/* Fixed Footer Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg"> 
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex space-x-4">
               <Button
@@ -655,6 +698,15 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                   <ArrowLeft className="w-4 h-4" />
                   <span>Previous</span>
                 </Button>
+              )}
+            </div>
+
+            <div className="flex-1 flex items-center justify-center">
+              {isAdmin && (
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" checked={auditChecked} onChange={(e) => setAuditChecked(e.target.checked)} className="rounded" />
+                  <span className="text-sm">Run data audit for this operation</span>
+                </label>
               )}
             </div>
 

@@ -78,14 +78,16 @@ class UnitService {
     return { ...resp, data: mapped } as ApiResponse<Unit>;
   }
 
-  async create(data: UnitInput): Promise<ApiResponse<Unit>> {
+  async create(data: UnitInput, audit: boolean = false): Promise<ApiResponse<any>> {
     const payload = this.mapToApiPayload(data);
-    return apiClient.post<Unit>(API_ENDPOINTS.UNITS, payload);
+    const url = audit ? `${API_ENDPOINTS.UNITS}?audit=true` : API_ENDPOINTS.UNITS;
+    return apiClient.post<any>(url, payload);
   }
 
-  async update(id: string, data: Partial<UnitInput>): Promise<ApiResponse<Unit>> {
+  async update(id: string, data: Partial<UnitInput>, audit: boolean = false): Promise<ApiResponse<any>> {
     const payload = this.mapToApiPayload(data);
-    return apiClient.put<Unit>(`${API_ENDPOINTS.UNITS}/${id}`, payload);
+    const url = audit ? `${API_ENDPOINTS.UNITS}/${id}?audit=true` : `${API_ENDPOINTS.UNITS}/${id}`;
+    return apiClient.put<any>(url, payload);
   }
 
   async delete(id: string): Promise<ApiResponse<void>> {

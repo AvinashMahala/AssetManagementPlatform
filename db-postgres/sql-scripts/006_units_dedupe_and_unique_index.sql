@@ -5,11 +5,11 @@ SELECT property_id,
        lower(trim(unit_number)) AS unit_number_norm,
        floor,
        lower(coalesce(unit_type, '')) AS unit_type_norm,
-       lower(trim(coalesce(name, ''))) AS name_norm,
+       lower(trim(coalesce(unit_name, ''))) AS name_norm,
        count(*) as cnt,
        array_agg(id) as ids
 FROM units
-GROUP BY property_id, lower(trim(unit_number)), floor, lower(coalesce(unit_type, '')), lower(trim(coalesce(name, '')))
+GROUP BY property_id, lower(trim(unit_number)), floor, lower(coalesce(unit_type, '')), lower(trim(coalesce(unit_name, '')))
 HAVING count(*) > 1
 ORDER BY cnt DESC;
 
@@ -21,5 +21,5 @@ ORDER BY cnt DESC;
 --   (lower(trim(unit_number))),
 --   (floor),
 --   (lower(coalesce(unit_type, ''))),
---   (lower(trim(coalesce(name, ''))))
+--   (lower(trim(coalesce(unit_name, ''))))
 -- );

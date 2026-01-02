@@ -110,7 +110,16 @@ public class UnitsController(IUnitService service) : ControllerBase
         }
         catch (MyApp.Services.Exceptions.DuplicateUnitException de)
         {
-            return Conflict(new { code = "DUPLICATE_UNIT", message = de.Message, details = de.Details });
+            return Conflict(new
+            {
+                success = false,
+                error = new
+                {
+                    code = "DUPLICATE_UNIT",
+                    message = de.Message,
+                    details = de.Details
+                }
+            });
         }
     }
 
