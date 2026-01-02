@@ -45,10 +45,14 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
 
   const [currentTab, setCurrentTab] = useState('basic');
   const [completedTabs, setCompletedTabs] = useState<Set<string>>(new Set());
+  // Guard to prevent navigation click from triggering an immediate submit when UI swaps the Next button to Submit
+  const [navDisabled, setNavDisabled] = useState(false);
 
-  const [formData, setFormData] = useState<UnitInput>({
+  // Use a permissive form state so we can allow empty strings while editing number fields
+  const [formData, setFormData] = useState<any>({
     propertyId: initialData?.propertyId || '',
     unitNumber: initialData?.unitNumber || '',
+    // Unit name will be auto-generated and placed at the end of the form
     unitName: initialData?.unitName || '',
     floor: initialData?.floor || 0,
     unitType: initialData?.unitType || UnitType.APARTMENT,
@@ -58,9 +62,10 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
     bathrooms: initialData?.bathrooms || 2,
     balconies: initialData?.balconies || 1,
     furnished: initialData?.furnished || false,
-    monthlyRent: initialData?.monthlyRent || 0,
-    securityDeposit: initialData?.securityDeposit || 0,
-    maintenanceCharges: initialData?.maintenanceCharges || 0,
+    // Treat money inputs as strings while editing to avoid the '0' being prepended issue
+    monthlyRent: initialData?.monthlyRent ?? '',
+    securityDeposit: initialData?.securityDeposit ?? 0,
+    maintenanceCharges: initialData?.maintenanceCharges ?? '',
     unitAmenities: initialData?.unitAmenities || [],
     unitPhotos: initialData?.unitPhotos || [],
     description: initialData?.description || '',
@@ -68,54 +73,28 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Auto-generate unit name when relevant fields change
+  // Track if the user manually edited the unit name so we don't auto-overwrite it
+  const [unitNameEdited, setUnitNameEdited] = useState(false);
+
+  // Auto-generate unit name in the format: <UnitType> - <Unit Number> - <2BHK|Studio>
   useEffect(() => {
-    if (formData.unitNumber && formData.unitType && !initialData?.unitName) {
-      const parts = [];
-
-      // Add bedroom info for residential units
-      if ((formData.unitType === UnitType.APARTMENT || formData.unitType === UnitType.HOUSE || formData.unitType === UnitType.VILLA || formData.unitType === UnitType.STUDIO) && formData.bedrooms) {
-        if (formData.unitType === UnitType.STUDIO) {
-          parts.push('Studio');
-        } else {
-          parts.push(`${formData.bedrooms}BHK`);
-        }
-      }
-
-      // Add unit type
+    if (!unitNameEdited && !initialData?.unitName && formData.unitType && formData.unitNumber) {
       const unitTypeLabel = formData.unitType.charAt(0).toUpperCase() + formData.unitType.slice(1);
-      parts.push(unitTypeLabel);
+      let bedroomPart = '';
 
-      // Add floor info if not ground floor
-      if (formData.floor && formData.floor > 0) {
-        parts.push(`Floor ${formData.floor}`);
+      if (formData.unitType === UnitType.STUDIO) {
+        bedroomPart = 'Studio';
+      } else if (formData.bedrooms) {
+        bedroomPart = `${formData.bedrooms}BHK`;
       }
 
-      // Add furnished status
-      if (formData.furnished) {
-        parts.push('(Furnished)');
-      }
+      const generatedName = [unitTypeLabel, formData.unitNumber, bedroomPart].filter(Boolean).join(' - ');
 
-      // Add property context if available
-      if (selectedProperty?.name) {
-        parts.push(`in ${selectedProperty.name}`);
-      }
-
-      const generatedName = parts.join(' ');
-      // Only update if the generated name is different and not empty
       if (generatedName && generatedName !== formData.unitName) {
         setFormData(prev => ({ ...prev, unitName: generatedName }));
       }
     }
-  }, [
-    formData.unitNumber,
-    formData.unitType,
-    formData.bedrooms,
-    formData.floor,
-    formData.furnished,
-    selectedProperty?.name,
-    initialData?.unitName
-  ]);
+  }, [formData.unitNumber, formData.unitType, formData.bedrooms, unitNameEdited, initialData?.unitName]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -141,8 +120,11 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
         if (formData.bathrooms && formData.bathrooms < 0) newErrors.bathrooms = 'Bathrooms cannot be negative';
         break;
       case 'financial':
-        if (formData.monthlyRent < 0) newErrors.monthlyRent = 'Monthly rent cannot be negative';
-        if (formData.securityDeposit < 0) newErrors.securityDeposit = 'Security deposit cannot be negative';
+        // Monthly rent is required and must be greater than 0
+        if (!formData.monthlyRent || Number(formData.monthlyRent) <= 0) newErrors.monthlyRent = 'Monthly rent is required and must be greater than 0';
+        // Security deposit and maintenance charges are optional but cannot be negative
+        if (formData.securityDeposit !== undefined && formData.securityDeposit !== '' && Number(formData.securityDeposit) < 0) newErrors.securityDeposit = 'Security deposit cannot be negative';
+        if (formData.maintenanceCharges !== undefined && formData.maintenanceCharges !== '' && Number(formData.maintenanceCharges) < 0) newErrors.maintenanceCharges = 'Maintenance charges cannot be negative';
         break;
       case 'amenities':
         // No validation required for amenities tab
@@ -180,6 +162,11 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
   };
 
   const handleNext = () => {
+    if (navDisabled) return;
+
+    // Prevent rapid double-click or DOM swap causing submit to be inadvertently triggered
+    setNavDisabled(true);
+
     if (validateTab(currentTab)) {
       setCompletedTabs(prev => new Set([...prev, currentTab]));
       const currentIndex = TABS.findIndex(tab => tab.id === currentTab);
@@ -187,6 +174,9 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
         setCurrentTab(TABS[currentIndex + 1].id);
       }
     }
+
+    // Re-enable after the render cycle -- small timeout is sufficient
+    setTimeout(() => setNavDisabled(false), 250);
   };
 
   const handlePrevious = () => {
@@ -217,7 +207,20 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
       return;
     }
 
-    await onSubmit(formData);
+    // Normalize numeric fields before submitting
+    const payload: UnitInput = {
+      ...formData,
+      monthlyRent: Number(formData.monthlyRent),
+      securityDeposit: Number(formData.securityDeposit) || 0,
+      maintenanceCharges: formData.maintenanceCharges === '' || formData.maintenanceCharges === undefined ? undefined : Number(formData.maintenanceCharges),
+      area: Number(formData.area),
+      floor: formData.floor !== undefined && formData.floor !== '' ? Number(formData.floor) : undefined,
+      bedrooms: formData.bedrooms !== undefined && formData.bedrooms !== '' ? Number(formData.bedrooms) : undefined,
+      bathrooms: formData.bathrooms !== undefined && formData.bathrooms !== '' ? Number(formData.bathrooms) : undefined,
+      balconies: formData.balconies !== undefined && formData.balconies !== '' ? Number(formData.balconies) : undefined,
+    };
+
+    await onSubmit(payload);
   };
 
   const handleCancel = () => {
@@ -366,20 +369,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Unit Name
-                    </label>
-                    <Input
-                      value={formData.unitName}
-                      onChange={(e) => handleChange('unitName', e.target.value)}
-                      placeholder="e.g., 2BHK Apartment Floor 5 (Furnished)"
-                      className="h-10"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Auto-generated based on your selections, but you can edit it
-                    </p>
-                  </div>
+
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -493,6 +483,21 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Unit Name
+                    </label>
+                    <Input
+                      value={formData.unitName}
+                      onChange={(e) => { setUnitNameEdited(true); handleChange('unitName', e.target.value); }}
+                      placeholder="Auto-generated: Apartment - 101 - 2BHK"
+                      className="h-10"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Auto-generated as "&lt;UnitType&gt; - &lt;Unit Number&gt; - &lt;2BHK&gt;" but you can edit it.
+                    </p>
+                  </div>
+
                   <div className="flex items-center space-x-2 md:col-span-2">
                     <input
                       type="checkbox"
@@ -504,7 +509,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                     <label htmlFor="furnished" className="text-sm font-medium">
                       This unit is furnished
                     </label>
-                  </div>
+                  </div> 
                 </div>
               </CardContent>
             </Card>
@@ -528,7 +533,8 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                     <Input
                       type="number"
                       value={formData.monthlyRent}
-                      onChange={(e) => handleChange('monthlyRent', Number(e.target.value))}
+                      onChange={(e) => handleChange('monthlyRent', e.target.value)}
+                      onFocus={() => { if (formData.monthlyRent === 0) handleChange('monthlyRent', ''); }}
                       error={errors.monthlyRent}
                       min="0"
                       className="h-10"
@@ -537,12 +543,14 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Security Deposit (₹) <span className="text-red-500">*</span>
+                      Security Deposit (₹)
                     </label>
                     <Input
                       type="number"
                       value={formData.securityDeposit}
-                      onChange={(e) => handleChange('securityDeposit', Number(e.target.value))}
+                      onChange={(e) => handleChange('securityDeposit', e.target.value)}
+                      onFocus={() => { if (formData.securityDeposit === 0) handleChange('securityDeposit', ''); }}
+                      onBlur={() => { if (formData.securityDeposit === '') handleChange('securityDeposit', 0); }}
                       error={errors.securityDeposit}
                       min="0"
                       className="h-10"
@@ -556,7 +564,8 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                     <Input
                       type="number"
                       value={formData.maintenanceCharges}
-                      onChange={(e) => handleChange('maintenanceCharges', Number(e.target.value))}
+                      onChange={(e) => handleChange('maintenanceCharges', e.target.value)}
+                      onFocus={() => { if (formData.maintenanceCharges === 0) handleChange('maintenanceCharges', ''); }}
                       min="0"
                       className="h-10"
                     />
@@ -620,6 +629,8 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
           </TabsContent>
         </Tabs>
 
+
+
         {/* Fixed Footer Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -667,7 +678,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
                 <Button
                   type="button"
                   onClick={handleNext}
-                  disabled={loading}
+                  disabled={loading || navDisabled}
                   className="flex items-center space-x-2"
                 >
                   <span>Next</span>
@@ -676,7 +687,7 @@ const UnitFormTabbed: React.FC<UnitFormTabbedProps> = ({
               ) : (
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || navDisabled}
                   className="flex items-center space-x-2"
                 >
                   <Save className="w-4 h-4" />

@@ -44,4 +44,23 @@ public class UnitRepository : IUnitRepository
         _db.Set<Unit>().Remove(u);
         await _db.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Find a unit by a normalized key for duplicate detection.
+    /// Uses SQL-compatible normalization (lower + trim). If floor is null, it'll match null.
+    /// </summary>
+    public async Task<Unit?> FindByNormalizedKeyAsync(Guid propertyId, string unitNumber, int? floor, string? unitType, string? name)
+    {
+        // Basic normalization done in CLR here to avoid SQL function dependencies; but DB index uses similar expressions.
+        string nn = (unitNumber ?? string.Empty).Trim().ToLowerInvariant();
+        string tu = (unitType ?? string.Empty).Trim().ToLowerInvariant();
+        string nm = (name ?? string.Empty).Trim().ToLowerInvariant();
+
+        return await _db.Set<Unit>().FirstOrDefaultAsync(u => u.PropertyId == propertyId
+            && EF.Functions.Like(u.UnitNumber.Trim().ToLower(), nn)
+            && (u.Floor == floor)
+            && (u.UnitType == null ? tu == "" : u.UnitType.Trim().ToLower() == tu)
+            && (u.Name == null ? nm == "" : u.Name.Trim().ToLower() == nm)
+        );
+    }
 }

@@ -30,23 +30,82 @@ public class UnitService(IUnitRepository repo) : IUnitService
 
     /// <summary>
     /// Creates a unit with defaults applied when necessary.
+    /// Performs duplicate check using normalized key and supports optional audit.
     /// </summary>
     /// <param name="unit">Unit to create.</param>
-    /// <returns>The created <see cref="Unit"/>.</returns>
-    public async Task<Unit> CreateAsync(Unit unit)
+    /// <param name="audit">Whether to produce a data audit result comparing request vs persisted.</param>
+    /// <returns>The created <see cref="Unit"/> and optional <see cref="DataAuditResult"/>.</returns>
+    public async Task<(Unit unit, DataAuditResult? audit)> CreateWithAuditAsync(Unit unit, bool audit = false)
     {
+        // Capture original request for audit comparisons
+        var original = new Unit
+        {
+            PropertyId = unit.PropertyId,
+            UnitNumber = unit.UnitNumber,
+            Name = unit.Name,
+            Description = unit.Description,
+            UnitType = unit.UnitType,
+            Floor = unit.Floor,
+            Area = unit.Area,
+            Bedrooms = unit.Bedrooms,
+            Bathrooms = unit.Bathrooms,
+            Balconies = unit.Balconies,
+            Furnished = unit.Furnished,
+            MaxOccupants = unit.MaxOccupants,
+            UnitAmenities = unit.UnitAmenities,
+            UnitPhotos = unit.UnitPhotos,
+            MonthlyRent = unit.MonthlyRent,
+            SecurityDeposit = unit.SecurityDeposit,
+            MaintenanceCharges = unit.MaintenanceCharges,
+            Status = unit.Status
+        };
+
         if (unit.Id == Guid.Empty) unit.Id = Guid.NewGuid();
         unit.CreatedAt = DateTime.UtcNow;
         // Ensure defaults
         if (string.IsNullOrWhiteSpace(unit.Status)) unit.Status = "available";
+
+        // Duplicate detection: Property + UnitNumber + Floor + UnitType + Name
+        var existing = await _repo.FindByNormalizedKeyAsync(unit.PropertyId, unit.UnitNumber, unit.Floor, unit.UnitType, unit.Name);
+        if (existing is not null)
+        {
+            throw new MyApp.Services.Exceptions.DuplicateUnitException("A unit with same identifiers already exists", new { existingId = existing.Id, propertyId = existing.PropertyId, unitNumber = existing.UnitNumber, floor = existing.Floor, unitType = existing.UnitType, name = existing.Name });
+        }
+
         await _repo.AddAsync(unit);
-        return unit;
+
+        DataAuditResult? dataAudit = null;
+        if (audit)
+        {
+            dataAudit = MyApp.Services.Helpers.UnitAuditHelper.CompareUnitForAudit(original, unit);
+        }
+
+        return (unit, dataAudit);
     }
 
-    public async Task<Unit?> UpdateAsync(Guid id, Unit unit)
+    // Implement interface-friendly wrappers
+    public async Task<Unit> CreateAsync(Unit unit)
+    {
+        var (created, _) = await CreateWithAuditAsync(unit, false);
+        return created;
+    }
+
+    public async Task<(Unit? unit, DataAuditResult? audit)> UpdateWithAuditAsync(Guid id, Unit unit, bool audit = false)
     {
         var existing = await _repo.GetByIdAsync(id);
-        if (existing is null) return null;
+        if (existing is null) return (null, null);
+
+        // If unique key fields are changing, check duplicates
+        var willUnitNumber = unit.UnitNumber ?? existing.UnitNumber;
+        var willName = unit.Name ?? existing.Name;
+        var willUnitType = unit.UnitType ?? existing.UnitType;
+        var willFloor = unit.Floor ?? existing.Floor;
+
+        var duplicate = await _repo.FindByNormalizedKeyAsync(existing.PropertyId, willUnitNumber, willFloor, willUnitType, willName);
+        if (duplicate is not null && duplicate.Id != existing.Id)
+        {
+            throw new MyApp.Services.Exceptions.DuplicateUnitException("A unit with same identifiers already exists", new { existingId = duplicate.Id, propertyId = duplicate.PropertyId, unitNumber = duplicate.UnitNumber, floor = duplicate.Floor, unitType = duplicate.UnitType, name = duplicate.Name });
+        }
 
         // Copy updatable fields
         existing.UnitNumber = unit.UnitNumber ?? existing.UnitNumber;
@@ -70,7 +129,22 @@ public class UnitService(IUnitRepository repo) : IUnitService
         existing.PropertyId = unit.PropertyId;
         existing.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(existing);
-        return existing;
+
+        DataAuditResult? dataAudit = null;
+        if (audit)
+        {
+            // Compare the incoming request to the persisted entity
+            dataAudit = MyApp.Services.Helpers.UnitAuditHelper.CompareUnitForAudit(unit, existing);
+        }
+
+        // Interface-friendly wrapper
+        return (existing, dataAudit);
+    }
+
+    public async Task<Unit?> UpdateAsync(Guid id, Unit unit)
+    {
+        var (updated, _) = await UpdateWithAuditAsync(id, unit, false);
+        return updated;
     }
 
     public async Task<bool> DeleteAsync(Guid id)

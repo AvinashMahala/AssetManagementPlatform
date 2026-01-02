@@ -62,10 +62,30 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <returns>201 Created with created unit.</returns>
     [HttpPost]
     [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
-    public async Task<IActionResult> Create([FromBody] Unit req)
+    public async Task<IActionResult> Create([FromBody] Unit req, [FromQuery] bool audit = false)
     {
-        var created = await _service.CreateAsync(req);
-        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+        try
+        {
+            var (created, dataAudit) = await _service.CreateWithAuditAsync(req, audit);
+            if (audit)
+            {
+                return CreatedAtAction(nameof(Get), new { id = created.Id }, new { success = true, unit = created, dataAudit });
+            }
+            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+        }
+        catch (MyApp.Services.Exceptions.DuplicateUnitException de)
+        {
+            return Conflict(new
+            {
+                success = false,
+                error = new
+                {
+                    code = "DUPLICATE_UNIT",
+                    message = de.Message,
+                    details = de.Details
+                }
+            });
+        }
     }
 
     /// <summary>
@@ -76,11 +96,22 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <returns>200 OK with updated unit; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
     [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Unit req)
+    public async Task<IActionResult> Update(Guid id, [FromBody] Unit req, [FromQuery] bool audit = false)
     {
-        var updated = await _service.UpdateAsync(id, req);
-        if (updated is null) return NotFound();
-        return Ok(updated);
+        try
+        {
+            var (updated, dataAudit) = await _service.UpdateWithAuditAsync(id, req, audit);
+            if (updated is null) return NotFound();
+            if (audit)
+            {
+                return Ok(new { success = true, unit = updated, dataAudit });
+            }
+            return Ok(updated);
+        }
+        catch (MyApp.Services.Exceptions.DuplicateUnitException de)
+        {
+            return Conflict(new { code = "DUPLICATE_UNIT", message = de.Message, details = de.Details });
+        }
     }
 
     /// <summary>
