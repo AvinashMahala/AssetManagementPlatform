@@ -28,8 +28,8 @@ public class UnitConfiguration : IEntityTypeConfiguration<Unit>
         builder.Property(u => u.MaxOccupants).HasColumnName("max_occupants");
 
         // JSON columns
-        builder.Property(u => u.UnitAmenities).HasColumnName("unit_amenities");
-        builder.Property(u => u.UnitPhotos).HasColumnName("unit_photos");
+        builder.Property(u => u.UnitAmenities).HasColumnName("unit_amenities").HasColumnType("jsonb");
+        builder.Property(u => u.UnitPhotos).HasColumnName("unit_photos").HasColumnType("jsonb");
 
         // Financials
         builder.Property(u => u.MonthlyRent).HasColumnName("monthly_rent");

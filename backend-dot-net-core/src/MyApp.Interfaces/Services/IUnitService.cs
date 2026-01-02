@@ -8,6 +8,10 @@ namespace MyApp.Interfaces;
 public interface IUnitService
 {
     Task<IEnumerable<Unit>> ListAsync();
+    /// <summary>
+    /// Lists units for a property.
+    /// </summary>
+    Task<IEnumerable<Unit>> ListByPropertyAsync(Guid propertyId);
     Task<Unit?> GetByIdAsync(Guid id);
     Task<Unit> CreateAsync(Unit unit);
     Task<Unit?> UpdateAsync(Guid id, Unit unit);

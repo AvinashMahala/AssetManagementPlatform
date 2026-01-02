@@ -24,6 +24,11 @@ public class UnitService(IUnitRepository repo) : IUnitService
     public Task<IEnumerable<Unit>> ListAsync() => _repo.ListAsync();
 
     /// <summary>
+    /// Lists units for a property.
+    /// </summary>
+    public Task<IEnumerable<Unit>> ListByPropertyAsync(Guid propertyId) => _repo.ListByPropertyAsync(propertyId);
+
+    /// <summary>
     /// Creates a unit with defaults applied when necessary.
     /// </summary>
     /// <param name="unit">Unit to create.</param>

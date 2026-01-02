@@ -15,6 +15,12 @@ public class UnitRepository : IUnitRepository
 
     public async Task<IEnumerable<Unit>> ListAsync() => await _db.Set<Unit>().ToListAsync();
 
+    /// <summary>
+    /// Lists units for a given property.
+    /// </summary>
+    public async Task<IEnumerable<Unit>> ListByPropertyAsync(Guid propertyId) =>
+        await _db.Set<Unit>().Where(u => u.PropertyId == propertyId).ToListAsync();
+
     public Task<Unit?> GetByIdAsync(Guid id) => _db.Set<Unit>().FirstOrDefaultAsync(u => u.Id == id);
 
     public async Task AddAsync(Unit unit)

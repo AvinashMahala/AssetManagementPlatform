@@ -27,12 +27,19 @@ public class UnitsController(IUnitService service) : ControllerBase
     private readonly IUnitService _service = service;
 
   /// <summary>
-  /// Lists units.
+  /// Lists units. Optionally filter by property id using ?propertyId={guid}.
   /// </summary>
-  /// <returns>200 OK with list of units.</returns>
+  /// <param name="propertyId">Optional property id to filter units.</param>
   [HttpGet]
   [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List([FromQuery] Guid? propertyId)
+    {
+        if (propertyId.HasValue)
+        {
+            return Ok(await _service.ListByPropertyAsync(propertyId.Value));
+        }
+        return Ok(await _service.ListAsync());
+    }
 
     /// <summary>
     /// Gets a unit by id.
