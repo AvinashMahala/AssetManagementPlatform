@@ -117,7 +117,15 @@ const PropertyDetail: React.FC = () => {
       {property.buildingAmenities && property.buildingAmenities.length > 0 && (
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><Home className="h-5 w-5" /> Amenities</CardTitle></CardHeader>
-          <CardContent><div className="flex flex-wrap gap-2">{property.buildingAmenities.map((amenity: string, i: number) => <Badge key={i} variant="outline">{amenity}</Badge>)}</div></CardContent>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {property.buildingAmenities.map((amenity: string, i: number) => (
+                <Badge key={i} variant="outline" className="border-2 border-green-500 bg-green-50 text-green-700">
+                  {amenity}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
         </Card>
       )}
 

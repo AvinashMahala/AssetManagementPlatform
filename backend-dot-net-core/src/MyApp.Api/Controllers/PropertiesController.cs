@@ -56,10 +56,33 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <returns>201 Created with created property.</returns>
     [HttpPost]
     [AuthorizePermission(_createPerm)]
-    public async Task<IActionResult> Create([FromBody] CreatePropertyRequest req)
+    public async Task<IActionResult> Create([FromBody] CreatePropertyRequest req, [FromQuery] bool audit = false)
     {
-        var created = await _service.CreateAsync(req);
-        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+        try
+        {
+            var created = await _service.CreateAsync(req);
+
+            if (audit)
+            {
+                var auditResult = _service.AuditCreation(req, created);
+                return CreatedAtAction(nameof(Get), new { id = created.Id }, new { success = true, property = created, dataAudit = auditResult });
+            }
+
+            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+        }
+        catch (MyApp.Services.Exceptions.DuplicatePropertyException dex)
+        {
+            return Conflict(new
+            {
+                success = false,
+                error = new
+                {
+                    code = "DUPLICATE_PROPERTY",
+                    message = "Property already exists",
+                    existingId = dex.ExistingId
+                }
+            });
+        }
     }
 
     /// <summary>
@@ -70,9 +93,17 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
     [AuthorizePermission(_updatePerm)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePropertyRequest req)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePropertyRequest req, [FromQuery] bool audit = false)
     {
         await _service.UpdateAsync(id, req);
+        if (audit)
+        {
+            var updated = await _service.GetByIdAsync(id);
+            if (updated is null) return NotFound();
+            var auditResult = _service.AuditUpdate(req, updated);
+            return Ok(new { success = true, property = updated, dataAudit = auditResult });
+        }
+
         return NoContent();
     }
 

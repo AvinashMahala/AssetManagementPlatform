@@ -3,9 +3,13 @@ using MyApp.Models;
 
 namespace MyApp.Repositories;
 
+using Microsoft.Extensions.Logging;
+
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    private readonly ILogger<AppDbContext>? _logger;
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, ILogger<AppDbContext>? logger = null) : base(options) { _logger = logger; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,4 +59,79 @@ public class AppDbContext : DbContext
 
     // Property-specific templates
     public DbSet<MyApp.Models.PropertyReceiptTemplate> PropertyReceiptTemplates => Set<MyApp.Models.PropertyReceiptTemplate>();
+
+    /// <summary>
+    /// Ensure DateTime kinds are normalized to UTC before saving to Postgres.
+    /// This prevents Npgsql errors when a DateTime has Kind==Unspecified.
+    /// </summary>
+    private void NormalizeDateTimeKinds()
+    {
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            // Only consider entities that will be inserted/updated
+            if (entry.State == Microsoft.EntityFrameworkCore.EntityState.Added || entry.State == Microsoft.EntityFrameworkCore.EntityState.Modified)
+            {
+                foreach (var prop in entry.Properties)
+                {
+                    var clrType = prop.Metadata.ClrType;
+                    if (clrType == typeof(DateTime))
+                    {
+                        var val = (DateTime)prop.CurrentValue!;
+                        // If the value is Local, convert it to UTC (preserves instant)
+                        if (val.Kind == DateTimeKind.Local)
+                        {
+                            _logger?.LogWarning("Converting Local DateTime to UTC for entity {Entity} property {Property} value {Value}", entry.Entity.GetType().Name, prop.Metadata.Name, val);
+                            prop.CurrentValue = val.ToUniversalTime();
+                        }
+                        // If the value has an unspecified Kind, treat it as already UTC (no instant shift) by specifying Utc kind
+                        else if (val.Kind == DateTimeKind.Unspecified)
+                        {
+                            _logger?.LogWarning("Normalizing DateTime Kind to UTC for entity {Entity} property {Property} value {Value}", entry.Entity.GetType().Name, prop.Metadata.Name, val);
+                            prop.CurrentValue = DateTime.SpecifyKind(val, DateTimeKind.Utc);
+                        }
+                    }
+                    else if (clrType == typeof(DateTime?))
+                    {
+                        var val = (DateTime?)prop.CurrentValue;
+                        if (val.HasValue)
+                        {
+                            if (val.Value.Kind == DateTimeKind.Local)
+                            {
+                                _logger?.LogWarning("Converting nullable Local DateTime to UTC for entity {Entity} property {Property} value {Value}", entry.Entity.GetType().Name, prop.Metadata.Name, val.Value);
+                                prop.CurrentValue = val.Value.ToUniversalTime();
+                            }
+                            else if (val.Value.Kind == DateTimeKind.Unspecified)
+                            {
+                                _logger?.LogWarning("Normalizing nullable DateTime Kind to UTC for entity {Entity} property {Property} value {Value}", entry.Entity.GetType().Name, prop.Metadata.Name, val.Value);
+                                prop.CurrentValue = DateTime.SpecifyKind(val.Value, DateTimeKind.Utc);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public override int SaveChanges()
+    {
+        NormalizeDateTimeKinds();
+        return base.SaveChanges();
+    }
+
+    public override System.Threading.Tasks.Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, System.Threading.CancellationToken cancellationToken = default)
+    {
+        NormalizeDateTimeKinds();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    public override System.Threading.Tasks.Task<int> SaveChangesAsync(System.Threading.CancellationToken cancellationToken = default)
+    {
+        NormalizeDateTimeKinds();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Public helper to normalize DateTime kinds for consumers that need a retry path from repositories.
+    /// </summary>
+    public void EnsureUtcDateTimes() => NormalizeDateTimeKinds();
 }

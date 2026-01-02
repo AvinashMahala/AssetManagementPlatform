@@ -30,7 +30,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               ref={ref}
               className={cn(
                 "peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-                hasError && "border-destructive focus-visible:ring-destructive",
+                hasError && "border-red-500 focus-visible:ring-red-500",
                 className
               )}
               onChange={handleChange}
@@ -51,7 +51,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               htmlFor={props.id}
               className={cn(
                 "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-                hasError && "text-destructive"
+                hasError && "text-red-500"
               )}
             >
               {props.children}
@@ -61,10 +61,10 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 
         {(error || helperText) && (
           <div className="flex items-center space-x-1">
-            {hasError && <AlertCircle className="h-3 w-3 text-destructive" />}
+            {hasError && <AlertCircle className="h-3 w-3 text-red-500" />}
             <p className={cn(
               "text-sm",
-              hasError && "text-destructive",
+              hasError && "text-red-500",
               !hasError && "text-muted-foreground"
             )}>
               {error || helperText}
