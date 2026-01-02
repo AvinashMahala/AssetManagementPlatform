@@ -47,12 +47,12 @@ export function useProperty(id: string | undefined | null) {
 }
 
 export function useCreateProperty() {
-  return useApiMutation<Property, PropertyInput>((propertyData) => propertyService.create(propertyData));
+  return useApiMutation<any, { data: PropertyInput; audit?: boolean }>((vars) => propertyService.create(vars.data, vars.audit));
 }
 
 export function useUpdateProperty() {
-  return useApiMutation<Property, { id: string; data: Partial<PropertyInput> }>(
-    ({ id, data }) => propertyService.update(id, data)
+  return useApiMutation<any, { id: string; data: Partial<PropertyInput>; audit?: boolean }>(
+    ({ id, data, audit }) => propertyService.update(id, data, audit)
   );
 }
 

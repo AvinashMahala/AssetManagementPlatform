@@ -3,10 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useProperty, useUpdateProperty } from '@/features/properties/hooks/useProperties';
 import navigateBackOrFallback from '@/utils/navigation';
 import PropertyFormTabbed from '@/features/properties/components/forms/PropertyFormTabbed';
+import { AdminAuditModal } from '@/features/common/components/AdminAuditModal';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/componentDesignLibrary';
 import type { PropertyInput } from '@/features/properties/types';
 import { useNotifications } from '@/contexts/NotificationContext';
+
+  const [auditOpen, setAuditOpen] = React.useState(false);
+  const [auditData, setAuditData] = React.useState<any | null>(null);
 
 const PropertyEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,22 +19,39 @@ const PropertyEdit: React.FC = () => {
   const { mutate: updateProperty, loading: updateLoading, error: updateError } = useUpdateProperty();
   const { showSuccess, showError } = useNotifications();
 
-  const handleSubmit = async (data: PropertyInput) => {
+  const handleSubmit = async (data: PropertyInput, options?: { audit?: boolean }) => {
     if (!id) {
       return;
     }
 
     try {
-      await updateProperty({ id, data });
-      // Show success toast and navigate to dashboard
+      const resp = await updateProperty({ id, data, audit: options?.audit });
+
+      if (!resp.success) {
+        if (resp.error && String(resp.error.code).toUpperCase() === 'DUPLICATE_PROPERTY') {
+          showError('Duplicate property exists. Please change identifiers.');
+          return;
+        }
+        showError(resp.error?.message || 'Failed to update property');
+        return;
+      }
+
+      const respData = resp.data;
+      if (options?.audit && respData && (respData as any).dataAudit) {
+        const audit = (respData as any).dataAudit;
+        if (!audit.success) {
+          setAuditData(audit);
+          setAuditOpen(true);
+          return;
+        }
+      }
+
+      // Success
       showSuccess('Property updated', 'Property updated successfully');
       navigate(`/properties/${id}/dashboard`);
     } catch (error: any) {
       console.error('Failed to update property:', error);
-      // Stay on the same page and show error toast
-      const message = error?.message || 'Failed to update property';
-      showError('Update failed', message);
-      // Do not re-throw; keep user on the edit form so they can fix issues
+      showError('Update failed', error?.message || 'Failed to update property');
     }
   };
 
@@ -88,6 +109,16 @@ const PropertyEdit: React.FC = () => {
           propertyName={property?.name}
           propertyId={id}
           apiError={updateError}
+        />
+
+        <AdminAuditModal
+          open={auditOpen}
+          audit={auditData}
+          onClose={() => {
+            setAuditOpen(false);
+            showError('Property updated with audit mismatches (check logs)');
+            navigate(`/properties/${id}/dashboard`);
+          }}
         />
       </div>
     </AppLayout>

@@ -19,6 +19,7 @@ import StatusCurrencyPanel from './components/StatusCurrencyPanel';
 import { Tabs, TabsContent } from '@/componentDesignLibrary';
 // PropertyStatus and currency options are used inside StatusCurrencyPanel
 import { useUser, useUsers, useAuth } from '@/features/auth/hooks/useUsers';
+import { useRBACContext } from '@/contexts/RBACContext';
 import DetailsTab from './tabs/DetailsTab';
 import OwnerTab from './tabs/OwnerTab';
 import AmenitiesTab from './tabs/AmenitiesTab';
@@ -43,6 +44,9 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { roles } = useRBACContext();
+  const isAdmin = !!(roles?.includes('admin') || currentUser?.role === 'admin');
+
   const { data: owner, loading: ownerLoading } = useUser(
     initialData?.ownerId && initialData.ownerId.trim()
       ? initialData.ownerId
@@ -67,6 +71,8 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
     handleSubmit,
     hasTabData
   } = usePropertyForm({ initialData, isEdit, currentUserId: currentUser?.id, onSubmit, apiError, owner, ownerLoading });
+
+  const [auditChecked, setAuditChecked] = React.useState(false);
 
   // All form state and behavior moved into usePropertyForm
 
@@ -98,9 +104,15 @@ const PropertyFormTabbed: React.FC<PropertyFormTabbedProps> = ({
       hasTabData={isEdit ? hasTabData : undefined}
       onNext={handleNext}
       onPrevious={handlePrevious}
-      onSubmit={handleSubmit}
+      onSubmit={(e?: any) => handleSubmit(e, { audit: auditChecked })}
       onCancel={handleCancel}
       submitLabel={isEdit ? "Save Changes" : "Create Property"}
+      footerCenter={isAdmin ? (
+        <label className="flex items-center space-x-2">
+          <input type="checkbox" checked={auditChecked} onChange={(e) => setAuditChecked(e.target.checked)} className="rounded" />
+          <span className="text-sm">Run data audit</span>
+        </label>
+      ) : undefined}
     >
       {errors.submit && (
         <div role="alert" className="p-4 mb-4 rounded bg-red-50 text-red-700">

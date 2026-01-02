@@ -40,6 +40,9 @@ export interface GenericTabbedFormProps {
   nextLabel?: string;
   previousLabel?: string;
 
+  // Optional footer center content (e.g., audit checkbox)
+  footerCenter?: React.ReactNode;
+
   // Content
   children: React.ReactNode;
 }

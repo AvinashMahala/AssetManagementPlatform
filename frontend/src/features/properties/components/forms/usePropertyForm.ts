@@ -10,7 +10,7 @@ interface UsePropertyFormOptions {
   initialData?: Partial<PropertyInput>;
   isEdit?: boolean;
   currentUserId?: string | undefined;
-  onSubmit: (data: PropertyInput) => Promise<void>;
+  onSubmit: (data: PropertyInput, options?: { audit?: boolean }) => Promise<void>;
   apiError?: ApiError | null;
   owner?: any;
   ownerLoading?: boolean;
@@ -167,7 +167,7 @@ export const usePropertyForm = ({ initialData, isEdit = false, currentUserId, on
     if (currentIndex > 0) setActiveTab(TABS_CONST[currentIndex - 1].id as TabId);
   };
 
-  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent, options?: { audit?: boolean }) => {
     if (e && typeof (e as any).preventDefault === 'function') (e as any).preventDefault();
     setErrors(prev => ({ ...prev, submit: '' }));
 
@@ -183,7 +183,7 @@ export const usePropertyForm = ({ initialData, isEdit = false, currentUserId, on
 
     setIsSubmitting(true);
     try {
-      await onSubmit(formData);
+      await onSubmit(formData, options);
     } catch (err: any) {
       setErrors(prev => ({ ...prev, submit: err?.message || 'Submit failed' }));
       throw err;

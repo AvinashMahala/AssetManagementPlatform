@@ -126,17 +126,19 @@ class PropertyService {
     };
   }
 
-  async create(propertyData: PropertyInput): Promise<ApiResponse<Property>> {
+  async create(propertyData: PropertyInput, audit: boolean = false): Promise<ApiResponse<any>> {
     const payload = this.mapToApiPayload(propertyData);
-    return apiClient.post<Property>(API_ENDPOINTS.PROPERTIES, payload);
+    const url = audit ? `${API_ENDPOINTS.PROPERTIES}?audit=true` : API_ENDPOINTS.PROPERTIES;
+    return apiClient.post<any>(url, payload);
   }
 
-  async update(id: string, propertyData: Partial<PropertyInput>): Promise<ApiResponse<Property>> {
-    logger.debug('Updating property', { propertyId: id, fields: Object.keys(propertyData) });
+  async update(id: string, propertyData: Partial<PropertyInput>, audit: boolean = false): Promise<ApiResponse<any>> {
+    logger.debug('Updating property', { propertyId: id, fields: Object.keys(propertyData), audit });
     const startTime = Date.now();
     try {
       const payload = this.mapToApiPayload(propertyData);
-      const result = await apiClient.put<Property>(`${API_ENDPOINTS.PROPERTIES}/${id}`, payload);
+      const url = audit ? `${API_ENDPOINTS.PROPERTIES}/${id}?audit=true` : `${API_ENDPOINTS.PROPERTIES}/${id}`;
+      const result = await apiClient.put<any>(url, payload);
       const duration = Date.now() - startTime;
       logger.info('Property updated successfully', { propertyId: id, duration: `${duration}ms` });
       return result;

@@ -7,6 +7,7 @@ import { Button } from '@/componentDesignLibrary';
 import { PageLoadingSpinner } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout/AppLayout';
 import UnitFormTabbed from '@/features/units/components/forms/UnitFormTabbed';
+import { AdminAuditModal } from '@/features/common/components/AdminAuditModal';
 import type { UnitInput } from '@/features/units/types';
 import './UnitEditPage.module.scss';
 
@@ -15,6 +16,9 @@ export const UnitEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: unit, loading: loadingUnit, error: loadError } = useUnit(id!);
   const { mutate: updateUnit, loading: updating } = useUpdateUnit();
+
+  const [auditOpen, setAuditOpen] = React.useState(false);
+  const [auditData, setAuditData] = React.useState<any | null>(null);
 
   const handleSubmit = async (data: UnitInput, options?: { audit?: boolean }) => {
     if (!id) return;
@@ -34,9 +38,8 @@ export const UnitEditPage: React.FC = () => {
       if (options?.audit && respData && (respData as any).dataAudit) {
         const audit = (respData as any).dataAudit;
         if (!audit.success) {
-          // Keep update but inform user
-          navigateBackOrFallback(navigate, '/units', { state: { message: 'Unit updated with audit mismatches (check logs)' } });
-          console.info('Data Audit Issues:', audit.issues);
+          setAuditData(audit);
+          setAuditOpen(true);
           return;
         }
       }
@@ -99,6 +102,15 @@ export const UnitEditPage: React.FC = () => {
           onSubmit={handleSubmit}
           loading={updating}
           isEdit={true}
+        />
+
+        <AdminAuditModal
+          open={auditOpen}
+          audit={auditData}
+          onClose={() => {
+            setAuditOpen(false);
+            navigateBackOrFallback(navigate, '/units', { state: { message: 'Unit updated with audit mismatches' } });
+          }}
         />
       </div>
     </AppLayout>

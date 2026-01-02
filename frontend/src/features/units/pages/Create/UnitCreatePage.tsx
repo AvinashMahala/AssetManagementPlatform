@@ -4,6 +4,7 @@ import navigateBackOrFallback from '@/utils/navigation';
 import { useCreateUnit } from '@/features/units/hooks/useUnits';
 import { useNotifications } from '@/contexts';
 import UnitFormTabbed from '@/features/units/components/forms/UnitFormTabbed';
+import { AdminAuditModal } from '@/features/common/components/AdminAuditModal';
 import type { UnitInput } from '@/features/units/types';
 import './UnitCreatePage.module.scss';
 
@@ -14,6 +15,10 @@ export const UnitCreatePageTabbed: React.FC = () => {
   const { showSuccess, showError } = useNotifications();
 
   const propertyId = searchParams.get('propertyId');
+
+  const [auditOpen, setAuditOpen] = React.useState(false);
+  const [auditData, setAuditData] = React.useState<any | null>(null);
+  const [auditEntityId, setAuditEntityId] = React.useState<string | null>(null);
 
   const handleSubmit = async (data: UnitInput, options?: { audit?: boolean }) => {
     try {
@@ -34,18 +39,24 @@ export const UnitCreatePageTabbed: React.FC = () => {
       const respData = resp.data;
       if (options?.audit && respData && (respData as any).dataAudit) {
         const audit = (respData as any).dataAudit;
-        // Show a success message and log audit issues
-        if (!audit.success) {
-          showError('Unit created, but data audit found mismatches. Check console for details.');
-          console.info('Data Audit Issues:', audit.issues);
-        } else {
+        const createdId = (respData as any).unit?.id || (respData as any).id || null;
+        setAuditData(audit);
+        setAuditEntityId(createdId);
+        setAuditOpen(true);
+
+        if (audit.success) {
           showSuccess('Unit created and audit passed.');
+        } else {
+          showError('Unit created, but data audit found mismatches.');
         }
       } else {
         showSuccess('Unit created successfully!');
       }
 
-      navigateBackOrFallback(navigate, '/units');
+      // If the modal is not going to open, navigate back immediately
+      if (!options?.audit || !(resp.data && (resp.data as any).dataAudit)) {
+        navigateBackOrFallback(navigate, '/units');
+      }
     } catch (error) {
       console.error('Failed to create unit:', error);
       showError('Failed to create unit. Please try again.');
@@ -53,10 +64,22 @@ export const UnitCreatePageTabbed: React.FC = () => {
   };
 
   return (
-    <UnitFormTabbed
-      onSubmit={handleSubmit}
-      loading={loading}
-      initialData={propertyId ? { propertyId } : undefined}
-    />
+    <>
+      <UnitFormTabbed
+        onSubmit={handleSubmit}
+        loading={loading}
+        initialData={propertyId ? { propertyId } : undefined}
+      />
+
+      <AdminAuditModal
+        open={auditOpen}
+        audit={auditData}
+        onClose={() => {
+          setAuditOpen(false);
+          navigateBackOrFallback(navigate, '/units');
+        }}
+        onView={auditEntityId ? () => navigate(`/units/${auditEntityId}/edit`) : undefined}
+      />
+    </>
   );
 };
