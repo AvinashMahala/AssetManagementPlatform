@@ -45,10 +45,81 @@ public class RentTransaction
 {
     public Guid Id { get; set; }
     public Guid LeaseId { get; set; }
-    public Guid? ReceiptId { get; set; }
+    public Guid? UnitId { get; set; }
+    public Guid TenantId { get; set; }
+    public Guid PropertyId { get; set; }
+
+    // Billing period
+    public DateTime BillingPeriodStart { get; set; }
+    public DateTime BillingPeriodEnd { get; set; }
+    public string BillingMethod { get; set; } = "relative";
+    public int DaysCount { get; set; }
+
+    // Amounts
+    public decimal BaseRent { get; set; } = 0m;
+    public decimal MaintenanceCharges { get; set; } = 0m;
+    public decimal PreviousBalance { get; set; } = 0m;
+    public decimal TotalMeterCharges { get; set; } = 0m;
+    public decimal TotalExpenses { get; set; } = 0m;
+
+    // Stored as JSON in DB
+    public string Expenses { get; set; } = "[]";
+    [NotMapped]
+    public System.Text.Json.Nodes.JsonNode? ExpensesJson
+    {
+        get => string.IsNullOrEmpty(Expenses) ? null : System.Text.Json.Nodes.JsonNode.Parse(Expenses);
+        set => Expenses = value?.ToJsonString();
+    }
+
+    // Total amount for the transaction
     public decimal Amount { get; set; }
+    public decimal AmountPaid { get; set; } = 0m;
+    public decimal NewBalance { get; set; } = 0m;
+
+    // Payment details
+    public string Payments { get; set; } = "[]"; // jsonb
+    [NotMapped]
+    public System.Text.Json.Nodes.JsonNode? PaymentsJson
+    {
+        get => string.IsNullOrEmpty(Payments) ? null : System.Text.Json.Nodes.JsonNode.Parse(Payments);
+        set => Payments = value?.ToJsonString();
+    }
+    public DateTime? PaidDate { get; set; }
+    public string Status { get; set; } = "draft";
+    public string? PaymentMethod { get; set; }
+    public string? TransactionId { get; set; }
+    public string? PaymentReference { get; set; }
+    public decimal? LateFee { get; set; }
+    public decimal? PenaltyAmount { get; set; }
+
+    // Receipt and invoice
+    public bool ReceiptGenerated { get; set; } = false;
+    public string? InvoiceNumber { get; set; }
+    public DateTime? InvoiceDate { get; set; }
+    public string? InvoicePdfUrl { get; set; }
+
+    // Workflow tracking
+    public string WorkflowStatus { get; set; } = "invoice_pending";
+    public bool InvoiceGenerated { get; set; } = false;
+    public DateTime? InvoiceSentDate { get; set; }
+    public bool NotificationSent { get; set; } = false;
+    public DateTime? NotificationSentDate { get; set; }
+    public string? NotificationMethod { get; set; }
+    public DateTime? LastPaymentDate { get; set; }
+    public bool ReceiptSent { get; set; } = false;
+    public DateTime? ReceiptSentDate { get; set; }
+    public DateTime? WorkflowCompletedDate { get; set; }
+
+    // Notes and tracking
+    public string? Notes { get; set; }
+    public Guid CreatedBy { get; set; }
+    public Guid? UpdatedBy { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public string Status { get; set; } = "open";
+    public DateTime? UpdatedAt { get; set; }
+
+    // Model-only property that is not present as a column in DB
+    public Guid? ReceiptId { get; set; }
 }
 
 public class Receipt

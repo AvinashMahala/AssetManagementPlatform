@@ -49,6 +49,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUnitUtilityRepository, UnitUtilityRepository>();
         services.AddScoped<IMeterRepository, MeterRepository>();
         services.AddScoped<IMeterReadingRepository, MeterReadingRepository>();
+        // New repositories for utilities billing
+        services.AddScoped<IMeterAllocationRepository, MeterAllocationRepository>();
+        services.AddScoped<ITariffRepository, TariffRepository>();
+        services.AddScoped<IRentTransactionMeterReadingRepository, RentTransactionMeterReadingRepository>();
+        services.AddScoped<IUtilitySubscriptionRepository, UtilitySubscriptionRepository>();
+        services.AddScoped<IUtilityTypeRepository, UtilityTypeRepository>();
         // Ensure LeaseRepository is registered (already wired above) - other repositories will be added per-feature
 
         // Permission category repository

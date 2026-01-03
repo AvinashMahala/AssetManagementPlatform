@@ -1,0 +1,16 @@
+{
+  "description": "List of meter allocations",
+  "content": {
+    "application/json": {
+      "example": [
+        {
+          "id": "33333333-3333-3333-3333-333333333333",
+          "meterId": "33333333-3333-3333-3333-333333333333",
+          "subscriptionId": "44444444-4444-4444-4444-444444444444",
+          "allocationFraction": 0.5,
+          "effectiveFrom": "2026-01-01"
+        }
+      ]
+    }
+  }
+}

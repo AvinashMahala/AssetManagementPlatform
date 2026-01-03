@@ -5,6 +5,7 @@ using MyApp.Interfaces;
 using MyApp.Models;
 using MyApp.Core;
 using Microsoft.Extensions.DependencyInjection;
+using MyApp.Interfaces.Repositories;
 
 namespace MyApp.Services;
 
@@ -18,14 +19,16 @@ public class RentTransactionService : IRentTransactionService
     private readonly IServiceScopeFactory _scopes;
     private readonly IMeterRepository _meterRepo;
     private readonly IMeterReadingRepository _readingRepo;
+    private readonly IRentTransactionMeterReadingRepository _txnMeterReadingRepo;
 
-    public RentTransactionService(IRentTransactionRepository repo, IEventBus events, IServiceScopeFactory scopes, IMeterRepository meterRepo, IMeterReadingRepository readingRepo)
+    public RentTransactionService(IRentTransactionRepository repo, IEventBus events, IServiceScopeFactory scopes, IMeterRepository meterRepo, IMeterReadingRepository readingRepo, IRentTransactionMeterReadingRepository txnMeterReadingRepo)
     {
         _repo = repo;
         _events = events;
         _scopes = scopes;
         _meterRepo = meterRepo ?? throw new ArgumentNullException(nameof(meterRepo));
         _readingRepo = readingRepo ?? throw new ArgumentNullException(nameof(readingRepo));
+        _txnMeterReadingRepo = txnMeterReadingRepo ?? throw new ArgumentNullException(nameof(txnMeterReadingRepo));
 
         // Subscribe to payment created events to create transactions using a scoped resolver
         _events.Subscribe<RentPaymentCreatedEvent>(async evt =>
@@ -121,6 +124,7 @@ public class RentTransactionService : IRentTransactionService
         return result;
     }
 
+    public Task<IEnumerable<RentTransactionMeterReading>> GetMeterReadingsAsync(Guid transactionId) => _txnMeterReadingRepo.FindByTransactionAsync(transactionId);
 }
 
 /// <summary>

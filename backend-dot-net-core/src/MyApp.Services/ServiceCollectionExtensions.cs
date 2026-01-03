@@ -48,6 +48,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMeterService, MeterService>();
         services.AddScoped<IMeterReadingService, MeterReadingService>();
 
+        // New services for utility billing
+        services.AddScoped<ITariffService, TariffService>();
+        services.AddScoped<IMeterAllocationService, MeterAllocationService>();
+        services.AddScoped<IBillingService, BillingService>();
+
+
         // Event bus: prefer RabbitMQ when configured, otherwise use in-memory for dev/testing
         var rabbitHost = configuration["RabbitMq:Host"];
         if (!string.IsNullOrEmpty(rabbitHost))

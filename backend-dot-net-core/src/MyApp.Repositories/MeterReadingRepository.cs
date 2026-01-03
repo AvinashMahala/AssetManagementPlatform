@@ -20,6 +20,9 @@ public class MeterReadingRepository : IMeterReadingRepository
 
     public async Task<IEnumerable<MeterReading>> ListByMeterAsync(Guid meterId) => await _db.Set<MeterReading>().Where(r => r.MeterId == meterId).ToListAsync();
 
+    public async Task<MeterReading?> GetLatestByMeterBeforeDateAsync(Guid meterId, DateTime date)
+        => await _db.Set<MeterReading>().Where(r => r.MeterId == meterId && r.ReadingDate <= date).OrderByDescending(r => r.ReadingDate).FirstOrDefaultAsync();
+
     public async Task AddAsync(MeterReading r)
     {
         if (r.Id == Guid.Empty) r.Id = Guid.NewGuid();

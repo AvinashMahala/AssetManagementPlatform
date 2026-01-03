@@ -1,0 +1,17 @@
+{
+  "content": {
+    "application/json": {
+      "example": {
+        "utilityTypeId": "11111111-1111-1111-1111-111111111111",
+        "subscriptionId": null,
+        "meterId": null,
+        "name": "Default electricity tariff",
+        "description": "Baseline rate for electricity",
+        "effectiveFrom": "2026-01-01T00:00:00Z",
+        "ratePerUnit": 1.25,
+        "fixedCharge": 10.00,
+        "tieredRates": []
+      }
+    }
+  }
+}

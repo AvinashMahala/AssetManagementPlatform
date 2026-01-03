@@ -1,0 +1,8 @@
+{
+  "description": "Billing run result",
+  "content": {
+    "application/json": {
+      "example": { "transactionId": "66666666-6666-6666-6666-666666666666" }
+    }
+  }
+}

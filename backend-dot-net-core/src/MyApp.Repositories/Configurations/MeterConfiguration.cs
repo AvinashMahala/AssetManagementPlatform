@@ -19,7 +19,8 @@ public class MeterConfiguration : IEntityTypeConfiguration<Meter>
         builder.Property(m => m.MeterType).HasColumnName("meter_type").HasMaxLength(50);
         builder.Property(m => m.MeterName).HasColumnName("meter_name").HasMaxLength(255);
 
-        builder.Property(m => m.Multiplier).HasColumnName("multiplier");
+        // DB column is device_multiplier (hardware multiplier); map the model property to that column
+        builder.Property(m => m.Multiplier).HasColumnName("device_multiplier");
         builder.Property(m => m.CostPerUnit).HasColumnName("cost_per_unit");
         builder.Property(m => m.FixedCharge).HasColumnName("fixed_charge");
 

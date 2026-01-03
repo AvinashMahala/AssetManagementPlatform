@@ -30,11 +30,20 @@ public class AppDbContext : DbContext
     public DbSet<MyApp.Models.Tenant> Tenants => Set<MyApp.Models.Tenant>();
     public DbSet<MyApp.Models.TenantDocument> TenantDocuments => Set<MyApp.Models.TenantDocument>();
     public DbSet<MyApp.Models.Unit> Units => Set<MyApp.Models.Unit>();
+
+    // Rent transaction meter readings snapshots
+    public DbSet<MyApp.Models.RentTransactionMeterReading> RentTransactionMeterReadings => Set<MyApp.Models.RentTransactionMeterReading>();
+    public DbSet<MyApp.Models.UtilitySubscription> UtilitySubscriptions => Set<MyApp.Models.UtilitySubscription>();
+    public DbSet<MyApp.Models.UtilityType> UtilityTypes => Set<MyApp.Models.UtilityType>();
     public DbSet<MyApp.Models.UnitTenant> UnitTenants => Set<MyApp.Models.UnitTenant>();
     public DbSet<MyApp.Models.Expense> Expenses => Set<MyApp.Models.Expense>();
     public DbSet<MyApp.Models.UnitUtility> UnitUtilities => Set<MyApp.Models.UnitUtility>();
     public DbSet<MyApp.Models.Meter> Meters => Set<MyApp.Models.Meter>();
     public DbSet<MyApp.Models.MeterReading> MeterReadings => Set<MyApp.Models.MeterReading>();
+
+    // New utilities billing tables
+    public DbSet<MyApp.Models.MeterAllocation> MeterAllocations => Set<MyApp.Models.MeterAllocation>();
+    public DbSet<MyApp.Models.Tariff> Tariffs => Set<MyApp.Models.Tariff>();
     public DbSet<MyApp.Models.SessionToken> SessionTokens => Set<MyApp.Models.SessionToken>();
     public DbSet<MyApp.Models.SessionJti> SessionJtis => Set<MyApp.Models.SessionJti>();
 

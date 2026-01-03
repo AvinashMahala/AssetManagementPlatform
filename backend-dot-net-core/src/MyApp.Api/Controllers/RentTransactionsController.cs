@@ -97,6 +97,20 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     }
 
     /// <summary>
+    /// Lists meter reading snapshots associated with a rent transaction.
+    /// </summary>
+    /// <summary>
+    /// Lists meter reading snapshots for a transaction.
+    /// </summary>
+    [HttpGet("{id}/meter-readings")]
+    [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<MyApp.Models.RentTransactionMeterReading>), 200)]
+    public async Task<IActionResult> GetMeterReadings(Guid id)
+    {
+        var items = await _service.GetMeterReadingsAsync(id);
+        return Ok(items);
+    }
+
+    /// <summary>
     /// Creates a new rent transaction.
     /// </summary>
     /// <param name="request">Transaction payload.</param>

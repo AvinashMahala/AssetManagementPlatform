@@ -1,0 +1,24 @@
+{
+  "description": "Meter reading snapshots for a transaction",
+  "content": {
+    "application/json": {
+      "example": [
+        {
+          "id": "77777777-7777-7777-7777-777777777777",
+          "transactionId": "66666666-6666-6666-6666-666666666666",
+          "meterId": "33333333-3333-3333-3333-333333333333",
+          "subscriptionId": "44444444-4444-4444-4444-444444444444",
+          "meterName": "Main Building Meter",
+          "meterType": "electricity",
+          "previousReading": 1000.0,
+          "currentReading": 1100.5,
+          "unitsConsumed": 100.5,
+          "costPerUnit": 1.25,
+          "fixedCharge": 5.0,
+          "totalCost": 131.125,
+          "readingDate": "2026-01-31T00:00:00Z"
+        }
+      ]
+    }
+  }
+}
