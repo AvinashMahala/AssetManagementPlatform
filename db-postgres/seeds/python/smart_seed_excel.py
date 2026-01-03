@@ -2,7 +2,7 @@
 """
 Create simplified Excel file with seed data - No UUIDs needed!
 The flexible_seed.py script will generate UUIDs dynamically and handle foreign keys
-Data is loaded from db/seeds/data/seed_data_templates.json for easier maintenance
+Data is loaded from db-postgres/seeds/data/seed_data_templates.json for easier maintenance
 """
 import pandas as pd
 import json
@@ -19,13 +19,13 @@ def convert_to_proper_types(df, int_columns=None):
 
 def load_json_templates():
     """Load seed data templates from JSON file"""
-    template_file = 'db/seeds/data/seed_data_templates.json'
+    template_file = 'db-postgres/seeds/data/seed_data_templates.json'
     try:
         with open(template_file, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"❌ Template file not found: {template_file}")
-        print(f"   Please ensure seed_data_templates.json exists in db/seeds/data/ directory")
+        print(f"   Please ensure seed_data_templates.json exists in db-postgres/seeds/data/ directory")
         return None
     except json.JSONDecodeError as e:
         print(f"❌ Error parsing JSON template file: {e}")
@@ -110,7 +110,7 @@ def create_smart_seed_excel():
     print(f"   ✓ Foreign keys resolved automatically by seed_to_db.py")
     print(f"   ✓ Edit JSON file to modify seed data")
     print(f"")
-    print(f"📝 Next: Run 'python3 scripts/seed_to_db.py' to seed database")
+    print(f"📝 Next: Run 'python3 db-postgres/seeds/python/seed_to_db.py' or 'npm run seed:db' to seed database")
 
 if __name__ == '__main__':
     create_smart_seed_excel()

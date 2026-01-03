@@ -164,7 +164,7 @@ def create_all_tables(conn):
     """Create all tables from schema files"""
     print_step("Creating database schema...")
     
-    schema_dir = 'db/schema'
+    schema_dir = 'db-postgres/schema'
     if not os.path.exists(schema_dir):
         print_error(f"Schema directory not found: {schema_dir}")
         return False
@@ -1310,7 +1310,7 @@ def main():
         print(f"   - Tenant Documents: {SUMMARY.get('tenant_documents', len(seed_data.get('tenant_documents', [])))}")
         print()
         print("✨ All UUIDs generated dynamically!")
-        print("📝 Edit JSON file (db/seeds/data/seed_data_templates.json) to add more data")
+        print("📝 Edit JSON file (db-postgres/seeds/data/seed_data_templates.json) to add more data")
         print("📝 Then run smart_seed_excel.py to generate Excel, and re-run this script")
         print()
         logging.info(f"Summary written to {summary_file}")

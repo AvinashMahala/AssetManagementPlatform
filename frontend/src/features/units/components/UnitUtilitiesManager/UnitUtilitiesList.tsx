@@ -55,8 +55,8 @@ export const UnitUtilitiesList: React.FC<UnitUtilitiesListProps> = ({
                 {utility.billingMethod === UtilityBillingMethod.FIXED && utility.fixedAmount && (
                   <span>Amount: ₹{utility.fixedAmount}</span>
                 )}
-                {utility.billingMethod === UtilityBillingMethod.METER_BASED && utility.multiplier && (
-                  <span>Multiplier: {utility.multiplier}x</span>
+                {utility.billingMethod !== UtilityBillingMethod.FIXED && utility.billingMultiplier && (
+                  <span>Multiplier: {utility.billingMultiplier}x</span>
                 )}
               </div>
             </div>

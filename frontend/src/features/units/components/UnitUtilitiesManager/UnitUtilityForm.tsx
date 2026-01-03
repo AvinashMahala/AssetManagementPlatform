@@ -147,12 +147,12 @@ export const UnitUtilityForm: React.FC<UnitUtilityFormProps> = ({
                 </label>
                 <input
                   type="number"
-                  value={formData.multiplier || ''}
-                  onChange={(e) => setFormData({ ...formData, multiplier: parseFloat(e.target.value) || undefined })}
+                  value={formData.billingMultiplier || ''}
+                  onChange={(e) => setFormData({ ...formData, billingMultiplier: parseFloat(e.target.value) || undefined })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="1.0"
-                  min="0.1"
-                  max="10.0"
+                  min="0.0001"
+                  max="100.0"
                   step="0.1"
                   required
                 />

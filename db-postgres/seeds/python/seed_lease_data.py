@@ -25,7 +25,7 @@ BLUE = '\033[94m'
 YELLOW = '\033[93m'
 RESET = '\033[0m'
 
-SEED_DATA_FILE = 'db/seeds/data/seed_data_templates.json'
+SEED_DATA_FILE = 'db-postgres/seeds/data/seed_data_templates.json'
 
 # UUID mappings to maintain foreign key relationships
 lease_uuids = {}

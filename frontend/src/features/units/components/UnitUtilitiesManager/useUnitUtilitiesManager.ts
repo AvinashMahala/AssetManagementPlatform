@@ -22,6 +22,7 @@ export const useUnitUtilitiesManager = (unitId: string, propertyId: string) => {
     utilityName: '',
     billingMethod: UtilityBillingMethod.FIXED,
     isEnabled: true,
+    billingMultiplier: undefined,
   });
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export const useUnitUtilitiesManager = (unitId: string, propertyId: string) => {
         setFormData(prev => ({
           ...prev,
           meterId: matchingMeter.meterId,
-          multiplier: prev.multiplier || 1.0 // Default multiplier
+          billingMultiplier: prev.billingMultiplier || 1.0 // Default multiplier
         }));
       }
     }

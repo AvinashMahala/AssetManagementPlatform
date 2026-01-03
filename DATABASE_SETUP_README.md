@@ -81,7 +81,7 @@ The pipeline includes safety checks:
 This project supports server-side per-session refresh tokens stored in the `session_tokens` table. If you are setting up a new database or restoring one, ensure you run the SQL migration file:
 
 ```bash
-psql <your-connection-string> -f db/schema/027_session_tokens.sql
+psql <your-connection-string> -f db-postgres/schema/027_session_tokens.sql
 ```
 
 ## RBAC / Permissions
@@ -89,7 +89,7 @@ psql <your-connection-string> -f db/schema/027_session_tokens.sql
 The project includes RBAC tables for permissions and categories. If you're creating a fresh database or restoring, apply the RBAC schema file:
 
 ```bash
-psql <your-connection-string> -f db/schema/030_permissions.sql
+psql <your-connection-string> -f db-postgres/schema/030_permissions.sql
 ```
 
 Notes:

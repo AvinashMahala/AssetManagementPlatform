@@ -62,16 +62,16 @@ export const MeterReadingForm: React.FC<MeterReadingFormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currentReading">Current Reading *</Label>
+              <Label htmlFor="readingValue">Reading Value *</Label>
               <Input
-                id="currentReading"
+                id="readingValue"
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.currentReading}
-                onChange={(e) => onInputChange('currentReading', parseFloat(e.target.value) || 0)}
+                value={formData.readingValue}
+                onChange={(e) => onInputChange('readingValue', parseFloat(e.target.value) || 0)}
               />
-              {errors.currentReading && <p className="text-sm text-red-600">{errors.currentReading}</p>}
+              {errors.readingValue && <p className="text-sm text-red-600">{errors.readingValue}</p>}
             </div>
           </div>
 

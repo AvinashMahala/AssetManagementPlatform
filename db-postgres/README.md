@@ -25,11 +25,11 @@ npm run init-db
 To seed specific data types, use the scripts in `seeds/`:
 ```bash
 # Example: Seed properties (ensure you have python dependencies installed)
-python3 db/seeds/python/seed_property_data.py
+python3 db-postgres/seeds/python/seed_property_data.py
 ```
 
 ### Verifying Database
 To verify the database state:
 ```bash
-python3 db/scripts/verify_database.py
+python3 db-postgres/scripts/verify_database.py
 ```

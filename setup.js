@@ -363,7 +363,7 @@ async function setupPythonVenv() {
   }
   const pipPath = process.platform === 'win32' ? path.join(venvPath, 'Scripts', 'pip.exe') : path.join(venvPath, 'bin', 'pip');
   if (existsSync(path.join(projectRoot, 'db', 'seeds', 'python', 'seeding_requirements.txt'))) {
-    try { execCommand(`${pipPath} install -U pip`); execCommand(`${pipPath} install -r db/seeds/python/seeding_requirements.txt`); }
+    try { execCommand(`${pipPath} install -U pip`); execCommand(`${pipPath} install -r db-postgres/seeds/python/seeding_requirements.txt`); }
     catch (e) { warn('Failed to install python seeding requirements'); }
   } else info('No python seeding requirements found');
 }

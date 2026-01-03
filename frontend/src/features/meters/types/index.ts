@@ -16,7 +16,7 @@ export interface Meter {
   meterType: MeterType;
   meterName: string; // e.g., "Main Electricity Meter", "Kitchen Water Meter"
   meterNumber?: string; // optional meter number/serial
-  multiplier: number; // multiplier for calculations (default 1.0)
+  deviceMultiplier: number; // hardware multiplier for device conversions (default 1.0)
   remarks?: string;
 
   // Pricing configuration
@@ -41,7 +41,7 @@ export interface MeterInput {
   meterType: MeterType;
   meterName: string;
   meterNumber?: string;
-  multiplier?: number;
+  deviceMultiplier?: number;
   remarks?: string;
 
   // Pricing configuration
@@ -60,10 +60,10 @@ export interface MeterReading {
 
   // Reading details
   readingDate: string;
-  previousReading: number;
-  currentReading: number;
-  unitsConsumed: number; // auto-calculated: current - previous
-  totalCost: number; // auto-calculated: (unitsConsumed * costPerUnit) + fixedCharge
+  readingValue: number;
+  readingType?: string;
+  unitsConsumed?: number; // auto-calculated: current - previous
+  totalCost?: number; // auto-calculated: (unitsConsumed * costPerUnit) + fixedCharge
 
   // Photo evidence
   meterPhotoUrl?: string;

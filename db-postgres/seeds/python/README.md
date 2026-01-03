@@ -44,7 +44,7 @@ python3 scripts/clean_property_data.py
 - Meters
 - Expenses
 
-**Data source**: `db/seeds/data/seed_data_templates.json`
+**Data source**: `db-postgres/seeds/data/seed_data_templates.json`
 
 **Usage**:
 ```bash

@@ -113,6 +113,42 @@ For detailed instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 └─────────────────┘
 ```
 
+### Utility Billing Lifecycle (Owner → Property → Unit → Subscription → Meter → Readings → Rent Transaction)
+
+```
+Owner
+  |
+  v
+Property
+  |
+  v
+Unit
+  |
+  v
+Utility Subscription (per-unit config; fixed or meter_allocated)
+  |
+  v
+Meter(s) (device metadata, device_multiplier)
+  |
+  v
+Meter Readings (reading_value, reading_date, reading_type)
+  |
+  v
+Meter Allocations (apportion shared meters to subscriptions)
+  |
+  v
+Tariffs (rate per unit, time ranges, tiers)
+  |
+  v
+Billing Runner → Rent Transaction (snapshots in rent_transaction_meter_readings)
+```
+
+**Notes:**
+- Readings use high precision (NUMERIC(14,6)) to avoid truncation.
+- Tariffs allow time-varying and tiered pricing scoped to subscription or meter.
+- `rent_transaction_meter_readings` stores immutable snapshots (readings + pricing) for auditability and reproducibility of past bills.
+
+
 ### Frontend Architecture (Layered React Pattern)
 
 ```

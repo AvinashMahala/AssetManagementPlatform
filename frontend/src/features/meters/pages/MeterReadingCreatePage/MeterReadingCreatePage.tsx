@@ -14,7 +14,7 @@ export const MeterReadingCreatePage: React.FC = () => {
 
   const [formData, setFormData] = useState<Partial<MeterReadingInput>>({
     readingDate: new Date().toISOString().split('T')[0], // Today's date
-    currentReading: 0,
+    readingValue: 0,
     meterPhotoUrl: '',
   });
 
@@ -25,7 +25,7 @@ export const MeterReadingCreatePage: React.FC = () => {
     if (latestReading) {
       setFormData(prev => ({
         ...prev,
-        previousReading: latestReading.currentReading,
+        previousReading: latestReading.readingValue,
       }));
     }
   }, [latestReading]);
@@ -42,12 +42,13 @@ export const MeterReadingCreatePage: React.FC = () => {
       newErrors.readingDate = 'Reading date is required';
     }
 
-    if (formData.currentReading === undefined || formData.currentReading < 0) {
-      newErrors.currentReading = 'Current reading must be a positive number';
+    const value = formData.readingValue;
+    if (value === undefined || value === null || value < 0) {
+      newErrors.readingValue = 'Reading value must be a positive number';
     }
 
-    if (latestReading && formData.currentReading! <= latestReading.currentReading) {
-      newErrors.currentReading = 'Current reading must be greater than the previous reading';
+    if (latestReading && value! <= (latestReading.readingValue ?? 0)) {
+      newErrors.readingValue = 'Reading value must be greater than the previous reading';
     }
 
     setErrors(newErrors);
@@ -59,7 +60,13 @@ export const MeterReadingCreatePage: React.FC = () => {
     try {
       await createReading({
         meterId: id,
-        data: formData as Omit<MeterReadingInput, 'meterId'>
+        data: {
+          readingDate: new Date(formData.readingDate!),
+          readingValue: formData.readingValue,
+          readingType: 'actual',
+          meterPhotoUrl: formData.meterPhotoUrl,
+          recordedBy: 'system'
+        } as any
       });
       navigate(`/meters/${id}`, {
         state: { message: 'Meter reading added successfully!' }

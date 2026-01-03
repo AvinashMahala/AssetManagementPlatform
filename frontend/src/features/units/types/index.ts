@@ -17,7 +17,8 @@ export type UtilityTypeValue = typeof UtilityType[keyof typeof UtilityType];
 
 export const UtilityBillingMethod = {
   FIXED: 'fixed',
-  METER_BASED: 'meter_based'
+  METER_BASED: 'meter_based',
+  METER_ALLOCATED: 'meter_allocated'
 } as const;
 export type UtilityBillingMethodValue = typeof UtilityBillingMethod[keyof typeof UtilityBillingMethod];
 
@@ -31,7 +32,7 @@ export interface UnitUtility {
   billingMethod: UtilityBillingMethodValue;
   fixedAmount?: number;
   meterId?: string;
-  multiplier?: number;
+  billingMultiplier?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,7 +46,7 @@ export interface UnitUtilityInput {
   billingMethod: UtilityBillingMethodValue;
   fixedAmount?: number;
   meterId?: string;
-  multiplier?: number;
+  billingMultiplier?: number;
 }
 
 export interface Unit {
