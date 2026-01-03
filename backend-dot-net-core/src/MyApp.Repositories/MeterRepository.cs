@@ -30,6 +30,32 @@ public class MeterRepository : IMeterRepository
         await _db.SaveChangesAsync();
     }
 
+    public async Task<bool> UpdateStatusAsync(Guid id, bool? isActive, string? status)
+    {
+        var m = await GetByIdAsync(id);
+        if (m is null) return false;
+
+        var entry = _db.Entry(m);
+
+        if (isActive != null)
+        {
+            m.IsActive = isActive;
+            entry.Property(e => e.IsActive).IsModified = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            m.Status = status;
+            entry.Property(e => e.Status).IsModified = true;
+        }
+
+        m.UpdatedAt = DateTime.UtcNow;
+        entry.Property(e => e.UpdatedAt).IsModified = true;
+
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var m = await GetByIdAsync(id);

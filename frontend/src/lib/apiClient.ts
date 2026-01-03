@@ -105,28 +105,54 @@ class ApiClient {
     }
 
     // Handle error responses
-    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string; errors?: Array<{ field: string; errors: string[] }>; };
-    let errorMessage: string;
+    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string; errors?: Array<{ field: string; errors: string[] }>; extensions?: Record<string, unknown> };
 
-    // If API returned validation errors in `errors` array (FluentValidation shape from server), map them
+    // Helper to detect DB constraint errors from exception text
+    const detectDbConstraint = (text?: string) => {
+      if (!text) return null;
+      const t = text.toLowerCase();
+      if (t.includes('23503') || t.includes('violates foreign key constraint') || t.includes('foreign key')) {
+        return { code: 'DB_FOREIGN_KEY_VIOLATION', message: 'Cannot complete this action because related records exist. Remove dependent records first.' };
+      }
+      if (t.includes('23505') || t.includes('duplicate key') || t.includes('unique constraint')) {
+        return { code: 'DB_UNIQUE_VIOLATION', message: 'A record with the same unique value already exists.' };
+      }
+      if (t.includes('sqlstate') || t.includes('postgres')) {
+        return { code: 'DB_ERROR', message: 'A database error occurred. Please check constraints and try again.' };
+      }
+      return null;
+    };
+
+    // Look for inner exception text in ProblemDetails extensions or common properties
+    const innerExceptionText = (errorData && ((errorData as any).extensions?.innerException || (errorData as any).extensions?.exception || (errorData as any).innerException || (errorData as any).exception)) as string | undefined;
+    let mappedDb = null as null | { code: string; message: string };
+    if (typeof innerExceptionText === 'string') mappedDb = detectDbConstraint(innerExceptionText);
+    if (!mappedDb) {
+      const combined = `${errorData?.message ?? ''} ${(errorData?.error as any)?.message ?? ''}`;
+      mappedDb = detectDbConstraint(combined);
+    }
+
+    let errorMessage: string;
+    let errorCode: string | undefined;
+
     if (Array.isArray((errorData as any)?.errors) && (errorData as any).errors.length > 0) {
       errorMessage = 'Validation failed';
+      errorCode = 'VALIDATION_ERROR';
+    } else if (mappedDb) {
+      errorMessage = mappedDb.message;
+      errorCode = mappedDb.code;
     } else if (typeof errorData?.error === 'string') {
-      // Backend sends { success: false, error: "error message" }
       errorMessage = errorData.error;
     } else if (errorData?.error?.message) {
-      // Backend sends { success: false, error: { message: "error message" } }
       errorMessage = errorData.error.message;
     } else if (errorData?.message) {
-      // Fallback to message field
       errorMessage = errorData.message;
     } else {
-      // Final fallback to HTTP status
       errorMessage = `HTTP ${response.status}: ${response.statusText}`;
     }
 
     const error: ApiError = {
-      code: (Array.isArray((errorData as any)?.errors) ? 'VALIDATION_ERROR' : (typeof errorData?.error === 'object' ? errorData.error.code : undefined)) || `HTTP_${response.status}`,
+      code: errorCode || (Array.isArray((errorData as any)?.errors) ? 'VALIDATION_ERROR' : (typeof errorData?.error === 'object' ? (errorData.error as any).code : undefined)) || `HTTP_${response.status}`,
       message: errorMessage,
       details: (Array.isArray((errorData as any)?.errors) ? { errors: (errorData as any).errors } : (typeof errorData?.error === 'object' ? errorData.error.details : undefined)) as Record<string, unknown> | undefined,
     };
@@ -159,6 +185,13 @@ class ApiClient {
         : this.getHeaders(config?.headers);
       
       const body = isFormData ? data : (data && method !== 'GET' ? JSON.stringify(data) : undefined);
+
+      // Detect non-versioned API calls during development to catch legacy callers
+      if (typeof endpoint === 'string' && endpoint.startsWith('/api/') && !endpoint.startsWith('/api/v1/')) {
+        // Capture a short stack so we can find the caller in browser/dev logs
+        const stack = new Error('Non-versioned API call stack').stack;
+        logger.warn(`Non-versioned API call detected: ${method} ${endpoint}`, { stack });
+      }
 
       // Log request
       logger.debug(`API Request: ${method} ${endpoint}`, {

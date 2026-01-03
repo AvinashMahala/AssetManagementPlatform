@@ -88,46 +88,49 @@ class MeterService {
     };
   }
 
+  private readonly BASE = '/api/v1/meters';
+  private readonly READING_BASE = '/api/v1/meterreadings';
+
   /**
    * Get meter by ID
    */
   async getById(id: string): Promise<ApiResponse<Meter>> {
-    return apiClient.get<Meter>(`/api/meters/${id}`);
+    return apiClient.get<Meter>(`${this.BASE}/${id}`);
   }
 
   /**
    * Create new meter
    */
   async create(data: MeterInput): Promise<ApiResponse<Meter>> {
-    return apiClient.post<Meter>('/api/v1/meters', data);
+    return apiClient.post<Meter>(`${this.BASE}`, data);
   }
 
   /**
    * Update meter
    */
   async update(id: string, data: Partial<MeterInput>): Promise<ApiResponse<Meter>> {
-    return apiClient.put<Meter>(`/api/meters/${id}`, data);
+    return apiClient.put<Meter>(`${this.BASE}/${id}`, data);
   }
 
   /**
    * Delete meter
    */
   async delete(id: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`/api/meters/${id}`);
+    return apiClient.delete<void>(`${this.BASE}/${id}`);
   }
 
   /**
    * Update meter status
    */
   async updateStatus(id: string, isActive: boolean): Promise<ApiResponse<void>> {
-    return apiClient.patch<void>(`/api/meters/${id}/status`, { isActive });
+    return apiClient.patch<void>(`${this.BASE}/${id}/status`, { isActive });
   }
 
   /**
    * Get meter readings for a meter
    */
   async getMeterReadings(meterId: string, startDate?: string, endDate?: string): Promise<ApiResponse<{ readings: MeterReading[] }>> {
-    let url = `/api/meters/${meterId}/readings`;
+    let url = `${this.READING_BASE}/meter/${meterId}`;
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
@@ -136,45 +139,52 @@ class MeterService {
   }
 
   /**
-   * Get latest meter reading
+   * Get latest meter reading (fetches readings and returns the most recent one)
    */
   async getLatestReading(meterId: string): Promise<ApiResponse<MeterReading>> {
-    return apiClient.get<MeterReading>(`/api/meters/${meterId}/readings/latest`);
+    const res = await this.getMeterReadings(meterId);
+    if (!res.success) return { success: false, message: res.message, requestId: res.requestId } as ApiResponse<MeterReading>;
+    const readings = res.data?.readings ?? [];
+    if (readings.length === 0) return { success: false, message: 'No readings found', requestId: res.requestId } as ApiResponse<MeterReading>;
+    const latest = readings.reduce((a, b) => new Date(a.readingDate) > new Date(b.readingDate) ? a : b);
+    return { success: true, data: latest, message: res.message, requestId: res.requestId };
   }
 
   /**
    * Create meter reading
    */
   async createReading(meterId: string, data: Omit<MeterReadingInput, 'meterId'>): Promise<ApiResponse<MeterReading>> {
-    return apiClient.post<MeterReading>(`/api/meters/${meterId}/readings`, data);
+    // backend expects POST /api/v1/meterreadings with meterId in body
+    const payload = { meterId, ...data } as MeterReadingInput;
+    return apiClient.post<MeterReading>(`${this.READING_BASE}`, payload);
   }
 
   /**
    * Update meter reading
    */
   async updateReading(id: string, data: Partial<MeterReadingInput>): Promise<ApiResponse<MeterReading>> {
-    return apiClient.put<MeterReading>(`/api/meters/readings/${id}`, data);
+    return apiClient.put<MeterReading>(`${this.READING_BASE}/${id}`, data);
   }
 
   /**
    * Delete meter reading
    */
   async deleteReading(id: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`/api/meters/readings/${id}`);
+    return apiClient.delete<void>(`${this.READING_BASE}/${id}`);
   }
 
   /**
    * Get meter trend data
    */
   async getTrendData(meterId: string, months: number = 6): Promise<ApiResponse<{ trend: any[] }>> {
-    return apiClient.get<{ trend: any[] }>(`/api/meters/${meterId}/trend?months=${months}`);
+    return apiClient.get<{ trend: any[] }>(`${this.BASE}/${meterId}/trend?months=${months}`);
   }
 
   /**
    * Get meter statistics
    */
   async getStatistics(meterId: string): Promise<ApiResponse<any>> {
-    return apiClient.get<any>(`/api/meters/${meterId}/statistics`);
+    return apiClient.get<any>(`${this.BASE}/${meterId}/statistics`);
   }
 }
 

@@ -11,6 +11,7 @@ public interface IMeterService
     Task<Meter?> GetByIdAsync(Guid id);
     Task<Meter> CreateAsync(Meter m);
     Task<Meter?> UpdateAsync(Guid id, Meter m);
+    Task<bool> UpdateStatusAsync(Guid id, bool? isActive, string? status);
     Task<bool> DeleteAsync(Guid id);
     Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId);
     Task<IEnumerable<Meter>> ListByUnitAsync(Guid unitId);

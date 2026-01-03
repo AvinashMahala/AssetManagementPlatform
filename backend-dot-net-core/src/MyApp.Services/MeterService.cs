@@ -74,6 +74,11 @@ public class MeterService(IMeterRepository repo) : IMeterService
     /// <returns>True if deleted.</returns>
     public async Task<bool> DeleteAsync(Guid id) { await _repo.DeleteAsync(id); return true; }
 
+    public async Task<bool> UpdateStatusAsync(Guid id, bool? isActive, string? status)
+    {
+        return await _repo.UpdateStatusAsync(id, isActive, status);
+    }
+
     /// <summary>
     /// Lists meters for a property.
     /// </summary>

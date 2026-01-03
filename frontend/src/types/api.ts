@@ -17,8 +17,21 @@ export interface ApiError {
 export function getErrorMessage(error: string | ApiError | null | undefined): string {
   if (!error) return '';
   if (typeof error === 'string') return error;
-  return error.message;
-}
+
+  // Map known error codes to friendly messages
+  switch (error.code) {
+    case 'DB_FOREIGN_KEY_VIOLATION':
+      return error.message || 'Cannot complete action because other records depend on this resource. Remove dependent records first.';
+    case 'DB_UNIQUE_VIOLATION':
+      return error.message || 'A record with the same unique value already exists.';
+    case 'DB_ERROR':
+      return error.message || 'A database error occurred. Please check constraints and try again.';
+    case 'VALIDATION_ERROR':
+      return error.message || 'Validation failed. Please check the input and try again.';
+    default:
+      return error.message;
+  }
+} 
 
 
 export interface PaginationParams {

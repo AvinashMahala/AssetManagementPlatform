@@ -72,6 +72,26 @@ public class MetersController(IMeterService service) : ControllerBase
     public async Task<IActionResult> Delete(Guid id) { await _service.DeleteAsync(id); return NoContent(); }
 
     /// <summary>
+    /// Updates the status or active flag of a meter (e.g., active/inactive).
+    /// </summary>
+    /// <param name="id">Meter id.</param>
+    /// <param name="body">JSON body with an optional 'isActive' boolean and/or 'status' string.</param>
+    /// <returns>204 No Content on success; 400 Bad Request when body missing/invalid; 404 Not Found when meter missing.</returns>
+    [HttpPatch("{id:guid}/status")]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] dynamic body)
+    {
+        // Accept either { isActive: true } or { status: "inactive" } or both
+        bool? isActive = body?.isActive;
+        string? status = body?.status;
+        if (isActive == null && string.IsNullOrWhiteSpace(status)) return BadRequest();
+
+        var ok = await _service.UpdateStatusAsync(id, isActive, status);
+        if (!ok) return NotFound();
+        return NoContent();
+    }
+
+    /// <summary>
     /// Lists meters for a property.
     /// </summary>
     /// <param name="propertyId">Property id.</param>
