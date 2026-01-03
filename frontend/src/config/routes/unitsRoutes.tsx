@@ -15,30 +15,36 @@ export const unitsRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.UNITS,
     element: <UnitListPage />,
     isProtected: true,
+    requiredPermission: 'units:unit:view'
   },
   {
     path: ROUTE_PATHS.UNITS_CREATE,
     element: <AppLayout><UnitCreatePage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'units:unit:create'
   },
   {
     path: ROUTE_PATHS.UNITS_CREATE_TABBED,
     element: <AppLayout><UnitCreatePage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'units:unit:create'
   },
   {
     path: ROUTE_PATHS.UNIT_DETAIL,
     element: <AppLayout><UnitDetailPage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'units:unit:view'
   },
   {
     path: ROUTE_PATHS.UNIT_DASHBOARD,
     element: <AppLayout><UnitDashboardPage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'units:unit:view'
   },
   {
     path: ROUTE_PATHS.UNIT_EDIT,
     element: <UnitEditPage />,
     isProtected: true,
+    requiredPermission: 'units:unit:update'
   },
 ];

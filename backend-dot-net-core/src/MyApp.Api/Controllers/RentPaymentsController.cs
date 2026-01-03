@@ -1,0 +1,112 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using MyApp.Interfaces;
+using MyApp.Models;
+
+namespace MyApp.Api.Controllers;
+
+/// <summary>
+/// Controller for managing rent payments.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="RentPaymentsController"/> class.
+/// </remarks>
+/// <param name="service">The rent payment service.</param>
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/rent-payments")]
+[Microsoft.AspNetCore.Authorization.Authorize]
+public class RentPaymentsController(IRentPaymentService service) : ControllerBase
+{
+    public const string _viewPerm = "payments:payment:view";
+    public const string _createPerm = "payments:payment:create";
+    public const string _updatePerm = "payments:payment:update";
+    public const string _deletePerm = "payments:payment:delete";
+
+    private readonly IRentPaymentService _service = service;
+
+  /// <summary>
+  /// Lists all rent payments.
+  /// </summary>
+  /// <returns>200 OK with list of rent payments.</returns>
+  [HttpGet]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+
+    [HttpGet("lease/{leaseId}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> GetByLease(Guid leaseId) => Ok(await _service.ListByLeaseAsync(leaseId));
+
+    [HttpGet("property/{propertyId}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> GetByProperty(string propertyId)
+    {
+        if (!Guid.TryParse(propertyId, out var pid)) return BadRequest("Invalid propertyId");
+        return Ok(await _service.ListByPropertyAsync(pid));
+    }
+
+    [HttpGet("tenant/{tenantId}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> GetByTenant(string tenantId)
+    {
+        if (!Guid.TryParse(tenantId, out var tid)) return BadRequest("Invalid tenantId");
+        return Ok(await _service.ListByTenantAsync(tid));
+    }
+
+
+    /// <summary>
+    /// Gets a rent payment by id.
+    /// </summary>
+    /// <param name="id">Payment id.</param>
+    /// <returns>200 OK with payment; 404 Not Found if missing.</returns>
+    [HttpGet("{id}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var p = await _service.GetByIdAsync(id);
+        if (p is null) return NotFound();
+        return Ok(p);
+    }
+
+    /// <summary>
+    /// Creates a new rent payment.
+    /// </summary>
+    /// <param name="request">Rent payment payload.</param>
+    /// <returns>201 Created with created payment.</returns>
+    [HttpPost]
+    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
+    public async Task<IActionResult> Create([FromBody] RentPayment request)
+    {
+        var created = await _service.CreateAsync(request);
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+    }
+
+    /// <summary>
+    /// Updates an existing rent payment.
+    /// </summary>
+    /// <param name="id">Payment id.</param>
+    /// <param name="payload">Updated payment payload.</param>
+    /// <returns>204 No Content on success.</returns>
+    [HttpPut("{id}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] RentPayment payload)
+    {
+        payload.Id = id;
+        await _service.UpdateAsync(payload);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Deletes a rent payment.
+    /// </summary>
+    /// <param name="id">Payment id.</param>
+    /// <returns>204 No Content on success.</returns>
+    [HttpDelete("{id}")]
+    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _service.DeleteAsync(id);
+        return NoContent();
+    }
+}

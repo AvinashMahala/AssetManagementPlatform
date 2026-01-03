@@ -4,8 +4,8 @@ import { FormField, Input, Textarea, Button, Select, SelectContent, SelectItem, 
 import type { PropertyReceiptTemplate, BankDetails, WalletDetails } from '@/features/properties/types';
 
 interface ReceiptTemplateFormProps {
-  value: PropertyReceiptTemplate;
-  onChange: (value: PropertyReceiptTemplate) => void;
+  value: PropertyReceiptTemplate | Partial<PropertyReceiptTemplate>;
+  onChange: (value: PropertyReceiptTemplate | Partial<PropertyReceiptTemplate>) => void;
 }
 
 const WALLET_TYPES = [
@@ -17,13 +17,39 @@ const WALLET_TYPES = [
 ] as const;
 
 const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChange }) => {
+  const DEFAULT_TEMPLATE: PropertyReceiptTemplate = {
+    propertyId: '',
+    bankDetails: {
+      bankName: '',
+      accountNumber: '',
+      ifscCode: '',
+      accountHolderName: ''
+    },
+    wallets: [],
+    additionalInfo: {}
+  };
+
+  const safeValue: PropertyReceiptTemplate = {
+    ...DEFAULT_TEMPLATE,
+    ...(value as Partial<PropertyReceiptTemplate>),
+    bankDetails: {
+      ...DEFAULT_TEMPLATE.bankDetails,
+      ...(value?.bankDetails || {})
+    },
+    wallets: value?.wallets ?? [],
+    additionalInfo: {
+      ...DEFAULT_TEMPLATE.additionalInfo,
+      ...(value?.additionalInfo || {})
+    }
+  };
+
   const handleChange = (field: keyof PropertyReceiptTemplate, fieldValue: any) => {
-    onChange({ ...value, [field]: fieldValue });
+    onChange({ ...safeValue, [field]: fieldValue });
   };
 
   const handleBankDetailsChange = (field: keyof BankDetails, fieldValue: string) => {
     handleChange('bankDetails', {
-      ...value.bankDetails,
+      ...safeValue.bankDetails,
       [field]: fieldValue
     });
   };
@@ -36,22 +62,22 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
       upiId: '',
       generateUPILinks: true
     };
-    handleChange('wallets', [...value.wallets, newWallet]);
+    handleChange('wallets', [...safeValue.wallets, newWallet]);
   };
 
   const removeWallet = (index: number) => {
-    handleChange('wallets', value.wallets.filter((_, i) => i !== index));
+    handleChange('wallets', safeValue.wallets.filter((_, i) => i !== index));
   };
 
   const updateWallet = (index: number, field: keyof WalletDetails, fieldValue: any) => {
-    const updated = [...value.wallets];
+    const updated = [...safeValue.wallets];
     updated[index] = { ...updated[index], [field]: fieldValue };
     handleChange('wallets', updated);
-  };
+  }; 
 
   const handleAdditionalInfoChange = (field: string, fieldValue: string) => {
     handleChange('additionalInfo', {
-      ...value.additionalInfo,
+      ...safeValue.additionalInfo,
       [field]: fieldValue
     });
   };
@@ -72,7 +98,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Bank Name" required>
             <Input
-              value={value.bankDetails.bankName}
+              value={safeValue.bankDetails.bankName}
               onChange={(e) => handleBankDetailsChange('bankName', e.target.value)}
               placeholder="e.g., HDFC Bank"
             />
@@ -80,7 +106,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
 
           <FormField label="Account Holder Name" required>
             <Input
-              value={value.bankDetails.accountHolderName}
+              value={safeValue.bankDetails.accountHolderName}
               onChange={(e) => handleBankDetailsChange('accountHolderName', e.target.value)}
               placeholder="Account holder name"
             />
@@ -88,7 +114,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
 
           <FormField label="Account Number" required>
             <Input
-              value={value.bankDetails.accountNumber}
+              value={safeValue.bankDetails.accountNumber}
               onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
               placeholder="Account number"
             />
@@ -96,7 +122,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
 
           <FormField label="IFSC Code" required>
             <Input
-              value={value.bankDetails.ifscCode}
+              value={safeValue.bankDetails.ifscCode}
               onChange={(e) => handleBankDetailsChange('ifscCode', e.target.value)}
               placeholder="e.g., HDFC0001234"
             />
@@ -124,7 +150,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
         </div>
 
         <div className="space-y-4">
-          {value.wallets.map((wallet, index) => (
+          {safeValue.wallets.map((wallet, index) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium text-gray-900">Wallet {index + 1}</h4>
@@ -234,7 +260,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
             </div>
           ))}
 
-          {value.wallets.length === 0 && (
+          {safeValue.wallets.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Smartphone className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <p>No UPI wallets added yet</p>
@@ -327,7 +353,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Terms and Conditions">
             <Textarea
-              value={value.additionalInfo.termsAndConditions || ''}
+              value={safeValue.additionalInfo.termsAndConditions || ''}
               onChange={(e) => handleAdditionalInfoChange('termsAndConditions', e.target.value)}
               placeholder="Enter terms and conditions for receipts..."
               rows={3}
@@ -336,7 +362,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
 
           <FormField label="Payment Instructions">
             <Textarea
-              value={value.additionalInfo.paymentInstructions || ''}
+              value={safeValue.additionalInfo.paymentInstructions || ''}
               onChange={(e) => handleAdditionalInfoChange('paymentInstructions', e.target.value)}
               placeholder="Enter payment instructions..."
               rows={3}
@@ -345,7 +371,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
 
           <FormField label="Contact Information">
             <Textarea
-              value={value.additionalInfo.contactInfo || ''}
+              value={safeValue.additionalInfo.contactInfo || ''}
               onChange={(e) => handleAdditionalInfoChange('contactInfo', e.target.value)}
               placeholder="Enter contact information..."
               rows={2}
@@ -354,7 +380,7 @@ const ReceiptTemplateForm: React.FC<ReceiptTemplateFormProps> = ({ value, onChan
 
           <FormField label="Custom Footer">
             <Textarea
-              value={value.additionalInfo.customFooter || ''}
+              value={safeValue.additionalInfo.customFooter || ''}
               onChange={(e) => handleAdditionalInfoChange('customFooter', e.target.value)}
               placeholder="Enter custom footer text..."
               rows={2}

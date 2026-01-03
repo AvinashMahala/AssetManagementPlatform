@@ -63,7 +63,14 @@ export function useUnitTransactionHistory(unitId: string, limit?: number) {
  * Get last meter readings for a unit
  */
 export function useLastMeterReadings(unitId: string) {
-  const query = useCallback(() => rentTransactionService.getLastMeterReadings(unitId), [unitId]);
+  const query = useCallback(async () => {
+    const resp = await rentTransactionService.getLastMeterReadings(unitId);
+    if (!resp.success && resp.error && String(resp.error.code).toUpperCase().startsWith('HTTP_404')) {
+      return { success: true, data: [] } as ApiResponse<any[]>;
+    }
+    return resp;
+  }, [unitId]);
+
   return useApi<any[]>(query, [unitId]);
 }
 

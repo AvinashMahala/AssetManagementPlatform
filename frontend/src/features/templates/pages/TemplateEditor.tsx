@@ -4,6 +4,7 @@ import { templateService } from '@/features/templates/services/templateService';
 import { Button, PageLoadingSpinner } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import { ArrowLeft, Save, Eye, Sparkles } from 'lucide-react';
+import { useCan } from '@/contexts/RBACContext';
 
 interface TemplateConfig {
   layout: any;
@@ -40,6 +41,9 @@ export default function TemplateEditor() {
       setIsLoading(false);
     }
   };
+
+  const canPreview = useCan('templates:receipttemplate:preview');
+  const canUpdate = useCan('templates:receipttemplate:update');
 
   const generatePreview = useCallback(async () => {
     try {
@@ -108,11 +112,11 @@ export default function TemplateEditor() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={generatePreview} disabled>
+          <Button variant="outline" onClick={generatePreview} disabled={!canPreview}>
             <Eye className="w-4 h-4 mr-2" />
             Live Preview
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving || !canUpdate}>
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? 'Saving...' : 'Save'}
           </Button>

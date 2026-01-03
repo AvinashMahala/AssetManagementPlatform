@@ -28,8 +28,11 @@ describe('Button', () => {
 
   it('shows loading state', () => {
     render(<Button loading>Loading</Button>);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
-    expect(screen.getByText('⟳')).toBeInTheDocument();
+    // button text is 'Loading' (no ellipsis)
+    expect(screen.getByText('Loading')).toBeInTheDocument();
+    // loading spinner should be present as an svg
+    const button = screen.getByRole('button');
+    expect(button.querySelector('svg')).toBeInTheDocument();
   });
 
   it('is disabled when loading', () => {
@@ -55,7 +58,8 @@ describe('Button', () => {
   it('applies fullWidth style', () => {
     render(<Button fullWidth>Full Width</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveStyle({ width: '100%' });
+    // implementation uses utility class 'w-full' instead of inline style
+    expect(button).toHaveClass('w-full');
   });
 
   it('applies custom testId', () => {

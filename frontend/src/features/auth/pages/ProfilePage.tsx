@@ -18,7 +18,7 @@ import {
   Moon,
   Coffee
 } from 'lucide-react';
-import { ProfileForm, ResetPasswordForm } from '../components';
+import { ProfileForm, ResetPasswordForm, SessionsPanel } from '../components';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
@@ -291,6 +291,12 @@ export const ProfilePage: React.FC = () => {
                 />
               </CardContent>
             </Card>
+
+            {/* Sessions */}
+            <div>
+              {/* use SessionsPanel component */}
+              <SessionsPanel />
+            </div>
 
             {/* Account Actions */}
             <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">

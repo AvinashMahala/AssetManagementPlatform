@@ -1,0 +1,8 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": {
+      "examples": { "default": { "value": { "result": "ok" } } }
+    }
+  }
+}

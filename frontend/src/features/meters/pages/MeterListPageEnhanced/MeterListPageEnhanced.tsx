@@ -14,7 +14,7 @@ export const MeterListPageEnhanced: React.FC = () => {
   const location = useLocation();
   const { mutate: deleteMeter, loading: deleting } = useDeleteMeter();
   const { mutate: updateStatus, loading: updatingStatus } = useUpdateMeterStatus();
-  const { showError } = useNotifications();
+  const { showError, showSuccess } = useNotifications();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Animation refs
@@ -111,8 +111,13 @@ export const MeterListPageEnhanced: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this meter? This action cannot be undone.')) {
       try {
-        await deleteMeter(id);
+        const resp = await deleteMeter(id);
+        if (!resp.success) {
+          showError(getErrorMessage(resp.error));
+          return;
+        }
         refetch();
+        showSuccess('Meter deleted successfully');
       } catch (err) {
         console.error('Failed to delete meter:', err);
         showError('Failed to delete meter. Please try again.');

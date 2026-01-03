@@ -1,0 +1,10 @@
+{
+  "description": "Bad Request",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Email already in use." } }
+      }
+    }
+  }
+}

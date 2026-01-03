@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "J:\\GithubProjects\\001_AssetManagementPlatform\\backend\\logs\\backend\\.1c23d72984b88f9f90a77823c10ad8a0e45dd805-audit.json",
+    "files": [
+        {
+            "date": 1766824454360,
+            "name": "J:\\GithubProjects\\001_AssetManagementPlatform\\backend\\logs\\backend\\error-2025-12-27.log",
+            "hash": "9fe086cca513f9a236e7426e0df42cc55bd394ce5c3e887049096e45843049a1"
+        }
+    ],
+    "hashType": "sha256"
+}

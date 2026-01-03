@@ -2,12 +2,15 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/componentDesignLibrary';
 import './Header.scss';
+import { useCan } from '@/contexts/RBACContext';
 
 interface HeaderProps {
   onUploadClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ onUploadClick }) => {
+  const canUpload = useCan('files:file:upload');
+
   return (
     <div className="files-list-header flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
       <div>
@@ -16,14 +19,16 @@ export const Header: React.FC<HeaderProps> = ({ onUploadClick }) => {
         </h1>
       </div>
       <div className="header-actions flex gap-2">
-        <Button
-          onClick={onUploadClick}
-          className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-          title="Upload new files"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Upload Files
-        </Button>
+        {canUpload && (
+          <Button
+            onClick={onUploadClick}
+            className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+            title="Upload new files"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Upload Files
+          </Button>
+        )}
       </div>
     </div>
   );

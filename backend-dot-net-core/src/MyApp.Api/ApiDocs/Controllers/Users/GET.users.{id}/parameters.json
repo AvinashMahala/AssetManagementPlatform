@@ -1,0 +1,7 @@
+{
+  "id": {
+    "in": "path",
+    "example": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+    "required": true
+  }
+}

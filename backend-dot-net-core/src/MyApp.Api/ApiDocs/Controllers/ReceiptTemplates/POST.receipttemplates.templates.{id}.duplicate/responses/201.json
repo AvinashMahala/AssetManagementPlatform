@@ -1,0 +1,10 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "id": "new-template-id", "name": "Copied Template" } }
+      }
+    }
+  }
+}

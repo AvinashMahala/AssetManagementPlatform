@@ -1,0 +1,7 @@
+{
+  "tenantIds": ["00000000-0000-0000-0000-000000000300"],
+  "subject": "Maintenance Notice",
+  "message": "Planned maintenance on 2025-02-15.",
+  "channels": ["email"],
+  "attachments": ["00000000-0000-0000-0000-000000000400"]
+}

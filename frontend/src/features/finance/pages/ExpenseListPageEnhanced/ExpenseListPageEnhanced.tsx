@@ -15,6 +15,7 @@ import { useProperties } from '@/features/properties/hooks/useProperties';
 import { useUnits } from '@/features/units/hooks/useUnits';
 import { format, isWithinInterval } from 'date-fns';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useCan } from '@/contexts/RBACContext';
 import type { Property } from '@/features/properties/types';
 import type { Unit } from '@/features/units/types';
 import type { ExpenseWithDetails, ExpenseTypeValue, ExpenseFrequencyValue, ExpenseDistributionValue, ExpenseStatusValue } from '@/features/finance/types';
@@ -56,6 +57,12 @@ const ExpenseListPageEnhanced: React.FC = () => {
   const deleteExpense = useDeleteExpense();
   const archiveExpense = useArchiveExpense();
   const { showSuccess, showError } = useNotifications();
+
+  // Permissions
+  const canView = useCan('expenses:expense:view');
+  const canCreate = useCan('expenses:expense:create');
+  const canUpdate = useCan('expenses:expense:update');
+  const canDelete = useCan('expenses:expense:delete');
 
   // Helper functions
   const getPropertyName = (propertyId: string) => {
@@ -430,14 +437,16 @@ const ExpenseListPageEnhanced: React.FC = () => {
             </h1>
           </div>
           <div className="header-actions flex gap-2">
-            <Button
-              onClick={() => navigate('/expenses/create-tabbed')}
-              className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-              title="Add a new expense record"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Expense
-            </Button>
+            {canCreate && (
+              <Button
+                onClick={() => navigate('/expenses/create-tabbed')}
+                className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                title="Add a new expense record"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Expense
+              </Button>
+            )}
           </div>
         </div>
 
@@ -651,23 +660,29 @@ const ExpenseListPageEnhanced: React.FC = () => {
             <div className="bulk-actions">
               {showBulkActions && (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleBulkArchiveClick} disabled={bulkActionLoading}>
-                    <Archive className="h-4 w-4 mr-2" />
-                    Archive Selected
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleBulkExport} disabled={bulkActionLoading}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Selected
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleBulkDeleteClick}
-                    disabled={bulkActionLoading}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Selected
-                  </Button>
+                  {canUpdate && (
+                    <Button variant="outline" size="sm" onClick={handleBulkArchiveClick} disabled={bulkActionLoading}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive Selected
+                    </Button>
+                  )}
+                  {canView && (
+                    <Button variant="outline" size="sm" onClick={handleBulkExport} disabled={bulkActionLoading}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Selected
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDeleteClick}
+                      disabled={bulkActionLoading}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
                 </>
               )}
             </div>
@@ -808,24 +823,28 @@ const ExpenseListPageEnhanced: React.FC = () => {
                       >
                         <Eye className="h-3 w-3" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        title="Edit Expense"
-                        onClick={() => navigate(`/expenses/${expense.id}/edit`)}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        title="Delete Expense"
-                        onClick={() => handleDeleteClick(expense)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      {canUpdate && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="Edit Expense"
+                          onClick={() => navigate(`/expenses/${expense.id}/edit`)}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="Delete Expense"
+                          onClick={() => handleDeleteClick(expense)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -842,10 +861,12 @@ const ExpenseListPageEnhanced: React.FC = () => {
                   ? 'Try adjusting your filters to see more expenses.'
                   : 'Get started by adding your first expense.'}
               </p>
-              <Button onClick={() => navigate('/expenses/create')}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Expense
-              </Button>
+              {canCreate && (
+                <Button onClick={() => navigate('/expenses/create')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Expense
+                </Button>
+              )}
             </div>
           )}
         </div>

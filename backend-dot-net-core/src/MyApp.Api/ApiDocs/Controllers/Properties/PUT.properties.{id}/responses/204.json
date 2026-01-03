@@ -1,0 +1,10 @@
+﻿{
+  "description": "No content - update successful",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": {} }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "content": {
+    "multipart/form-data": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "file": { "type": "string", "format": "binary" },
+          "entityType": { "type": "string" },
+          "entityId": { "type": "string" }
+        },
+        "required": ["file"]
+      },
+      "examples": {
+        "default": {
+          "summary": "Upload example",
+          "value": {
+            "entityType": "property",
+            "entityId": "00000000-0000-0000-0000-000000000000",
+            "file": "<binary>"
+          }
+        }
+      }
+    }
+  }
+}

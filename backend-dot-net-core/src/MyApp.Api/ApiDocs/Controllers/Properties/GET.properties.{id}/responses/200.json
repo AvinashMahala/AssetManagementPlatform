@@ -1,0 +1,19 @@
+﻿{
+    "description":  "Single PropertyDto",
+    "content":  {
+                    "application/json":  {
+                                             "examples":  {
+                                                              "default":  {
+                                                                              "summary":  "Example property",
+                                                                              "value":  {
+                                                                                            "id":  "d290f1ee-6c54-4b01-90e6-d701748f0851",
+                                                                                            "name":  "Greenwood Apartments",
+                                                                                            "address":  "123 Green St, Springfield",
+                                                                                            "ownerId":  "e7a1d2f7-3c4b-4f76-9f8f-3a5c6f9e4b2c",
+                                                                                            "status":  "active"
+                                                                                        }
+                                                                          }
+                                                          }
+                                         }
+                }
+}

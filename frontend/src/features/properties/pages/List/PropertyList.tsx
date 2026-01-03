@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Building2, FileImage } from 'lucide-react';
 import { useProperties, useDeleteProperty } from '@/features/properties/hooks/useProperties';
 import { useNotifications } from '@/contexts';
+import { useCan } from '@/contexts/RBACContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/componentDesignLibrary';
 import { Button } from '@/componentDesignLibrary';
 import {
@@ -40,6 +41,7 @@ const PropertyList: React.FC = () => {
   const { properties, loading, error, displayError, updateFilters } = useProperties(filters);
   const { mutate: deleteProperty, loading: deleteLoading } = useDeleteProperty();
   const { showSuccess, showError } = useNotifications();
+  const canCreate = useCan('properties:property:create');
 
   // Filter properties based on search, status, and type
   const filteredProperties = useMemo(() => {
@@ -266,14 +268,17 @@ const PropertyList: React.FC = () => {
                 <FileImage className="mr-2 h-4 w-4" />
                 Templates
               </Button>
-              <Button
-                className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-                onClick={() => navigate('/properties/create-tabbed')}
-                title="Step-by-step guided form with progress tracking"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Property
-              </Button>
+              {/* Show create only if user has create permission (RBAC) */}
+              {canCreate && (
+                <Button
+                  className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                  onClick={() => navigate('/properties/create-tabbed')}
+                  title="Step-by-step guided form with progress tracking"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Property
+                </Button>
+              )}
             </div>
           </div>
 
@@ -380,10 +385,13 @@ const PropertyList: React.FC = () => {
                     : 'Get started by creating your first property'}
                 </p>
                 {!searchQuery && statusFilter === 'all' && typeFilter === 'all' && (
-                  <Button className="empty-action-button" onClick={() => navigate('/properties/create')}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Property
-                  </Button>
+                  // Only show Add button when user has permission
+                  canCreate ? (
+                    <Button className="empty-action-button" onClick={() => navigate('/properties/create')}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Property
+                    </Button>
+                  ) : null
                 )}
               </div>
             </CardContent>

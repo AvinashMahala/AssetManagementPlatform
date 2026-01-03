@@ -1,0 +1,3 @@
+{
+  "receiptNumber": { "in": "path", "example": "R-2025-0001" }
+}

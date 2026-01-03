@@ -8,4 +8,5 @@ export interface ButtonProps
   asChild?: boolean
   loading?: boolean
   fullWidth?: boolean
+  testId?: string
 }

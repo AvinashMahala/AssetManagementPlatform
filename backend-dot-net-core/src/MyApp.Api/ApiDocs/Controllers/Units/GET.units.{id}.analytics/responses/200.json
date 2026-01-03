@@ -1,0 +1,4 @@
+{
+  "description": "OK",
+  "content": { "application/json": { "examples": { "default": { "value": { "unitId": "44444444-4444-4444-4444-444444444444", "occupancyRate": 0.95, "averageMonthlyRent": 1250.00, "charges": { "water": 30.0, "electricity": 45.0 } } } } } }
+}

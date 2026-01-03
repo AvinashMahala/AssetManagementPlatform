@@ -1,0 +1,10 @@
+﻿{
+  "description": "Property or template not found",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Property or template not found." } }
+      }
+    }
+  }
+}

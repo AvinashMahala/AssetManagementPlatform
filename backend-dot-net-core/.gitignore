@@ -1,0 +1,24 @@
+# Visual Studio / .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+
+# Local DB files
+*.db
+
+# Logs
+*.log
+
+# Temporary
+*.tmp

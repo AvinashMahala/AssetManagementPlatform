@@ -1,0 +1,19 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": {
+          "value": [
+            {
+              "id": "b1da2f3e-...",
+              "number": "R-2025-0001",
+              "propertyId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "amount": 1200.00
+            }
+          ]
+        }
+      }
+    }
+  }
+}

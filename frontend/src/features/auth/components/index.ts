@@ -7,3 +7,4 @@ export * from './VerifyPhoneForm';
 export * from './ProtectedRoute';
 export * from './PublicRoute';
 export * from './GoogleOAuthButton';
+export * from './SessionsPanel/SessionsPanel';

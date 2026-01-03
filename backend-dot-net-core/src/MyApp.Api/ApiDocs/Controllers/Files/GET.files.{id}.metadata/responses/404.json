@@ -1,0 +1,10 @@
+{
+  "description": "Not Found",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "error": "File not found" } }
+      }
+    }
+  }
+}

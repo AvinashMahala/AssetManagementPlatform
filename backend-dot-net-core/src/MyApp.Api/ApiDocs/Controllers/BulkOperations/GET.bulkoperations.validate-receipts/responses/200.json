@@ -1,0 +1,10 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "total": 123, "missingStorage": 5, "missingFile": 2, "sample": [{ "id": "00000000-0000-0000-0000-000000000abc", "receiptNumber": "R-100", "pdfStorageId": "storage-123" }] } }
+      }
+    }
+  }
+}

@@ -5,6 +5,7 @@ import { User, Home, Clock, Eye, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { LeaseListProps } from './LeaseList.types';
 import { getStatusVariant, getStatusColor, getDaysUntilExpiry, isExpiringSoon } from '../../utils/leaseUtils';
+import { useCan } from '@/contexts/RBACContext';
 
 export const LeaseTableView: React.FC<LeaseListProps> = ({
   leases,
@@ -17,6 +18,9 @@ export const LeaseTableView: React.FC<LeaseListProps> = ({
   getTenantName,
   getUnitNumber
 }) => {
+  const canUpdate = useCan('leases:lease:update');
+  const canDelete = useCan('leases:lease:delete');
+
   return (
     <div className="table-view rounded-md border">
       <Table>
@@ -109,30 +113,34 @@ export const LeaseTableView: React.FC<LeaseListProps> = ({
                       >
                         <Eye className="h-3 w-3" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        title="Edit Lease"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit(lease.id);
-                        }}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        title="Delete Lease"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(lease.id, getTenantName(lease.tenantId));
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3 text-red-600" />
-                      </Button>
+{canUpdate && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="Edit Lease"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(lease.id);
+                          }}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="Delete Lease"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(lease.id, getTenantName(lease.tenantId));
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3 text-red-600" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

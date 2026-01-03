@@ -21,6 +21,7 @@ export const propertiesRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.PROPERTIES_CREATE_TABBED,
     element: <PropertyCreatePageTabbed />,
     isProtected: true,
+    requiredPermission: 'properties:property:create'
   },
   {
     path: ROUTE_PATHS.PROPERTY_DASHBOARD,
@@ -36,6 +37,7 @@ export const propertiesRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.PROPERTY_EDIT,
     element: <PropertyEditPageEnhanced />,
     isProtected: true,
+    requiredPermission: 'properties:property:update'
   },
   {
     path: ROUTE_PATHS.PROPERTY_TEMPLATE_CUSTOMIZATION,

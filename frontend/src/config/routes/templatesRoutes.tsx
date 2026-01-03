@@ -11,10 +11,12 @@ export const templatesRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.TEMPLATES,
     element: <TemplateGallery />,
     isProtected: true,
+    requiredPermission: 'templates:receipttemplate:view'
   },
   {
     path: ROUTE_PATHS.TEMPLATE_EDITOR,
     element: <TemplateEditor />,
     isProtected: true,
+    requiredPermission: 'templates:receipttemplate:update'
   },
 ];

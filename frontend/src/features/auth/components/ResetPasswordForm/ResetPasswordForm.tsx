@@ -25,6 +25,8 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
     loading
   } = useAuthContext();
 
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<string, string>>>({});
+
   const [step, setStep] = useState<ResetStep>('options');
   const [options, setOptions] = useState<PasswordResetOptions | null>(null);
   const [error, setError] = useState<string>('');
@@ -113,14 +115,25 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
     }
 
     try {
-      const success = await resetPasswordViaSecurityQuestions({
+      const res = await resetPasswordViaSecurityQuestions({
         email: resetEmail,
         answers: resetAnswers,
         newPassword
       });
-      if (success) {
+      if (res.success) {
         setSuccess('Password reset successfully!');
         onSuccess?.();
+        setFieldErrors({});
+      } else {
+        setError(res.error ?? 'Password reset failed. Please check your answers.');
+        if (res.fieldErrors) {
+          const mapped: Partial<Record<string, string>> = {};
+          for (const k of Object.keys(res.fieldErrors)) {
+            const arr = res.fieldErrors[k];
+            mapped[k] = Array.isArray(arr) && arr.length > 0 ? arr.join(' ') : '';
+          }
+          setFieldErrors(mapped);
+        }
       }
     } catch (_err) {
       setError('Password reset failed. Please check your answers.');

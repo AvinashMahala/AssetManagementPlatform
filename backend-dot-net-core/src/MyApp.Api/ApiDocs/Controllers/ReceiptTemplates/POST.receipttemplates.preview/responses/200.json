@@ -1,0 +1,11 @@
+{
+  "description": "Rendered HTML preview",
+  "content": {
+    "text/html": {
+      "examples": { "default": { "value": "<p>Receipt Preview - sample content</p>" } }
+    },
+    "application/json": {
+      "examples": { "default": { "value": {} } }
+    }
+  }
+}

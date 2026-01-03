@@ -160,3 +160,4 @@ logs/frontend/*-audit.json
 
 /docs/*
 backend/logs/backend/*
+backend-dot-net-core/src/MyApp.Api/logs/backend/*.json

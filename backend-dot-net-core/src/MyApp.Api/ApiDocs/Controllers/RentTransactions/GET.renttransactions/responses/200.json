@@ -1,0 +1,21 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": {
+          "value": [
+            {
+              "id": "t1-...",
+              "leaseId": "a12f...",
+              "unitId": "u123...",
+              "amount": 1200.00,
+              "type": "payment",
+              "occurredAt": "2025-12-01T00:00:00Z"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

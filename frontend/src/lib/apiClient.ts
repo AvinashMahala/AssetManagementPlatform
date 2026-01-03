@@ -4,13 +4,15 @@ import { logger, logApiCall } from '../utils/logger';
 
 class ApiClient {
   private baseURL: string;
+  private _authToken: string | null = null;
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
   }
 
-  private getAuthToken(): string | null {
-    return sessionStorage.getItem('token');
+  // Expose current in-memory token for use in other modules (e.g., downloads)
+  getAuthToken(): string | null {
+    return this._authToken;
   }
 
   private getHeaders(additionalHeaders?: Record<string, string>, skipContentType?: boolean): Record<string, string> {
@@ -78,10 +80,22 @@ class ApiClient {
     }
 
     if (response.ok || response.status === 304) {
-      // Backend returns {success: true, data: {...}}
-      // Extract the data field from the backend response
-      const backendResponse = responseData as { success?: boolean; data?: T; message?: string };
-      
+      // Backend may return {success: true|false, data: {...}, message?: string}
+      const backendResponse = responseData as { success?: boolean; data?: T; message?: string; error?: string | { message?: string } };
+
+      // If backend explicitly indicates failure via success: false, treat it as an API error
+      if (backendResponse && backendResponse.success === false) {
+        const msg = backendResponse.message || (typeof backendResponse.error === 'string' ? backendResponse.error : (backendResponse.error && backendResponse.error.message)) || `HTTP ${response.status}`;
+        return {
+          success: false,
+          error: {
+            code: 'API_ERROR',
+            message: msg,
+          },
+          requestId,
+        };
+      }
+
       return {
         success: true,
         data: backendResponse?.data || (responseData as T),
@@ -91,27 +105,56 @@ class ApiClient {
     }
 
     // Handle error responses
-    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string };
+    const errorData = responseData as { error?: string | { code?: string; message?: string; details?: unknown }; message?: string; errors?: Array<{ field: string; errors: string[] }>; extensions?: Record<string, unknown> };
+
+    // Helper to detect DB constraint errors from exception text
+    const detectDbConstraint = (text?: string) => {
+      if (!text) return null;
+      const t = text.toLowerCase();
+      if (t.includes('23503') || t.includes('violates foreign key constraint') || t.includes('foreign key')) {
+        return { code: 'DB_FOREIGN_KEY_VIOLATION', message: 'Cannot complete this action because related records exist. Remove dependent records first.' };
+      }
+      if (t.includes('23505') || t.includes('duplicate key') || t.includes('unique constraint')) {
+        return { code: 'DB_UNIQUE_VIOLATION', message: 'A record with the same unique value already exists.' };
+      }
+      if (t.includes('sqlstate') || t.includes('postgres')) {
+        return { code: 'DB_ERROR', message: 'A database error occurred. Please check constraints and try again.' };
+      }
+      return null;
+    };
+
+    // Look for inner exception text in ProblemDetails extensions or common properties
+    const innerExceptionText = (errorData && ((errorData as any).extensions?.innerException || (errorData as any).extensions?.exception || (errorData as any).innerException || (errorData as any).exception)) as string | undefined;
+    let mappedDb = null as null | { code: string; message: string };
+    if (typeof innerExceptionText === 'string') mappedDb = detectDbConstraint(innerExceptionText);
+    if (!mappedDb) {
+      const combined = `${errorData?.message ?? ''} ${(errorData?.error as any)?.message ?? ''}`;
+      mappedDb = detectDbConstraint(combined);
+    }
+
     let errorMessage: string;
-    
-    if (typeof errorData?.error === 'string') {
-      // Backend sends { success: false, error: "error message" }
+    let errorCode: string | undefined;
+
+    if (Array.isArray((errorData as any)?.errors) && (errorData as any).errors.length > 0) {
+      errorMessage = 'Validation failed';
+      errorCode = 'VALIDATION_ERROR';
+    } else if (mappedDb) {
+      errorMessage = mappedDb.message;
+      errorCode = mappedDb.code;
+    } else if (typeof errorData?.error === 'string') {
       errorMessage = errorData.error;
     } else if (errorData?.error?.message) {
-      // Backend sends { success: false, error: { message: "error message" } }
       errorMessage = errorData.error.message;
     } else if (errorData?.message) {
-      // Fallback to message field
       errorMessage = errorData.message;
     } else {
-      // Final fallback to HTTP status
       errorMessage = `HTTP ${response.status}: ${response.statusText}`;
     }
-    
+
     const error: ApiError = {
-      code: (typeof errorData?.error === 'object' ? errorData.error.code : undefined) || `HTTP_${response.status}`,
+      code: errorCode || (Array.isArray((errorData as any)?.errors) ? 'VALIDATION_ERROR' : (typeof errorData?.error === 'object' ? (errorData.error as any).code : undefined)) || `HTTP_${response.status}`,
       message: errorMessage,
-      details: (typeof errorData?.error === 'object' ? errorData.error.details : undefined) as Record<string, unknown> | undefined,
+      details: (Array.isArray((errorData as any)?.errors) ? { errors: (errorData as any).errors } : (typeof errorData?.error === 'object' ? errorData.error.details : undefined)) as Record<string, unknown> | undefined,
     };
 
     return {
@@ -143,6 +186,13 @@ class ApiClient {
       
       const body = isFormData ? data : (data && method !== 'GET' ? JSON.stringify(data) : undefined);
 
+      // Detect non-versioned API calls during development to catch legacy callers
+      if (typeof endpoint === 'string' && endpoint.startsWith('/api/') && !endpoint.startsWith('/api/v1/')) {
+        // Capture a short stack so we can find the caller in browser/dev logs
+        const stack = new Error('Non-versioned API call stack').stack;
+        logger.warn(`Non-versioned API call detected: ${method} ${endpoint}`, { stack });
+      }
+
       // Log request
       logger.debug(`API Request: ${method} ${endpoint}`, {
         url,
@@ -156,6 +206,7 @@ class ApiClient {
         headers,
         body: body as BodyInit,
         signal: controller.signal,
+        credentials: 'include', // include cookies for refresh token flows
         ...config,
       });
 
@@ -164,6 +215,23 @@ class ApiClient {
       const result = await this.handleResponse<T>(response);
 
       // Log response
+      // If the caller explicitly wanted 404s to be treated as non-errors, handle it here
+      if (!result.success && config?.ignore404 && result.error && String(result.error.code).toUpperCase().startsWith('HTTP_404')) {
+        logger.info(`API Not Found (ignored): ${method} ${endpoint}`, {
+          status: response.status,
+          requestId: result.requestId,
+        });
+        // Mark perf as ended successfully (endpoint intentionally missing)
+        perfLogger.end({ status: response.status });
+
+        return {
+          success: true,
+          data: (config as any).fallback as T,
+          message: undefined,
+          requestId: result.requestId,
+        } as ApiResponse<T>;
+      }
+
       if (result.success) {
         logger.info(`API Success: ${method} ${endpoint}`, {
           status: response.status,
@@ -181,7 +249,7 @@ class ApiClient {
           { status: response.status, error: result.error }
         );
       }
-      
+
       return result;
     } catch (_error) {
       clearTimeout(timeoutId);
@@ -237,12 +305,11 @@ class ApiClient {
 
   // Utility method to set auth token
   setAuthToken(token: string | null): void {
+    this._authToken = token;
     if (token) {
-      sessionStorage.setItem('token', token);
-      logger.debug('Auth token set', { hasToken: true });
+      logger.debug('Auth token set (in-memory)', { hasToken: true });
     } else {
-      sessionStorage.removeItem('token');
-      logger.debug('Auth token removed');
+      logger.debug('Auth token removed (in-memory)');
     }
   }
 
@@ -274,6 +341,7 @@ class ApiClient {
         method,
         headers,
         signal: controller.signal,
+        credentials: 'include',
         ...config,
       });
 

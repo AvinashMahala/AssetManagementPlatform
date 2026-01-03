@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import zxcvbn from 'zxcvbn';
+import { Check } from 'lucide-react';
 import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import type { UserRegistrationInput } from '@/features/auth/types/auth';
 import type { GoogleCredentialResponse } from '@/features/auth/hooks/useGoogleOAuth';
 
@@ -18,9 +21,19 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSwitchToLogin
 }) => {
   const { register, loading } = useAuthContext();
+  const { showSuccess, showError } = useNotifications();
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitError, setSubmitError] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmTouched, setConfirmTouched] = useState(false);
+  // Email / Username mirroring state
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const formRef = React.useRef<HTMLFormElement | null>(null);
+  const [passwordValue, setPasswordValue] = useState('');
+  const score = useMemo(() => zxcvbn(passwordValue), [passwordValue]);
+  const strengthLabels = ['Very weak', 'Weak', 'Fair', 'Good', 'Strong'];
 
   const handleSubmit = async (data: Record<string, any>) => {
     setSubmitError('');
@@ -43,9 +56,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
     if (!data.password) {
       newErrors.password = 'Password is required';
-    } else if (data.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (data.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    } else if (!/[A-Z]/.test(data.password)) {
+      newErrors.password = 'Password must contain at least one uppercase letter';
+    } else if (!/[a-z]/.test(data.password)) {
+      newErrors.password = 'Password must contain at least one lowercase letter';
+    } else if (!/\d/.test(data.password)) {
+      newErrors.password = 'Password must contain a number';
+    } else if (!/[^A-Za-z0-9]/.test(data.password)) {
+      newErrors.password = 'Password must contain at least one special character';
     }
+
+    // Update interactive strength meter value
+    setPasswordValue(data.password || '');
 
     if (data.password !== data.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
@@ -68,20 +92,57 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         phone: data.phone || '',
         registrationMethod: data.registrationMethod || 'email'
       };
-      const success = await register(registrationData);
-      if (success) {
+        const result = await register(registrationData);
+      if (result.success) {
+        showSuccess('Account Created', 'Please check your email or phone to verify your account.');
+        // Clear form fields and local state
+        try { formRef.current?.reset(); } catch (_e) {}
+        setConfirmPassword('');
+        setPasswordValue('');
+        setSubmitError('');
+        setErrors({});
         onSuccess?.();
+        // Switch to Sign In tab if requested
+        onSwitchToLogin?.();
       } else {
-        setSubmitError('Registration failed. Please try again.');
+        const msg = result.error ?? 'Registration failed. Please try again.';
+        // If server sent field-level validation errors, show them inline
+        if (result.fieldErrors) {
+          const mapped: Partial<Record<string, string>> = {};
+          for (const k of Object.keys(result.fieldErrors)) {
+            const arr = result.fieldErrors[k];
+            mapped[k] = Array.isArray(arr) && arr.length > 0 ? arr.join(' ') : '';
+          }
+          setErrors(mapped);
+        }
+        setSubmitError(msg);
+        showError('Registration Failed', msg);
       }
     } catch (_error) {
       setSubmitError('An error occurred during registration. Please try again.');
     }
   };
 
+  const validatePasswordMatch = (pw: string, conf: string) => {
+    setErrors(prev => {
+      const next: Partial<Record<string, string>> = { ...prev };
+      // Only show mismatch after user has started typing into confirm field
+      if (!confirmTouched || !conf) {
+        delete next.confirmPassword;
+      } else if (pw !== conf) {
+        next.confirmPassword = 'Passwords do not match';
+      } else {
+        delete next.confirmPassword;
+      }
+      return next;
+    });
+  };
+
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setConfirmPassword(value);
+    if (!confirmTouched && value.length > 0) setConfirmTouched(true);
+    validatePasswordMatch(passwordValue, value);
   };
 
   const handleGoogleSuccess = async (response: GoogleCredentialResponse) => {
@@ -89,7 +150,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       setSubmitError('');
       // Decode the JWT token to get user profile
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      const success = await register({
+      const result = await register({
         username: payload.name.replace(/\s+/g, '').toLowerCase() + Math.random().toString(36).substr(2, 4),
         name: payload.name, // Store the full display name
         email: payload.email,
@@ -99,10 +160,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         googleId: payload.sub
       });
 
-      if (success) {
+      if (result.success) {
+        showSuccess('Account Created', 'Google registration succeeded. Check your inbox if verification is required.');
         onSuccess?.();
       } else {
-        setSubmitError('Google registration failed');
+        const msg = result.error ?? 'Google registration failed';
+        setSubmitError(msg);
+        showError('Google Registration Failed', msg);
       }
     } catch (_error) {
       setSubmitError('An error occurred during Google registration. Please try again.');
@@ -115,7 +179,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <Form onSubmit={handleSubmit} loading={loading}>
+      <Form ref={formRef} onSubmit={handleSubmit} loading={loading}>
         <div>
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
             Create Account
@@ -151,21 +215,27 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         )}
 
         <div className="space-y-4">
-          <FormField label="Username" required>
-            <Input
-              name="username"
-              type="text"
-              error={errors.username}
-              placeholder="Choose a username"
-            />
-          </FormField>
-
           <FormField label="Email" required>
             <Input
               name="email"
               type="email"
+              value={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const v = e.target.value; setEmail(v); if (!usernameTouched) setUsername(v); }}
+              onBlur={() => { if (!usernameTouched) setUsername(email); }}
               error={errors.email}
               placeholder="Enter your email"
+            />
+          </FormField>
+
+          <FormField label="Username" required>
+            <Input
+              name="username"
+              type="text"
+              value={username}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setUsername(e.target.value); setUsernameTouched(true); }}
+              onFocus={() => setUsernameTouched(true)}
+              error={errors.username}
+              placeholder="Choose a username"
             />
           </FormField>
 
@@ -184,7 +254,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
               type="password"
               error={errors.password}
               placeholder="Create a password"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const v = e.target.value; setPasswordValue(v); validatePasswordMatch(v, confirmPassword); }}
             />
+            {/* Strength Meter */}
+            {passwordValue && (
+              <div className="mt-2">
+                <div className="w-full h-2 bg-gray-200 rounded overflow-hidden">
+                  <div className={`h-full bg-gradient-to-r ${['from-red-500 to-red-400','from-orange-400 to-orange-300','from-yellow-400 to-yellow-300','from-green-400 to-green-300','from-green-600 to-green-500'][score.score]} `} style={{ width: `${(score.score+1)/5*100}%` }} />
+                </div>
+                <div className="text-xs text-gray-600 mt-1 flex items-center justify-between">
+                  <span>{strengthLabels[score.score]}</span>
+                  {score.feedback && score.feedback.warning && <span className="text-xs text-yellow-700">{score.feedback.warning}</span>}
+                </div>
+              </div>
+            )}
           </FormField>
 
                     <FormField label="Confirm Password" required>
@@ -195,6 +278,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
               onChange={handleConfirmPasswordChange}
               error={errors.confirmPassword}
               placeholder="Confirm your password"
+              endIcon={confirmTouched && passwordValue && passwordValue === confirmPassword ? <Check className="h-4 w-4 text-green-500" /> : undefined}
             />
           </FormField>
         </div>

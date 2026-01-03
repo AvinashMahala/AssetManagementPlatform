@@ -1,0 +1,15 @@
+{
+  "description": "OK - file content",
+  "content": {
+    "application/octet-stream": {
+      "examples": {
+        "default": { "summary": "Binary content (example omitted)", "value": "<binary>" }
+      }
+    },
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Binary file content is returned; use Content-Disposition to save." } }
+      }
+    }
+  }
+}

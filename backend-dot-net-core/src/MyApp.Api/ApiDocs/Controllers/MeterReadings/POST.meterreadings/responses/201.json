@@ -1,0 +1,4 @@
+{
+  "description": "Created",
+  "content": { "application/json": { "examples": { "default": { "value": { "id": "00000000-0000-0000-0000-000000000000", "value": 123 } } } } }
+}

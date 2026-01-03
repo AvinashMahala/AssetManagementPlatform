@@ -15,7 +15,7 @@ export default function TemplateImportExport({ templateId, templateName, onImpor
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch(`/api/templates/${templateId}/export`, {
+      const response = await fetch(`/api/v1/receipttemplates/templates/${templateId}/export`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -47,7 +47,7 @@ export default function TemplateImportExport({ templateId, templateName, onImpor
       const text = await file.text();
       const data = JSON.parse(text);
 
-      const response = await fetch('/api/v1/templates/import', {
+      const response = await fetch('/api/v1/receipttemplates/templates/import', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -1,0 +1,13 @@
+{
+  "description": "OK",
+  "content": {
+    "application/octet-stream": {
+      "examples": {
+        "default": { "value": "<binary>" }
+      }
+    },
+    "application/json": {
+      "examples": { "default": { "value": { "meta": "download available" } } }
+    }
+  }
+}

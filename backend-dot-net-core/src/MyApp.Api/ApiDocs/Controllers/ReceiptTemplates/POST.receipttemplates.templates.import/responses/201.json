@@ -1,0 +1,10 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "id": "9a8f7e6a-...", "name": "Imported Template", "settings": { "body": "<p>{{tenantName}} - Rent</p>" } } }
+      }
+    }
+  }
+}

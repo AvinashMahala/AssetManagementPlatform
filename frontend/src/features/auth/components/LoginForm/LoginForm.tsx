@@ -5,12 +5,14 @@ import { FormField } from '@/componentDesignLibrary';
 import { Form } from '@/componentDesignLibrary';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
 import { useAuthContext } from '@/contexts';
+import { applyFieldErrors } from '@/utils/formErrors';
 import type { UserCredentials } from '@/features/auth/types/user';
 
 interface LoginFormProps {
   onSuccess?: () => void;
   onSwitchToRegister?: () => void;
   onForgotPassword?: () => void;
+  emailRef?: React.RefObject<HTMLInputElement>;
 }
 
 interface LoginFormData {
@@ -25,7 +27,8 @@ interface GoogleAuthResponse {
 export const LoginForm: React.FC<LoginFormProps> = ({
   onSuccess,
   onSwitchToRegister,
-  onForgotPassword
+  onForgotPassword,
+  emailRef
 }) => {
   const { login, googleAuth, loading, devModeLogin } = useAuthContext();
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
@@ -55,11 +58,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     }
 
     try {
-      const success = await login(formData as UserCredentials);
-      if (success) {
+      const result = await login(formData as UserCredentials);
+      if (result.success) {
         onSuccess?.();
       } else {
-        setSubmitError('Invalid email or password');
+        const msg = result.error ?? 'Invalid email or password';
+        setSubmitError(msg);
+        // Map field errors if present
+        if (result.fieldErrors) {
+          const mapped: Partial<Record<string, string>> = {};
+          for (const k of Object.keys(result.fieldErrors)) {
+            const arr = result.fieldErrors[k];
+            mapped[k] = Array.isArray(arr) && arr.length > 0 ? arr.join(' ') : '';
+          }
+          setErrors(mapped);
+        }
       }
     } catch (_error) {
       setSubmitError('An error occurred during login. Please try again.');
@@ -124,6 +137,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
               type="email"
               error={errors.email}
               placeholder="Enter your email"
+              ref={emailRef}
             />
           </FormField>
 

@@ -1,0 +1,14 @@
+{
+    "description": "Not Found",
+    "content": {
+        "application/json": {
+            "examples": {
+                "default": {
+                    "value": {
+                        "message": "Receipt not found"
+                    }
+                }
+            }
+        }
+    }
+}

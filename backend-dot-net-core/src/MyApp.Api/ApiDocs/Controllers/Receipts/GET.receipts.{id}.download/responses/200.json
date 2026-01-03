@@ -1,0 +1,13 @@
+{
+  "description": "PDF file",
+  "content": {
+    "application/pdf": {
+      "examples": {
+        "default": { "value": "<binary PDF content omitted>" }
+      }
+    },
+    "application/json": {
+      "examples": { "default": { "value": {} } }
+    }
+  }
+} 

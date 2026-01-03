@@ -1,12 +1,18 @@
 <#
-PowerShell script to start frontend, backend, and Docker databases in separate PowerShell windows on Windows.
-Usage: Right-click -> Run with PowerShell or run `powershell -ExecutionPolicy Bypass -File start-dev.ps1`.
+PowerShell script to start frontend, backend, and Docker databases.
+Added: -Clean switch to purge node_modules and re-install.
 #>
+
+# First Time Setup : powershell -ExecutionPolicy Bypass -File .\start-dev.ps1 -Clean
+# Remaining always : powershell -ExecutionPolicy Bypass -File .\start-dev.ps1
+
+
 
 Param(
     [switch] $SkipDocker,
     [switch] $SkipFrontend,
-    [switch] $SkipBackend
+    [switch] $SkipBackend,
+    [switch] $Clean # New Clean Switch
 )
 
 function Write-Info($msg) { Write-Host $msg -ForegroundColor Cyan }
@@ -15,83 +21,92 @@ function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
 function Write-ErrorMsg($msg) { Write-Host $msg -ForegroundColor Red }
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$ProjectRoot = $ScriptRoot
-$BackendDir = Join-Path $ProjectRoot "backend"
-$FrontendDir = Join-Path $ProjectRoot "frontend"
+$BackendDir = Join-Path $ScriptRoot "backend"
+$FrontendDir = Join-Path $ScriptRoot "frontend"
 
-Write-Info "Starting Asset Management Platform development servers (Windows PowerShell)...`n"
+# --- CLEANUP LOGIC ---
+if ($Clean) {
+    Write-Warn "🧹 Clean mode activated. Purging dependencies and cache..."
+    
+    $TargetDirs = @($BackendDir, $FrontendDir)
+    
+    foreach ($dir in $TargetDirs) {
+        if (Test-Path $dir) {
+            Write-Info "Cleaning $dir..."
+            # Remove node_modules and lock files
+            Remove-Item -Path (Join-Path $dir "node_modules") -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path (Join-Path $dir "yarn.lock") -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path (Join-Path $dir "package-lock.json") -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # Clear Caches
+    Write-Info "Clearing package manager caches..."
+    if (Get-Command yarn -ErrorAction SilentlyContinue) { 
+        yarn cache clean --force 
+    }
+    npm cache clean --force
+
+    # Re-installing
+    Write-Info "Performing fresh installation..."
+    foreach ($dir in $TargetDirs) {
+        if (Test-Path $dir) {
+            Set-Location $dir
+            Write-Info "Installing dependencies in $dir..."
+            if (Get-Command yarn -ErrorAction SilentlyContinue) { yarn install } else { npm install }
+        }
+    }
+    Set-Location $ScriptRoot
+    Write-Success "✨ Cleanup and Re-install complete.`n"
+}
+# --- END CLEANUP LOGIC ---
 
 function Open-PowerShellWindow([string]$cwd, [string]$command, [string]$title) {
-    # Build the command string that will run inside the new PowerShell window
     $commandString = "cd `"$cwd`"; $command"
-    # Use Start-Process to open a new PowerShell window and keep it open after the command runs
-    # Use -NoProfile -NoExit -Command to prevent the child process from closing
     Write-Info "Opening $title PowerShell window..."
     Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -NoExit -Command $commandString" -WindowStyle Normal
 }
 
 function Get-PortProcessInfo([int]$port) {
-    # Returns a [PSCustomObject] with PID and CommandLine if found, otherwise $null
     try {
-        # Get-NetTCPConnection exists in PS 5.1+ on modern Windows
         $conn = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
         if (-not $conn) { return $null }
         $pid = $conn.OwningProcess
         $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$pid" -ErrorAction SilentlyContinue
         $cmd = if ($proc -and $proc.CommandLine) { $proc.CommandLine } else { "" }
         return [PSCustomObject]@{ Pid = $pid; CommandLine = $cmd }
-    } catch {
-        # Fallback: use netstat + findstr if Get-NetTCPConnection isn't available
-        try {
-            $raw = netstat -ano | findstr ":$port" 2>$null
-            if (-not $raw) { return $null }
-            $line = $raw -split "\r?\n" | Where-Object { $_ -match "LISTENING" } | Select-Object -First 1
-            if (-not $line) { $line = ($raw -split "\r?\n")[0] }
-            $parts = ($line -split '\s+') | Where-Object { $_ -ne '' }
-            $pid = $parts[-1]
-            $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$pid" -ErrorAction SilentlyContinue
-            $cmd = if ($proc -and $proc.CommandLine) { $proc.CommandLine } else { "" }
-            return [PSCustomObject]@{ Pid = $pid; CommandLine = $cmd }
-        } catch {
-            return $null
-        }
-    }
+    } catch { return $null }
 }
 
 function Check-PortAndOpen([int]$port, [string]$cwd, [string]$command, [string]$name, [string[]]$expectedIndicators = @()) {
     $info = Get-PortProcessInfo -port $port
-    if (-not $info) {
-        Open-PowerShellWindow $cwd $command $name
-        return
-    }
-
-    $pid = $info.Pid
-    $cmdline = $info.CommandLine
-    $isOur = $false
-    foreach ($ind in $expectedIndicators) { if ($ind -and ($cmdline -like "*$ind*")) { $isOur = $true; break } }
-
-    if ($isOur) {
+    if ($info) {
+        $pid = $info.Pid
+        # If cleaning, we kill the old process to ensure fresh start
+        if ($Clean) {
+            Write-Warn "Stopping existing $name process (PID $pid) for clean start..."
+            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 1
+        } else {
             Write-Success "$name already running (pid $pid). Skipping open."
-        return
+            return
+        }
     }
-
-    Write-Warn "Port $port is in use by pid $pid. Command line: $cmdline"
-    if (-not $cmdline) { Write-Info "If you still want to start $name, stop that process or run the command manually: cd $cwd && $command" }
+    Open-PowerShellWindow $cwd $command $name
 }
 
-# Backend
+# Execution Logic
 $yarn = Get-Command yarn -ErrorAction SilentlyContinue
 $backendCommand = if ($yarn) { "yarn workspace backend dev" } else { "npm run dev" }
+$frontendCommand = if ($yarn) { "yarn workspace frontend dev" } else { "npm run dev" }
+
 if (-not $SkipBackend) {
-    Check-PortAndOpen -port 5000 -cwd $BackendDir -command $backendCommand -name 'Backend' -expectedIndicators @($BackendDir, 'npm run dev', 'ts-node', 'nodemon', 'server.ts', 'node', 'yarn workspace backend dev', 'yarn')
+    Check-PortAndOpen -port 5000 -cwd $BackendDir -command $backendCommand -name 'Backend' -expectedIndicators @('node', 'server.ts')
 }
 
-# Frontend
-$frontendCommand = if ($yarn) { "yarn workspace frontend dev" } else { "npm run dev" }
 if (-not $SkipFrontend) {
-    # Small delay to avoid contention
     Start-Sleep -Seconds 1
-    Check-PortAndOpen -port 5173 -cwd $FrontendDir -command $frontendCommand -name 'Frontend' -expectedIndicators @($FrontendDir, 'vite', 'npm run dev', 'pnpm', 'webpack', 'parcel', 'yarn workspace frontend dev', 'yarn')
+    Check-PortAndOpen -port 5173 -cwd $FrontendDir -command $frontendCommand -name 'Frontend' -expectedIndicators @('vite')
 }
 
 # Docker databases

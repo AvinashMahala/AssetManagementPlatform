@@ -7,22 +7,27 @@ import fileService from '@/features/files/services/fileService';
 import type { FileMetadata } from '@/features/files/types';
 import type { FileTableProps } from './FileTable.types';
 import './FileTable.scss';
+import { useCan } from '@/contexts/RBACContext';
 
 export const FileTable: React.FC<FileTableProps> = ({
-  files,
-  selectedFiles,
+  files = [],
+  selectedFiles = new Set<string>(),
   onFileSelection,
   onSelectAll,
   onDeleteFile,
-  filters,
+  filters = {},
   onUploadClick
 }) => {
+  const canDownload = useCan('files:file:download');
+  const canDelete = useCan('files:file:delete');
+  const canUpload = useCan('files:file:upload');
   const getFileIcon = (file: FileMetadata) => {
-    if (file.mimeType.startsWith('image/')) return <Image className="h-6 w-6 text-blue-500" />;
-    if (file.mimeType.startsWith('video/')) return <FileVideo className="h-6 w-6 text-purple-500" />;
-    if (file.mimeType.startsWith('audio/')) return <FileAudio className="h-6 w-6 text-green-500" />;
-    if (file.mimeType === 'application/pdf') return <FileText className="h-6 w-6 text-red-500" />;
-    if (file.mimeType.includes('zip') || file.mimeType.includes('rar')) return <Archive className="h-6 w-6 text-yellow-500" />;
+    const mime = file?.mimeType ?? '';
+    if (mime.startsWith('image/')) return <Image className="h-6 w-6 text-blue-500" />;
+    if (mime.startsWith('video/')) return <FileVideo className="h-6 w-6 text-purple-500" />;
+    if (mime.startsWith('audio/')) return <FileAudio className="h-6 w-6 text-green-500" />;
+    if (mime === 'application/pdf') return <FileText className="h-6 w-6 text-red-500" />;
+    if (mime.includes('zip') || mime.includes('rar')) return <Archive className="h-6 w-6 text-yellow-500" />;
     return <FileText className="h-6 w-6 text-gray-500" />;
   };
 
@@ -108,11 +113,11 @@ export const FileTable: React.FC<FileTableProps> = ({
               </TableCell>
               <TableCell className="file-type-cell px-2 py-1 text-xs break-words whitespace-normal">
                 <span className="file-type-badge whitespace-normal">
-                  {file.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
+                  {(file.mimeType ?? '').split('/')[1]?.toUpperCase() || 'FILE'}
                 </span>
               </TableCell>
               <TableCell className="file-size-cell px-2 py-1 text-xs break-words">
-                {formatFileSize(file.fileSize)}
+                {formatFileSize(Number(file.fileSize ?? 0))}
               </TableCell>
               <TableCell className="category-cell px-2 py-1 text-xs break-words whitespace-normal">
                 <span className="category-badge whitespace-normal">
@@ -125,28 +130,32 @@ export const FileTable: React.FC<FileTableProps> = ({
                 </span>
               </TableCell>
               <TableCell className="px-2 py-1 text-xs break-words">
-                {format(new Date(file.uploadedAt), 'MMM dd, yyyy')}
+                {file.uploadedAt ? format(new Date(file.uploadedAt), 'MMM dd, yyyy') : '—'}
               </TableCell>
               <TableCell className="actions-cell px-2 py-1 text-xs">
                 <div className="flex space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
-                    className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900"
-                    title="Download"
-                  >
-                    <Download className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDeleteFile(file.id)}
-                    className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900"
-                    title="Delete"
-                  >
-                    <Trash2 className="h-3 w-3 text-red-600" />
-                  </Button>
+                  {canDownload && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.open(fileService.getDownloadUrl(file.id), '_blank')}
+                      className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900"
+                      title="Download"
+                    >
+                      <Download className="h-3 w-3" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteFile(file.id)}
+                      className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3 w-3 text-red-600" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
@@ -159,14 +168,16 @@ export const FileTable: React.FC<FileTableProps> = ({
           <HardDrive className="empty-icon" />
           <h3 className="empty-title">No files found</h3>
           <p className="empty-description">
-            {Object.keys(filters).some(key => filters[key as keyof typeof filters]) ?
+            {Object.keys(filters || {}).some(key => Boolean((filters as Record<string, any>)[key])) ?
               'Try adjusting your filters or upload some files.' :
               'Upload your first file to get started.'}
           </p>
-          <Button onClick={onUploadClick}>
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Files
-          </Button>
+          {canUpload && (
+            <Button onClick={onUploadClick}>
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Files
+            </Button>
+          )}
         </div>
       )}
     </div>

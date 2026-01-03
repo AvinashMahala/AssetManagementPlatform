@@ -1,0 +1,12 @@
+{
+  "users": 4,
+  "tenants": 15,
+  "properties": 3,
+  "units": 12,
+  "leases": 12,
+  "meters": 12,
+  "meter_readings": 39,
+  "rent_transactions": 12,
+  "receipts": 10,
+  "tenant_documents": 9
+}

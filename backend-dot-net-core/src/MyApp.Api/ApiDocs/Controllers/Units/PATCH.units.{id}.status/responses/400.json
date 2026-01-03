@@ -1,0 +1,4 @@
+{
+  "description": "Bad Request",
+  "content": { "application/json": { "examples": { "default": { "value": { "message": "status is required" } } } } }
+}

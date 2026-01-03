@@ -1,0 +1,21 @@
+{
+  "content": {
+    "multipart/form-data": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "file": { "type": "string", "format": "binary" }
+        },
+        "required": ["file"]
+      },
+      "examples": {
+        "default": {
+          "summary": "Form upload example",
+          "value": {
+            "file": "<binary file>"
+          }
+        }
+      }
+    }
+  }
+}

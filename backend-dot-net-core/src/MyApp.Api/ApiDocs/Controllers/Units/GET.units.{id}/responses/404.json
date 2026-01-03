@@ -1,0 +1,4 @@
+{
+  "description": "Not Found",
+  "content": { "application/json": { "examples": { "default": { "value": { "message": "Unit not found" } } } } }
+}

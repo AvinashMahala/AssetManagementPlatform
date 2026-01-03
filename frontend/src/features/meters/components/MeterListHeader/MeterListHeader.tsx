@@ -2,6 +2,7 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/componentDesignLibrary';
 import styles from './MeterListHeader.module.scss';
+import { useCan } from '@/contexts/RBACContext';
 
 interface MeterListHeaderProps {
   onAddClick: () => void;
@@ -19,14 +20,16 @@ export const MeterListHeader: React.FC<MeterListHeaderProps> = ({ onAddClick }) 
         </h1>
       </div>
       <div className="header-actions flex gap-2">
-        <Button
-          className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-          onClick={onAddClick}
-          title="Step-by-step guided form with progress tracking"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Meter
-        </Button>
+        {useCan('meters:meter:create') && (
+          <Button
+            className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+            onClick={onAddClick}
+            title="Step-by-step guided form with progress tracking"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Meter
+          </Button>
+        )}
       </div>
     </div>
   );

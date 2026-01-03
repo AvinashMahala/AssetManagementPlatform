@@ -30,6 +30,10 @@ class AuthService {
     if (!response.success || !response.data) {
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Login failed' });
     }
+    // Ensure backend returned tokens
+    if (!response.data.tokens || !response.data.tokens.accessToken) {
+      throw new ApiException({ code: 'INVALID_RESPONSE', message: 'Authentication response is missing tokens' });
+    }
     return response.data;
   }
 
@@ -139,14 +143,23 @@ class AuthService {
       console.error('[authService.googleAuth] Failed:', response.error);
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Google authentication failed' });
     }
+    // Ensure backend returned tokens
+    if (!response.data.tokens || !response.data.tokens.accessToken) {
+      console.error('[authService.googleAuth] Missing tokens in response', response.data);
+      throw new ApiException({ code: 'INVALID_RESPONSE', message: 'Google authentication response is missing tokens' });
+    }
     return response.data;
   }
 
   // Token refresh
-  async refreshToken(refreshToken: string): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh-token', { refreshToken });
+  // Cookie-based refresh: no body required. Browser will send HttpOnly cookie automatically.
+  async refreshToken(): Promise<AuthResponse> {
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh-token');
     if (!response.success || !response.data) {
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Token refresh failed' });
+    }
+    if (!response.data.tokens || !response.data.tokens.accessToken) {
+      throw new ApiException({ code: 'INVALID_RESPONSE', message: 'Refresh token response is missing tokens' });
     }
     return response.data;
   }
@@ -168,6 +181,33 @@ class AuthService {
     return response.data;
   }
 
+  // Sessions: list active sessions for current user
+  async getSessions(): Promise<{ sessions: SessionInfo[] }> {
+    const response = await apiClient.get<{ sessions: SessionInfo[] }>('/api/v1/auth/sessions');
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get sessions failed' });
+    }
+    return response.data;
+  }
+
+  // Revoke a specific session
+  async revokeSession(id: string): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(`/api/v1/auth/sessions/${id}`);
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Revoke session failed' });
+    }
+    return response.data;
+  }
+
+  // Logout all sessions for current user
+  async logoutAll(): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/api/v1/auth/logout-all');
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Logout all failed' });
+    }
+    return response.data;
+  }
+
   // Link Google account
   async linkGoogle(googleId: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>('/api/v1/auth/link-google', { googleId });
@@ -182,6 +222,15 @@ class AuthService {
     const response = await apiClient.get<User>('/api/v1/auth/profile');
     if (!response.success || !response.data) {
       throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get profile failed' });
+    }
+    return response.data;
+  }
+
+  // Fetch compact session payload containing roles and effective permissions for current user
+  async getSession(): Promise<{ userId: string; roles: string[]; permissions: string[] }> {
+    const response = await apiClient.get<{ userId: string; roles: string[]; permissions: string[] }>('/api/v1/auth/session');
+    if (!response.success || !response.data) {
+      throw new ApiException(response.error || { code: 'UNKNOWN_ERROR', message: 'Get session failed' });
     }
     return response.data;
   }
