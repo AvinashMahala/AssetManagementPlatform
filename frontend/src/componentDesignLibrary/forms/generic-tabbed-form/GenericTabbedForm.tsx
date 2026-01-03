@@ -21,6 +21,7 @@ export const GenericTabbedForm: React.FC<GenericTabbedFormProps> = ({
   cancelLabel = "Cancel",
   nextLabel = "Next",
   previousLabel = "Previous",
+  footerCenter,
   children
 }) => {
   const currentTabIndex = tabs.findIndex(tab => tab.id === activeTab);
@@ -129,9 +130,21 @@ export const GenericTabbedForm: React.FC<GenericTabbedFormProps> = ({
               </Button>
             )}
 
-            <div className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-              Step {currentTabIndex + 1} of {tabs.length}: {tabs[currentTabIndex].title}
+            <div className="hidden sm:flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+              <div>Step {currentTabIndex + 1} of {tabs.length}: {tabs[currentTabIndex].title}</div>
+              {footerCenter && (
+                <div className="ml-2">
+                  {footerCenter}
+                </div>
+              )}
             </div>
+
+            {/* Mobile: render footer center content inline near action buttons so it's visible on small screens */}
+            {footerCenter && (
+              <div className="sm:hidden ml-2">
+                {footerCenter}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">

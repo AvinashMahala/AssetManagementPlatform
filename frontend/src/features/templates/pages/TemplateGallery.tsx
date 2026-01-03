@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { templateService } from '@/features/templates/services/templateService';
 import { Button, PageLoadingSpinner } from '@/componentDesignLibrary';
+import { useCan } from '@/contexts/RBACContext';
 import { Search, Edit, Eye, Sparkles } from 'lucide-react';
 import { Badge } from '@/componentDesignLibrary';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentDesignLibrary';
@@ -86,6 +87,10 @@ export default function TemplateGallery() {
     };
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
+
+  const canPreview = useCan('templates:receipttemplate:preview');
+  const canUpdate = useCan('templates:receipttemplate:update');
+  const canCreate = useCan('templates:receipttemplate:create');
 
   if (isLoading) {
     return (
@@ -201,21 +206,25 @@ export default function TemplateGallery() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/templates/${template.id}/editor`)}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => navigate(`/templates/${template.id}/editor`)}
-                        >
-                          <Edit className="w-4 h-4 mr-2" />
-                          Customize
-                        </Button>
+                        {canPreview && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/templates/${template.id}/editor`)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Preview
+                          </Button>
+                        )}
+                        {canUpdate && (
+                          <Button
+                            size="sm"
+                            onClick={() => navigate(`/templates/${template.id}/editor`)}
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Customize
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

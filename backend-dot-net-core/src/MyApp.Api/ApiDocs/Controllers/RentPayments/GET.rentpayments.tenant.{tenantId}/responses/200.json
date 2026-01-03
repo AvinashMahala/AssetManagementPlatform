@@ -1,0 +1,6 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": { "examples": { "default": { "value": [ { "id": "f47ac10b-...", "tenantId": "f47ac10b-...", "amount": 1200.00 } ] } } }
+  }
+}

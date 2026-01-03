@@ -93,6 +93,10 @@ JWT_ACCESS_TOKEN_EXPIRY=15m
 JWT_REFRESH_TOKEN_EXPIRY=7d
 JWT_ACCESS_TOKEN_EXPIRY_REMEMBER=1h
 JWT_REFRESH_TOKEN_EXPIRY_REMEMBER=30d
+# Optional hardening: server-side pepper used to hash refresh tokens. Rotating this will invalidate existing refresh tokens.
+Auth:RefreshTokenPepper=<a-random-secret>
+# Gate whether the server returns the refresh token in the JSON response body (dev/testing only)
+Auth:ExposeRefreshTokenInBody=true  # set to false in production
 
 # Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id_here
@@ -179,6 +183,73 @@ Most free hosting services provide PostgreSQL databases. For initial data setup:
 ### CORS Issues
 - Ensure backend allows your GitHub Pages domain
 - Check CORS configuration in `server.ts`
+
+### Auth cookie & CORS checklist (important for cookie-based refresh)
+- Ensure the frontend origin(s) are present in `CORS_ORIGIN` (see `backend/server.ts`).
+- Use HTTPS in production and set `CookieOptions.Secure = true` (the backend currently sets `Secure = Request.IsHttps`).
+- Use `SameSite=None` only for cross-site flows and when serving over HTTPS; prefer `Lax` or `Strict` when possible.
+- Set a proper cookie `Domain` if your frontend and backend share a parent domain (e.g., `.example.com`).
+- Ensure browser client code uses `fetch`/XHR with `credentials: 'include'` (the frontend `apiClient` and Swagger custom JS already set this in dev).
+- Verify preflight requests succeed (OPTIONS) and that `Access-Control-Allow-Credentials` is enabled.
+
+### Auth:RefreshTokenPepper (operational note)
+- The server supports an optional `Auth:RefreshTokenPepper` configuration value used by `RefreshTokenHasher` to harden stored refresh token hashes.
+- If set, the pepper must be kept secret (like other secrets). Rotating the pepper will invalidate existing refresh tokens and force re-authentication for users.
+- Recommended: set a pepper in production and rotate carefully with a grace window; document the rotation process in your runbook.
+
+### Testing cookie-based refresh in Swagger UI
+- Swagger UI is configured to send credentials via `swagger-custom.js` (sets `req.credentials = 'include'`).
+- To test cookie-based refresh with Swagger:
+  1. POST `/api/v1/auth/login` with credentials; backend sets `refreshToken` as an HttpOnly cookie.
+  2. Keep the browser session; call POST `/api/v1/auth/refresh-token` without providing a body — the server will read the cookie and issue new tokens.
+  3. If you need the server to return the refresh token in the JSON body (for tooling), enable `Auth:ExposeRefreshTokenInBody=true` in development only; do not enable in production unless you understand the security implications.
+
+### Rate-limiting & Alerts (recommended)
+- Recommended per-route policy for refresh endpoint (example): `POST:/api/v1/auth/refresh-token` — Limit=10, WindowSeconds=60, BurstCapacity=2, ApplyTo=IP
+- Example Prometheus alert rules (add to your Prometheus recording/alert rules):
+
+```yaml
+- alert: AuthRefreshHighFailureRate
+  expr: increase(auth_refresh_failed_total[5m]) > 20
+  for: 2m
+  labels:
+    severity: warning
+  annotations:
+    summary: "High refresh failure rate detected"
+    description: "{{ $labels.instance }}: {{ $value }} failures in the last 5 minutes"
+
+- alert: AuthRefreshAnomalySpike
+  expr: increase(auth_refresh_anomaly_total[5m]) > 0
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Anomalous refresh activity detected"
+    description: "Refresh failure anomaly triggered - investigate possible abuse or credential stuffing"
+
+- alert: AuthRefreshRateLimitedSpikes
+  expr: increase(auth_refresh_rate_limited_total[5m]) > 50
+  for: 2m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Refresh endpoint rate-limit spike"
+    description: "The refresh endpoint is being rate limited frequently; review traffic patterns and CSRF/cookie usage"
+```
+
+- Grafana: add a dashboard panel showing `rate(auth_refresh_failed_total[5m])`, `increase(auth_refresh_rate_limited_total[5m])`, and `increase(refresh_token_reuse_total[5m])` to monitor trends.
+- Prometheus scrape example (add to prometheus.yml):
+
+```yaml
+scrape_configs:
+  - job_name: 'myapp-backend'
+    static_configs:
+      - targets: ['your-backend-host:5001']
+    metrics_path: '/metrics'
+```
+
+- Runbook: on alert, block offending IP(s), revoke affected sessions, check logs for reuse events and rotate secrets if necessary.
+
 
 ## 💡 Pro Tips
 

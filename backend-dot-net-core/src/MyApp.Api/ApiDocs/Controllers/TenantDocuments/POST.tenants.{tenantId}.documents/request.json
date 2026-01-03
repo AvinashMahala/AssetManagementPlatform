@@ -1,0 +1,8 @@
+{
+  "fileName": "id_document.pdf",
+  "contentType": "application/pdf",
+  "url": "https://files.example.com/abc123",
+  "metadata": {
+    "note": "ID scan"
+  }
+}

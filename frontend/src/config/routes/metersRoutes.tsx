@@ -14,30 +14,36 @@ export const metersRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.METERS,
     element: <MeterListPageEnhanced />,
     isProtected: true,
+    requiredPermission: 'meters:meter:view'
   },
   {
     path: ROUTE_PATHS.METERS_CREATE,
     element: <MeterCreatePageTabbed />,
     isProtected: true,
+    requiredPermission: 'meters:meter:create'
   },
   {
     path: ROUTE_PATHS.METERS_CREATE_TABBED,
     element: <MeterCreatePageTabbed />,
     isProtected: true,
+    requiredPermission: 'meters:meter:create'
   },
   {
     path: ROUTE_PATHS.METER_DETAIL,
     element: <MeterDetailPage />,
     isProtected: true,
+    requiredPermission: 'meters:meter:view'
   },
   {
     path: ROUTE_PATHS.METER_EDIT,
     element: <MeterEditPage />,
     isProtected: true,
+    requiredPermission: 'meters:meter:update'
   },
   {
     path: ROUTE_PATHS.METER_READING_CREATE,
     element: <MeterReadingCreatePage />,
     isProtected: true,
+    requiredPermission: 'meters:meter:update'
   },
 ];

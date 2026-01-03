@@ -1,0 +1,4 @@
+{
+  "propertyId": { "in": "path", "description": "Property id (guid)", "examples": { "default": { "value": "00000000-0000-0000-0000-000000000000" } } },
+  "amount": { "in": "query", "description": "Optional amount for links", "examples": { "default": { "value": 100.0 } } }
+}

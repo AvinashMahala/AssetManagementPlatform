@@ -1,5 +1,5 @@
 // API-related constants
-export const API_BASE_URL = 'http://localhost:5001';
+export const API_BASE_URL = 'https://localhost:5005';
 
 export const API_ENDPOINTS = {
   ASSETS: '/api/v1/assets',

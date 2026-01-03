@@ -6,6 +6,14 @@ import { Button } from '@/componentDesignLibrary';
 import { Badge } from '@/componentDesignLibrary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/componentDesignLibrary';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/componentDesignLibrary';
+import {
   ArrowLeft,
   Edit,
   FileImage,
@@ -17,8 +25,6 @@ import {
 } from 'lucide-react';
 import { navigateBackOrFallback } from '@/utils/navigation';
 import { getErrorMessage } from '@/types/api';
-import { PropertyStatsSection } from './PropertyStatsSection';
-import { PropertyAlertsSection } from './PropertyAlertsSection';
 import { PropertyChartsSection } from './PropertyChartsSection';
 import { PropertyTabsSection } from './PropertyTabsSection';
 import { PageHeader } from '@/componentDesignLibrary/components/PageHeader';
@@ -43,7 +49,7 @@ const PropertyDashboard: React.FC = () => {
   } = usePropertyDashboard(id!);
 
   // Scroll-triggered animations
-  const { setRef, isRevealed } = useScrollReveal(['header', 'metrics', 'alerts', 'charts', 'tabs']);
+  const { setRef, isRevealed } = useScrollReveal(['header', 'charts', 'tabs']);
 
   const formatCurrency = (amount: number | undefined | null) => {
     if (amount === null || amount === undefined) return '₹0';
@@ -179,30 +185,65 @@ const PropertyDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Key Metrics */}
-            <div
-              ref={setRef('metrics')}
-              data-section="metrics"
-              className={`${styles.scrollReveal} ${isRevealed('metrics') ? styles.revealed : ''}`}
-            >
-              <PropertyStatsSection
-                metrics={metrics}
-                formatCurrency={formatCurrency}
-              />
-            </div>
 
-            {/* Alerts */}
-            <div
-              ref={setRef('alerts')}
-              data-section="alerts"
-              className={`${styles.scrollReveal} ${isRevealed('alerts') ? styles.revealed : ''}`}
-            >
-              <PropertyAlertsSection
-                metrics={metrics}
-                formatCurrency={formatCurrency}
-                onViewLeases={() => navigate('/leases')}
-                onViewPayments={() => navigate('/payments')}
-              />
+
+
+
+            {/* Units Overview */}
+            <div className="units-overview">
+              <h3 className="text-lg font-semibold">Units</h3>
+              <div className="mt-3">
+                {units.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="text-center py-8">
+                        <Home className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground mb-4">No Units created yet. Create One to see here.</p>
+                        <Button onClick={() => navigate(`/units/create?propertyId=${id}`)}>
+                          <Plus className="w-4 h-4 mr-2" /> Create Unit
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="table-header">
+                            <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Unit Number</TableHead>
+                            <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Type</TableHead>
+                            <TableHead className="w-[15%] min-w-[120px] py-2 px-3">Monthly Rent</TableHead>
+                            <TableHead className="w-[10%] min-w-[80px] py-2 px-3">Area</TableHead>
+                            <TableHead className="w-[15%] min-w-[140px] py-2 px-3">Status</TableHead>
+                            <TableHead className="w-[15%] min-w-[140px] py-2 px-3 text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {units.map((unit) => (
+                            <TableRow
+                              key={unit.id}
+                              className={`table-row cursor-pointer ${unit.status === 'available' ? 'bg-green-50 hover:bg-green-100' : ''}`}
+                              onClick={() => navigate(`/units/${unit.id}`)}
+                            >
+                              <TableCell className="py-2 px-3 font-medium">{unit.unitNumber}</TableCell>
+                              <TableCell className="py-2 px-3">{unit.unitType}</TableCell>
+                              <TableCell className="py-2 px-3">{formatCurrency(unit.monthlyRent)}</TableCell>
+                              <TableCell className="py-2 px-3">{unit.area || 'N/A'}</TableCell>
+                              <TableCell className="py-2 px-3">
+                                <Badge className={getUnitStatusColor(unit.status)}>{unit.status.replace('_', ' ')}</Badge>
+                              </TableCell>
+                              <TableCell className="py-2 px-3 text-right" onClick={(e) => e.stopPropagation()}>
+                                <Button variant="ghost" size="sm" onClick={() => navigate(`/units/${unit.id}`)}>View</Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
           </TabsContent>
 

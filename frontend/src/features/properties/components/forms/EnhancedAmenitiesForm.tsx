@@ -77,16 +77,20 @@ const EnhancedAmenitiesForm: React.FC<EnhancedAmenitiesFormProps> = ({ value, on
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {BASIC_AMENITIES.map(amenity => (
-            <Badge
-              key={amenity}
-              variant={value.basic?.includes(amenity) ? 'default' : 'outline'}
-              className="cursor-pointer hover:bg-blue-50 transition-colors justify-center py-2 px-3 text-xs h-auto"
-              onClick={() => toggleBasicAmenity(amenity)}
-            >
-              {amenity}
-            </Badge>
-          ))}
+          {BASIC_AMENITIES.map(amenity => {
+            const selected = value.basic?.includes(amenity);
+            return (
+              <div key={amenity} className="relative inline-block">
+                <Badge
+                  variant="outline"
+                  className={`cursor-pointer hover:bg-blue-50 transition-colors justify-center py-2 px-3 text-xs h-auto ${selected ? 'border-2 border-green-500 bg-green-50 text-green-700' : ''}`}
+                  onClick={() => toggleBasicAmenity(amenity)}
+                >
+                  {amenity}
+                </Badge>
+              </div>
+            );
+          })}
         </div>
 
         {/* Custom Basic Amenities */}
@@ -119,16 +123,20 @@ const EnhancedAmenitiesForm: React.FC<EnhancedAmenitiesFormProps> = ({ value, on
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {LUXURY_AMENITIES.map(amenity => (
-            <Badge
-              key={amenity}
-              variant={value.luxury?.includes(amenity) ? 'default' : 'outline'}
-              className="cursor-pointer hover:bg-purple-50 transition-colors justify-center py-2 px-3 text-xs h-auto"
-              onClick={() => toggleLuxuryAmenity(amenity)}
-            >
-              {amenity}
-            </Badge>
-          ))}
+          {LUXURY_AMENITIES.map(amenity => {
+            const selected = value.luxury?.includes(amenity);
+            return (
+              <div key={amenity} className="relative inline-block">
+                <Badge
+                  variant="outline"
+                  className={`cursor-pointer hover:bg-purple-50 transition-colors justify-center py-2 px-3 text-xs h-auto ${selected ? 'border-2 border-green-500 bg-green-50 text-green-700' : ''}`}
+                  onClick={() => toggleLuxuryAmenity(amenity)}
+                >
+                  {amenity}
+                </Badge>
+              </div>
+            );
+          })}
         </div>
 
         {/* Custom Luxury Amenities */}

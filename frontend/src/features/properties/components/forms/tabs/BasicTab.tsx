@@ -77,7 +77,7 @@ const BasicTab: React.FC<BasicTabProps> = ({ formData, errors, users, usersLoadi
             if (selectedUser) {
               onChange('ownerDetails', {
                 ...formData.ownerDetails,
-                name: selectedUser.name || selectedUser.username || ''
+                name: selectedUser.displayName ?? selectedUser.username ?? selectedUser.email,
               });
             }
           }}
@@ -87,11 +87,17 @@ const BasicTab: React.FC<BasicTabProps> = ({ formData, errors, users, usersLoadi
             <SelectValue placeholder={usersLoading ? 'Loading owners...' : 'Select owner'} />
           </SelectTrigger>
           <SelectContent>
-            {users && users.length > 0 && users.map((user: any) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.name || user.username || user.email}
+            {users && users.length > 0 ? (
+              users.map((user: any) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.displayName || user.username || user.email}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="__no_owners__" disabled className="text-muted-foreground" aria-disabled="true">
+                {usersLoading ? 'Loading owners...' : 'No owners found'}
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       </FormField>

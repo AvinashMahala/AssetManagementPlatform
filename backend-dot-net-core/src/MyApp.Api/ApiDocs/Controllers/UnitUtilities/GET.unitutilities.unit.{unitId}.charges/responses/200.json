@@ -1,0 +1,4 @@
+{
+  "description": "OK",
+  "content": { "application/json": { "examples": { "default": { "value": [ { "utility": "Water", "amount": 30.0, "period": "2025-12" }, { "utility": "Electricity", "amount": 45.5, "period": "2025-12" } ] } } } }
+}

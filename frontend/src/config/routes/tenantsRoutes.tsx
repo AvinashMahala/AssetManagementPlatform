@@ -16,30 +16,36 @@ export const tenantsRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.TENANTS,
     element: <TenantListPage />,
     isProtected: true,
+    requiredPermission: 'tenants:tenant:view'
   },
   {
     path: ROUTE_PATHS.TENANTS_CREATE,
     element: <Navigate to={ROUTE_PATHS.TENANTS_CREATE_TABBED} replace />,
     isProtected: true,
+    requiredPermission: 'tenants:tenant:create'
   },
   {
     path: ROUTE_PATHS.TENANTS_CREATE_TABBED,
     element: <AppLayout><TenantCreatePage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'tenants:tenant:create'
   },
   {
     path: ROUTE_PATHS.TENANT_DETAIL,
     element: <AppLayout><TenantDetailPage /></AppLayout>,
     isProtected: true,
+    requiredPermission: 'tenants:tenant:view'
   },
   {
     path: ROUTE_PATHS.TENANT_DASHBOARD,
     element: <TenantDashboardPage />,
     isProtected: true,
+    requiredPermission: 'tenants:tenant:view'
   },
   {
     path: ROUTE_PATHS.TENANT_EDIT,
     element: <TenantEditPage />,
     isProtected: true,
+    requiredPermission: 'tenants:tenant:update'
   },
 ];

@@ -4,7 +4,15 @@ import { useApi, useApiMutation } from '@/hooks/useApi';
 import { unitUtilityService } from '@/features/units/services/unitUtilityService';
 
 export function useUnitUtilities(unitId?: string, propertyId?: string) {
-  const query = useCallback(() => unitUtilityService.getAll(unitId, propertyId), [unitId, propertyId]);
+  // Wrap service call to gracefully handle 404 as empty list
+  const query = useCallback(async () => {
+    const resp = await unitUtilityService.getAll(unitId, propertyId);
+    if (!resp.success && resp.error && String(resp.error.code).toUpperCase().startsWith('HTTP_404')) {
+      return { success: true, data: [] } as ApiResponse<UnitUtility[]>;
+    }
+    return resp;
+  }, [unitId, propertyId]);
+
   const { data, loading, error, refetch } = useApi<UnitUtility[]>(query, [unitId, propertyId]);
 
   return {

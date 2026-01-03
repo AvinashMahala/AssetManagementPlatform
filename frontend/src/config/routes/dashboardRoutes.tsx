@@ -11,10 +11,12 @@ export const dashboardRoutes: RouteConfig[] = [
     path: ROUTE_PATHS.DASHBOARD,
     element: <DashboardEnhanced />,
     isProtected: true,
+    requiredPermission: 'dashboard:dashboard:view'
   },
   {
     path: ROUTE_PATHS.NAVIGATION_CONFIG,
     element: <NavigationConfigPage />,
     isProtected: true,
+    requiredPermission: 'admin:roles:update'
   },
 ];

@@ -1,0 +1,16 @@
+﻿{
+    "content": {
+        "application/json": {
+            "examples": {
+                "create-sample": {
+                    "summary": "Create Greenwood Apartments",
+                    "value": {
+                        "name": "Greenwood Apartments",
+                        "address": "123 Green St, Springfield",
+                        "ownerId": "e7a1d2f7-3c4b-4f76-9f8f-3a5c6f9e4b2c"
+                    }
+                }
+            }
+        }
+    }
+}

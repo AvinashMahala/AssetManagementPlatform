@@ -1,0 +1,11 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "schema": { "$ref": "#/components/schemas/BulkOperationSummary" },
+      "examples": {
+        "default": { "value": { "processed": ["00000000-0000-0000-0000-000000000010"], "errors": [] } }
+      }
+    }
+  }
+}

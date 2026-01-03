@@ -1,0 +1,10 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "id": "b1da2f3e-...", "number": "R-2025-0002", "amount": 1200.00 } }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "entityType": { "in": "path", "description": "Entity type (e.g., property)", "examples": { "default": { "value": "property" } } },
+  "entityId": { "in": "path", "description": "Entity id (guid)", "examples": { "default": { "value": "00000000-0000-0000-0000-000000000000" } } }
+}

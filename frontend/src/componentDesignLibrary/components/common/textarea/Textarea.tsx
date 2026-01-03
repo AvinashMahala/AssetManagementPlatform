@@ -24,7 +24,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             className={cn(
               "flex min-h-[80px] w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
               (hasError || hasSuccess || isLoading) && "pr-10",
-              hasError && "border-destructive focus-visible:ring-destructive",
+              hasError && "border-red-500 focus-visible:ring-red-500",
               hasSuccess && "border-green-500 focus-visible:ring-green-500",
               className
             )}
@@ -41,7 +41,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
           {!isLoading && hasError && (
             <div className="absolute right-3 top-3">
-              <AlertCircle className="h-4 w-4 text-destructive" />
+              <AlertCircle className="h-4 w-4 text-red-500" />
             </div>
           )}
 
@@ -55,7 +55,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {(error || helperText) && (
           <p className={cn(
             "text-sm",
-            hasError && "text-destructive",
+            hasError && "text-red-500",
             !hasError && "text-muted-foreground"
           )}>
             {error || helperText}

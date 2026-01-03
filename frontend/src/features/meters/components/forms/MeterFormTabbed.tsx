@@ -103,6 +103,7 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
         if (!formData.unitId && !initialData?.unitId) newErrors.unitId = 'Unit is required';
         if (!formData.meterName.trim()) newErrors.meterName = 'Meter name is required';
         if (!formData.meterType) newErrors.meterType = 'Meter type is required';
+        if (!formData.meterNumber.trim()) newErrors.meterNumber = 'Meter number is required';
         break;
       case 'pricing':
         if (formData.costPerUnit <= 0) newErrors.costPerUnit = 'Cost per unit must be greater than 0';
@@ -398,6 +399,7 @@ const MeterFormTabbed: React.FC<MeterFormTabbedProps> = ({
                       onChange={(e) => handleChange('meterNumber', e.target.value)}
                       className="h-10"
                     />
+                    {errors.meterNumber && <p className="text-sm text-red-500 mt-1">{errors.meterNumber}</p>}
                   </div>
                 </div>
               </CardContent>

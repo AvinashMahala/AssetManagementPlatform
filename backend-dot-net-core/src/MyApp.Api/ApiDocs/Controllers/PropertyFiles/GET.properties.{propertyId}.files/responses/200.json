@@ -1,0 +1,10 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": [ { "id": "00000000-0000-0000-0000-00000000f001", "entityType": "property", "entityId": "00000000-0000-0000-0000-000000000111", "filename": "plan.pdf", "originalName": "plan.pdf", "fileSize": 12345, "mimeType": "application/pdf", "uploadedBy": "system", "uploadedAt": "2025-12-01T12:00:00Z", "version": 1 } ] }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": { "examples": { "default": { "value": { "id": "d1-...", "fileName": "id_document.pdf", "contentType": "application/pdf", "url": "https://files.example.com/abc123", "uploadedBy": "user@example.com", "uploadedAt": "2025-12-01T00:00:00Z" } } } }
+  }
+}

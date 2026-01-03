@@ -16,10 +16,12 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useFileManagement } from '../hooks/useFileManagement';
 import styles from './FilesPage.module.scss';
 import '../files-animations.scss';
+import { useCan } from '@/contexts/RBACContext';
 
 const FilesPage: React.FC = () => {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+  const canUpload = useCan('files:file:upload');
 
   const {
     files,
@@ -120,17 +122,19 @@ const FilesPage: React.FC = () => {
         />
 
         {/* Upload Dialog */}
-        <UploadDialog
-          open={showUploadDialog}
-          onOpenChange={setShowUploadDialog}
-          onUploadSuccess={handleFileUploaded}
-          onUploadError={(error) => {
-            console.error('Upload error:', error);
-          }}
-          onUploadStart={(_file) => {}}
-          onUploadComplete={(_file, _success) => {}}
-          onQueueChange={(_queue) => {}}
-        />
+        {canUpload && (
+          <UploadDialog
+            open={showUploadDialog}
+            onOpenChange={setShowUploadDialog}
+            onUploadSuccess={handleFileUploaded}
+            onUploadError={(error) => {
+              console.error('Upload error:', error);
+            }}
+            onUploadStart={(_file) => {}}
+            onUploadComplete={(_file, _success) => {}}
+            onQueueChange={(_queue) => {}}
+          />
+        )}
 
         {/* Delete Confirmation */}
         <DeleteConfirmation

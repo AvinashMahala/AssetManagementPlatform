@@ -1,0 +1,3 @@
+{
+  "template": "<html><body>{{tenant.name}} - Receipt</body></html>"
+}

@@ -24,6 +24,7 @@ export const LoginPage: React.FC = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('signin');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const loginEmailRef = React.useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     // Check for saved theme preference
@@ -240,6 +241,7 @@ export const LoginPage: React.FC = () => {
             <div className="p-8">
               {currentView === 'login' && (
                 <LoginForm
+                  emailRef={loginEmailRef}
                   onSwitchToRegister={() => {
                     setAuthMode('signup');
                     setCurrentView('register');
@@ -253,6 +255,10 @@ export const LoginPage: React.FC = () => {
                   onSwitchToLogin={() => {
                     setAuthMode('signin');
                     setCurrentView('login');
+                    // Focus the login email input after switching
+                    setTimeout(() => {
+                      try { loginEmailRef.current?.focus(); } catch (_e) {}
+                    }, 0);
                   }}
                 />
               )}

@@ -1,0 +1,16 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": {
+          "value": {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "email": "user@example.com",
+            "displayName": "Example User"
+          }
+        }
+      }
+    }
+  }
+}

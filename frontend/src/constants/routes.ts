@@ -86,6 +86,12 @@ export const ROUTE_PATHS = {
 
   // Admin
   ADMIN: '/admin/*',
+  ADMIN_ROLES: '/admin/roles',
+  ADMIN_ROLE_EDIT: '/admin/roles/:id',
+  ADMIN_PERMISSIONS: '/admin/permissions',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_AUDIT: '/admin/audit',
+  ADMIN_EXPORTS: '/admin/exports',
 
   // Defaults
   ROOT: '/',

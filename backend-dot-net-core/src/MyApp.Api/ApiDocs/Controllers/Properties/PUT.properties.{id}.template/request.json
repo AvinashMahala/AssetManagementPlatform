@@ -1,0 +1,14 @@
+﻿{
+    "content": {
+        "application/json": {
+            "examples": {
+                "minimal-template": {
+                    "summary": "Simple template string",
+                    "value": {
+                        "templateJson": "{ \"title\": \"Receipt\", \"body\": \"\u003ch1\u003eReceipt\u003c/h1\u003e\" }"
+                    }
+                }
+            }
+        }
+    }
+}

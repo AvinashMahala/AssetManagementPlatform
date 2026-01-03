@@ -1,0 +1,10 @@
+﻿{
+  "description": "No content - status updated",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": {} }
+      }
+    }
+  }
+}

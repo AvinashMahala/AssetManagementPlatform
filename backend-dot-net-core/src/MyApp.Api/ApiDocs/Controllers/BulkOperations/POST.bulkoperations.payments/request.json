@@ -1,0 +1,7 @@
+{
+  "transactionIds": ["00000000-0000-0000-0000-000000000002"],
+  "amount": 100.00,
+  "paymentMethod": "credit_card",
+  "paymentDate": "2025-01-01T00:00:00Z",
+  "paymentReference": "REF-12345"
+}

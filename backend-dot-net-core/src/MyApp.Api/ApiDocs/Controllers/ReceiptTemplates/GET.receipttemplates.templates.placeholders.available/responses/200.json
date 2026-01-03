@@ -1,0 +1,17 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": {
+          "value": [
+            "tenantName",
+            "amount",
+            "propertyAddress",
+            "receiptNumber"
+          ]
+        }
+      }
+    }
+  }
+}

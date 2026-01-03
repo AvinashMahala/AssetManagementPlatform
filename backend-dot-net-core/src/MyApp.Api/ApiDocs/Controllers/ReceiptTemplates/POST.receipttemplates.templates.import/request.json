@@ -1,0 +1,6 @@
+{
+  "name": "Imported Template",
+  "settings": {
+    "body": "<p>{{tenantName}} - Rent</p>"
+  }
+}

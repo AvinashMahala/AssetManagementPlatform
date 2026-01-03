@@ -7,4 +7,6 @@ export interface RouteConfig {
   isPublic?: boolean;
   isProtected?: boolean;
   requiredRole?: 'admin' | 'user';
+  // Optional granular permission guard (preferred): use a permission string like 'admin:roles:manage'
+  requiredPermission?: string;
 }

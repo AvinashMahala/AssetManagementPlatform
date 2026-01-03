@@ -15,7 +15,7 @@ import type { NavItem, NavigationConfig } from '../types';
 
 // Default navigation items
 const defaultNavItems: NavItem[] = [
-  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', enabled: true },
+  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', enabled: true, requiredPermission: 'dashboard:dashboard:view' },
   { id: 'properties', name: 'Properties', icon: Building2, path: '/properties', enabled: true },
   { id: 'units', name: 'Units', icon: Home, path: '/units', enabled: true },
   { id: 'meters', name: 'Meters', icon: Zap, path: '/meters', enabled: true },
@@ -24,8 +24,8 @@ const defaultNavItems: NavItem[] = [
   { id: 'expenses', name: 'Expenses', icon: Receipt, path: '/expenses', enabled: true },
   { id: 'payments', name: 'Payments', icon: CreditCard, path: '/payments', enabled: true },
   { id: 'bulk-operations', name: 'Bulk Operations', icon: Wrench, path: '/bulk-operations', enabled: true },
-  { id: 'files', name: 'Files', icon: FileText, path: '/files', enabled: true },
-  { id: 'templates', name: 'Templates', icon: FileImage, path: '/templates', enabled: true },
+  { id: 'files', name: 'Files', icon: FileText, path: '/files', enabled: true, requiredPermission: 'files:file:view' },
+  { id: 'templates', name: 'Templates', icon: FileImage, path: '/templates', enabled: true, requiredPermission: 'templates:receipttemplate:view' },
 ];
 
 const STORAGE_KEY = 'asset-management-nav-config';
@@ -37,6 +37,17 @@ export function useNavigationConfig() {
     version: CONFIG_VERSION,
   });
   const [loading, setLoading] = useState(true);
+  // RBAC-sensitive visibility
+  const { useCan } = {} as any; // placeholder to keep typecheck safe if RBAC context is not available
+  let canCheck: (perm?: string) => boolean = () => true;
+  try {
+    // Import useCan from RBAC context dynamically to avoid circular imports during initialization
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const rbac = require('@/contexts/RBACContext');
+    canCheck = rbac.useCan;
+  } catch (e) {
+    // Fallback: if RBAC context is not available, allow items by default
+  }
 
   // Load configuration from localStorage
   useEffect(() => {
@@ -145,7 +156,7 @@ export function useNavigationConfig() {
 
   // Get enabled items in order
   const getEnabledItems = () => {
-    return config.items.filter(item => item.enabled);
+    return config.items.filter(item => item.enabled && (!item.requiredPermission || canCheck(item.requiredPermission)));
   };
 
   return {

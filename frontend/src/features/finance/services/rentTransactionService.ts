@@ -7,7 +7,7 @@ class RentTransactionService {
    * Get all rent transactions
    */
   async getAll(propertyId?: string, unitId?: string, status?: string): Promise<ApiResponse<RentTransaction[]>> {
-    let url = '/api/v1/rent-transactions';
+    let url = '/api/v1/renttransactions';
     const params = new URLSearchParams();
     if (propertyId) params.append('propertyId', propertyId);
     if (unitId) params.append('unitId', unitId);
@@ -20,21 +20,21 @@ class RentTransactionService {
    * Get transaction by ID
    */
   async getById(id: string): Promise<ApiResponse<RentTransaction>> {
-    return apiClient.get<RentTransaction>(`/api/rent-transactions/${id}`);
+    return apiClient.get<RentTransaction>(`/api/v1/renttransactions/${id}`);
   }
 
   /**
    * Get current month transaction for a unit
    */
   async getCurrentMonthTransaction(unitId: string): Promise<ApiResponse<RentTransaction | null>> {
-    return apiClient.get<RentTransaction | null>(`/api/rent-transactions/unit/${unitId}/current-month`);
+    return apiClient.get<RentTransaction | null>(`/api/v1/renttransactions/unit/${unitId}/current-month`);
   }
 
   /**
    * Get transaction history for a unit
    */
   async getUnitHistory(unitId: string, limit?: number): Promise<ApiResponse<RentTransaction[]>> {
-    let url = `/api/rent-transactions/unit/${unitId}/history`;
+    let url = `/api/v1/renttransactions/unit/${unitId}/history`;
     if (limit) url += `?limit=${limit}`;
     return apiClient.get<RentTransaction[]>(url);
   }
@@ -43,35 +43,35 @@ class RentTransactionService {
    * Create new rent transaction (draft)
    */
   async create(data: RentTransactionInput): Promise<ApiResponse<RentTransaction>> {
-    return apiClient.post<RentTransaction>('/api/v1/rent-transactions', data);
+    return apiClient.post<RentTransaction>('/api/v1/renttransactions', data);
   }
 
   /**
    * Update rent transaction
    */
   async update(id: string, data: Partial<RentTransactionInput>): Promise<ApiResponse<RentTransaction>> {
-    return apiClient.put<RentTransaction>(`/api/rent-transactions/${id}`, data);
+    return apiClient.put<RentTransaction>(`/api/v1/renttransactions/${id}`, data);
   }
 
   /**
    * Delete rent transaction
    */
   async delete(id: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`/api/rent-transactions/${id}`);
+    return apiClient.delete<void>(`/api/v1/renttransactions/${id}`);
   }
 
   /**
    * Generate invoice for transaction
    */
   async generateInvoice(request: InvoiceGenerationRequest): Promise<ApiResponse<{ pdfUrl: string; invoiceNumber: string }>> {
-    return apiClient.post<{ pdfUrl: string; invoiceNumber: string }>('/api/v1/rent-transactions/generate-invoice', request);
+    return apiClient.post<{ pdfUrl: string; invoiceNumber: string }>('/api/v1/renttransactions/generate-invoice', request);
   }
 
   /**
    * Generate receipt for transaction
    */
   async generateReceipt(request: TransactionReceiptGenerationRequest): Promise<ApiResponse<{ pdfUrl: string; receiptNumber: string }>> {
-    return apiClient.post<{ pdfUrl: string; receiptNumber: string }>('/api/v1/rent-transactions/generate-receipt', request);
+    return apiClient.post<{ pdfUrl: string; receiptNumber: string }>('/api/v1/renttransactions/generate-receipt', request);
   }
 
   /**
@@ -85,14 +85,14 @@ class RentTransactionService {
     paymentReference?: string;
     notes?: string;
   }): Promise<ApiResponse<RentTransaction>> {
-    return apiClient.post<RentTransaction>(`/api/rent-transactions/${transactionId}/record-payment`, payment);
+    return apiClient.post<RentTransaction>(`/api/v1/renttransactions/${transactionId}/record-payment`, payment);
   }
 
   /**
    * Calculate late fees for transaction
    */
   async calculateLateFees(transactionId: string): Promise<ApiResponse<{ lateFee: number; daysOverdue: number }>> {
-    return apiClient.get<{ lateFee: number; daysOverdue: number }>(`/api/rent-transactions/${transactionId}/calculate-late-fees`);
+    return apiClient.get<{ lateFee: number; daysOverdue: number }>(`/api/v1/renttransactions/${transactionId}/calculate-late-fees`);
   }
 
   /**
@@ -108,42 +108,43 @@ class RentTransactionService {
     costPerUnit: number;
     fixedCharge: number;
   }[]>> {
-    return apiClient.get<any[]>(`/api/rent-transactions/unit/${unitId}/last-meter-readings`);
+    // Some installations may not have meter readings endpoint; ignore 404 and return empty
+    return apiClient.get<any[]>(`/api/v1/renttransactions/unit/${unitId}/last-meter-readings`, { ignore404: true, fallback: [] });
   }
 
   /**
    * Preview invoice data (before PDF generation)
    */
   async previewInvoice(transactionId: string): Promise<ApiResponse<InvoiceReceiptData>> {
-    return apiClient.get<InvoiceReceiptData>(`/api/rent-transactions/${transactionId}/preview-invoice`);
+    return apiClient.get<InvoiceReceiptData>(`/api/v1/renttransactions/${transactionId}/preview-invoice`);
   }
 
   /**
    * Preview receipt data (before PDF generation)
    */
   async previewReceipt(transactionId: string): Promise<ApiResponse<InvoiceReceiptData>> {
-    return apiClient.get<InvoiceReceiptData>(`/api/rent-transactions/${transactionId}/preview-receipt`);
+    return apiClient.get<InvoiceReceiptData>(`/api/v1/renttransactions/${transactionId}/preview-receipt`);
   }
 
   /**
    * Send invoice notification to tenant
    */
   async sendInvoiceNotification(transactionId: string, method: 'email' | 'sms' = 'email'): Promise<ApiResponse<{ success: boolean; message: string }>> {
-    return apiClient.post<{ success: boolean; message: string }>(`/api/rent-transactions/${transactionId}/send-invoice-notification`, { method });
+    return apiClient.post<{ success: boolean; message: string }>(`/api/v1/renttransactions/${transactionId}/send-invoice-notification`, { method });
   }
 
   /**
    * Send receipt notification to tenant
    */
   async sendReceiptNotification(transactionId: string, method: 'email' | 'sms' = 'email'): Promise<ApiResponse<{ success: boolean; message: string }>> {
-    return apiClient.post<{ success: boolean; message: string }>(`/api/rent-transactions/${transactionId}/send-receipt-notification`, { method });
+    return apiClient.post<{ success: boolean; message: string }>(`/api/v1/renttransactions/${transactionId}/send-receipt-notification`, { method });
   }
 
   /**
    * Send payment reminder to tenant
    */
   async sendPaymentReminder(transactionId: string, method: 'email' | 'sms' = 'email'): Promise<ApiResponse<{ success: boolean; message: string }>> {
-    return apiClient.post<{ success: boolean; message: string }>(`/api/rent-transactions/${transactionId}/send-payment-reminder`, { method });
+    return apiClient.post<{ success: boolean; message: string }>(`/api/v1/renttransactions/${transactionId}/send-payment-reminder`, { method });
   }
 }
 

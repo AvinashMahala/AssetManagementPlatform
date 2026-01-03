@@ -16,6 +16,7 @@ import { useTenants } from '@/features/tenants/hooks/useTenants';
 import { useLeases } from '@/features/leases/hooks/useLeases';
 import { useUnits } from '@/features/units/hooks/useUnits';
 import { useNotifications } from '@/contexts';
+import { useCan } from '@/contexts/RBACContext';
 import { format, isWithinInterval } from 'date-fns';
 import type { Tenant } from '@/features/tenants/types';
 import type { Lease } from '../../../leases/types/lease';
@@ -54,6 +55,12 @@ const PaymentListPageEnhanced: React.FC = () => {
   const deletePayment = useDeletePayment();
   const bulkDeletePayments = useBulkDeletePayments();
   const { showSuccess, showError } = useNotifications();
+
+  // Permissions
+  const canView = useCan('payments:payment:view');
+  const canCreate = useCan('payments:payment:create');
+  const canUpdate = useCan('payments:payment:update');
+  const canDelete = useCan('payments:payment:delete');
 
   // Helper functions
   const getTenantName = (tenantId: string) => {
@@ -529,14 +536,16 @@ const PaymentListPageEnhanced: React.FC = () => {
                   >
                     <FileImage className="mr-2 h-4 w-4" /> Templates
                   </Button>
-                  <Button
-                    onClick={() => navigate('/payments/create-tabbed')}
-                    className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-                    title="Step-by-step guided form with progress tracking"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Record Payment
-                  </Button>
+                  {canCreate && (
+                    <Button
+                      onClick={() => navigate('/payments/create-tabbed')}
+                      className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                      title="Step-by-step guided form with progress tracking"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Record Payment
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -898,19 +907,21 @@ const PaymentListPageEnhanced: React.FC = () => {
                                 >
                                   <Eye className="h-3 w-3" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  title="Edit Payment"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/payments/${payment.id}/edit`);
-                                  }}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                {payment.status === 'pending' && (
+                                {canUpdate && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    title="Edit Payment"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/payments/${payment.id}/edit`);
+                                    }}
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                )}
+                                {canDelete && payment.status === 'pending' && (
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -1034,40 +1045,46 @@ const PaymentListPageEnhanced: React.FC = () => {
                           </Button>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={handleBulkMarkAsPaid}
-                            disabled={bulkActionLoading}
-                          >
-                            {bulkActionLoading ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            ) : (
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                            )}
-                            Mark as Paid
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={handleBulkDelete}
-                            disabled={bulkActionLoading}
-                          >
-                            {bulkActionLoading ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            ) : (
-                              <Trash2 className="h-4 w-4 mr-2" />
-                            )}
-                            Delete Selected
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleBulkExport}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Export Selected
-                          </Button>
+                          {canUpdate && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={handleBulkMarkAsPaid}
+                              disabled={bulkActionLoading}
+                            >
+                              {bulkActionLoading ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              ) : (
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                              )}
+                              Mark as Paid
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleBulkDelete}
+                              disabled={bulkActionLoading}
+                            >
+                              {bulkActionLoading ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              ) : (
+                                <Trash2 className="h-4 w-4 mr-2" />
+                              )}
+                              Delete Selected
+                            </Button>
+                          )}
+                          {canView && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleBulkExport}
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Export Selected
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -1,0 +1,11 @@
+{
+  "description": "Created",
+  "content": {
+    "application/json": {
+      "schema": { "$ref": "#/components/schemas/FileMetadata" },
+      "examples": {
+        "default": { "value": { "id": "00000000-0000-0000-0000-00000000f001", "fileId": "storage-abc123", "fileName": "plan.pdf", "contentType": "application/pdf", "size": 12345, "entityType": "property", "entityId": "00000000-0000-0000-0000-000000000111", "uploadedBy": "system", "uploadedAt": "2025-12-01T12:00:00Z", "version": 1 } }
+      }
+    }
+  }
+}

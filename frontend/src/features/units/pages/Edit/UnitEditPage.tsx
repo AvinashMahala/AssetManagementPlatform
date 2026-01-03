@@ -7,6 +7,7 @@ import { Button } from '@/componentDesignLibrary';
 import { PageLoadingSpinner } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout/AppLayout';
 import UnitFormTabbed from '@/features/units/components/forms/UnitFormTabbed';
+import { AdminAuditModal } from '@/features/common/components/AdminAuditModal';
 import type { UnitInput } from '@/features/units/types';
 import './UnitEditPage.module.scss';
 
@@ -16,11 +17,33 @@ export const UnitEditPage: React.FC = () => {
   const { data: unit, loading: loadingUnit, error: loadError } = useUnit(id!);
   const { mutate: updateUnit, loading: updating } = useUpdateUnit();
 
-  const handleSubmit = async (data: UnitInput) => {
+  const [auditOpen, setAuditOpen] = React.useState(false);
+  const [auditData, setAuditData] = React.useState<any | null>(null);
+
+  const handleSubmit = async (data: UnitInput, options?: { audit?: boolean }) => {
     if (!id) return;
 
     try {
-      await updateUnit({ id, data });
+      const resp = await updateUnit({ id, data, audit: options?.audit });
+
+      if (!resp.success) {
+        if (resp.error && String(resp.error.code).toUpperCase() === 'DUPLICATE_UNIT') {
+          // Surface duplicate error to the form
+          throw new Error(resp.error.message || 'Duplicate unit exists');
+        }
+        throw new Error(resp.error?.message || 'Failed to update unit');
+      }
+
+      const respData = resp.data;
+      if (options?.audit && respData && (respData as any).dataAudit) {
+        const audit = (respData as any).dataAudit;
+        if (!audit.success) {
+          setAuditData(audit);
+          setAuditOpen(true);
+          return;
+        }
+      }
+
       navigateBackOrFallback(navigate, '/units', { state: { message: 'Unit updated successfully!' } });
     } catch (error) {
       console.error('Failed to update unit:', error);
@@ -79,6 +102,15 @@ export const UnitEditPage: React.FC = () => {
           onSubmit={handleSubmit}
           loading={updating}
           isEdit={true}
+        />
+
+        <AdminAuditModal
+          open={auditOpen}
+          audit={auditData}
+          onClose={() => {
+            setAuditOpen(false);
+            navigateBackOrFallback(navigate, '/units', { state: { message: 'Unit updated with audit mismatches' } });
+          }}
         />
       </div>
     </AppLayout>

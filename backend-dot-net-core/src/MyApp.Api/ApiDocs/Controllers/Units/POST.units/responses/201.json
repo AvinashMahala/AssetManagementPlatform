@@ -1,0 +1,4 @@
+{
+  "description": "Created",
+  "content": { "application/json": { "examples": { "default": { "value": { "id": "22222222-2222-2222-2222-222222222222", "name": "Building A - Unit 2", "number": "A2", "status": "active", "floor": 1 } } } } }
+}

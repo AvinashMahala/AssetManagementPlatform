@@ -26,12 +26,12 @@ export function useUnit(id: string | undefined | null) {
 }
 
 export function useCreateUnit() {
-  return useApiMutation<Unit, UnitInput>((data) => unitService.create(data));
+  return useApiMutation<any, { data: UnitInput; audit?: boolean }>((vars) => unitService.create(vars.data, vars.audit));
 }
 
 export function useUpdateUnit() {
-  return useApiMutation<Unit, { id: string; data: Partial<UnitInput> }>(
-    ({ id, data }) => unitService.update(id, data)
+  return useApiMutation<any, { id: string; data: Partial<UnitInput>; audit?: boolean }>(
+    ({ id, data, audit }) => unitService.update(id, data, audit)
   );
 }
 

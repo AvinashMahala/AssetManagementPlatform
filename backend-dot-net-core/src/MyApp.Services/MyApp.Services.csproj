@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MyApp.Interfaces\MyApp.Interfaces.csproj" />
+    <ProjectReference Include="..\MyApp.Models\MyApp.Models.csproj" />
+    <ProjectReference Include="..\MyApp.Repositories\MyApp.Repositories.csproj" />
+    <ProjectReference Include="..\MyApp.Core\MyApp.Core.csproj" />
+    <ProjectReference Include="..\MyApp.Messaging\MyApp.Messaging.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.1" />
+    <PackageReference Include="StackExchange.Redis" Version="2.7.74" />
+  </ItemGroup>
+</Project>

@@ -26,6 +26,7 @@ import { useUnits, useDeleteUnit } from '@/features/units/hooks/useUnits';
 import { useProperties } from '@/features/properties/hooks/useProperties';
 import { AppLayout } from '@/components/layout';
 import { PageLoadingSpinner } from '@/componentDesignLibrary';
+import { useCan } from '@/contexts/RBACContext';
 import './UnitListPage.module.scss';
 
 const UnitListPageEnhanced: React.FC = () => {
@@ -44,6 +45,9 @@ const UnitListPageEnhanced: React.FC = () => {
   const { units, loading } = useUnits();
   const { mutate: deleteUnit, loading: deleteLoading } = useDeleteUnit();
   const { properties } = useProperties();
+  const canCreate = useCan('units:unit:create');
+  const canUpdate = useCan('units:unit:update');
+  const canDelete = useCan('units:unit:delete');
 
   // State for scroll-triggered animations
   // Scroll-triggered animations
@@ -283,13 +287,15 @@ const UnitListPageEnhanced: React.FC = () => {
             <Button variant="outline" onClick={() => navigate('/templates')}>
               <FileImage className="mr-2 h-4 w-4" /> Templates
             </Button>
-            <Button
-              className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
-              onClick={() => navigate('/units/create-tabbed')}
-              title="Step-by-step guided form with progress tracking"
-            >
-              <Plus className="mr-2 h-4 w-4" /> Add Unit
-            </Button>
+            {canCreate && (
+              <Button
+                className="action-button bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300"
+                onClick={() => navigate('/units/create-tabbed')}
+                title="Step-by-step guided form with progress tracking"
+              >
+                <Plus className="mr-2 h-4 w-4" /> Add Unit
+              </Button>
+            )}
           </div>
         </div>
 
@@ -413,32 +419,36 @@ const UnitListPageEnhanced: React.FC = () => {
                 </Button>
               </div>
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleBulkMaintenance}
-                  disabled={bulkActionLoading}
-                >
-                  {bulkActionLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                  ) : (
-                    <Wrench className="h-4 w-4 mr-2" />
-                  )}
-                  Mark as Maintenance
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                  disabled={bulkActionLoading}
-                >
-                  {bulkActionLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  ) : (
-                    <Trash2 className="h-4 w-4 mr-2" />
-                  )}
-                  Delete Selected
-                </Button>
+                {canUpdate && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleBulkMaintenance}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    ) : (
+                      <Wrench className="h-4 w-4 mr-2" />
+                    )}
+                    Mark as Maintenance
+                  </Button>
+                )}
+                {canDelete && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading}
+                  >
+                    {bulkActionLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    Delete Selected
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -498,7 +508,17 @@ const UnitListPageEnhanced: React.FC = () => {
                     {paginatedUnits.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                          {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found. Click "Add Unit" to create one.'}
+                          {filteredUnits.length === 0 && units.length > 0 ? 'No units match your filters.' : 'No units found.'}
+                          {!search && propertyFilter === 'all' && !statusFilter && canCreate && (
+                            <div className="mt-4">
+                              <Button className="empty-action-button" onClick={() => navigate('/units/create-tabbed')}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Unit
+                              </Button>
+                            </div>
+                          )}
+                          {!canCreate && (
+                            <div className="mt-4 text-sm text-gray-500">Contact your administrator to add units.</div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -561,30 +581,34 @@ const UnitListPageEnhanced: React.FC = () => {
                               >
                                 <BarChart3 className="h-3.5 w-3.5" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="table-action-button h-7 w-7"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/units/${unit.id}/edit`);
-                                }}
-                                title="Edit"
-                              >
-                                <Edit className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="table-action-button h-7 w-7"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteClick(unit.id, unit.unitNumber);
-                                }}
-                                title="Delete"
-                              >
-                                <Trash2 className="h-3.5 w-3.5 text-red-600" />
-                              </Button>
+                              {canUpdate && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="table-action-button h-7 w-7"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/units/${unit.id}/edit`);
+                                  }}
+                                  title="Edit"
+                                >
+                                  <Edit className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="table-action-button h-7 w-7"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(unit.id, unit.unitNumber);
+                                  }}
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -691,30 +715,34 @@ const UnitListPageEnhanced: React.FC = () => {
                     >
                       <BarChart3 className="h-3.5 w-3.5" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="action-button h-7 px-2 flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/units/${unit.id}/edit`);
-                      }}
-                      title="Edit"
-                    >
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="action-button h-7 px-2 text-red-600 flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(unit.id, unit.unitNumber);
-                      }}
-                      title="Delete"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    {canUpdate && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="action-button h-7 px-2 flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/units/${unit.id}/edit`);
+                        }}
+                        title="Edit"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="action-button h-7 px-2 text-red-600 flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(unit.id, unit.unitNumber);
+                        }}
+                        title="Delete"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>

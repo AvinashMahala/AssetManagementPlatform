@@ -10,7 +10,7 @@ interface UsePropertyFormOptions {
   initialData?: Partial<PropertyInput>;
   isEdit?: boolean;
   currentUserId?: string | undefined;
-  onSubmit: (data: PropertyInput) => Promise<void>;
+  onSubmit: (data: PropertyInput, options?: { audit?: boolean }) => Promise<void>;
   apiError?: ApiError | null;
   owner?: any;
   ownerLoading?: boolean;
@@ -124,18 +124,41 @@ export const usePropertyForm = ({ initialData, isEdit = false, currentUserId, on
     if (isEdit) {
       setActiveTab(id);
     } else {
+      // Validate only the current tab before allowing change
       if (validateTabLocal(activeTab)) {
         setCompletedTabs(prev => new Set([...prev, activeTab]));
         setActiveTab(id);
+      } else {
+        // Focus first invalid field to help the user
+        const firstInvalidField = Object.keys(errors)[0];
+        if (firstInvalidField) {
+          const element = document.getElementById(firstInvalidField) || document.querySelector(`[name="${firstInvalidField}"]`) as HTMLElement;
+          if (element) {
+            element.focus();
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
       }
     }
   };
 
   const handleNext = () => {
-    if (validateTabLocal(activeTab)) {
+    // Only validate current tab before moving next
+    const tabIsValid = validateTabLocal(activeTab);
+    if (tabIsValid) {
       setCompletedTabs(prev => new Set([...prev, activeTab]));
       const currentIndex = TABS_CONST.findIndex((tab) => tab.id === activeTab);
       if (currentIndex < TABS_CONST.length - 1) setActiveTab(TABS_CONST[currentIndex + 1].id as TabId);
+    } else {
+      // Focus first invalid field to guide the user
+      const firstInvalidField = Object.keys(errors)[0];
+      if (firstInvalidField) {
+        const element = document.getElementById(firstInvalidField) || document.querySelector(`[name="${firstInvalidField}"]`) as HTMLElement;
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
     }
   };
 
@@ -144,7 +167,7 @@ export const usePropertyForm = ({ initialData, isEdit = false, currentUserId, on
     if (currentIndex > 0) setActiveTab(TABS_CONST[currentIndex - 1].id as TabId);
   };
 
-  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent, options?: { audit?: boolean }) => {
     if (e && typeof (e as any).preventDefault === 'function') (e as any).preventDefault();
     setErrors(prev => ({ ...prev, submit: '' }));
 
@@ -160,7 +183,7 @@ export const usePropertyForm = ({ initialData, isEdit = false, currentUserId, on
 
     setIsSubmitting(true);
     try {
-      await onSubmit(formData);
+      await onSubmit(formData, options);
     } catch (err: any) {
       setErrors(prev => ({ ...prev, submit: err?.message || 'Submit failed' }));
       throw err;

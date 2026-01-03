@@ -1,0 +1,10 @@
+﻿{
+  "description": "Property not found",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "message": "Property not found." } }
+      }
+    }
+  }
+}

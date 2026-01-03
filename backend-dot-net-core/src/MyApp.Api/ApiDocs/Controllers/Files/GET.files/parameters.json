@@ -1,0 +1,6 @@
+{
+  "page": { "in": "query", "description": "Page number", "examples": { "default": { "value": 1 } } },
+  "limit": { "in": "query", "description": "Items per page", "examples": { "default": { "value": 20 } } },
+  "entityType": { "in": "query", "description": "Optional entity type to filter (e.g., property)", "examples": { "default": { "value": "property" } } },
+  "entityId": { "in": "query", "description": "Optional entity id to filter", "examples": { "default": { "value": "00000000-0000-0000-0000-000000000000" } } }
+}

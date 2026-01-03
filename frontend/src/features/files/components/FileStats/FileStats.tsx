@@ -5,16 +5,17 @@ import type { FileStatsProps } from './FileStats.types';
 import './FileStats.scss';
 
 export const FileStats: React.FC<FileStatsProps> = ({
-  totalFiles,
-  files,
-  selectedFilesCount
+  totalFiles = 0,
+  files = [],
+  selectedFilesCount = 0
 }) => {
   const stats = useMemo(() => {
-    const images = files.filter(f => f.mimeType.startsWith('image/')).length;
-    const documents = files.filter(f => f.mimeType === 'application/pdf' || f.mimeType.includes('document')).length;
-    const totalSize = files.reduce((sum, f) => sum + f.fileSize, 0);
+    const safeFiles = Array.isArray(files) ? files : [];
+    const images = safeFiles.filter(f => (f?.mimeType ?? '').startsWith('image/')).length;
+    const documents = safeFiles.filter(f => (f?.mimeType === 'application/pdf') || ((f?.mimeType ?? '').includes('document'))).length;
+    const totalSize = safeFiles.reduce((sum, f) => sum + Number(f?.fileSize ?? 0), 0);
 
-    return { total: totalFiles, images, documents, totalSize };
+    return { total: totalFiles ?? 0, images, documents, totalSize };
   }, [totalFiles, files]);
 
   const formatFileSize = (bytes: number) => {

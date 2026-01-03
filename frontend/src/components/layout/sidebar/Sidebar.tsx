@@ -6,7 +6,9 @@ import {
   LogOut,
   User,
   Building2,
+  Users,
 } from 'lucide-react';
+import { useRBACContext } from '@/contexts';
 import { useAuthContext } from '../../../contexts';
 import { useNavigationConfig } from '@/features/admin/hooks/useNavigationConfig';
 import type { SidebarProps } from './Sidebar.types';
@@ -16,8 +18,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggle })
   const navigate = useNavigate();
   const { user, logout } = useAuthContext();
   const { getEnabledItems } = useNavigationConfig();
+  const { can, loading: rbacLoading } = useRBACContext();
 
-  const navItems = getEnabledItems();
+  // Start with configured items, but we'll insert the Admin link dynamically
+  let navItems = getEnabledItems().filter(item => item.id !== 'admin');
+
+  // Show admin nav if RBAC is ready and user has admin permission or is an admin role
+  const canAccessAdmin = !rbacLoading && (can('admin:roles:manage') || user?.role === 'admin');
+  if (canAccessAdmin && !navItems.some(i => i.id === 'admin')) {
+    const adminItem = { id: 'admin', name: 'Admin', icon: Users, path: '/admin', enabled: true };
+    const dashboardIndex = navItems.findIndex(i => i.id === 'dashboard');
+    const insertAt = dashboardIndex >= 0 ? dashboardIndex + 1 : 0;
+    navItems.splice(insertAt, 0, adminItem);
+  }
 
   const handleLogout = async () => {
     await logout();

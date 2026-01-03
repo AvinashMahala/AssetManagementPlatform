@@ -1,0 +1,10 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": {
+      "examples": {
+        "default": { "value": { "id": "00000000-0000-0000-0000-000000000000", "fileName": "receipt.pdf", "contentType": "application/pdf", "size": 12345 } }
+      }
+    }
+  }
+}

@@ -4,12 +4,15 @@ import { X, Trash2 } from 'lucide-react';
 import type { BulkActionsProps } from './BulkActions.types';
 import './BulkActions.scss';
 
+import { useCan } from '@/contexts/RBACContext';
+
 export const BulkActions: React.FC<BulkActionsProps> = ({
   selectedFilesCount,
   onClearSelection,
   onBulkDelete,
   bulkDeleting
 }) => {
+  const canDelete = useCan('files:file:delete');
   if (selectedFilesCount === 0) return null;
 
   return (
@@ -32,7 +35,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
           variant="destructive"
           size="sm"
           onClick={onBulkDelete}
-          disabled={bulkDeleting}
+          disabled={bulkDeleting || !canDelete}
           className="bulk-btn delete"
         >
           <Trash2 className="h-4 w-4 mr-2" />

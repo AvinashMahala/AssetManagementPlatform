@@ -1,0 +1,18 @@
+﻿{
+    "description":  "Template object",
+    "content":  {
+                    "application/json":  {
+                                             "examples":  {
+                                                              "example":  {
+                                                                              "summary":  "Template payload",
+                                                                              "value":  {
+                                                                                            "template":  {
+                                                                                                             "title":  "Rent Receipt",
+                                                                                                             "body":  "\u003ch1\u003eReceipt for {{tenant}}\u003c/h1\u003e\n\u003cp\u003eAmount: {{amount}}\u003c/p\u003e"
+                                                                                                         }
+                                                                                        }
+                                                                          }
+                                                          }
+                                         }
+                }
+}

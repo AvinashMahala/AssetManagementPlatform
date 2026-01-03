@@ -85,9 +85,15 @@ export function useRegister() {
 
 export function useUsers() {
   const query = useCallback(() => userService.getAllUsers(), []);
-  const apiResult = useApi<{users: User[]}>(query);
+  const apiResult = useApi<User[] | {users: User[]}>(query);
+
+  // Support both API response shapes: either `User[]` or `{ users: User[] }`
+  let usersData: User[] | null = null;
+  if (Array.isArray(apiResult.data)) usersData = apiResult.data as User[];
+  else usersData = (apiResult.data as any)?.users || null;
+
   return {
     ...apiResult,
-    data: apiResult.data?.users || null,
+    data: usersData,
   };
 }

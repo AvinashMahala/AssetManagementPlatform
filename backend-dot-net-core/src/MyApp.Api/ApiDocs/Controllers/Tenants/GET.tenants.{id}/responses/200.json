@@ -1,0 +1,6 @@
+{
+  "description": "OK",
+  "content": {
+    "application/json": { "examples": { "default": { "value": { "id": "t-1-...", "firstName": "Jane", "lastName": "Doe", "email": "jane.doe@example.com" } } } }
+  }
+}
