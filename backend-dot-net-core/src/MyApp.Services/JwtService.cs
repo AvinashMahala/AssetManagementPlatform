@@ -23,6 +23,11 @@ public class JwtService : IJwtService
     private readonly byte[] _keyBytes;
     private readonly ILogger<JwtService> _logger;
 
+    /// <summary>
+    /// Creates a new <see cref="JwtService"/> configured from <see cref="IConfiguration"/> values.
+    /// </summary>
+    /// <param name="configuration">The application configuration containing Jwt settings.</param>
+    /// <param name="logger">Logger for diagnostic messages and warnings.</param>
     public JwtService(IConfiguration configuration, ILogger<JwtService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

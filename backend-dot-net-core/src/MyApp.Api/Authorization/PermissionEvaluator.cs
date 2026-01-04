@@ -18,10 +18,15 @@ public class PermissionEvaluator
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
+    /// <summary>
+    /// Evaluates and returns the effective permissions for a user by aggregating role permissions.
+    /// </summary>
+    /// <param name="userId">The user id to evaluate permissions for.</param>
+    /// <returns>A non-null set of permission names (case-insensitive).</returns>
     public async Task<HashSet<string>> GetEffectivePermissionsAsync(Guid userId)
     {
         var cacheKey = $"user_perms:{userId}";
-        if (_cache.TryGetValue(cacheKey, out HashSet<string> cached))
+        if (_cache.TryGetValue(cacheKey, out HashSet<string>? cached) && cached != null)
         {
             return cached;
         }

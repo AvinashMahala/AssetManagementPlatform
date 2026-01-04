@@ -400,7 +400,7 @@ public class ReceiptService : IReceiptService
     private byte[] RenderTemplateBytes(Receipt receipt, RentTransactionCreatedEvent? evt, ReceiptTemplate? template)
     {
         // Default template body if none configured
-        string body = null;
+        string? body = null;
         if (template != null && !string.IsNullOrEmpty(template.SettingsJson))
         {
             try
@@ -424,8 +424,8 @@ public class ReceiptService : IReceiptService
             ["{{receiptId}}"] = receipt.Id.ToString(),
             ["{{amount}}"] = receipt.Amount.ToString("F2"),
             ["{{date}}"] = DateTime.UtcNow.ToString("u"),
-            ["{{paymentId}}"] = (receipt.RentPaymentId != Guid.Empty) ? receipt.RentPaymentId.ToString() : string.Empty,
-            ["{{transactionId}}"] = (receipt.RentTransactionId != Guid.Empty) ? receipt.RentTransactionId.ToString() : string.Empty
+            ["{{paymentId}}"] = (receipt.RentPaymentId.HasValue && receipt.RentPaymentId.Value != Guid.Empty) ? receipt.RentPaymentId.Value.ToString() : string.Empty,
+            ["{{transactionId}}"] = (receipt.RentTransactionId.HasValue && receipt.RentTransactionId.Value != Guid.Empty) ? receipt.RentTransactionId.Value.ToString() : string.Empty
         };
 
         foreach (var kv in replacements)

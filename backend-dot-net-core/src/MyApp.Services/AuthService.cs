@@ -96,6 +96,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, Micro
     /// <param name="request">The login request containing email and password.</param>
     /// <param name="ipAddress">Optional IP address to record with the session.</param>
     /// <param name="userAgent">Optional user agent string to record with the session.</param>
+    /// <param name="deviceInfo">Optional device info or client-provided identifier for the session.</param>
     /// <returns>A tuple with AccessToken and RefreshToken.</returns>
     /// <exception cref="MyApp.Services.Exceptions.ServiceException">Thrown when credentials are invalid.</exception>
     public async Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginRequest request, string? ipAddress = null, string? userAgent = null, string? deviceInfo = null)
@@ -217,6 +218,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, Micro
     public async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(RefreshRequest request)
     {
         // Accept refresh token from body; controller will pass cookie value when using cookie-based flow
+        if (_sessionRepo == null || _hasher == null) throw new MyApp.Services.Exceptions.ServiceException("Refresh tokens are not supported by this deployment");
         if (string.IsNullOrWhiteSpace(request.RefreshToken)) throw new MyApp.Services.Exceptions.ServiceException("Invalid refresh token");
         var hash = _hasher.Hash(request.RefreshToken);
         var session = await _sessionRepo.FindByRefreshTokenHashAsync(hash);
@@ -345,6 +347,11 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, Micro
         };
     }
 
+    /// <summary>
+    /// Returns active sessions for the given user.
+    /// </summary>
+    /// <param name="userId">User id to list sessions for.</param>
+    /// <returns>A possibly empty enumerable of <see cref="MyApp.Models.SessionInfoDto"/>.</returns>
     public async Task<System.Collections.Generic.IEnumerable<MyApp.Models.SessionInfoDto>> GetSessionsAsync(Guid userId)
     {
         if (_sessionRepo == null) return System.Array.Empty<MyApp.Models.SessionInfoDto>();
@@ -434,6 +441,10 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, Micro
         return candidate;
     }
 
+    /// <summary>
+    /// Logs out all sessions for the specified user by revoking sessions and any related JTI entries.
+    /// </summary>
+    /// <param name="userId">User id to clear sessions for.</param>
     public async Task LogoutAllSessionsAsync(Guid userId)
     {
         if (_sessionRepo == null) return;

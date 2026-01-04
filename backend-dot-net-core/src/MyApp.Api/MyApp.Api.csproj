@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Generate XML documentation file for Swagger/ApiDocs -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- NOTE: NU1902 advisory may flag some OpenTelemetry packages; track and upgrade when fixed upstream -->
+    <NoWarn>$(NoWarn);NU1902</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\MyApp.Interfaces\MyApp.Interfaces.csproj" />
@@ -13,7 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.2" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
@@ -22,10 +24,10 @@
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.Http" Version="8.0.0" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.6.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.6.0" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.6.0" />
-    <PackageReference Include="prometheus-net.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

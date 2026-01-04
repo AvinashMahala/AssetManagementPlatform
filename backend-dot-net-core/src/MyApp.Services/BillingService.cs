@@ -9,6 +9,9 @@ using MyApp.Models;
 
 namespace MyApp.Services;
 
+/// <summary>
+/// Service for running billing for leases and associated utility subscriptions.
+/// </summary>
 public class BillingService(
     ILeaseRepository leaseRepo,
     IUtilitySubscriptionRepository subscriptionRepo,

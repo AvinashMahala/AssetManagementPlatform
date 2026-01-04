@@ -9,12 +9,18 @@ using MyApp.Services;
 
 namespace MyApp.Services
 {
+    /// <summary>
+    /// Redis-backed JTI store implementation that persists JTIs in Redis and supports validation and removal.
+    /// </summary>
     public class RedisJtiStore : IJtiStore, IDisposable
     {
         private readonly ConnectionMultiplexer _conn;
         private readonly IDatabase _db;
         private readonly ILogger<RedisJtiStore> _logger;
 
+        /// <summary>
+        /// Creates a new <see cref="RedisJtiStore"/> using the provided configuration and logger.
+        /// </summary>
         public RedisJtiStore(IConfiguration configuration, ILogger<RedisJtiStore> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -26,6 +32,7 @@ namespace MyApp.Services
         private static string JtiKey(string jti) => $"jti:{jti}";
         private static string SessionSetKey(Guid sessionId) => $"session_jtis:{sessionId}";
 
+        /// <inheritdoc />
         public async Task AddJtiAsync(string jti, Guid sessionId, TimeSpan ttl)
         {
             // Ensure only one active JTI exists per session to avoid unbounded growth when multiple tabs refresh.
@@ -36,6 +43,7 @@ namespace MyApp.Services
             await _db.SetAddAsync(SessionSetKey(sessionId), jti);
         }
 
+        /// <inheritdoc />
         public async Task<bool> ValidateJtiAsync(string jti, Guid sessionId)
         {
             var val = await _db.StringGetAsync(JtiKey(jti));
@@ -43,6 +51,7 @@ namespace MyApp.Services
             return Guid.TryParse(val.ToString(), out var sid) && sid == sessionId;
         }
 
+        /// <inheritdoc />
         public async Task RemoveJtiAsync(string jti)
         {
             // remove jti key and remove from any session set that contains it
@@ -51,18 +60,22 @@ namespace MyApp.Services
             // rely on RemoveAllForSessionAsync to clean session sets when available.
         }
 
+        /// <inheritdoc />
         public async Task RemoveAllForSessionAsync(Guid sessionId)
         {
             var setKey = SessionSetKey(sessionId);
             var entries = await _db.SetMembersAsync(setKey);
             if (entries != null && entries.Length > 0)
             {
-                var keys = entries.Select(e => (RedisKey)JtiKey(e)).ToArray();
-                await _db.KeyDeleteAsync(keys);
+                var keys = entries.Where(e => !e.IsNullOrEmpty).Select(e => (RedisKey)JtiKey(e.ToString()!)).ToArray();
+                if (keys.Length > 0) await _db.KeyDeleteAsync(keys);
             }
             await _db.KeyDeleteAsync(setKey);
         }
 
+        /// <summary>
+        /// Disposes the underlying Redis connection.
+        /// </summary>
         public void Dispose()
         {
             _conn?.Dispose();
