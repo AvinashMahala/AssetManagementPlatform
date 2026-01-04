@@ -128,7 +128,7 @@ public class BulkOperationsService(ILeaseRepository leases, IRentTransactionServ
             try
             {
                 var tx = await _transactions.GetByIdAsync(txId);
-                if (tx is null) throw new InvalidOperationException("Transaction not found");
+                if (tx is null) throw new MyApp.Services.Exceptions.ServiceException("Transaction not found");
 
                 var existing = await _repo.ListByRentTransactionAsync(txId);
                 if (existing != null && existing.Any() && !regenerateExisting)
@@ -177,7 +177,7 @@ public class BulkOperationsService(ILeaseRepository leases, IRentTransactionServ
             {
                 // In this minimal implementation, attachments are ignored or should be mapped to storage ids
                 var ok = await _comm.SendToTenantAsync(tenantId, subject, message, channels, null);
-                if (!ok) throw new InvalidOperationException("Failed to send");
+                if (!ok) throw new MyApp.Services.Exceptions.ServiceException("Failed to send");
                 processed.Add(tenantId);
             }
             catch (Exception ex)
@@ -224,7 +224,7 @@ public class BulkOperationsService(ILeaseRepository leases, IRentTransactionServ
         }
         else
         {
-            throw new InvalidOperationException("Unsupported export type");
+            throw new MyApp.Services.Exceptions.ServiceException("Unsupported export type");
         }
 
         var storageId = await _storage.StoreAsync(data, filename);

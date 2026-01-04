@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MyApp.Interfaces;
 using MyApp.Interfaces.Repositories;
 using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class TariffService : ITariffService
+public class TariffService(ITariffRepository repo, ILogger<TariffService> logger) : ITariffService
 {
-    private readonly ITariffRepository _repo;
-
-    public TariffService(ITariffRepository repo) => _repo = repo;
+    private readonly ITariffRepository _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+    private readonly ILogger<TariffService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task<IEnumerable<Tariff>> ListAsync() => await _repo.ListAsync();
 

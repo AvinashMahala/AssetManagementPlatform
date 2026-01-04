@@ -9,12 +9,12 @@ namespace MyApp.Services
     public class DbFallbackJtiStore : IJtiStore
     {
         private readonly ISessionJtiRepository _repo;
-        private readonly ILogger<DbFallbackJtiStore>? _logger;
+        private readonly ILogger<DbFallbackJtiStore> _logger;
 
-        public DbFallbackJtiStore(ISessionJtiRepository repo, ILogger<DbFallbackJtiStore>? logger = null)
+        public DbFallbackJtiStore(ISessionJtiRepository repo, ILogger<DbFallbackJtiStore> logger)
         {
-            _repo = repo;
-            _logger = logger;
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task AddJtiAsync(string jti, Guid sessionId, TimeSpan ttl)

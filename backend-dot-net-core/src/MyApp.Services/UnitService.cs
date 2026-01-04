@@ -158,7 +158,7 @@ public class UnitService(IUnitRepository repo) : IUnitService
     public async Task UpdateStatusAsync(Guid id, string status)
     {
         var existing = await _repo.GetByIdAsync(id);
-        if (existing is null) throw new InvalidOperationException("Unit not found");
+        if (existing is null) throw new MyApp.Services.Exceptions.ServiceException("Unit not found");
         existing.Status = status;
         await _repo.UpdateAsync(existing);
     }
@@ -167,7 +167,7 @@ public class UnitService(IUnitRepository repo) : IUnitService
     {
         // Basic placeholder analytics: counts and placeholder values
         var u = await _repo.GetByIdAsync(id);
-        if (u is null) throw new InvalidOperationException("Unit not found");
+        if (u is null) throw new MyApp.Services.Exceptions.ServiceException("Unit not found");
         var analytics = new
         {
             unitId = id,

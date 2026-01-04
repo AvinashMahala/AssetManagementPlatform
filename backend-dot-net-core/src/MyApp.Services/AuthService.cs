@@ -15,14 +15,14 @@ namespace MyApp.Services;
 /// <remarks>
 /// Uses <see cref="IUserRepository"/> for user persistence and <see cref="IJwtService"/> for token generation.
 /// </remarks>
-public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp.Interfaces.Repositories.ISessionRepository? sessionRepo = null, IRefreshTokenHasher? hasher = null, IJtiStore? jtiStore = null, Microsoft.Extensions.Logging.ILogger<AuthService>? logger = null) : IAuthService
+public class AuthService(IUserRepository userRepo, IJwtService jwtService, Microsoft.Extensions.Logging.ILogger<AuthService> logger, MyApp.Interfaces.Repositories.ISessionRepository? sessionRepo = null, IRefreshTokenHasher? hasher = null, IJtiStore? jtiStore = null) : IAuthService
 {
     private readonly IUserRepository _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
     private readonly IJwtService _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
     private readonly MyApp.Interfaces.Repositories.ISessionRepository? _sessionRepo = sessionRepo;
     private readonly IRefreshTokenHasher? _hasher = hasher;
     private readonly IJtiStore? _jtiStore = jtiStore;
-    private readonly Microsoft.Extensions.Logging.ILogger<AuthService>? _logger = logger;
+    private readonly Microsoft.Extensions.Logging.ILogger<AuthService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <summary>
     /// Registers a new user.
@@ -32,11 +32,11 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
   public async Task<UserDto> RegisterAsync(RegisterRequest request)
     {
         var existing = await _userRepo.FindByEmailAsync(request.Email);
-        if (existing is not null) throw new InvalidOperationException("Email already registered");
+        if (existing is not null) throw new MyApp.Services.Exceptions.ServiceException("Email already registered");
 
         // Choose username: prefer provided username, otherwise generate from displayName or email local-part.
         // GenerateUniqueUsernameAsync will sanitize and ensure uniqueness by appending a suffix if needed.
-        var email = request.Email ?? throw new InvalidOperationException("Invalid email");
+        var email = request.Email ?? throw new MyApp.Services.Exceptions.ServiceException("Invalid email");
         var username = request.Username ?? request.Email;
 
         var user = new User
@@ -85,7 +85,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             {
                 candidate = $"{baseCandidate}{suffix}";
             }
-            if (suffix > 10000) throw new InvalidOperationException("Unable to generate a unique username");
+            if (suffix > 10000) throw new MyApp.Services.Exceptions.ServiceException("Unable to generate a unique username");
         }
         return candidate;
     } 
@@ -95,11 +95,11 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
     /// </summary>
     /// <param name="request">The login request containing email and password.</param>
     /// <returns>A tuple with AccessToken and RefreshToken.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when credentials are invalid.</exception>
+    /// <exception cref="MyApp.Services.Exceptions.ServiceException">Thrown when credentials are invalid.</exception>
     public async Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginRequest request, string? ipAddress = null, string? userAgent = null, string? deviceInfo = null)
     {
         var user = await _userRepo.FindByEmailAsync(request.Email);
-        if (user is null) throw new InvalidOperationException("Invalid email or password");
+        if (user is null) throw new MyApp.Services.Exceptions.ServiceException("Invalid email or password");
 
         var hasher = new PasswordHasher<User>();
         bool verified = false;
@@ -117,7 +117,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             }
             else
             {
-                throw new InvalidOperationException("Invalid email or password");
+                throw new MyApp.Services.Exceptions.ServiceException("Invalid email or password");
             }
         }
         else
@@ -139,7 +139,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
                 }
                 else
                 {
-                    throw new InvalidOperationException("Invalid email or password");
+                    throw new MyApp.Services.Exceptions.ServiceException("Invalid email or password");
                 }
             }
 
@@ -157,7 +157,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
                 }
                 else
                 {
-                    throw new InvalidOperationException("Invalid email or password");
+                    throw new MyApp.Services.Exceptions.ServiceException("Invalid email or password");
                 }
             }
         }
@@ -211,18 +211,18 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
     /// </summary>
     /// <param name="request">The refresh request.</param>
     /// <returns>A tuple with new AccessToken and RefreshToken.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the refresh token is invalid or expired.</exception>
+    /// <exception cref="MyApp.Services.Exceptions.ServiceException">Thrown when the refresh token is invalid or expired.</exception>
     public async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(RefreshRequest request)
     {
         // Accept refresh token from body; controller will pass cookie value when using cookie-based flow
-        if (string.IsNullOrWhiteSpace(request.RefreshToken)) throw new InvalidOperationException("Invalid refresh token");
+        if (string.IsNullOrWhiteSpace(request.RefreshToken)) throw new MyApp.Services.Exceptions.ServiceException("Invalid refresh token");
         var hash = _hasher.Hash(request.RefreshToken);
         var session = await _sessionRepo.FindByRefreshTokenHashAsync(hash);
         if (session is null || session.ExpiresAt < DateTime.UtcNow || session.Revoked)
-            throw new InvalidOperationException("Invalid refresh token");
+            throw new MyApp.Services.Exceptions.ServiceException("Invalid refresh token");
 
         var user = await _userRepo.FindByIdAsync(session.UserId);
-        if (user is null) throw new InvalidOperationException("Invalid refresh token");
+        if (user is null) throw new MyApp.Services.Exceptions.ServiceException("Invalid refresh token");
 
         // Rotate refresh token and issue a new access token bound to session with jti
         var refresh = _jwtService.GenerateRefreshToken();
@@ -263,7 +263,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
             {
                 // If repository detected reuse and revoked all sessions, surface as invalid token
                 _logger?.LogWarning(ex, "Refresh token rotation failed - possible reuse or invalid token");
-                throw new InvalidOperationException("Invalid refresh token");
+                throw new MyApp.Services.Exceptions.ServiceException("Invalid refresh token");
             }
         }
         else

@@ -85,7 +85,7 @@ public class LeaseService(ILeaseRepository repo) : ILeaseService
     public async Task TerminateLeaseAsync(Guid id, DateTime endDate)
     {
         var lease = await _repo.GetByIdAsync(id);
-        if (lease is null) throw new InvalidOperationException("Lease not found");
+        if (lease is null) throw new MyApp.Services.Exceptions.ServiceException("Lease not found");
         lease.EndDate = endDate;
         await _repo.UpdateAsync(lease);
     }

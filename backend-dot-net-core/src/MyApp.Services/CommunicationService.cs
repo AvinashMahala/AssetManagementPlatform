@@ -9,9 +9,9 @@ namespace MyApp.Services;
 /// <summary>
 /// Handles sending communications to tenants via configured channels.
 /// </summary>
-public class CommunicationService(ILogger<CommunicationService> log) : ICommunicationService
+public class CommunicationService(ILogger<CommunicationService> logger) : ICommunicationService
 {
-    private readonly ILogger<CommunicationService> _log = log ?? throw new ArgumentNullException(nameof(log));
+    private readonly ILogger<CommunicationService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <summary>
     /// Sends a message to a tenant through specified channels.
@@ -25,7 +25,7 @@ public class CommunicationService(ILogger<CommunicationService> log) : ICommunic
     public Task<bool> SendToTenantAsync(Guid tenantId, string subject, string message, IEnumerable<string> channels, IEnumerable<string>? attachmentStorageIds = null)
     {
         // Minimal implementation: log and return true. In production, integrate with email/SMS providers.
-        _log.LogInformation("Sending communication to tenant {TenantId} via {Channels}", tenantId, string.Join(',', channels));
+        _logger.LogInformation("Sending communication to tenant {TenantId} via {Channels}", tenantId, string.Join(',', channels));
         return Task.FromResult(true);
     }
 }

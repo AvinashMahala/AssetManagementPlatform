@@ -90,7 +90,7 @@ public class PropertyService(IPropertyRepository repo) : IPropertyService
     public async Task UpdateAsync(Guid id, Property property)
     {
         var p = await _repo.GetByIdAsync(id);
-        if (p is null) throw new InvalidOperationException("Property not found");
+        if (p is null) throw new MyApp.Services.Exceptions.ServiceException("Property not found");
 
         // Copy fields from 'property' to 'p'
         p.Name = property.Name;
@@ -149,7 +149,7 @@ public class PropertyService(IPropertyRepository repo) : IPropertyService
     public async Task SetTemplateAsync(Guid id, string templateJson)
     {
         var p = await _repo.GetByIdAsync(id);
-        if (p is null) throw new InvalidOperationException("Property not found");
+        if (p is null) throw new MyApp.Services.Exceptions.ServiceException("Property not found");
         p.TemplateJson = templateJson;
         p.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(p);

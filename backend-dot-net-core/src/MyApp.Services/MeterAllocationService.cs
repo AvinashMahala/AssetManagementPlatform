@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MyApp.Interfaces;
 using MyApp.Interfaces.Repositories;
 using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class MeterAllocationService : IMeterAllocationService
+public class MeterAllocationService(IMeterAllocationRepository repo, ILogger<MeterAllocationService> logger) : IMeterAllocationService
 {
-    private readonly IMeterAllocationRepository _repo;
-
-    public MeterAllocationService(IMeterAllocationRepository repo) => _repo = repo;
+    private readonly IMeterAllocationRepository _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+    private readonly ILogger<MeterAllocationService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task<IEnumerable<MeterAllocation>> ListAsync() => await _repo.ListAsync();
 
@@ -32,7 +32,7 @@ public class MeterAllocationService : IMeterAllocationService
             }
         }
         if (overlapSum + m.AllocationFraction > 1.000001m)
-            throw new InvalidOperationException($"Overlapping allocations for meter {m.MeterId} exceed total fraction 1.0 (sum={overlapSum + m.AllocationFraction})");
+            throw new MyApp.Services.Exceptions.ServiceException($"Overlapping allocations for meter {m.MeterId} exceed total fraction 1.0 (sum={overlapSum + m.AllocationFraction})");
 
         await _repo.AddAsync(m);
         return m;
@@ -53,7 +53,7 @@ public class MeterAllocationService : IMeterAllocationService
             }
         }
         if (overlapSum + m.AllocationFraction > 1.000001m)
-            throw new InvalidOperationException($"Overlapping allocations for meter {m.MeterId} exceed total fraction 1.0 (sum={overlapSum + m.AllocationFraction})");
+            throw new MyApp.Services.Exceptions.ServiceException($"Overlapping allocations for meter {m.MeterId} exceed total fraction 1.0 (sum={overlapSum + m.AllocationFraction})");
 
         await _repo.UpdateAsync(m);
     }

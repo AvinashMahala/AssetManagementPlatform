@@ -8,18 +8,36 @@ using MyApp.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace MyApp.Services;
 
 /// <summary>
 /// Provides JWT generation utilities used by authentication flows.
 /// </summary>
-public class JwtService(IConfiguration configuration) : IJwtService
+public class JwtService : IJwtService
 {
-    private readonly string _key = configuration["Jwt:Key"] ?? "change_this_in_production";
-    private readonly string _issuer = configuration["Jwt:Issuer"] ?? "MyApp";
-    private readonly string _audience = configuration["Jwt:Audience"] ?? "MyAppUsers";
-    private readonly byte[] _keyBytes = DeriveKeyBytesFromSecret(configuration["Jwt:Key"] ?? "change_this_in_production");
+    private readonly string _key;
+    private readonly string _issuer;
+    private readonly string _audience;
+    private readonly byte[] _keyBytes;
+    private readonly ILogger<JwtService> _logger;
+
+    public JwtService(IConfiguration configuration, ILogger<JwtService> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _key = configuration["Jwt:Key"] ?? "change_this_in_production";
+        _issuer = configuration["Jwt:Issuer"] ?? "MyApp";
+        _audience = configuration["Jwt:Audience"] ?? "MyAppUsers";
+
+        var secret = configuration["Jwt:Key"] ?? "change_this_in_production";
+        var (bytes, derived) = DeriveKeyBytesFromSecretInternal(secret);
+        _keyBytes = bytes;
+        if (derived)
+        {
+            _logger.LogWarning("Jwt:Key is shorter than 32 bytes — deriving a 256-bit key via SHA-256. Please update configuration to use a secure 32+ byte key.");
+        }
+    }
 
     /// <summary>
     /// Derive the actual key bytes used for signing/validation from the configured secret.
@@ -27,6 +45,12 @@ public class JwtService(IConfiguration configuration) : IJwtService
     /// This is public so the application startup can use the same deterministic logic when configuring token validation.
     /// </summary>
     public static byte[] DeriveKeyBytesFromSecret(string secret)
+    {
+        var (bytes, _) = DeriveKeyBytesFromSecretInternal(secret);
+        return bytes;
+    }
+
+    private static (byte[] bytes, bool derived) DeriveKeyBytesFromSecretInternal(string secret)
     {
         byte[] bytes;
         try
@@ -42,12 +66,10 @@ public class JwtService(IConfiguration configuration) : IJwtService
         {
             // Derive a 32-byte key deterministically from the provided secret bytes
             var derived = SHA256.HashData(bytes);
-            // Log a warning for visibility in development (do NOT leak secrets in production logs)
-            Console.WriteLine("Warning: Jwt:Key is shorter than 32 bytes — deriving a 256-bit key via SHA-256. Please update configuration to use a secure 32+ byte key.");
-            return derived;
+            return (derived, true);
         }
 
-        return bytes;
+        return (bytes, false);
     }
 
     /// <summary>

@@ -10,18 +10,11 @@ using MyApp.Repositories;
 
 namespace MyApp.Services;
 
-public class PermissionCategoryService : IPermissionCategoryService
+public class PermissionCategoryService(IPermissionCategoryRepository repo, AppDbContext db, ILogger<PermissionCategoryService> logger) : IPermissionCategoryService
 {
-    private readonly IPermissionCategoryRepository _repo;
-    private readonly AppDbContext _db;
-    private readonly ILogger<PermissionCategoryService> _logger;
-
-    public PermissionCategoryService(IPermissionCategoryRepository repo, AppDbContext db, ILogger<PermissionCategoryService> logger)
-    {
-        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
-        _db = db ?? throw new ArgumentNullException(nameof(db));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly IPermissionCategoryRepository _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+    private readonly AppDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
+    private readonly ILogger<PermissionCategoryService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task<(IEnumerable<PermissionCategoryDto> Items, int Total)> SearchAsync(string? q, int page = 1, int pageSize = 50)
     {
@@ -39,7 +32,7 @@ public class PermissionCategoryService : IPermissionCategoryService
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required", nameof(name));
         var trimmed = name.Trim();
-        if (await _repo.ExistsByNameAsync(trimmed)) throw new InvalidOperationException("A permission category with that name already exists");
+        if (await _repo.ExistsByNameAsync(trimmed)) throw new MyApp.Services.Exceptions.ServiceException("A permission category with that name already exists");
 
         var cat = new PermissionCategory { Id = Guid.NewGuid(), Name = trimmed, Description = description };
         await _repo.AddAsync(cat);
@@ -63,7 +56,7 @@ public class PermissionCategoryService : IPermissionCategoryService
         if (cat == null) throw new KeyNotFoundException("Permission category not found");
 
         var trimmed = name.Trim();
-        if (await _repo.ExistsByNameAsync(trimmed, id)) throw new InvalidOperationException("A permission category with that name already exists");
+        if (await _repo.ExistsByNameAsync(trimmed, id)) throw new MyApp.Services.Exceptions.ServiceException("A permission category with that name already exists");
 
         var oldData = new { id = cat.Id, name = cat.Name, description = cat.Description };
         cat.Name = trimmed;

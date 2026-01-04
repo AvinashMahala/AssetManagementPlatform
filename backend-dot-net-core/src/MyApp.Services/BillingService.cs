@@ -2,46 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MyApp.Interfaces;
 using MyApp.Interfaces.Repositories;
 using MyApp.Models;
 
 namespace MyApp.Services;
 
-public class BillingService : IBillingService
+public class BillingService(
+    ILeaseRepository leaseRepo,
+    IUtilitySubscriptionRepository subscriptionRepo,
+    IMeterAllocationRepository allocationRepo,
+    IMeterReadingRepository meterReadingRepo,
+    IMeterRepository meterRepo,
+    ITariffService tariffService,
+    IRentTransactionRepository rentTransactionRepo,
+    IRentTransactionMeterReadingRepository txnMeterReadingRepo,
+    ILogger<BillingService> logger) : IBillingService
 {
-    private readonly ILeaseRepository _leaseRepo;
-    private readonly IUtilitySubscriptionRepository _subscriptionRepo;
-    private readonly IMeterAllocationRepository _allocationRepo;
-    private readonly IMeterReadingRepository _meterReadingRepo;
-    private readonly IMeterRepository _meterRepo;
-    private readonly ITariffService _tariffService;
-    private readonly IRentTransactionRepository _rentTransactionRepo;
-    private readonly IRentTransactionMeterReadingRepository _txnMeterReadingRepo;
+    private readonly ILeaseRepository _leaseRepo = leaseRepo ?? throw new ArgumentNullException(nameof(leaseRepo));
+    private readonly IUtilitySubscriptionRepository _subscriptionRepo = subscriptionRepo ?? throw new ArgumentNullException(nameof(subscriptionRepo));
+    private readonly IMeterAllocationRepository _allocationRepo = allocationRepo ?? throw new ArgumentNullException(nameof(allocationRepo));
+    private readonly IMeterReadingRepository _meterReadingRepo = meterReadingRepo ?? throw new ArgumentNullException(nameof(meterReadingRepo));
+    private readonly IMeterRepository _meterRepo = meterRepo ?? throw new ArgumentNullException(nameof(meterRepo));
+    private readonly ITariffService _tariffService = tariffService ?? throw new ArgumentNullException(nameof(tariffService));
+    private readonly IRentTransactionRepository _rentTransactionRepo = rentTransactionRepo ?? throw new ArgumentNullException(nameof(rentTransactionRepo));
+    private readonly IRentTransactionMeterReadingRepository _txnMeterReadingRepo = txnMeterReadingRepo ?? throw new ArgumentNullException(nameof(txnMeterReadingRepo));
+    private readonly ILogger<BillingService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-    public BillingService(ILeaseRepository leaseRepo,
-                          IUtilitySubscriptionRepository subscriptionRepo,
-                          IMeterAllocationRepository allocationRepo,
-                          IMeterReadingRepository meterReadingRepo,
-                          IMeterRepository meterRepo,
-                          ITariffService tariffService,
-                          IRentTransactionRepository rentTransactionRepo,
-                          IRentTransactionMeterReadingRepository txnMeterReadingRepo)
-    {
-        _leaseRepo = leaseRepo;
-        _subscriptionRepo = subscriptionRepo;
-        _allocationRepo = allocationRepo;
-        _meterReadingRepo = meterReadingRepo;
-        _meterRepo = meterRepo;
-        _tariffService = tariffService;
-        _rentTransactionRepo = rentTransactionRepo;
-        _txnMeterReadingRepo = txnMeterReadingRepo;
-    }
 
     public async Task<Guid> RunBillingForLeaseAsync(Guid leaseId, DateTime periodStart, DateTime periodEnd)
     {
         var lease = await _leaseRepo.GetByIdAsync(leaseId);
-        if (lease is null) throw new InvalidOperationException("Lease not found");
+        if (lease is null) throw new MyApp.Services.Exceptions.ServiceException("Lease not found");
 
         var unitId = lease.UnitId;
         var tenantId = lease.TenantId;
@@ -77,7 +70,7 @@ public class BillingService : IBillingService
             if (!allocations.Any())
             {
                 // If subscription expects meter_allocated billing but no allocations exist, raise a friendly error
-                throw new InvalidOperationException($"No allocations found for subscription {subscription.Id} while billing_method is 'meter_allocated'. Add meter allocations before running billing.");
+                throw new MyApp.Services.Exceptions.ServiceException($"No allocations found for subscription {subscription.Id} while billing_method is 'meter_allocated'. Add meter allocations before running billing.");
             }
 
             foreach (var alloc in allocations)

@@ -84,7 +84,7 @@ public class PropertyFileService(IFileStorageService storage, IFileRepository re
     public async Task UpdateMetadataAsync(Guid id, string? fileName)
     {
         var meta = await _repo.GetByIdAsync(id);
-        if (meta is null) throw new InvalidOperationException("File not found");
+        if (meta is null) throw new MyApp.Services.Exceptions.ServiceException("File not found");
         if (!string.IsNullOrWhiteSpace(fileName)) meta.FileName = fileName;
         await _repo.UpdateAsync(meta);
     }

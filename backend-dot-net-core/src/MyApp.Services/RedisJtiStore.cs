@@ -13,11 +13,11 @@ namespace MyApp.Services
     {
         private readonly ConnectionMultiplexer _conn;
         private readonly IDatabase _db;
-        private readonly ILogger<RedisJtiStore>? _logger;
+        private readonly ILogger<RedisJtiStore> _logger;
 
-        public RedisJtiStore(IConfiguration configuration, ILogger<RedisJtiStore>? logger = null)
+        public RedisJtiStore(IConfiguration configuration, ILogger<RedisJtiStore> logger)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             var cs = configuration["Redis:ConnectionString"] ?? throw new ArgumentNullException("Redis:ConnectionString");
             _conn = ConnectionMultiplexer.Connect(cs);
             _db = _conn.GetDatabase();
