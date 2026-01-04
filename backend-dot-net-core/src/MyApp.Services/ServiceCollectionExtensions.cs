@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MyApp.Interfaces;
 using MyApp.Repositories;
 using MyApp.Core;
+using MyApp.Interfaces.Services;
 
 namespace MyApp.Services;
 
@@ -52,6 +53,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITariffService, TariffService>();
         services.AddScoped<IMeterAllocationService, MeterAllocationService>();
         services.AddScoped<IBillingService, BillingService>();
+        
+        // Utility types service
+        services.AddScoped<IUtilityTypeService, UtilityTypeService>();
+        
+        // Utility subscriptions service
+        services.AddScoped<IUtilitySubscriptionService, UtilitySubscriptionService>();
 
 
         // Event bus: prefer RabbitMQ when configured, otherwise use in-memory for dev/testing

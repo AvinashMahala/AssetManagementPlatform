@@ -1,0 +1,8 @@
+{
+  "subscriptionName": "Updated Electricity Subscription",
+  "isEnabled": false,
+  "billingMethod": "meter_allocated",
+  "fixedAmount": null,
+  "billingMultiplier": 1.5,
+  "notes": "Updated notes"
+}

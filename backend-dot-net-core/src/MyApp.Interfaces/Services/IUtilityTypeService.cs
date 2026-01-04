@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyApp.Models;
 
-namespace MyApp.Interfaces.Repositories;
+namespace MyApp.Interfaces.Services;
 
-public interface IUtilityTypeRepository
+public interface IUtilityTypeService
 {
     Task<IEnumerable<UtilityType>> ListAsync();
     Task<UtilityType?> GetByIdAsync(Guid id);
-    Task<UtilityType?> GetByKeyAsync(string key);
-    Task AddAsync(UtilityType u);
+    Task<UtilityType> CreateAsync(UtilityType u);
     Task UpdateAsync(UtilityType u);
     Task DeleteAsync(Guid id);
 }

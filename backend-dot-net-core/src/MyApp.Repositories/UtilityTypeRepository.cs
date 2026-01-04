@@ -26,4 +26,19 @@ public class UtilityTypeRepository : IUtilityTypeRepository
         await _db.Set<UtilityType>().AddAsync(u);
         await _db.SaveChangesAsync();
     }
+
+    public async Task UpdateAsync(UtilityType u)
+    {
+        u.UpdatedAt = DateTime.UtcNow;
+        _db.Set<UtilityType>().Update(u);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var existing = await GetByIdAsync(id);
+        if (existing == null) return;
+        _db.Set<UtilityType>().Remove(existing);
+        await _db.SaveChangesAsync();
+    }
 }

@@ -1,0 +1,15 @@
+{
+  "description": "Utility type",
+  "content": {
+    "application/json": {
+      "example": {
+        "id": "22222222-2222-2222-2222-222222222222",
+        "key": "electricity",
+        "name": "Electricity",
+        "unitOfMeasure": "kWh",
+        "metadata": "{}",
+        "createdAt": "2025-01-01T00:00:00Z"
+      }
+    }
+  }
+}
