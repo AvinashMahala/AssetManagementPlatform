@@ -77,6 +77,7 @@ public class JwtService : IJwtService
     /// </summary>
     /// <param name="user">User to create the token for.</param>
     /// <param name="sessionId">Optional session id to bind the token to a server-side session.</param>
+    /// <param name="jti">Optional JTI (JWT ID) to include in the token.</param>
     /// <returns>A signed JWT access token string.</returns>
     public string GenerateAccessToken(User user, Guid? sessionId = null, string? jti = null)
     {

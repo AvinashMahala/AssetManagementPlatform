@@ -14,12 +14,6 @@ using Prometheus;
 
 // `ProgramSetup` has been refactored into smaller extension classes.
 // Kept for compatibility: façade methods delegate to the new extensions.
-using System;
-using Serilog;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Builder;
 
 namespace MyApp.Api
 {

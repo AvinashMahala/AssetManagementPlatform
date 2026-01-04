@@ -8,6 +8,7 @@ This document outlines the mandatory standards for creating and maintaining API 
 *   **Async/Await:** All database and I/O operations must be asynchronous (`Task<IActionResult>`).
 *   **Dependency Injection:** Use **Primary Constructors** for injecting services and loggers.
 *   **Statelessness:** Controllers must be stateless.
+*   **Public API Documentation:** **All publicly exposed controllers, action methods, and public types MUST include XML documentation comments (///) describing purpose, parameters, return values and possible exceptions.** This helps IntelliSense, generated API docs, and future maintainers.
 
 ## 2. Naming Conventions
 

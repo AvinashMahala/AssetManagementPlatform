@@ -579,15 +579,24 @@ namespace MyApp.Api.Swagger
 
         private bool TryMapParameterLocation(string loc, out ParameterLocation result)
         {
-            result = ParameterLocation.Query;
-            return loc switch
+            switch (loc)
             {
-                "path" => (result = ParameterLocation.Path) != null,
-                "query" => (result = ParameterLocation.Query) != null,
-                "header" => (result = ParameterLocation.Header) != null,
-                "cookie" => (result = ParameterLocation.Cookie) != null,
-                _ => false,
-            };
+                case "path":
+                    result = ParameterLocation.Path;
+                    return true;
+                case "query":
+                    result = ParameterLocation.Query;
+                    return true;
+                case "header":
+                    result = ParameterLocation.Header;
+                    return true;
+                case "cookie":
+                    result = ParameterLocation.Cookie;
+                    return true;
+                default:
+                    result = ParameterLocation.Query;
+                    return false;
+            }
         }
     }
 }

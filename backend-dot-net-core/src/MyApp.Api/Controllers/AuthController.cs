@@ -21,6 +21,11 @@ namespace MyApp.Api.Controllers;
 /// Initializes a new instance of the <see cref="AuthController"/> class with the specified authentication service.
 /// </remarks>
 /// <param name="service">The authentication service to use.</param>
+/// <param name="configuration">Application configuration.</param>
+/// <param name="env">Host environment.</param>
+/// <param name="db">Database context.</param>
+/// <param name="evaluator">Optional permission evaluator for permissions lookup.</param>
+/// <param name="logger">Optional logger for diagnostic messages.</param>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]

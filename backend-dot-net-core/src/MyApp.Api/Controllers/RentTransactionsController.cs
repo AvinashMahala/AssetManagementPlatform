@@ -26,6 +26,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     /// <returns>200 OK with list of rent transactions.</returns>
     [HttpGet]
     public async Task<IActionResult> List() => Ok(await service.ListAsync());
+    /// <summary>
     /// Lists transactions for a lease.
     /// </summary>
     /// <param name="leaseId">Lease id.</param>

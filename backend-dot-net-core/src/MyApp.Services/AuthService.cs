@@ -94,6 +94,8 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, Micro
     /// Authenticates a user and returns access and refresh tokens.
     /// </summary>
     /// <param name="request">The login request containing email and password.</param>
+    /// <param name="ipAddress">Optional IP address to record with the session.</param>
+    /// <param name="userAgent">Optional user agent string to record with the session.</param>
     /// <returns>A tuple with AccessToken and RefreshToken.</returns>
     /// <exception cref="MyApp.Services.Exceptions.ServiceException">Thrown when credentials are invalid.</exception>
     public async Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginRequest request, string? ipAddress = null, string? userAgent = null, string? deviceInfo = null)

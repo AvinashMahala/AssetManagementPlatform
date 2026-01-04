@@ -96,7 +96,7 @@ namespace MyApp.Api
                                     }
                                 }
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 // Any exception during validation should reject the token
                                 context.Fail("Session validation failed");
