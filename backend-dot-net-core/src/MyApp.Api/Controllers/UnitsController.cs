@@ -1,7 +1,14 @@
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using MyApp.Api.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Api.Requests;
+using MyApp.Api.Responses;
+using MyApp.Api.Mapping;
 
 namespace MyApp.Api.Controllers;
 
@@ -15,7 +22,7 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/units")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Authorize]
 public class UnitsController(IUnitService service) : ControllerBase
 {
     // Permission constants
@@ -24,21 +31,21 @@ public class UnitsController(IUnitService service) : ControllerBase
     private const string _updatePerm = "units:unit:update";
     private const string _deletePerm = "units:unit:delete";
 
-    private readonly IUnitService _service = service;
-
-  /// <summary>
-  /// Lists units. Optionally filter by property id using ?propertyId={guid}.
-  /// </summary>
-  /// <param name="propertyId">Optional property id to filter units.</param>
-  [HttpGet]
-  [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    /// <summary>
+    /// Lists units. Optionally filter by property id using ?propertyId={guid}.
+    /// </summary>
+    /// <param name="propertyId">Optional property id to filter units.</param>
+    [HttpGet]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List([FromQuery] Guid? propertyId)
     {
         if (propertyId.HasValue)
         {
-            return Ok(await _service.ListByPropertyAsync(propertyId.Value));
+            var units = await service.ListByPropertyAsync(propertyId.Value);
+            return Ok(units.Select(u => u.ToDto()));
         }
-        return Ok(await _service.ListAsync());
+        var allUnits = await service.ListAsync();
+        return Ok(allUnits.Select(u => u.ToDto()));
     }
 
     /// <summary>
@@ -47,31 +54,35 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="id">Unit id.</param>
     /// <returns>200 OK with unit; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var u = await _service.GetByIdAsync(id);
+        var u = await service.GetByIdAsync(id);
         if (u is null) return NotFound();
-        return Ok(u);
+        return Ok(u.ToDto());
     }
 
     /// <summary>
     /// Creates a new unit.
     /// </summary>
     /// <param name="req">Unit payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>201 Created with created unit.</returns>
     [HttpPost]
-    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
-    public async Task<IActionResult> Create([FromBody] Unit req, [FromQuery] bool audit = false)
+    [AuthorizePermission(_createPerm)]
+    public async Task<IActionResult> Create([FromBody] CreateUnitRequest req, [FromQuery] bool audit = false)
     {
         try
         {
-            var (created, dataAudit) = await _service.CreateWithAuditAsync(req, audit);
+            var unit = req.ToEntity();
+            var (created, dataAudit) = await service.CreateWithAuditAsync(unit, audit);
+            var dto = created.ToDto();
+
             if (audit)
             {
-                return CreatedAtAction(nameof(Get), new { id = created.Id }, new { success = true, unit = created, dataAudit });
+                return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, new { success = true, unit = dto, dataAudit });
             }
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, dto);
         }
         catch (MyApp.Services.Exceptions.DuplicateUnitException de)
         {
@@ -93,34 +104,29 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// </summary>
     /// <param name="id">Unit id.</param>
     /// <param name="req">Updated unit payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>200 OK with updated unit; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Unit req, [FromQuery] bool audit = false)
+    [AuthorizePermission(_updatePerm)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUnitRequest req, [FromQuery] bool audit = false)
     {
-        try
+        if (id != req.Id) return BadRequest("Id mismatch");
+
+        var existing = await service.GetByIdAsync(id);
+        if (existing is null) return NotFound();
+
+        existing.UpdateEntity(req);
+
+        var (updated, dataAudit) = await service.UpdateWithAuditAsync(id, existing, audit);
+        if (updated is null) return NotFound();
+
+        var dto = updated.ToDto();
+
+        if (audit)
         {
-            var (updated, dataAudit) = await _service.UpdateWithAuditAsync(id, req, audit);
-            if (updated is null) return NotFound();
-            if (audit)
-            {
-                return Ok(new { success = true, unit = updated, dataAudit });
-            }
-            return Ok(updated);
+            return Ok(new { success = true, unit = dto, dataAudit });
         }
-        catch (MyApp.Services.Exceptions.DuplicateUnitException de)
-        {
-            return Conflict(new
-            {
-                success = false,
-                error = new
-                {
-                    code = "DUPLICATE_UNIT",
-                    message = de.Message,
-                    details = de.Details
-                }
-            });
-        }
+        return Ok(dto);
     }
 
     /// <summary>
@@ -129,40 +135,12 @@ public class UnitsController(IUnitService service) : ControllerBase
     /// <param name="id">Unit id.</param>
     /// <returns>204 No Content on success; 404 Not Found if missing.</returns>
     [HttpDelete("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var ok = await _service.DeleteAsync(id);
+        var ok = await service.DeleteAsync(id);
         if (!ok) return NotFound();
         return NoContent();
     }
-
-    /// <summary>
-    /// Updates the status of a unit (e.g., active/inactive).
-    /// </summary>
-    /// <param name="id">Unit id.</param>
-    /// <param name="body">JSON body with a 'status' field.</param>
-    /// <returns>204 No Content on success; 400 Bad Request when status missing/invalid.</returns>
-    [HttpPatch("{id:guid}/status")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] dynamic body)
-    {
-        string? status = body?.status;
-        if (string.IsNullOrWhiteSpace(status)) return BadRequest();
-        await _service.UpdateStatusAsync(id, status);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Gets analytics for a unit.
-    /// </summary>
-    /// <param name="id">Unit id.</param>
-    /// <returns>200 OK with analytics payload.</returns>
-    [HttpGet("{id:guid}/analytics")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
-    public async Task<IActionResult> Analytics(Guid id)
-    {
-        var a = await _service.GetAnalyticsAsync(id);
-        return Ok(a);
-    }
 }
+

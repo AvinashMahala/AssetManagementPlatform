@@ -1,8 +1,14 @@
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 using MyApp.Api.Authorization;
+using MyApp.Api.Requests;
+using MyApp.Api.Responses;
+using MyApp.Api.Mapping;
 
 namespace MyApp.Api.Controllers;
 
@@ -16,7 +22,7 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/properties")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Authorize]
 public class PropertiesController(IPropertyService service) : ControllerBase
 {
     // For easier attribute usage
@@ -25,15 +31,17 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     private const string _updatePerm = "properties:property:update";
     private const string _deletePerm = "properties:property:delete";
 
-    private readonly IPropertyService _service = service;
-
     /// <summary>
     /// Lists properties.
     /// </summary>
     /// <returns>200 OK with list of properties.</returns>
     [HttpGet]
     [AuthorizePermission(_viewPerm)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List()
+    {
+        var properties = await service.ListAsync();
+        return Ok(properties.Select(p => p.ToDto()));
+    }
 
     /// <summary>
     /// Gets a property by id.
@@ -44,15 +52,16 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var p = await _service.GetByIdAsync(id);
+        var p = await service.GetByIdAsync(id);
         if (p is null) return NotFound();
-        return Ok(p);
+        return Ok(p.ToDto());
     }
 
     /// <summary>
     /// Creates a new property.
     /// </summary>
     /// <param name="req">Create property payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>201 Created with created property.</returns>
     [HttpPost]
     [AuthorizePermission(_createPerm)]
@@ -60,15 +69,16 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     {
         try
         {
-            var created = await _service.CreateAsync(req);
+            var entity = req.ToEntity();
+            var (created, dataAudit) = await service.CreateWithAuditAsync(entity, audit);
+            var dto = created.ToDto();
 
             if (audit)
             {
-                var auditResult = _service.AuditCreation(req, created);
-                return CreatedAtAction(nameof(Get), new { id = created.Id }, new { success = true, property = created, dataAudit = auditResult });
+                return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, new { success = true, property = dto, dataAudit });
             }
 
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, dto);
         }
         catch (MyApp.Services.Exceptions.DuplicatePropertyException dex)
         {
@@ -90,18 +100,25 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     /// </summary>
     /// <param name="id">Property id.</param>
     /// <param name="req">Updated property payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
     [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePropertyRequest req, [FromQuery] bool audit = false)
     {
-        await _service.UpdateAsync(id, req);
+        if (id != req.Id) return BadRequest("Id mismatch");
+
+        var existing = await service.GetByIdAsync(id);
+        if (existing is null) return NotFound();
+
+        existing.UpdateEntity(req);
+
+        var (updated, dataAudit) = await service.UpdateWithAuditAsync(id, existing, audit);
+        if (updated is null) return NotFound();
+
         if (audit)
         {
-            var updated = await _service.GetByIdAsync(id);
-            if (updated is null) return NotFound();
-            var auditResult = _service.AuditUpdate(req, updated);
-            return Ok(new { success = true, property = updated, dataAudit = auditResult });
+            return Ok(new { success = true, property = updated.ToDto(), dataAudit });
         }
 
         return NoContent();
@@ -116,7 +133,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 
@@ -132,11 +149,12 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     {
         string? status = body?.status;
         if (string.IsNullOrWhiteSpace(status)) return BadRequest();
-        await _service.UpdateAsync(id, new UpdatePropertyRequest((await _service.GetByIdAsync(id))!.Name, (await _service.GetByIdAsync(id))!.Address, (await _service.GetByIdAsync(id))!.OwnerId));
-        var p = await _service.GetByIdAsync(id);
+        
+        var p = await service.GetByIdAsync(id);
         if (p is null) return NotFound();
+        
         p.Status = status;
-        await _service.UpdateAsync(id, new UpdatePropertyRequest(p.Name, p.Address, p.OwnerId));
+        await service.UpdateAsync(id, p);
         return NoContent();
     }
 
@@ -150,7 +168,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> SetTemplate(Guid id, [FromBody] SetTemplateRequest req)
     {
-        await _service.SetTemplateAsync(id, req.TemplateJson);
+        await service.SetTemplateAsync(id, req.TemplateJson);
         return NoContent();
     }
 
@@ -163,7 +181,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> GetTemplate(Guid id)
     {
-        var t = await _service.GetTemplateAsync(id);
+        var t = await service.GetTemplateAsync(id);
         if (t is null) return NotFound();
         return Ok(new { template = t });
     }
@@ -176,7 +194,7 @@ public class PropertiesController(IPropertyService service) : ControllerBase
     [HttpDelete("{id:guid}/template")]
     public async Task<IActionResult> RemoveTemplate(Guid id)
     {
-        await _service.RemoveTemplateAsync(id);
+        await service.RemoveTemplateAsync(id);
         return NoContent();
     }
 }

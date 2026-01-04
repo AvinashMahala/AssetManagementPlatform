@@ -5,6 +5,7 @@ using MyApp.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MyApp.Api.Authorization;
 
 namespace MyApp.Api.Controllers.Admin;
 
@@ -15,167 +16,112 @@ namespace MyApp.Api.Controllers.Admin;
 public class RolesController(IRoleAdminService svc, ILogger<RolesController> logger) : ControllerBase
 {
     // Permission constants
-    public const string _viewPerm = "admin:roles:view";
-    public const string _createPerm = "admin:roles:create";
-    public const string _updatePerm = "admin:roles:update";
-    public const string _deletePerm = "admin:roles:delete";
-    public const string _setPermissionsPerm = "admin:roles:set_permissions";
-    public const string _assignUserPerm = "admin:roles:assign_user";
-    public const string _exportPerm = "admin:roles:export";
-    public const string _searchUsersPerm = "admin:roles:search_users";
-    public const string _removeUserPerm = "admin:roles:remove_user";
-
-    private readonly IRoleAdminService _svc = svc;
-    private readonly ILogger<RolesController> _logger = logger;
+    private const string _viewPerm = "admin:roles:view";
+    private const string _createPerm = "admin:roles:create";
+    private const string _updatePerm = "admin:roles:update";
+    private const string _deletePerm = "admin:roles:delete";
+    private const string _setPermissionsPerm = "admin:roles:set_permissions";
+    private const string _assignUserPerm = "admin:roles:assign_user";
+    private const string _exportPerm = "admin:roles:export";
+    private const string _searchUsersPerm = "admin:roles:search_users";
+    private const string _removeUserPerm = "admin:roles:remove_user";
 
     [HttpGet]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List([FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 200) pageSize = 20;
 
-        var rolesPaged = await _svc.GetRolesAsync(q, page, pageSize);
-        var outObj = new
+        var rolesPaged = await svc.GetRolesAsync(q, page, pageSize);
+        return Ok(new
         {
-            items = rolesPaged.Items.Select(r => new
-            {
-                id = r.Id,
-                name = r.Name,
-                description = r.Description,
-                permissions = r.RolePermissions?.Where(rp => rp.Allowed).Select(rp => (object)new { id = rp.PermissionId, name = rp.Permission?.Name }).ToList() ?? new List<object>(),
-                users = r.UserRoles?.Select(ur => ur.UserId).ToList() ?? new List<Guid>()
-            }),
+            items = rolesPaged.Items,
             total = rolesPaged.Total,
             page = rolesPaged.Page,
             pageSize = rolesPaged.PageSize
-        };
-        return Ok(outObj);
+        });
     }
 
     [HttpGet("permissions")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Permissions()
     {
-        // Return permissions with category metadata
-        var db = HttpContext.RequestServices.GetService<MyApp.Repositories.AppDbContext>();
-        if (db == null) return Ok(await _svc.GetAllPermissionsAsync());
-
-        try
-        {
-            var perms = await db.Permissions
-                .Select(p => new { id = p.Id, name = p.Name, description = p.Description, categoryId = p.CategoryId, categoryName = p.Category != null ? p.Category.Name : null })
-                .OrderBy(p => p.name)
-                .ToListAsync();
-
-            return Ok(perms);
-        }
-        catch (Exception ex)
-        {
-            // If the DB schema is not present or a DB error occurs, fall back to the service implementation
-            _logger.LogWarning(ex, "Permissions query failed on DB; falling back to service-based permissions");
-            var svcPerms = await _svc.GetAllPermissionsAsync();
-            var outPerms = svcPerms.Select(p => new { id = p.Id, name = p.Name, description = p.Description, categoryId = p.CategoryId, categoryName = p.Category != null ? p.Category.Name : null }).OrderBy(p => p.name);
-            return Ok(outPerms);
-        }
+        var perms = await svc.GetAllPermissionsAsync();
+        return Ok(perms);
     }
 
     [HttpGet("users")]
-    [MyApp.Api.Authorization.AuthorizePermission(_searchUsersPerm)]
+    [AuthorizePermission(_searchUsersPerm)]
     public async Task<IActionResult> SearchUsers([FromQuery] string? q)
     {
-        var users = await _svc.SearchUsersAsync(q);
-        var outUsers = users.Select(u => new { id = u.Id, email = u.Email, username = u.Username, name = u.DisplayName });
-        return Ok(outUsers);
+        var users = await svc.SearchUsersAsync(q);
+        return Ok(users);
     }
 
     [HttpPost]
-    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
+    [AuthorizePermission(_createPerm)]
     public async Task<IActionResult> Create([FromBody] CreateRoleRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Name)) return BadRequest(new { error = "Name is required" });
-        var r = await _svc.CreateRoleAsync(req.Name, req.Description);
+        var r = await svc.CreateRoleAsync(req.Name, req.Description);
         var actor = User?.FindFirst("email")?.Value ?? User?.Identity?.Name ?? "unknown";
-        _logger.LogInformation("{Actor} created role {RoleId} ({RoleName})", actor, r.Id, r.Name);
-        return CreatedAtAction(nameof(Get), new { id = r.Id }, new { id = r.Id, name = r.Name, description = r.Description });
+        logger.LogInformation("{Actor} created role {RoleId} ({RoleName})", actor, r.Id, r.Name);
+        return CreatedAtAction(nameof(Get), new { id = r.Id }, r);
     }
 
     [HttpGet("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var r = await _svc.GetByIdAsync(id);
+        var r = await svc.GetByIdAsync(id);
         if (r == null) return NotFound();
-        var outObj = new
-        {
-            id = r.Id,
-            name = r.Name,
-            description = r.Description,
-            permissions = r.RolePermissions?.Where(rp => rp.Allowed).Select(rp => (object)new { id = rp.PermissionId, name = rp.Permission?.Name }).ToList() ?? new List<object>(),
-            users = r.UserRoles?.Select(ur => ur.UserId).ToList() ?? new List<Guid>()
-        };
-        return Ok(outObj);
+        return Ok(r);
     }
 
     [HttpPut("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateRoleRequest req)
     {
-        await _svc.UpdateRoleAsync(id, req.Name, req.Description);
+        await svc.UpdateRoleAsync(id, req.Name, req.Description);
         var actor = User?.FindFirst("email")?.Value ?? User?.Identity?.Name ?? "unknown";
-        _logger.LogInformation("{Actor} updated role {RoleId} ({RoleName})", actor, id, req.Name);
+        logger.LogInformation("{Actor} updated role {RoleId} ({RoleName})", actor, id, req.Name);
         return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _svc.DeleteRoleAsync(id);
+        await svc.DeleteRoleAsync(id);
         var actor = User?.FindFirst("email")?.Value ?? User?.Identity?.Name ?? "unknown";
-        _logger.LogInformation("{Actor} deleted role {RoleId}", actor, id);
+        logger.LogInformation("{Actor} deleted role {RoleId}", actor, id);
         return NoContent();
     }
 
     [HttpPost("{id:guid}/permissions")]
-    [MyApp.Api.Authorization.AuthorizePermission(_setPermissionsPerm)]
+    [AuthorizePermission(_setPermissionsPerm)]
     public async Task<IActionResult> SetPermissions(Guid id, [FromBody] Guid[] permissionIds)
     {
         if (permissionIds == null) return BadRequest(new { error = "permissionIds is required" });
-        await _svc.SetRolePermissionsAsync(id, permissionIds);
         var actor = User?.FindFirst("email")?.Value ?? User?.Identity?.Name ?? "unknown";
-        _logger.LogInformation("{Actor} set permissions for role {RoleId} (count={Count})", actor, id, permissionIds?.Length ?? 0);
-
-        // Write an audit event to DB (best-effort)
-        try
-        {
-            var db = HttpContext.RequestServices.GetService<MyApp.Repositories.AppDbContext>();
-            if (db != null)
-            {
-                db.AuditEvents.Add(new MyApp.Models.AuditEvent { Actor = actor, Action = "RolePermissionsSet", ResourceType = "Role", ResourceId = id.ToString(), Data = System.Text.Json.JsonSerializer.Serialize(permissionIds), OccurredAt = DateTime.UtcNow });
-                await db.SaveChangesAsync();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to write audit event");
-        }
-
+        await svc.SetRolePermissionsAsync(id, permissionIds, actor);
+        logger.LogInformation("{Actor} set permissions for role {RoleId} (count={Count})", actor, id, permissionIds?.Length ?? 0);
         return NoContent();
     }
 
     [HttpPost("{id:guid}/users")]
-    [MyApp.Api.Authorization.AuthorizePermission(_assignUserPerm)]
+    [AuthorizePermission(_assignUserPerm)]
     public async Task<IActionResult> AssignUser(Guid id, [FromBody] AssignUserRequest req)
     {
-        await _svc.AssignUserToRoleAsync(id, req.UserId);
+        await svc.AssignUserToRoleAsync(id, req.UserId);
         var actor = User?.FindFirst("email")?.Value ?? User?.Identity?.Name ?? "unknown";
-        _logger.LogInformation("{Actor} assigned user {UserId} to role {RoleId}", actor, req.UserId, id);
+        logger.LogInformation("{Actor} assigned user {UserId} to role {RoleId}", actor, req.UserId, id);
         return NoContent();
     }
 
     [HttpGet("export")]
-    [MyApp.Api.Authorization.AuthorizePermission(_exportPerm)]
+    [AuthorizePermission(_exportPerm)]
     public async Task<IActionResult> Export([FromQuery] string? ids = null, [FromQuery] string? q = null)
     {
         // ids: comma separated list of GUIDs (optional), q: search query (optional)
@@ -201,7 +147,7 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
 
         var token = HttpContext.RequestAborted;
 
-        await foreach (var row in _svc.StreamRolesForExportAsync(idList, q, token))
+        await foreach (var row in svc.StreamRolesForExportAsync(idList, q, token))
         {
             if (token.IsCancellationRequested) break;
             string esc(string s)
@@ -231,12 +177,12 @@ public class RolesController(IRoleAdminService svc, ILogger<RolesController> log
     }
 
     [HttpDelete("{id:guid}/users/{userId:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_removeUserPerm)]
+    [AuthorizePermission(_removeUserPerm)]
     public async Task<IActionResult> RemoveUser(Guid id, Guid userId)
     {
-        await _svc.RemoveUserFromRoleAsync(id, userId);
+        await svc.RemoveUserFromRoleAsync(id, userId);
         var actor = User?.FindFirst("email")?.Value ?? User?.Identity?.Name ?? "unknown";
-        _logger.LogInformation("{Actor} removed user {UserId} from role {RoleId}", actor, userId, id);
+        logger.LogInformation("{Actor} removed user {UserId} from role {RoleId}", actor, userId, id);
         return NoContent();
     }
 }

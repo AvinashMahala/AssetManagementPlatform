@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -15,26 +16,22 @@ namespace MyApp.Api.Controllers;
 /// <param name="service">Service for managing rent transactions.</param>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/renttransactions")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Route("api/v{version:apiVersion}/rent-transactions")]
+[Authorize]
 public class RentTransactionsController(IRentTransactionService service) : ControllerBase
 {
-    private readonly IRentTransactionService _service = service;
-
-  /// <summary>
-  /// Lists rent transactions.
-  /// </summary>
-  /// <returns>200 OK with list of rent transactions.</returns>
-  [HttpGet]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
-
     /// <summary>
+    /// Lists rent transactions.
+    /// </summary>
+    /// <returns>200 OK with list of rent transactions.</returns>
+    [HttpGet]
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
     /// Lists transactions for a lease.
     /// </summary>
     /// <param name="leaseId">Lease id.</param>
     /// <returns>200 OK with transactions for the lease.</returns>
     [HttpGet("lease/{leaseId}")]
-    public async Task<IActionResult> GetByLease(Guid leaseId) => Ok(await _service.ListByLeaseAsync(leaseId));
+    public async Task<IActionResult> GetByLease(Guid leaseId) => Ok(await service.ListByLeaseAsync(leaseId));
 
     /// <summary>
     /// Lists transactions for a property.
@@ -45,7 +42,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     public async Task<IActionResult> GetByProperty(string propertyId)
     {
         if (!Guid.TryParse(propertyId, out var pid)) return BadRequest("Invalid propertyId");
-        return Ok(await _service.ListByPropertyAsync(pid));
+        return Ok(await service.ListByPropertyAsync(pid));
     }
 
     /// <summary>
@@ -57,7 +54,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     public async Task<IActionResult> GetByTenant(string tenantId)
     {
         if (!Guid.TryParse(tenantId, out var tid)) return BadRequest("Invalid tenantId");
-        return Ok(await _service.ListByTenantAsync(tid));
+        return Ok(await service.ListByTenantAsync(tid));
     }
 
     /// <summary>
@@ -69,7 +66,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     public async Task<IActionResult> GetByUnit(string unitId)
     {
         if (!Guid.TryParse(unitId, out var uid)) return BadRequest("Invalid unitId");
-        return Ok(await _service.ListByUnitAsync(uid));
+        return Ok(await service.ListByUnitAsync(uid));
     }
 
     /// <summary>
@@ -80,7 +77,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     public async Task<IActionResult> GetLastMeterReadings(string unitId)
     {
         if (!Guid.TryParse(unitId, out var uid)) return BadRequest("Invalid unitId");
-        return Ok(await _service.GetLastMeterReadingsByUnitAsync(uid));
+        return Ok(await service.GetLastMeterReadingsByUnitAsync(uid));
     }
 
     /// <summary>
@@ -91,7 +88,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var t = await _service.GetByIdAsync(id);
+        var t = await service.GetByIdAsync(id);
         if (t is null) return NotFound();
         return Ok(t);
     }
@@ -106,7 +103,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<MyApp.Models.RentTransactionMeterReading>), 200)]
     public async Task<IActionResult> GetMeterReadings(Guid id)
     {
-        var items = await _service.GetMeterReadingsAsync(id);
+        var items = await service.GetMeterReadingsAsync(id);
         return Ok(items);
     }
 
@@ -118,7 +115,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] RentTransaction request)
     {
-        var created = await _service.CreateAsync(request);
+        var created = await service.CreateAsync(request);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -132,7 +129,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     public async Task<IActionResult> Update(Guid id, [FromBody] RentTransaction payload)
     {
         payload.Id = id;
-        await _service.UpdateAsync(payload);
+        await service.UpdateAsync(payload);
         return NoContent();
     }
 
@@ -144,7 +141,7 @@ public class RentTransactionsController(IRentTransactionService service) : Contr
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 }

@@ -9,6 +9,8 @@ using MyApp.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using MyApp.Repositories;
+using MyApp.Api.Authorization;
 
 namespace MyApp.Api.Controllers;
 
@@ -22,15 +24,15 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]
-public class AuthController(IAuthService service, Microsoft.Extensions.Configuration.IConfiguration configuration, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env, MyApp.Repositories.AppDbContext db, MyApp.Api.Authorization.PermissionEvaluator? evaluator = null, Microsoft.Extensions.Logging.ILogger<AuthController>? logger = null) : ControllerBase
+public class AuthController(
+  IAuthService service,
+  IConfiguration configuration,
+  IWebHostEnvironment env,
+  AppDbContext db,
+  PermissionEvaluator? evaluator = null,
+  ILogger<AuthController>? logger = null
+  ) : ControllerBase
 {
-    private readonly IAuthService _service = service;
-    private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration = configuration;
-    private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _env = env;
-    private readonly Microsoft.Extensions.Logging.ILogger<AuthController>? _logger = logger;
-    private readonly MyApp.Repositories.AppDbContext _db = db;
-    private readonly MyApp.Api.Authorization.PermissionEvaluator? _evaluator = evaluator;
-
   /// <summary>
   /// Registers a new user.
   /// </summary>
@@ -43,7 +45,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
   /// </remarks>
   /// <param name="req">The registration request.</param>
   /// <returns>201 Created with the created user on success; 400 Bad Request on validation errors.</returns>
-  [ProducesResponseType(typeof(MyApp.Models.UserDto), StatusCodes.Status201Created)]
+  [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
   [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
   [HttpPost("register")]
     [AllowAnonymous]
@@ -51,7 +53,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
     {
         try
         {
-            var user = await _service.RegisterAsync(req);
+            var user = await service.RegisterAsync(req);
             return CreatedAtAction(nameof(Profile), new { id = user.Id }, user);
         }
         catch (InvalidOperationException ex)
@@ -83,7 +85,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             var userAgent = Request.Headers.ContainsKey("User-Agent") ? Request.Headers["User-Agent"].ToString() : null;
             var deviceInfo = Request.Headers.ContainsKey("X-Device-Info") ? Request.Headers["X-Device-Info"].ToString() : userAgent;
 
-            var tokens = await _service.LoginAsync(req, ip, userAgent, deviceInfo);
+            var tokens = await service.LoginAsync(req, ip, userAgent, deviceInfo);
 
             // Set HttpOnly refresh token cookie (cookie-based refresh flow)
             var refreshCookieOptions = new CookieOptions
@@ -110,7 +112,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             Response.Cookies.Append("accessToken", tokens.AccessToken, accessCookieOptions);
 
             // Return access token in body; refresh token returned in cookie. Expose refresh token in body only in dev or when explicitly enabled.
-            var exposeRefresh = (_configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || _env.IsDevelopment();
+            var exposeRefresh = (configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || env.IsDevelopment();
             if (exposeRefresh)
             {
                 return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
@@ -144,8 +146,8 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             }
 
             // Dev/debug assistance: log and expose a light header to help determine whether cookie was sent
-            _logger?.LogDebug("Refresh endpoint invoked. refresh cookie present={present}", cookiePresent);
-            if (_env.IsDevelopment())
+            logger?.LogDebug("Refresh endpoint invoked. refresh cookie present={present}", cookiePresent);
+            if (env.IsDevelopment())
             {
                 Response.Headers["X-Debug-Refresh-Cookie"] = cookiePresent ? "present" : "absent";
             }
@@ -155,7 +157,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
                 return BadRequest(new { message = "No refresh token provided" });
             }
 
-            var tokens = await _service.RefreshTokenAsync(req!);
+            var tokens = await service.RefreshTokenAsync(req!);
 
             // Rotate cookie value with the new refresh token
             var cookieOptions = new CookieOptions
@@ -180,7 +182,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             };
             Response.Cookies.Append("accessToken", tokens.AccessToken, accessCookieOptions);
 
-            var exposeRefresh = (_configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || _env.IsDevelopment();
+            var exposeRefresh = (configuration["Auth:ExposeRefreshTokenInBody"]?.ToLowerInvariant() == "true") || env.IsDevelopment();
             if (exposeRefresh)
             {
                 return Ok(new { tokens = new { accessToken = tokens.AccessToken, refreshToken = tokens.RefreshToken } });
@@ -189,7 +191,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         }
         catch (InvalidOperationException ex)
         {
-            _logger?.LogInformation("Refresh token invalid or reused: {msg}", ex.Message);
+            logger?.LogInformation("Refresh token invalid or reused: {msg}", ex.Message);
             return Unauthorized(new { message = ex.Message });
         }
     }
@@ -210,7 +212,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
             if (!Guid.TryParse(sub2, out var id2)) return Unauthorized();
             id = id2;
         }
-        var user = await _service.GetProfileAsync(id);
+        var user = await service.GetProfileAsync(id);
         if (user == null) return NotFound();
         return Ok(user);
     }
@@ -226,22 +228,22 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         if (!Guid.TryParse(sub, out var id)) return Unauthorized();
 
         // Roles
-        var roles = await (from ur in _db.UserRoles
-                           join r in _db.Roles on ur.RoleId equals r.Id
+        var roles = await (from ur in db.UserRoles
+                           join r in db.Roles on ur.RoleId equals r.Id
                            where ur.UserId == id
                            select r.Name).ToListAsync();
 
         // Permissions (via evaluator; if not available, compute inline)
         IEnumerable<string> perms;
-        if (_evaluator != null)
+        if (evaluator != null)
         {
-            perms = await _evaluator.GetEffectivePermissionsAsync(id);
+            perms = await evaluator.GetEffectivePermissionsAsync(id);
         }
         else
         {
-            perms = await (from ur in _db.UserRoles
-                           join rp in _db.RolePermissions on ur.RoleId equals rp.RoleId
-                           join p in _db.Permissions on rp.PermissionId equals p.Id
+            perms = await (from ur in db.UserRoles
+                           join rp in db.RolePermissions on ur.RoleId equals rp.RoleId
+                           join p in db.Permissions on rp.PermissionId equals p.Id
                            where ur.UserId == id && rp.Allowed
                            select p.Name).ToListAsync();
         }
@@ -260,14 +262,14 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         if (Request.Cookies.ContainsKey("refreshToken"))
         {
             var raw = Request.Cookies["refreshToken"];
-            await _service.RevokeRefreshTokenAsync(raw);
+            await service.RevokeRefreshTokenAsync(raw);
         }
 
         // Also revoke session referenced by the access token (if present)
         var sid = User.FindFirst("sid")?.Value;
         if (!string.IsNullOrWhiteSpace(sid) && Guid.TryParse(sid, out var sessionId))
         {
-            await _service.RevokeSessionAsync(sessionId);
+            await service.RevokeSessionAsync(sessionId);
         }
 
         // Clear cookies client-side
@@ -286,7 +288,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
     {
         var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
         if (!Guid.TryParse(sub, out var userId)) return Unauthorized();
-        var sessions = await _service.GetSessionsAsync(userId);
+        var sessions = await service.GetSessionsAsync(userId);
         return Ok(new { sessions = sessions });
     }
 
@@ -300,11 +302,11 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
         if (!Guid.TryParse(sub, out var userId)) return Unauthorized();
 
-        var sessions = await _service.GetSessionsAsync(userId);
+        var sessions = await service.GetSessionsAsync(userId);
         var found = System.Linq.Enumerable.FirstOrDefault(sessions, s => s.Id == id);
         if (found == null) return NotFound();
 
-        await _service.RevokeSessionAsync(id);
+        await service.RevokeSessionAsync(id);
 
 // If revoking the current session, clear cookies
         var currentSid = User.FindFirst("sid")?.Value;
@@ -327,7 +329,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub) ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
         if (!Guid.TryParse(sub, out var userId)) return Unauthorized();
 
-        await _service.LogoutAllSessionsAsync(userId);
+        await service.LogoutAllSessionsAsync(userId);
         Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
         Response.Cookies.Delete("accessToken", new CookieOptions { Path = "/", HttpOnly = true, Secure = Request.IsHttps, SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax });
         return Ok(new { message = "Logged out of all sessions" });
@@ -345,7 +347,7 @@ public class AuthController(IAuthService service, Microsoft.Extensions.Configura
         var sub = User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
         if (!Guid.TryParse(sub, out var id)) return Unauthorized();
 
-        var updated = await _service.UpdateProfileAsync(id, body.DisplayName);
+        var updated = await service.UpdateProfileAsync(id, body.DisplayName);
         if (updated == null) return NotFound();
         return Ok(updated);
     }

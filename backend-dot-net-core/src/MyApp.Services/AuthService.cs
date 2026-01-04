@@ -51,7 +51,15 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         user.PasswordHash = hasher.HashPassword(user, request.Password);
 
         await _userRepo.AddAsync(user);
-        return new UserDto(user.Id, user.Email, user.DisplayName, user.Username);
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Username = user.Username,
+            DisplayName = user.DisplayName,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        };
     }
 
     // Generate a unique username by appending a numeric suffix if required
@@ -320,7 +328,19 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
     {
         var user = await _userRepo.FindByIdAsync(userId);
         if (user is null) return null;
-        return new UserDto(user.Id, user.Email, user.DisplayName, user.Username);
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Username = user.Username,
+            DisplayName = user.DisplayName,
+            Phone = user.Phone,
+            IsEmailVerified = user.IsEmailVerified,
+            IsPhoneVerified = user.IsPhoneVerified,
+            LastLogin = user.LastLogin,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        };
     }
 
     public async Task<System.Collections.Generic.IEnumerable<MyApp.Models.SessionInfoDto>> GetSessionsAsync(Guid userId)
@@ -348,7 +368,19 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, MyApp
         if (user is null) return null;
         user.DisplayName = displayName;
         await _userRepo.UpdateAsync(user);
-        return new UserDto(user.Id, user.Email, user.DisplayName, user.Username);
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Username = user.Username,
+            DisplayName = user.DisplayName,
+            Phone = user.Phone,
+            IsEmailVerified = user.IsEmailVerified,
+            IsPhoneVerified = user.IsPhoneVerified,
+            LastLogin = user.LastLogin,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt
+        };
     }
 
     // Helper to generate username when missing or sanitise input

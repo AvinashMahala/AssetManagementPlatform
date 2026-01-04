@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -14,11 +15,11 @@ namespace MyApp.Api.Controllers;
 /// <param name="service">Service for managing unit-tenant assignments.</param>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/unittenants")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Route("api/v{version:apiVersion}/unit-tenants")]
+[Authorize]
 public class UnitTenantsController(IUnitTenantService service) : ControllerBase
 {
-    private readonly IUnitTenantService _service = service ?? throw new ArgumentNullException(nameof(service));
+
 
   /// <summary>
   /// Lists tenant assignments, optionally filtered by unit or tenant.
@@ -29,9 +30,9 @@ public class UnitTenantsController(IUnitTenantService service) : ControllerBase
   [HttpGet]
     public async Task<IActionResult> List([FromQuery] Guid? unitId, [FromQuery] Guid? tenantId)
     {
-        if (unitId.HasValue) return Ok(await _service.FindUnitTenantsAsync(unitId.Value));
-        if (tenantId.HasValue) return Ok(await _service.FindByTenantAsync(tenantId.Value));
-        return Ok(await _service.FindAllAsync());
+        if (unitId.HasValue) return Ok(await service.FindUnitTenantsAsync(unitId.Value));
+        if (tenantId.HasValue) return Ok(await service.FindByTenantAsync(tenantId.Value));
+        return Ok(await service.FindAllAsync());
     }
 
     /// <summary>
@@ -42,7 +43,7 @@ public class UnitTenantsController(IUnitTenantService service) : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var a = await _service.FindByIdAsync(id);
+        var a = await service.FindByIdAsync(id);
         if (a is null) return NotFound();
         return Ok(a);
     }
@@ -55,7 +56,7 @@ public class UnitTenantsController(IUnitTenantService service) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Assign([FromBody] UnitTenant req)
     {
-        var created = await _service.AssignTenantToUnitAsync(req);
+        var created = await service.AssignTenantToUnitAsync(req);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -69,7 +70,7 @@ public class UnitTenantsController(IUnitTenantService service) : ControllerBase
     [HttpPut("{unitId:guid}/{tenantId:guid}")]
     public async Task<IActionResult> Update(Guid unitId, Guid tenantId, [FromBody] UnitTenant req)
     {
-        var updated = await _service.UpdateTenantAssignmentAsync(unitId, tenantId, req);
+        var updated = await service.UpdateTenantAssignmentAsync(unitId, tenantId, req);
         if (updated is null) return NotFound();
         return Ok(updated);
     }
@@ -83,7 +84,7 @@ public class UnitTenantsController(IUnitTenantService service) : ControllerBase
     [HttpDelete("{unitId:guid}/{tenantId:guid}")]
     public async Task<IActionResult> Delete(Guid unitId, Guid tenantId)
     {
-        var ok = await _service.RemoveTenantFromUnitAsync(unitId, tenantId);
+        var ok = await service.RemoveTenantFromUnitAsync(unitId, tenantId);
         if (!ok) return NotFound();
         return Ok(new { message = "Tenant removed" });
     }

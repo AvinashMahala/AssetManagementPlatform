@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 
 namespace MyApp.Api.Controllers;
@@ -15,10 +16,10 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/properties/{propertyId:guid}/receipt-template")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Authorize]
 public class PropertyReceiptTemplateController(IPropertyReceiptTemplateService service) : ControllerBase
 {
-    private readonly IPropertyReceiptTemplateService _service = service ?? throw new ArgumentNullException(nameof(service));
+
 
   /// <summary>
   /// Sets or creates a receipt template for a property.
@@ -30,7 +31,7 @@ public class PropertyReceiptTemplateController(IPropertyReceiptTemplateService s
     public async Task<IActionResult> Create(Guid propertyId, [FromBody] object body)
     {
         var json = body?.ToString() ?? string.Empty;
-        await _service.SetTemplateAsync(propertyId, json);
+        await service.SetTemplateAsync(propertyId, json);
         return NoContent();
     }
 
@@ -42,7 +43,7 @@ public class PropertyReceiptTemplateController(IPropertyReceiptTemplateService s
     [HttpGet]
     public async Task<IActionResult> Get(Guid propertyId)
     {
-        var t = await _service.GetTemplateAsync(propertyId);
+        var t = await service.GetTemplateAsync(propertyId);
         if (t is null) return NotFound();
         return Ok(new { template = t });
     }
@@ -57,7 +58,7 @@ public class PropertyReceiptTemplateController(IPropertyReceiptTemplateService s
     public async Task<IActionResult> Update(Guid propertyId, [FromBody] object body)
     {
         var json = body?.ToString() ?? string.Empty;
-        await _service.SetTemplateAsync(propertyId, json);
+        await service.SetTemplateAsync(propertyId, json);
         return NoContent();
     }
 
@@ -69,7 +70,7 @@ public class PropertyReceiptTemplateController(IPropertyReceiptTemplateService s
     [HttpDelete]
     public async Task<IActionResult> Delete(Guid propertyId)
     {
-        await _service.RemoveTemplateAsync(propertyId);
+        await service.RemoveTemplateAsync(propertyId);
         return NoContent();
     }
 
@@ -82,7 +83,7 @@ public class PropertyReceiptTemplateController(IPropertyReceiptTemplateService s
     [HttpGet("upi-links")]
     public async Task<IActionResult> GenerateUPILinks(Guid propertyId, [FromQuery] decimal? amount)
     {
-        var links = await _service.GenerateUPILinksAsync(propertyId, amount);
+        var links = await service.GenerateUPILinksAsync(propertyId, amount);
         return Ok(links);
     }
 }

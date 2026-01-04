@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Api.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -44,13 +45,11 @@ public class FileUploadRequest
 public class FilesController(IPropertyFileService service) : ControllerBase
 {
     // Permission constants
-    public const string _viewPerm = "files:file:view";
-    public const string _uploadPerm = "files:file:upload";
-    public const string _downloadPerm = "files:file:download";
-    public const string _updatePerm = "files:file:update";
-    public const string _deletePerm = "files:file:delete";
-
-    private readonly IPropertyFileService _service = service;
+    private const string _viewPerm = "files:file:view";
+    private const string _uploadPerm = "files:file:upload";
+    private const string _downloadPerm = "files:file:download";
+    private const string _updatePerm = "files:file:update";
+    private const string _deletePerm = "files:file:delete";
 
   /// <summary>
   /// Uploads a file for a specific entity.
@@ -59,7 +58,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
   /// <returns>201 Created with file metadata on success; 400 Bad Request when no file provided.</returns>
   [HttpPost("upload")]
     [Consumes("multipart/form-data")]
-    [MyApp.Api.Authorization.AuthorizePermission(_uploadPerm)]
+    [AuthorizePermission(_uploadPerm)]
     public async Task<IActionResult> Upload([FromForm] FileUploadRequest request)
     {
         var file = request.File;
@@ -72,7 +71,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
         await file.CopyToAsync(ms);
         var data = ms.ToArray();
 
-        var meta = await _service.UploadForEntityAsync(entityType ?? string.Empty, entityId ?? string.Empty, file.FileName, file.ContentType ?? "application/octet-stream", data, User?.Identity?.Name ?? "system");
+        var meta = await service.UploadForEntityAsync(entityType ?? string.Empty, entityId ?? string.Empty, file.FileName, file.ContentType ?? "application/octet-stream", data, User?.Identity?.Name ?? "system");
         return CreatedAtAction(nameof(GetMetadata), new { id = meta.Id }, meta);
     }
 
@@ -82,10 +81,10 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="id">The file id.</param>
     /// <returns>200 OK with metadata; 404 Not Found if not found.</returns>
     [HttpGet("{id:guid}/metadata")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> GetMetadata(Guid id)
     {
-        var meta = await _service.GetMetadataAsync(id);
+        var meta = await service.GetMetadataAsync(id);
         if (meta is null) return NotFound();
         return Ok(meta);
     }
@@ -96,12 +95,12 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="id">The file id.</param>
     /// <returns>File stream with appropriate content type; 404 Not Found when missing.</returns>
     [HttpGet("{id:guid}/download")]
-    [MyApp.Api.Authorization.AuthorizePermission(_downloadPerm)]
+    [AuthorizePermission(_downloadPerm)]
     public async Task<IActionResult> Download(Guid id)
     {
-        var meta = await _service.GetMetadataAsync(id);
+        var meta = await service.GetMetadataAsync(id);
         if (meta is null) return NotFound();
-        var data = await _service.DownloadAsync(id);
+        var data = await service.DownloadAsync(id);
         if (data is null) return NotFound();
         return File(data, meta.ContentType, meta.FileName);
     }
@@ -112,10 +111,10 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="id">The file id to delete.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 
@@ -128,7 +127,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="entityId">Optional entity id filter.</param>
     /// <returns>200 OK with paged file list and pagination metadata.</returns>
     [HttpGet]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int limit = 20, [FromQuery] string? entityType = null, [FromQuery] string? entityId = null)
     {
         // validate and sanitize
@@ -136,7 +135,7 @@ public class FilesController(IPropertyFileService service) : ControllerBase
         limit = Math.Clamp(limit, 1, 200);
         var offset = (page - 1) * limit;
 
-        var paged = await _service.ListForEntityPagedAsync(entityType, entityId, offset, limit);
+        var paged = await service.ListForEntityPagedAsync(entityType, entityId, offset, limit);
         var totalPages = (int)System.Math.Ceiling((double)paged.Total / limit);
         var response = new {
             success = true,
@@ -162,10 +161,10 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="entityId">The entity id.</param>
     /// <returns>200 OK with list of files for the entity.</returns>
     [HttpGet("entity/{entityType}/{entityId}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> ListForEntity(string entityType, string entityId)
     {
-        var list = await _service.ListForEntityAsync(entityType, entityId);
+        var list = await service.ListForEntityAsync(entityType, entityId);
         return Ok(list);
     }
 
@@ -176,11 +175,11 @@ public class FilesController(IPropertyFileService service) : ControllerBase
     /// <param name="body">A JSON body containing metadata fields to update.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> UpdateMetadata(Guid id, [FromBody] object body)
     {
         string? fileName = (body as dynamic)?.fileName;
-        await _service.UpdateMetadataAsync(id, fileName);
+        await service.UpdateMetadataAsync(id, fileName);
         return NoContent();
     }
 }

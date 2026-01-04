@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Api.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -23,12 +24,10 @@ namespace MyApp.Api.Controllers;
 public class PropertyFilesController(IPropertyFileService service) : ControllerBase
 {
     // Permission constants
-    public const string _viewPerm = "files:file:view";
-    public const string _uploadPerm = "files:file:upload";
-    public const string _updatePerm = "files:file:update";
-    public const string _deletePerm = "files:file:delete";
-
-    private readonly IPropertyFileService _service = service;
+    private const string _viewPerm = "files:file:view";
+    private const string _uploadPerm = "files:file:upload";
+    private const string _updatePerm = "files:file:update";
+    private const string _deletePerm = "files:file:delete";
 
   /// <summary>
   /// Uploads a file for the specified property.
@@ -38,7 +37,7 @@ public class PropertyFilesController(IPropertyFileService service) : ControllerB
   /// <returns>201 Created with metadata on success; 400 Bad Request when no file provided.</returns>
   [HttpPost]
     [Consumes("multipart/form-data")]
-    [MyApp.Api.Authorization.AuthorizePermission(_uploadPerm)]
+    [AuthorizePermission(_uploadPerm)]
     public async Task<IActionResult> Upload(Guid propertyId, [FromForm] FileUploadRequest request)
     {
         var file = request.File;
@@ -48,7 +47,7 @@ public class PropertyFilesController(IPropertyFileService service) : ControllerB
         await file.CopyToAsync(ms);
         var data = ms.ToArray();
 
-        var meta = await _service.UploadForEntityAsync("property", propertyId.ToString(), file.FileName, file.ContentType ?? "application/octet-stream", data, User?.Identity?.Name ?? "system");
+        var meta = await service.UploadForEntityAsync("property", propertyId.ToString(), file.FileName, file.ContentType ?? "application/octet-stream", data, User?.Identity?.Name ?? "system");
         return CreatedAtAction("GetMetadata", "Files", new { id = meta.Id }, meta);
     }
 
@@ -58,10 +57,10 @@ public class PropertyFilesController(IPropertyFileService service) : ControllerB
     /// <param name="propertyId">Property id.</param>
     /// <returns>200 OK with list of files for the property.</returns>
     [HttpGet]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List(Guid propertyId)
     {
-        var list = await _service.ListForEntityAsync("property", propertyId.ToString());
+        var list = await service.ListForEntityAsync("property", propertyId.ToString());
         return Ok(list);
     }
 
@@ -72,14 +71,14 @@ public class PropertyFilesController(IPropertyFileService service) : ControllerB
     /// <param name="fileId">File id.</param>
     /// <returns>File content or 404 Not Found.</returns>
     [HttpGet("{fileId:guid}/download")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Download(Guid propertyId, Guid fileId)
     {
-        var meta = await _service.GetMetadataAsync(fileId);
+        var meta = await service.GetMetadataAsync(fileId);
         if (meta is null) return NotFound();
         if (meta.EntityId != propertyId) return NotFound();
 
-        var data = await _service.DownloadAsync(fileId);
+        var data = await service.DownloadAsync(fileId);
         if (data is null) return NotFound();
         return File(data, meta.ContentType, meta.FileName);
     }
@@ -92,15 +91,15 @@ public class PropertyFilesController(IPropertyFileService service) : ControllerB
     /// <param name="body">JSON body with metadata fields to update.</param>
     /// <returns>204 No Content on success; 404 Not Found when not found.</returns>
     [HttpPut("{fileId:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> UpdateMetadata(Guid propertyId, Guid fileId, [FromBody] object body)
     {
-        var meta = await _service.GetMetadataAsync(fileId);
+        var meta = await service.GetMetadataAsync(fileId);
         if (meta is null) return NotFound();
         if (meta.EntityId != propertyId) return NotFound();
 
         string? fileName = (body as dynamic)?.fileName;
-        await _service.UpdateMetadataAsync(fileId, fileName);
+        await service.UpdateMetadataAsync(fileId, fileName);
         return NoContent();
     }
 
@@ -111,14 +110,14 @@ public class PropertyFilesController(IPropertyFileService service) : ControllerB
     /// <param name="fileId">File id.</param>
     /// <returns>204 No Content on success; 404 Not Found when not found.</returns>
     [HttpDelete("{fileId:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid propertyId, Guid fileId)
     {
-        var meta = await _service.GetMetadataAsync(fileId);
+        var meta = await service.GetMetadataAsync(fileId);
         if (meta is null) return NotFound();
         if (meta.EntityId != propertyId) return NotFound();
 
-        await _service.DeleteAsync(fileId);
+        await service.DeleteAsync(fileId);
         return NoContent();
     }
 }

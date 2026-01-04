@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces.Services;
 using MyApp.Models;
 
@@ -9,22 +10,21 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/utility-types")]
-public class UtilityTypesController : ControllerBase
+[Authorize]
+public class UtilityTypesController(IUtilityTypeService service) : ControllerBase
 {
-    private readonly IUtilityTypeService _service;
 
-    public UtilityTypesController(IUtilityTypeService service) => _service = service;
 
     [HttpGet]
     [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<MyApp.Models.UtilityType>), 200)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
 
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(MyApp.Models.UtilityType), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var u = await _service.GetByIdAsync(id);
+        var u = await service.GetByIdAsync(id);
         if (u is null) return NotFound();
         return Ok(u);
     }
@@ -43,7 +43,7 @@ public class UtilityTypesController : ControllerBase
             Metadata = req.Metadata ?? "{}"
         };
 
-        var created = await _service.CreateAsync(ut);
+        var created = await service.CreateAsync(ut);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
 
 
@@ -89,12 +89,12 @@ public class UtilityTypesController : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] MyApp.Api.Requests.UtilityTypeUpdateRequest req)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var existing = await _service.GetByIdAsync(id);
+        var existing = await service.GetByIdAsync(id);
         if (existing is null) return NotFound();
         if (req.Name != null) existing.Name = req.Name;
         if (req.UnitOfMeasure != null) existing.UnitOfMeasure = req.UnitOfMeasure;
         if (req.Metadata != null) existing.Metadata = req.Metadata;
-        await _service.UpdateAsync(existing);
+        await service.UpdateAsync(existing);
         return NoContent();
     }
 
@@ -102,7 +102,7 @@ public class UtilityTypesController : ControllerBase
     [ProducesResponseType(204)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 }

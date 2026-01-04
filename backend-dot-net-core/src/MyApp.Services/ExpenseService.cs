@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Services.Helpers;
 
 namespace MyApp.Services;
 
@@ -43,6 +44,21 @@ public class ExpenseService(IExpenseRepository repo) : IExpenseService
         return e;
     }
 
+    public async Task<(Expense expense, DataAuditResult? audit)> CreateWithAuditAsync(Expense e, bool audit = false)
+    {
+        var created = await CreateAsync(e);
+        DataAuditResult? dataAudit = null;
+        if (audit)
+        {
+            var stored = await _repo.GetByIdAsync(created.Id);
+            if (stored != null)
+            {
+                dataAudit = ExpenseAuditHelper.CompareExpenseForAudit(e, stored);
+            }
+        }
+        return (created, dataAudit);
+    }
+
     /// <summary>
     /// Updates an existing expense partially using non-null request values.
     /// </summary>
@@ -68,6 +84,17 @@ public class ExpenseService(IExpenseRepository repo) : IExpenseService
         existing.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(existing);
         return existing;
+    }
+
+    public async Task<(Expense? expense, DataAuditResult? audit)> UpdateWithAuditAsync(Guid id, Expense e, bool audit = false)
+    {
+        var updated = await UpdateAsync(id, e);
+        DataAuditResult? dataAudit = null;
+        if (audit && updated != null)
+        {
+            dataAudit = ExpenseAuditHelper.CompareExpenseForAudit(e, updated);
+        }
+        return (updated, dataAudit);
     }
 
     /// <summary>

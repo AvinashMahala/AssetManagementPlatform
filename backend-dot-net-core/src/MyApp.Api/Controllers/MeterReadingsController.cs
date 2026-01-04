@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -14,18 +15,18 @@ namespace MyApp.Api.Controllers;
 /// <param name="service">Service for managing meter readings.</param>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/meterreadings")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Route("api/v{version:apiVersion}/meter-readings")]
+[Authorize]
 public class MeterReadingsController(IMeterReadingService service) : ControllerBase
 {
-    private readonly IMeterReadingService _service = service;
+
 
   /// <summary>
   /// Lists meter readings.
   /// </summary>
   /// <returns>200 OK with list of meter readings.</returns>
   [HttpGet]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
 
     /// <summary>
     /// Gets a meter reading by id.
@@ -33,7 +34,7 @@ public class MeterReadingsController(IMeterReadingService service) : ControllerB
     /// <param name="id">Reading id.</param>
     /// <returns>200 OK with reading; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id) { var r = await _service.GetByIdAsync(id); if (r is null) return NotFound(); return Ok(r); }
+    public async Task<IActionResult> Get(Guid id) { var r = await service.GetByIdAsync(id); if (r is null) return NotFound(); return Ok(r); }
 
     /// <summary>
     /// Lists meter readings for a meter.
@@ -41,7 +42,7 @@ public class MeterReadingsController(IMeterReadingService service) : ControllerB
     /// <param name="meterId">Meter id.</param>
     /// <returns>200 OK with list of readings for the meter.</returns>
     [HttpGet("meter/{meterId:guid}")]
-    public async Task<IActionResult> ByMeter(Guid meterId) => Ok(await _service.ListByMeterAsync(meterId));
+    public async Task<IActionResult> ByMeter(Guid meterId) => Ok(await service.ListByMeterAsync(meterId));
 
     /// <summary>
     /// Creates a meter reading.
@@ -49,7 +50,7 @@ public class MeterReadingsController(IMeterReadingService service) : ControllerB
     /// <param name="req">Meter reading payload.</param>
     /// <returns>201 Created with created reading.</returns>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MeterReading req) { var created = await _service.CreateAsync(req); return CreatedAtAction(nameof(Get), new { id = created.Id }, created); }
+    public async Task<IActionResult> Create([FromBody] MeterReading req) { var created = await service.CreateAsync(req); return CreatedAtAction(nameof(Get), new { id = created.Id }, created); }
 
     /// <summary>
     /// Updates a meter reading.
@@ -58,7 +59,7 @@ public class MeterReadingsController(IMeterReadingService service) : ControllerB
     /// <param name="req">Updated reading payload.</param>
     /// <returns>200 OK with updated reading; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] MeterReading req) { var updated = await _service.UpdateAsync(id, req); if (updated is null) return NotFound(); return Ok(updated); }
+    public async Task<IActionResult> Update(Guid id, [FromBody] MeterReading req) { var updated = await service.UpdateAsync(id, req); if (updated is null) return NotFound(); return Ok(updated); }
 
     /// <summary>
     /// Deletes a meter reading.
@@ -66,5 +67,5 @@ public class MeterReadingsController(IMeterReadingService service) : ControllerB
     /// <param name="id">Reading id.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id) { await _service.DeleteAsync(id); return NoContent(); }
+    public async Task<IActionResult> Delete(Guid id) { await service.DeleteAsync(id); return NoContent(); }
 }

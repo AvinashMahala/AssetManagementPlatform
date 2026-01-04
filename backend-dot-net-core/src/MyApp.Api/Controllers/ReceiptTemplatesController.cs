@@ -1,7 +1,9 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Api.Authorization;
 
 namespace MyApp.Api.Controllers;
 
@@ -14,29 +16,27 @@ namespace MyApp.Api.Controllers;
 /// <param name="service">The receipt template service.</param>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/receipttemplates")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Route("api/v{version:apiVersion}/receipt-templates")]
+[Authorize]
 public class ReceiptTemplatesController(IReceiptTemplateService service) : ControllerBase
 {
     // Permission constants
-    public const string _viewPerm = "templates:receipttemplate:view";
-    public const string _createPerm = "templates:receipttemplate:create";
-    public const string _updatePerm = "templates:receipttemplate:update";
-    public const string _deletePerm = "templates:receipttemplate:delete";
-    public const string _exportPerm = "templates:receipttemplate:export";
-    public const string _importPerm = "templates:receipttemplate:import";
-    public const string _duplicatePerm = "templates:receipttemplate:duplicate";
-    public const string _previewPerm = "templates:receipttemplate:preview";
+    private const string _viewPerm = "templates:receipttemplate:view";
+    private const string _createPerm = "templates:receipttemplate:create";
+    private const string _updatePerm = "templates:receipttemplate:update";
+    private const string _deletePerm = "templates:receipttemplate:delete";
+    private const string _exportPerm = "templates:receipttemplate:export";
+    private const string _importPerm = "templates:receipttemplate:import";
+    private const string _duplicatePerm = "templates:receipttemplate:duplicate";
+    private const string _previewPerm = "templates:receipttemplate:preview";
 
-    private readonly IReceiptTemplateService _service = service;
-
-  /// <summary>
-  /// Lists all receipt templates.
-  /// </summary>
-  /// <returns>200 OK with list of templates.</returns>
-  [HttpGet]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    /// <summary>
+    /// Lists all receipt templates.
+    /// </summary>
+    /// <returns>200 OK with list of templates.</returns>
+    [HttpGet]
+    [AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
 
     /// <summary>
     /// Gets a template by id.
@@ -44,10 +44,10 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="id">Template id.</param>
     /// <returns>200 OK with template; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var t = await _service.GetByIdAsync(id);
+        var t = await service.GetByIdAsync(id);
         if (t is null) return NotFound();
         return Ok(t);
     }
@@ -58,10 +58,10 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="template">Receipt template payload.</param>
     /// <returns>201 Created with created template.</returns>
     [HttpPost]
-    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
+    [AuthorizePermission(_createPerm)]
     public async Task<IActionResult> Create([FromBody] ReceiptTemplate template)
     {
-        var created = await _service.CreateAsync(template);
+        var created = await service.CreateAsync(template);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -76,13 +76,13 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="req">Preview request payload.</param>
     /// <returns>HTML content representing the rendered template.</returns>
     [HttpPost("preview")]
-    [MyApp.Api.Authorization.AuthorizePermission(_previewPerm)]
+    [AuthorizePermission(_previewPerm)]
     public async Task<IActionResult> Preview([FromBody] PreviewRequest req)
     {
         string body = req.TemplateBody ?? string.Empty;
         if (string.IsNullOrEmpty(body) && req.TemplateId.HasValue)
         {
-            var t = await _service.GetByIdAsync(req.TemplateId.Value);
+            var t = await service.GetByIdAsync(req.TemplateId.Value);
             if (t is null) return NotFound();
             try
             {
@@ -114,10 +114,10 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="id">Template id.</param>
     /// <returns>Export payload for the template.</returns>
     [HttpGet("templates/{id:guid}/export")]
-    [MyApp.Api.Authorization.AuthorizePermission(_exportPerm)]
+    [AuthorizePermission(_exportPerm)]
     public async Task<IActionResult> ExportTemplate(Guid id)
     {
-        var e = await _service.ExportTemplateAsync(id);
+        var e = await service.ExportTemplateAsync(id);
         return Ok(e);
     }
 
@@ -127,10 +127,10 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="payload">Import payload.</param>
     /// <returns>201 Created with the imported template.</returns>
     [HttpPost("templates/import")]
-    [MyApp.Api.Authorization.AuthorizePermission(_importPerm)]
+    [AuthorizePermission(_importPerm)]
     public async Task<IActionResult> ImportTemplate([FromBody] object payload)
     {
-        var created = await _service.ImportTemplateAsync(payload);
+        var created = await service.ImportTemplateAsync(payload);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -140,10 +140,10 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="id">The template id to duplicate.</param>
     /// <returns>201 Created with the new duplicate template.</returns>
     [HttpPost("templates/{id:guid}/duplicate")]
-    [MyApp.Api.Authorization.AuthorizePermission(_duplicatePerm)]
+    [AuthorizePermission(_duplicatePerm)]
     public async Task<IActionResult> DuplicateTemplate(Guid id)
     {
-        var created = await _service.DuplicateTemplateAsync(id);
+        var created = await service.DuplicateTemplateAsync(id);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -152,7 +152,7 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// </summary>
     /// <returns>200 OK with list of placeholders.</returns>
     [HttpGet("templates/placeholders/available")]
-    public async Task<IActionResult> GetAvailablePlaceholders() => Ok(await _service.GetAvailablePlaceholdersAsync());
+    public async Task<IActionResult> GetAvailablePlaceholders() => Ok(await service.GetAvailablePlaceholdersAsync());
 
     /// <summary>
     /// Updates a template.
@@ -161,10 +161,10 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="updates">Updated template payload.</param>
     /// <returns>200 OK with updated template; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Update(Guid id, [FromBody] ReceiptTemplate updates)
     {
-        var updated = await _service.UpdateAsync(id, updates);
+        var updated = await service.UpdateAsync(id, updates);
         if (updated is null) return NotFound();
         return Ok(updated);
     }
@@ -175,10 +175,10 @@ public class ReceiptTemplatesController(IReceiptTemplateService service) : Contr
     /// <param name="id">Template id.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 }

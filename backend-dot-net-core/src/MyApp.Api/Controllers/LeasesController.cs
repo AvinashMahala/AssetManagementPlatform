@@ -1,6 +1,14 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Api.Authorization;
+using MyApp.Api.Requests;
+using MyApp.Api.Responses;
+using MyApp.Api.Mapping;
 
 namespace MyApp.Api.Controllers;
 
@@ -14,7 +22,7 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/leases")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Authorize]
 public class LeasesController(ILeaseService service) : ControllerBase
 {
     // Permission constants
@@ -23,18 +31,16 @@ public class LeasesController(ILeaseService service) : ControllerBase
     private const string _updatePerm = "leases:lease:update";
     private const string _deletePerm = "leases:lease:delete";
 
-    private readonly ILeaseService _service = service;
-
-  /// <summary>
-  /// Lists leases.
-  /// </summary>
-  /// <returns>200 OK with a list of leases.</returns>
-  [HttpGet]
-  [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    /// <summary>
+    /// Lists leases.
+    /// </summary>
+    /// <returns>200 OK with a list of leases.</returns>
+    [HttpGet]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> List()
     {
-        var leases = await _service.ListLeasesAsync();
-        return Ok(leases);
+        var leases = await service.ListLeasesAsync();
+        return Ok(leases.Select(l => l.ToDto()));
     }
 
     /// <summary>
@@ -43,38 +49,62 @@ public class LeasesController(ILeaseService service) : ControllerBase
     /// <param name="id">Lease id.</param>
     /// <returns>200 OK with lease; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var lease = await _service.GetLeaseAsync(id);
+        var lease = await service.GetLeaseAsync(id);
         if (lease is null) return NotFound();
-        return Ok(lease);
+        return Ok(lease.ToDto());
     }
 
     /// <summary>
     /// Creates a new lease.
     /// </summary>
-    /// <param name="lease">Lease payload.</param>
+    /// <param name="req">Create lease payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>201 Created with the created lease.</returns>
     [HttpPost]
-    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
-    public async Task<IActionResult> Create([FromBody] Lease lease)
+    [AuthorizePermission(_createPerm)]
+    public async Task<IActionResult> Create([FromBody] CreateLeaseRequest req, [FromQuery] bool audit = false)
     {
-        await _service.CreateLeaseAsync(lease);
-        return CreatedAtAction(nameof(Get), new { id = lease.Id }, lease);
+        var entity = req.ToEntity();
+        var (created, dataAudit) = await service.CreateLeaseWithAuditAsync(entity, audit);
+        var dto = created.ToDto();
+
+        if (audit)
+        {
+            return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, new { success = true, lease = dto, dataAudit });
+        }
+
+        return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, dto);
     }
 
     /// <summary>
     /// Updates an existing lease.
     /// </summary>
     /// <param name="id">Lease id.</param>
-    /// <param name="lease">Updated lease payload.</param>
+    /// <param name="req">Updated lease payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPut("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Lease lease)
+    [AuthorizePermission(_updatePerm)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLeaseRequest req, [FromQuery] bool audit = false)
     {
-        await _service.UpdateLeaseAsync(id, lease);
+        if (id != req.Id) return BadRequest("Id mismatch");
+
+        var existing = await service.GetLeaseAsync(id);
+        if (existing is null) return NotFound();
+
+        existing.UpdateEntity(req);
+
+        var (updated, dataAudit) = await service.UpdateLeaseWithAuditAsync(id, existing, audit);
+        if (updated is null) return NotFound();
+
+        if (audit)
+        {
+            return Ok(new { success = true, lease = updated.ToDto(), dataAudit });
+        }
+
         return NoContent();
     }
 
@@ -85,10 +115,10 @@ public class LeasesController(ILeaseService service) : ControllerBase
     /// <param name="request">Termination request including the end date.</param>
     /// <returns>204 No Content on success.</returns>
     [HttpPost("{id:guid}/terminate")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
+    [AuthorizePermission(_updatePerm)]
     public async Task<IActionResult> Terminate(Guid id, [FromBody] TerminateLeaseRequest request)
     {
-        await _service.TerminateLeaseAsync(id, request.EndDate);
+        await service.TerminateLeaseAsync(id, request.EndDate);
         return NoContent();
     }
 
@@ -98,16 +128,11 @@ public class LeasesController(ILeaseService service) : ControllerBase
     /// <param name="id">Lease id.</param>
     /// <returns>204 No Content on success; 404 Not Found if missing.</returns>
     [HttpDelete("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var ok = await _service.DeleteLeaseAsync(id);
+        var ok = await service.DeleteLeaseAsync(id);
         if (!ok) return NotFound();
         return NoContent();
     }
 }
-
-/// <summary>
-/// Request to terminate a lease on a specific end date.
-/// </summary>
-public record TerminateLeaseRequest(DateTime EndDate);

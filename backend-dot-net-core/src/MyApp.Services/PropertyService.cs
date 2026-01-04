@@ -30,68 +30,26 @@ public class PropertyService(IPropertyRepository repo) : IPropertyService
     /// <summary>
     /// Creates a new property record.
     /// </summary>
-    /// <param name="req">Property creation request.</param>
+    /// <param name="property">Property entity.</param>
     /// <returns>The created <see cref="Property"/>.</returns>
-    public async Task<Property> CreateAsync(CreatePropertyRequest req)
+    public async Task<Property> CreateAsync(Property property)
     {
         // Pre-check for duplicates using normalized key
-        var existing = await _repo.FindByNormalizedKeyAsync(req.OwnerId, req.Name, req.PropertyType, req.Currency,
-          req.Address, req.AddressCity, req.AddressState, req.AddressPincode, req.AddressCountry, req.AddressLandmark);
+        var existing = await _repo.FindByNormalizedKeyAsync(property.OwnerId, property.Name, property.PropertyType, property.Currency,
+          property.Address, property.AddressCity, property.AddressState, property.AddressPincode, property.AddressCountry, property.AddressLandmark);
         if (existing != null)
         {
             throw new MyApp.Services.Exceptions.DuplicatePropertyException("Property already exists", existing.Id);
         }
 
-        var p = new Property
-        {
-            Id = Guid.NewGuid(),
-            Name = req.Name,
-            Address = req.Address,
-            AddressCity = req.AddressCity,
-            AddressState = req.AddressState,
-            AddressPincode = req.AddressPincode,
-            AddressCountry = req.AddressCountry,
-            AddressLandmark = req.AddressLandmark,
-            Description = req.Description,
-            PropertyType = req.PropertyType,
-            Currency = string.IsNullOrWhiteSpace(req.Currency) ? "INR" : req.Currency,
-            Area = req.Area,
-            TotalFloors = req.TotalFloors,
-            YearBuilt = req.YearBuilt,
-            ParkingSpaces = req.ParkingSpaces,
-            OwnerId = req.OwnerId,
-            OwnerName = req.OwnerName,
-            OwnerWebsite = req.OwnerWebsite,
-            Status = string.IsNullOrWhiteSpace(req.Status) ? "active" : req.Status,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        if (req.Amenities != null)
-        {
-            p.Amenities = System.Text.Json.JsonSerializer.Serialize(req.Amenities);
-        }
-
-        if (req.TemplateJson != null)
-        {
-            p.TemplateJson = req.TemplateJson;
-        }
-        else if (req.TemplateOverrides != null)
-        {
-            p.TemplateJson = System.Text.Json.JsonSerializer.Serialize(req.TemplateOverrides);
-        }
-
-        if (req.TemplateId != null) p.TemplateId = req.TemplateId;
-        if (req.ReceiptSettings != null) p.ReceiptSettings = System.Text.Json.JsonSerializer.Serialize(req.ReceiptSettings);
-
-        if (req.OwnerMobileNumbers != null) p.OwnerMobileNumbers = System.Text.Json.JsonSerializer.Serialize(req.OwnerMobileNumbers);
-        if (req.OwnerEmailIds != null) p.OwnerEmailIds = System.Text.Json.JsonSerializer.Serialize(req.OwnerEmailIds);
-        if (req.CoOwners != null) p.CoOwners = System.Text.Json.JsonSerializer.Serialize(req.CoOwners);
+        property.Id = Guid.NewGuid();
+        property.CreatedAt = DateTime.UtcNow;
+        property.UpdatedAt = DateTime.UtcNow;
 
         try
         {
-            await _repo.AddAsync(p);
-            return p;
+            await _repo.AddAsync(property);
+            return property;
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
         {
@@ -99,8 +57,8 @@ public class PropertyService(IPropertyRepository repo) : IPropertyService
             if (dbEx.InnerException != null && dbEx.InnerException.Message != null && dbEx.InnerException.Message.Contains("idx_properties_unique_owner_name_type_currency_address"))
             {
                 // If we hit a race and the DB reports a unique violation, try to find the existing record to include the id
-                var existingAfter = await _repo.FindByNormalizedKeyAsync(req.OwnerId, req.Name, req.PropertyType, req.Currency,
-                  req.Address, req.AddressCity, req.AddressState, req.AddressPincode, req.AddressCountry, req.AddressLandmark);
+                var existingAfter = await _repo.FindByNormalizedKeyAsync(property.OwnerId, property.Name, property.PropertyType, property.Currency,
+                  property.Address, property.AddressCity, property.AddressState, property.AddressPincode, property.AddressCountry, property.AddressLandmark);
                 var existingId = existingAfter?.Id ?? Guid.Empty;
                 throw new MyApp.Services.Exceptions.DuplicatePropertyException("Property already exists (unique constraint)", existingId);
             }
@@ -109,145 +67,106 @@ public class PropertyService(IPropertyRepository repo) : IPropertyService
         }
     }
 
-    // Return a DataAuditResult comparing the normalized request and persisted property
-    public DataAuditResult AuditCreation(CreatePropertyRequest req, Property persisted)
+    public async Task<(Property property, DataAuditResult? audit)> CreateWithAuditAsync(Property property, bool audit = false)
     {
-        return PropertyAuditHelper.CompareCreateRequestToProperty(req, persisted);
+        var created = await CreateAsync(property);
+        DataAuditResult? dataAudit = null;
+        if (audit)
+        {
+            var stored = await _repo.GetByIdAsync(created.Id);
+            if (stored != null)
+            {
+                dataAudit = PropertyAuditHelper.ComparePropertyForAudit(property, stored);
+            }
+        }
+        return (created, dataAudit);
     }
 
     /// <summary>
     /// Updates a property record.
     /// </summary>
     /// <param name="id">Property id.</param>
-    /// <param name="req">Update payload.</param>
-    public async Task UpdateAsync(Guid id, UpdatePropertyRequest req)
+    /// <param name="property">Update payload (mapped to entity).</param>
+    public async Task UpdateAsync(Guid id, Property property)
     {
         var p = await _repo.GetByIdAsync(id);
         if (p is null) throw new InvalidOperationException("Property not found");
 
-        // Basic fields
-        p.Name = req.Name;
-        p.Address = req.Address;
-        p.AddressCity = req.AddressCity;
-        p.AddressState = req.AddressState;
-        p.AddressPincode = req.AddressPincode;
-        p.AddressCountry = req.AddressCountry;
-        p.AddressLandmark = req.AddressLandmark;
-        p.Description = req.Description;
-        p.PropertyType = req.PropertyType;
-        p.Currency = string.IsNullOrWhiteSpace(req.Currency) ? (p.Currency ?? "INR") : req.Currency;
-        p.Area = req.Area;
-        p.TotalFloors = req.TotalFloors;
-        p.YearBuilt = req.YearBuilt;
-        p.ParkingSpaces = req.ParkingSpaces;
+        // Copy fields from 'property' to 'p'
+        p.Name = property.Name;
+        p.Address = property.Address;
+        p.AddressCity = property.AddressCity;
+        p.AddressState = property.AddressState;
+        p.AddressPincode = property.AddressPincode;
+        p.AddressCountry = property.AddressCountry;
+        p.AddressLandmark = property.AddressLandmark;
+        p.Description = property.Description;
+        p.PropertyType = property.PropertyType;
+        p.Currency = property.Currency;
+        p.Area = property.Area;
+        p.TotalFloors = property.TotalFloors;
+        p.YearBuilt = property.YearBuilt;
+        p.ParkingSpaces = property.ParkingSpaces;
 
-        // Owner info
-        p.OwnerId = req.OwnerId;
-        p.OwnerName = req.OwnerName;
-        p.OwnerWebsite = req.OwnerWebsite;
+        p.OwnerId = property.OwnerId;
+        p.OwnerName = property.OwnerName;
+        p.OwnerWebsite = property.OwnerWebsite;
 
-        // Status and timestamps
-        p.Status = string.IsNullOrWhiteSpace(req.Status) ? p.Status : req.Status;
+        p.Status = property.Status;
         p.UpdatedAt = DateTime.UtcNow;
+        
         // Ensure CreatedAt is normalized to UTC if it was stored as Unspecified to avoid Postgres errors
         if (p.CreatedAt.HasValue && p.CreatedAt.Value.Kind == DateTimeKind.Unspecified)
         {
             p.CreatedAt = DateTime.SpecifyKind(p.CreatedAt.Value, DateTimeKind.Utc);
         }
 
-        // JSON blobs and arrays
-        if (req.Amenities != null) p.Amenities = System.Text.Json.JsonSerializer.Serialize(req.Amenities);
-
-        if (req.TemplateJson != null)
-        {
-            p.TemplateJson = req.TemplateJson;
-        }
-        else if (req.TemplateOverrides != null)
-        {
-            p.TemplateJson = System.Text.Json.JsonSerializer.Serialize(req.TemplateOverrides);
-        }
-
-        if (req.TemplateId != null) p.TemplateId = req.TemplateId;
-        if (req.ReceiptSettings != null) p.ReceiptSettings = System.Text.Json.JsonSerializer.Serialize(req.ReceiptSettings);
-
-        if (req.OwnerMobileNumbers != null) p.OwnerMobileNumbers = System.Text.Json.JsonSerializer.Serialize(req.OwnerMobileNumbers);
-        if (req.OwnerEmailIds != null) p.OwnerEmailIds = System.Text.Json.JsonSerializer.Serialize(req.OwnerEmailIds);
-        if (req.CoOwners != null) p.CoOwners = System.Text.Json.JsonSerializer.Serialize(req.CoOwners);
+        p.Amenities = property.Amenities;
+        p.TemplateJson = property.TemplateJson;
+        p.TemplateId = property.TemplateId;
+        p.ReceiptSettings = property.ReceiptSettings;
+        p.OwnerMobileNumbers = property.OwnerMobileNumbers;
+        p.OwnerEmailIds = property.OwnerEmailIds;
+        p.CoOwners = property.CoOwners;
 
         await _repo.UpdateAsync(p);
     }
 
-    public DataAuditResult AuditUpdate(UpdatePropertyRequest req, Property persisted)
+    public async Task<(Property? property, DataAuditResult? audit)> UpdateWithAuditAsync(Guid id, Property property, bool audit = false)
     {
-        // Map update request to a Create-like request and reuse the comparison helper
-        var createLike = new CreatePropertyRequest(
-            req.Name,
-            req.Address,
-            req.OwnerId,
-            req.Description,
-            req.PropertyType,
-            req.Status,
-            req.Currency,
-            req.AddressCity,
-            req.AddressState,
-            req.AddressPincode,
-            req.AddressCountry,
-            req.AddressLandmark,
-            req.Area,
-            req.TotalFloors,
-            req.YearBuilt,
-            req.ParkingSpaces,
-            req.Amenities,
-            req.TemplateJson,
-            req.TemplateId,
-            req.TemplateOverrides,
-            req.ReceiptSettings,
-            req.OwnerName,
-            req.OwnerMobileNumbers,
-            req.OwnerEmailIds,
-            req.OwnerWebsite,
-            req.CoOwners
-        );
-
-        return PropertyAuditHelper.CompareCreateRequestToProperty(createLike, persisted);
+        await UpdateAsync(id, property);
+        var updated = await _repo.GetByIdAsync(id);
+        DataAuditResult? dataAudit = null;
+        if (updated != null && audit)
+        {
+            dataAudit = PropertyAuditHelper.ComparePropertyForAudit(property, updated);
+        }
+        return (updated, dataAudit);
     }
 
-    /// <summary>
-    /// Deletes a property by id.
-    /// </summary>
-    /// <param name="id">Property id.</param>
     public Task DeleteAsync(Guid id) => _repo.DeleteAsync(id);
 
-    /// <summary>
-    /// Sets the property-level template json.
-    /// </summary>
     public async Task SetTemplateAsync(Guid id, string templateJson)
     {
         var p = await _repo.GetByIdAsync(id);
         if (p is null) throw new InvalidOperationException("Property not found");
         p.TemplateJson = templateJson;
+        p.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(p);
     }
 
-    /// <summary>
-    /// Gets the property template JSON.
-    /// </summary>
-    /// <param name="id">Property id.</param>
-    /// <returns>Template JSON or null.</returns>
     public async Task<string?> GetTemplateAsync(Guid id)
     {
         var p = await _repo.GetByIdAsync(id);
         return p?.TemplateJson;
     }
 
-    /// <summary>
-    /// Removes the property-level template.
-    /// </summary>
     public async Task RemoveTemplateAsync(Guid id)
     {
         var p = await _repo.GetByIdAsync(id);
-        if (p is null) throw new InvalidOperationException("Property not found");
+        if (p is null) return;
         p.TemplateJson = null;
+        p.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(p);
     }
 }

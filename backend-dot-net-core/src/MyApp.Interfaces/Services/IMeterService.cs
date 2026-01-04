@@ -10,7 +10,9 @@ public interface IMeterService
     Task<IEnumerable<Meter>> ListAsync();
     Task<Meter?> GetByIdAsync(Guid id);
     Task<Meter> CreateAsync(Meter m);
+    Task<(Meter meter, DataAuditResult? audit)> CreateWithAuditAsync(Meter m, bool audit = false);
     Task<Meter?> UpdateAsync(Guid id, Meter m);
+    Task<(Meter? meter, DataAuditResult? audit)> UpdateWithAuditAsync(Guid id, Meter m, bool audit = false);
     Task<bool> UpdateStatusAsync(Guid id, bool? isActive, string? status);
     Task<bool> DeleteAsync(Guid id);
     Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId);

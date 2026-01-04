@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -11,16 +12,10 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tenants/{tenantId:guid}/documents")]
-[Microsoft.AspNetCore.Authorization.Authorize]
-public class TenantDocumentsController : ControllerBase
+[Authorize]
+public class TenantDocumentsController(ITenantDocumentService service) : ControllerBase
 {
-    private readonly ITenantDocumentService _service;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TenantDocumentsController"/> class.
-    /// </summary>
-    /// <param name="service">Service for managing tenant documents.</param>
-    public TenantDocumentsController(ITenantDocumentService service) => _service = service;
 
     /// <summary>
     /// Uploads a document for a tenant.
@@ -31,7 +26,7 @@ public class TenantDocumentsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Upload(Guid tenantId, [FromBody] TenantDocument req)
     {
-        var created = await _service.AddDocumentAsync(tenantId, req);
+        var created = await service.AddDocumentAsync(tenantId, req);
         return CreatedAtAction(nameof(GetAll), new { tenantId }, created);
     }
 
@@ -41,7 +36,7 @@ public class TenantDocumentsController : ControllerBase
     /// <param name="tenantId">Tenant id.</param>
     /// <returns>200 OK with list of documents.</returns>
     [HttpGet]
-    public async Task<IActionResult> GetAll(Guid tenantId) => Ok(await _service.ListDocumentsAsync(tenantId));
+    public async Task<IActionResult> GetAll(Guid tenantId) => Ok(await service.ListDocumentsAsync(tenantId));
 
     /// <summary>
     /// Updates an existing tenant document.
@@ -53,7 +48,7 @@ public class TenantDocumentsController : ControllerBase
     [HttpPut("{documentId:guid}")]
     public async Task<IActionResult> Update(Guid tenantId, Guid documentId, [FromBody] TenantDocument req)
     {
-        var updated = await _service.UpdateDocumentAsync(documentId, req);
+        var updated = await service.UpdateDocumentAsync(documentId, req);
         if (updated is null) return NotFound();
         return Ok(updated);
     }
@@ -67,7 +62,7 @@ public class TenantDocumentsController : ControllerBase
     [HttpDelete("{documentId:guid}")]
     public async Task<IActionResult> Delete(Guid tenantId, Guid documentId)
     {
-        var ok = await _service.DeleteDocumentAsync(documentId);
+        var ok = await service.DeleteDocumentAsync(documentId);
         if (!ok) return NotFound();
         return NoContent();
     }
@@ -83,7 +78,7 @@ public class TenantDocumentsController : ControllerBase
     public async Task<IActionResult> Verify(Guid tenantId, Guid documentId, [FromBody] dynamic body)
     {
         string verifiedBy = body?.verifiedBy ?? User?.Identity?.Name ?? "system";
-        var ok = await _service.VerifyDocumentAsync(documentId, verifiedBy);
+        var ok = await service.VerifyDocumentAsync(documentId, verifiedBy);
         return Ok(new { success = ok });
     }
 }

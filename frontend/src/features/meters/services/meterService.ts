@@ -89,7 +89,7 @@ class MeterService {
   }
 
   private readonly BASE = '/api/v1/meters';
-  private readonly READING_BASE = '/api/v1/meterreadings';
+  private readonly READING_BASE = '/api/v1/meter-readings';
 
   /**
    * Get meter by ID
@@ -154,7 +154,7 @@ class MeterService {
    * Create meter reading
    */
   async createReading(meterId: string, data: Omit<MeterReadingInput, 'meterId'>): Promise<ApiResponse<MeterReading>> {
-    // backend expects POST /api/v1/meterreadings with meterId in body
+    // backend expects POST /api/v1/meter-readings with meterId in body
     const payload = { meterId, ...data } as MeterReadingInput;
     return apiClient.post<MeterReading>(`${this.READING_BASE}`, payload);
   }

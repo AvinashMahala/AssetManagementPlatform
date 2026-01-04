@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -9,18 +10,15 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/meter-allocations")]
-public class MeterAllocationsController : ControllerBase
+[Authorize]
+public class MeterAllocationsController(IMeterAllocationService service) : ControllerBase
 {
-    private readonly IMeterAllocationService _service;
-
-    public MeterAllocationsController(IMeterAllocationService service) => _service = service;
-
     /// <summary>
     /// List meter allocations.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<MyApp.Models.MeterAllocation>), 200)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
 
     /// <summary>
     /// Get a meter allocation by id.
@@ -30,7 +28,7 @@ public class MeterAllocationsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var m = await _service.GetByIdAsync(id);
+        var m = await service.GetByIdAsync(id);
         if (m is null) return NotFound();
         return Ok(m);
     }
@@ -52,7 +50,7 @@ public class MeterAllocationsController : ControllerBase
         };
         try
         {
-            var created = await _service.CreateAsync(m);
+            var created = await service.CreateAsync(m);
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
         catch (InvalidOperationException ex)
@@ -67,7 +65,7 @@ public class MeterAllocationsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Update(Guid id, [FromBody] MyApp.Api.Requests.MeterAllocationUpdateRequest req)
     {
-        var existing = await _service.GetByIdAsync(id);
+        var existing = await service.GetByIdAsync(id);
         if (existing is null) return NotFound();
         if (req.AllocationFraction.HasValue) existing.AllocationFraction = req.AllocationFraction.Value;
         if (req.AllocationRule != null) existing.AllocationRule = req.AllocationRule;
@@ -75,7 +73,7 @@ public class MeterAllocationsController : ControllerBase
         if (req.EffectiveTo.HasValue) existing.EffectiveTo = req.EffectiveTo.Value;
         try
         {
-            await _service.UpdateAsync(existing);
+            await service.UpdateAsync(existing);
             return NoContent();
         }
         catch (InvalidOperationException ex)
@@ -89,7 +87,7 @@ public class MeterAllocationsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 }

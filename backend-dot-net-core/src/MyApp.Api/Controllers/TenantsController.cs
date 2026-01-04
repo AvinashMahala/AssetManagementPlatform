@@ -1,7 +1,14 @@
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Api.Requests;
+using MyApp.Api.Responses;
+using MyApp.Api.Mapping;
+using MyApp.Api.Authorization;
 
 namespace MyApp.Api.Controllers;
 
@@ -15,7 +22,7 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tenants")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Authorize]
 public class TenantsController(ITenantService service) : ControllerBase
 {
     // Permission constants
@@ -24,15 +31,17 @@ public class TenantsController(ITenantService service) : ControllerBase
     private const string _updatePerm = "tenants:tenant:update";
     private const string _deletePerm = "tenants:tenant:delete";
 
-    private readonly ITenantService _service = service;
-
-  /// <summary>
-  /// Lists tenants.
-  /// </summary>
-  /// <returns>200 OK with list of tenants.</returns>
-  [HttpGet]
-  [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    /// <summary>
+    /// Lists tenants.
+    /// </summary>
+    /// <returns>200 OK with list of tenants.</returns>
+    [HttpGet]
+    [AuthorizePermission(_viewPerm)]
+    public async Task<IActionResult> List()
+    {
+        var tenants = await service.ListAsync();
+        return Ok(tenants.Select(t => t.ToDto()));
+    }
 
     /// <summary>
     /// Gets a tenant by id.
@@ -40,25 +49,34 @@ public class TenantsController(ITenantService service) : ControllerBase
     /// <param name="id">Tenant id.</param>
     /// <returns>200 OK with tenant; 404 Not Found if missing.</returns>
     [HttpGet("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_viewPerm)]
+    [AuthorizePermission(_viewPerm)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var t = await _service.GetByIdAsync(id);
+        var t = await service.GetByIdAsync(id);
         if (t is null) return NotFound();
-        return Ok(t);
+        return Ok(t.ToDto());
     }
 
     /// <summary>
     /// Creates a new tenant.
     /// </summary>
     /// <param name="req">Tenant payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>201 Created with created tenant.</returns>
     [HttpPost]
-    [MyApp.Api.Authorization.AuthorizePermission(_createPerm)]
-    public async Task<IActionResult> Create([FromBody] Tenant req)
+    [AuthorizePermission(_createPerm)]
+    public async Task<IActionResult> Create([FromBody] CreateTenantRequest req, [FromQuery] bool audit = false)
     {
-        var created = await _service.CreateAsync(req);
-        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+        var tenant = req.ToEntity();
+        var (created, dataAudit) = await service.CreateWithAuditAsync(tenant, audit);
+        var dto = created.ToDto();
+
+        if (audit)
+        {
+            return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, new { success = true, tenant = dto, dataAudit });
+        }
+
+        return CreatedAtAction(nameof(Get), new { id = created.Id, version = "1.0" }, dto);
     }
 
     /// <summary>
@@ -66,14 +84,28 @@ public class TenantsController(ITenantService service) : ControllerBase
     /// </summary>
     /// <param name="id">Tenant id.</param>
     /// <param name="req">Updated tenant payload.</param>
+    /// <param name="audit">Whether to return audit data.</param>
     /// <returns>200 OK with updated tenant; 404 Not Found if missing.</returns>
     [HttpPut("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_updatePerm)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Tenant req)
+    [AuthorizePermission(_updatePerm)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTenantRequest req, [FromQuery] bool audit = false)
     {
-        var updated = await _service.UpdateAsync(id, req);
+        if (id != req.Id) return BadRequest("Id mismatch");
+
+        var existing = await service.GetByIdAsync(id);
+        if (existing is null) return NotFound();
+
+        existing.UpdateEntity(req);
+        
+        var (updated, dataAudit) = await service.UpdateWithAuditAsync(id, existing, audit);
         if (updated is null) return NotFound();
-        return Ok(updated);
+
+        if (audit)
+        {
+            return Ok(new { success = true, tenant = updated.ToDto(), dataAudit });
+        }
+
+        return Ok(updated.ToDto());
     }
 
     /// <summary>
@@ -82,11 +114,12 @@ public class TenantsController(ITenantService service) : ControllerBase
     /// <param name="id">Tenant id.</param>
     /// <returns>204 No Content on success; 404 Not Found if missing.</returns>
     [HttpDelete("{id:guid}")]
-    [MyApp.Api.Authorization.AuthorizePermission(_deletePerm)]
+    [AuthorizePermission(_deletePerm)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var ok = await _service.DeleteAsync(id);
+        var ok = await service.DeleteAsync(id);
         if (!ok) return NotFound();
         return NoContent();
     }
 }
+

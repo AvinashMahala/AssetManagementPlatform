@@ -93,6 +93,8 @@ public static class ServiceCollectionExtensions
 
         // RBAC admin service (PoC)
         services.AddScoped<IRoleAdminService, RoleAdminService>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IExportService, ExportService>();
 
         // Permission categories service
         services.AddScoped<MyApp.Interfaces.Services.IPermissionCategoryService, PermissionCategoryService>();

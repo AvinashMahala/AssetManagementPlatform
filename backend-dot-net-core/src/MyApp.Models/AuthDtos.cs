@@ -21,12 +21,3 @@ public record RegisterRequest(string Email, string Password, string? DisplayName
 public record LoginRequest(string Email, string Password);
 public record RefreshRequest(string RefreshToken);
 public record UpdateProfileRequest(string? DisplayName);
-
-/// <summary>
-/// Lightweight user DTO returned by the API after successful registration.
-/// </summary>
-/// <param name="Id">The user identifier.</param>
-/// <param name="Email">The user's email address.</param>
-/// <param name="DisplayName">The user's display name.</param>
-/// <param name="Username">The final username assigned to the user (may be different from the requested username to ensure uniqueness).</param>
-public record UserDto(Guid Id, string Email, string? DisplayName, string? Username = null);

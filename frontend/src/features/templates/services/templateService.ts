@@ -4,17 +4,17 @@ import type { TemplatePreviewRequest } from '../types';
 export const templateService = {
   // Template CRUD
   async getAllTemplates() {
-    const response = await apiClient.get('/api/v1/receipttemplates');
+    const response = await apiClient.get('/api/v1/receipt-templates');
     return response.data;
   },
 
   async getTemplateById(id: string) {
-    const response = await apiClient.get(`/api/v1/receipttemplates/${id}`);
+    const response = await apiClient.get(`/api/v1/receipt-templates/${id}`);
     return response.data;
   },
 
   async generatePreview(request: TemplatePreviewRequest) {
-    const response = await apiClient.post('/api/v1/receipttemplates/preview', {
+    const response = await apiClient.post('/api/v1/receipt-templates/preview', {
       templateId: request.templateId,
       propertyId: request.propertyId,
       sampleData: request.sampleData,
@@ -25,7 +25,7 @@ export const templateService = {
   },
 
   async getAvailablePlaceholders() {
-    const response = await apiClient.get('/api/v1/receipttemplates/templates/placeholders/available');
+    const response = await apiClient.get('/api/v1/receipt-templates/templates/placeholders/available');
     return response.data;
   },
 

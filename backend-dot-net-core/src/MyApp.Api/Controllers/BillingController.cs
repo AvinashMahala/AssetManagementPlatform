@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Api.Responses;
 
@@ -9,12 +10,9 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/billing")]
-public class BillingController : ControllerBase
+[Authorize]
+public class BillingController(IBillingService billingService) : ControllerBase
 {
-    private readonly IBillingService _billingService;
-
-    public BillingController(IBillingService billingService) => _billingService = billingService;
-
     /// <summary>
     /// Run billing for a lease for a billing period.
     /// </summary>
@@ -29,7 +27,7 @@ public class BillingController : ControllerBase
             var startUtc = DateTime.SpecifyKind(startDate, DateTimeKind.Utc);
             var endUtc = DateTime.SpecifyKind(endDate, DateTimeKind.Utc);
 
-            var txnId = await _billingService.RunBillingForLeaseAsync(leaseId, startUtc, endUtc);
+            var txnId = await billingService.RunBillingForLeaseAsync(leaseId, startUtc, endUtc);
             return Ok(new { transactionId = txnId });
         }
         catch (InvalidOperationException ex)

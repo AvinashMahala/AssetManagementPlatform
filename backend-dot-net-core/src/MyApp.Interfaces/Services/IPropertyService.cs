@@ -9,10 +9,10 @@ public partial interface IPropertyService
 {
     Task<IEnumerable<Property>> ListAsync();
     Task<Property?> GetByIdAsync(Guid id);
-    Task<Property> CreateAsync(CreatePropertyRequest req);
-    DataAuditResult AuditCreation(CreatePropertyRequest req, Property persisted);
-    DataAuditResult AuditUpdate(UpdatePropertyRequest req, Property persisted);
-    Task UpdateAsync(Guid id, UpdatePropertyRequest req);
+    Task<Property> CreateAsync(Property property);
+    Task<(Property property, DataAuditResult? audit)> CreateWithAuditAsync(Property property, bool audit = false);
+    Task UpdateAsync(Guid id, Property property);
+    Task<(Property? property, DataAuditResult? audit)> UpdateWithAuditAsync(Guid id, Property property, bool audit = false);
     Task DeleteAsync(Guid id);
     Task SetTemplateAsync(Guid id, string templateJson);
     Task<string?> GetTemplateAsync(Guid id);

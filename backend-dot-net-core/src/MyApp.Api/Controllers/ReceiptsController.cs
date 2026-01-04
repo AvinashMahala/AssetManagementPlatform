@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -17,18 +18,17 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/receipts")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Authorize]
 public class ReceiptsController(IReceiptService service, IRentPaymentService payments) : ControllerBase
 {
-    private readonly IReceiptService _service = service;
-    private readonly IRentPaymentService _payments = payments;
+
 
   /// <summary>
   /// Lists receipts.
   /// </summary>
   /// <returns>200 OK with list of receipts.</returns>
   [HttpGet]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
 
     /// <summary>
     /// Gets a receipt by its number.
@@ -38,7 +38,7 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
     [HttpGet("number/{receiptNumber}")]
     public async Task<IActionResult> GetByNumber(string receiptNumber)
     {
-        var r = await _service.GetByNumberAsync(receiptNumber);
+        var r = await service.GetByNumberAsync(receiptNumber);
         if (r is null) return NotFound();
         return Ok(r);
     }
@@ -49,7 +49,7 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
     /// <param name="propertyId">Property id.</param>
     /// <returns>200 OK with list of receipts for the property.</returns>
     [HttpGet("property/{propertyId:guid}")]
-    public async Task<IActionResult> ByProperty(Guid propertyId) => Ok(await _service.ListByPropertyAsync(propertyId));
+    public async Task<IActionResult> ByProperty(Guid propertyId) => Ok(await service.ListByPropertyAsync(propertyId));
 
     /// <summary>
     /// Lists receipts for a tenant.
@@ -57,7 +57,7 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
     /// <param name="tenantId">Tenant id.</param>
     /// <returns>200 OK with list of receipts for the tenant.</returns>
     [HttpGet("tenant/{tenantId:guid}")]
-    public async Task<IActionResult> ByTenant(Guid tenantId) => Ok(await _service.ListByTenantAsync(tenantId));
+    public async Task<IActionResult> ByTenant(Guid tenantId) => Ok(await service.ListByTenantAsync(tenantId));
 
     /// <summary>
     /// Generates receipts in bulk for the given property and month/year.
@@ -67,7 +67,7 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
     [HttpPost("generate-bulk")]
     public async Task<IActionResult> GenerateBulk([FromBody] GenerateBulkRequest req)
     {
-        var created = await _service.GenerateBulkReceiptsAsync(req.PropertyId, req.Month, req.Year);
+        var created = await service.GenerateBulkReceiptsAsync(req.PropertyId, req.Month, req.Year);
         return Created(string.Empty, created);
     }
 
@@ -80,7 +80,7 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
     [HttpPost("{id}/send-email")]
     public async Task<IActionResult> SendByEmail(Guid id, [FromBody] SendEmailRequest req)
     {
-        var ok = await _service.SendReceiptByEmailAsync(id, req.Email);
+        var ok = await service.SendReceiptByEmailAsync(id, req.Email);
         if (!ok) return NotFound();
         return Ok(new { success = true });
     }
@@ -93,7 +93,7 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var r = await _service.GetByIdAsync(id);
+        var r = await service.GetByIdAsync(id);
         if (r is null) return NotFound();
         return Ok(r);
     }
@@ -109,12 +109,12 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
         decimal amount = req.Amount ?? 0m;
         if (amount == 0m && req.RentPaymentId != Guid.Empty)
         {
-            var p = await _payments.GetByIdAsync(req.RentPaymentId);
+            var p = await payments.GetByIdAsync(req.RentPaymentId);
             if (p is null) return BadRequest("payment not found");
             amount = p.Amount;
         }
 
-        var created = await _service.GenerateReceiptForPaymentAsync(req.RentPaymentId, amount);
+        var created = await service.GenerateReceiptForPaymentAsync(req.RentPaymentId, amount);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -126,7 +126,7 @@ public class ReceiptsController(IReceiptService service, IRentPaymentService pay
     [HttpGet("{id}/download")]
     public async Task<IActionResult> Download(Guid id)
     {
-        var pdf = await _service.DownloadReceiptPdfAsync(id);
+        var pdf = await service.DownloadReceiptPdfAsync(id);
         if (pdf is null) return NotFound();
         return File(pdf, "application/pdf", $"receipt-{id}.pdf");
     }

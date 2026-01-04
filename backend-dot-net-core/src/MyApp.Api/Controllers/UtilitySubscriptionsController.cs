@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces.Services;
 using MyApp.Models;
 using MyApp.Api.Requests;
@@ -10,26 +11,25 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/utility-subscriptions")]
-public class UtilitySubscriptionsController : ControllerBase
+[Authorize]
+public class UtilitySubscriptionsController(IUtilitySubscriptionService service) : ControllerBase
 {
-    private readonly IUtilitySubscriptionService _service;
 
-    public UtilitySubscriptionsController(IUtilitySubscriptionService service) => _service = service;
 
     [HttpGet]
     [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<UtilitySubscription>), 200)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
 
     [HttpGet("unit/{unitId}")]
     [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<UtilitySubscription>), 200)]
-    public async Task<IActionResult> ListByUnit(Guid unitId) => Ok(await _service.ListByUnitAsync(unitId));
+    public async Task<IActionResult> ListByUnit(Guid unitId) => Ok(await service.ListByUnitAsync(unitId));
 
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(UtilitySubscription), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var s = await _service.GetByIdAsync(id);
+        var s = await service.GetByIdAsync(id);
         if (s is null) return NotFound();
         return Ok(s);
     }
@@ -51,7 +51,7 @@ public class UtilitySubscriptionsController : ControllerBase
             BillingMultiplier = req.BillingMultiplier,
             Notes = req.Notes
         };
-        var created = await _service.CreateAsync(s);
+        var created = await service.CreateAsync(s);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -62,7 +62,7 @@ public class UtilitySubscriptionsController : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] UtilitySubscriptionUpdateRequest req)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var existing = await _service.GetByIdAsync(id);
+        var existing = await service.GetByIdAsync(id);
         if (existing is null) return NotFound();
         if (req.SubscriptionName != null) existing.SubscriptionName = req.SubscriptionName;
         if (req.IsEnabled.HasValue) existing.IsEnabled = req.IsEnabled.Value;
@@ -70,7 +70,7 @@ public class UtilitySubscriptionsController : ControllerBase
         if (req.FixedAmount.HasValue) existing.FixedAmount = req.FixedAmount.Value;
         if (req.BillingMultiplier.HasValue) existing.BillingMultiplier = req.BillingMultiplier.Value;
         if (req.Notes != null) existing.Notes = req.Notes;
-        await _service.UpdateAsync(existing);
+        await service.UpdateAsync(existing);
         return NoContent();
     }
 
@@ -78,7 +78,7 @@ public class UtilitySubscriptionsController : ControllerBase
     [ProducesResponseType(204)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 }

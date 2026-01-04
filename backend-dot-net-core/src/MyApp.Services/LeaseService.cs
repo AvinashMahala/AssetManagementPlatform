@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Services.Helpers;
 
 namespace MyApp.Services;
 
@@ -37,6 +38,21 @@ public class LeaseService(ILeaseRepository repo) : ILeaseService
         return _repo.AddAsync(lease);
     }
 
+    public async Task<(Lease lease, DataAuditResult? audit)> CreateLeaseWithAuditAsync(Lease lease, bool audit = false)
+    {
+        await CreateLeaseAsync(lease);
+        DataAuditResult? dataAudit = null;
+        if (audit)
+        {
+            var stored = await _repo.GetByIdAsync(lease.Id);
+            if (stored != null)
+            {
+                dataAudit = LeaseAuditHelper.CompareLeaseForAudit(lease, stored);
+            }
+        }
+        return (lease, dataAudit);
+    }
+
     /// <summary>
     /// Updates a lease by id (ensures the provided id is applied to the entity).
     /// </summary>
@@ -47,6 +63,18 @@ public class LeaseService(ILeaseRepository repo) : ILeaseService
         // Ensure id consistency
         lease.Id = id;
         return _repo.UpdateAsync(lease);
+    }
+
+    public async Task<(Lease? lease, DataAuditResult? audit)> UpdateLeaseWithAuditAsync(Guid id, Lease lease, bool audit = false)
+    {
+        await UpdateLeaseAsync(id, lease);
+        var updated = await _repo.GetByIdAsync(id);
+        DataAuditResult? dataAudit = null;
+        if (audit && updated != null)
+        {
+            dataAudit = LeaseAuditHelper.CompareLeaseForAudit(lease, updated);
+        }
+        return (updated, dataAudit);
     }
 
     /// <summary>

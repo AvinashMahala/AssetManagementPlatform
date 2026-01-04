@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -14,12 +15,11 @@ namespace MyApp.Api.Controllers;
 /// <param name="service">Service for unit utilities operations.</param>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/unitutilities")]
 [Route("api/v{version:apiVersion}/unit-utilities")]
-[Microsoft.AspNetCore.Authorization.Authorize]
+[Authorize]
 public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBase
 {
-    private readonly IUnitUtilityService _service = service;
+
 
   /// <summary>
   /// Lists unit utilities. Supports optional query parameters `unitId` or `propertyId`.
@@ -27,8 +27,8 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
   [HttpGet]
     public async Task<IActionResult> List([FromQuery] Guid? unitId)
     {
-        if (unitId.HasValue) return Ok(await _service.ListByUnitAsync(unitId.Value));
-        return Ok(await _service.ListAsync());
+        if (unitId.HasValue) return Ok(await service.ListByUnitAsync(unitId.Value));
+        return Ok(await service.ListAsync());
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {
-        var u = await _service.GetByIdAsync(id);
+        var u = await service.GetByIdAsync(id);
         if (u is null) return NotFound();
         return Ok(u);
     }
@@ -52,7 +52,7 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UnitUtility req)
     {
-        var created = await _service.CreateAsync(req);
+        var created = await service.CreateAsync(req);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -65,7 +65,7 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UnitUtility req)
     {
-        var updated = await _service.UpdateAsync(id, req);
+        var updated = await service.UpdateAsync(id, req);
         if (updated is null) return NotFound();
         return Ok(updated);
     }
@@ -78,7 +78,7 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 
@@ -90,7 +90,7 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     [HttpPatch("{id:guid}/toggle")]
     public async Task<IActionResult> Toggle(Guid id)
     {
-        await _service.ToggleStatusAsync(id);
+        await service.ToggleStatusAsync(id);
         return NoContent();
     }
 
@@ -100,7 +100,7 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     /// <param name="unitId">Unit id.</param>
     /// <returns>200 OK with calculated charges.</returns>
     [HttpGet("unit/{unitId}/charges")]
-    public async Task<IActionResult> Charges(Guid unitId) => Ok(await _service.CalculateChargesAsync(unitId));
+    public async Task<IActionResult> Charges(Guid unitId) => Ok(await service.CalculateChargesAsync(unitId));
 
     /// <summary>
     /// Gets a summary of utilities for a unit.
@@ -108,7 +108,7 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     /// <param name="unitId">Unit id.</param>
     /// <returns>200 OK with summary data.</returns>
     [HttpGet("unit/{unitId}/summary")]
-    public async Task<IActionResult> Summary(Guid unitId) => Ok(await _service.GetSummaryAsync(unitId));
+    public async Task<IActionResult> Summary(Guid unitId) => Ok(await service.GetSummaryAsync(unitId));
 
     /// <summary>
     /// Validates utility configuration for a unit.
@@ -116,5 +116,5 @@ public class UnitUtilitiesController(IUnitUtilityService service) : ControllerBa
     /// <param name="unitId">Unit id.</param>
     /// <returns>200 OK with validation results.</returns>
     [HttpGet("unit/{unitId}/validate")]
-    public async Task<IActionResult> Validate(Guid unitId) => Ok(await _service.ValidateConfigurationAsync(unitId));
+    public async Task<IActionResult> Validate(Guid unitId) => Ok(await service.ValidateConfigurationAsync(unitId));
 }

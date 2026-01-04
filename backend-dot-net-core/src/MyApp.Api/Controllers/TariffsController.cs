@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MyApp.Interfaces;
 using MyApp.Models;
 
@@ -9,18 +10,15 @@ namespace MyApp.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tariffs")]
-public class TariffsController : ControllerBase
+[Authorize]
+public class TariffsController(ITariffService service) : ControllerBase
 {
-    private readonly ITariffService _service;
-
-    public TariffsController(ITariffService service) => _service = service;
-
     /// <summary>
     /// List all tariffs.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<MyApp.Models.Tariff>), 200)]
-    public async Task<IActionResult> List() => Ok(await _service.ListAsync());
+    public async Task<IActionResult> List() => Ok(await service.ListAsync());
 
     /// <summary>
     /// Get a tariff by id.
@@ -30,7 +28,7 @@ public class TariffsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var t = await _service.GetByIdAsync(id);
+        var t = await service.GetByIdAsync(id);
         if (t is null) return NotFound();
         return Ok(t);
     }
@@ -58,7 +56,7 @@ public class TariffsController : ControllerBase
             FixedCharge = req.FixedCharge,
             TieredRates = req.TieredRates
         };
-        var created = await _service.CreateAsync(t);
+        var created = await service.CreateAsync(t);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -69,7 +67,7 @@ public class TariffsController : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] MyApp.Api.Requests.TariffUpdateRequest req)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var existing = await _service.GetByIdAsync(id);
+        var existing = await service.GetByIdAsync(id);
         if (existing is null) return NotFound();
         if (req.Name != null) existing.Name = req.Name;
         if (req.Description != null) existing.Description = req.Description;
@@ -78,7 +76,7 @@ public class TariffsController : ControllerBase
         if (req.RatePerUnit.HasValue) existing.RatePerUnit = req.RatePerUnit.Value;
         if (req.FixedCharge.HasValue) existing.FixedCharge = req.FixedCharge.Value;
         if (req.TieredRates != null) existing.TieredRates = req.TieredRates;
-        await _service.UpdateAsync(existing);
+        await service.UpdateAsync(existing);
         return NoContent();
     }
 
@@ -87,7 +85,7 @@ public class TariffsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        await _service.DeleteAsync(id);
+        await service.DeleteAsync(id);
         return NoContent();
     }
 
@@ -96,7 +94,7 @@ public class TariffsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetApplicable([FromQuery] Guid? subscriptionId, [FromQuery] Guid? meterId, [FromQuery] Guid utilityTypeId, [FromQuery] DateTime date)
     {
-        var t = await _service.GetApplicableTariffAsync(subscriptionId, meterId, utilityTypeId, date);
+        var t = await service.GetApplicableTariffAsync(subscriptionId, meterId, utilityTypeId, date);
         if (t is null) return NotFound();
         return Ok(t);
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyApp.Interfaces;
 using MyApp.Models;
+using MyApp.Services.Helpers;
 
 namespace MyApp.Services;
 
@@ -39,6 +40,21 @@ public class MeterService(IMeterRepository repo) : IMeterService
         return m;
     }
 
+    public async Task<(Meter meter, DataAuditResult? audit)> CreateWithAuditAsync(Meter m, bool audit = false)
+    {
+        var created = await CreateAsync(m);
+        DataAuditResult? dataAudit = null;
+        if (audit)
+        {
+            var stored = await _repo.GetByIdAsync(created.Id);
+            if (stored != null)
+            {
+                dataAudit = MeterAuditHelper.CompareMeterForAudit(m, stored);
+            }
+        }
+        return (created, dataAudit);
+    }
+
     /// <summary>
     /// Updates a meter partially using non-null values from the provided payload.
     /// </summary>
@@ -67,6 +83,18 @@ public class MeterService(IMeterRepository repo) : IMeterService
         await _repo.UpdateAsync(existing);
         return existing;
     }
+
+    public async Task<(Meter? meter, DataAuditResult? audit)> UpdateWithAuditAsync(Guid id, Meter m, bool audit = false)
+    {
+        var updated = await UpdateAsync(id, m);
+        DataAuditResult? dataAudit = null;
+        if (audit && updated != null)
+        {
+            dataAudit = MeterAuditHelper.CompareMeterForAudit(m, updated);
+        }
+        return (updated, dataAudit);
+    }
+
     /// <summary>
     /// Deletes a meter by id.
     /// </summary>
