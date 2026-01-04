@@ -17,6 +17,10 @@ import { rentCollectionRoutes } from './routes/rentCollectionRoutes';
 import { rentTransactionsRoutes } from './routes/rentTransactionsRoutes';
 import { bulkOperationsRoutes } from './routes/bulkOperationsRoutes';
 import { adminRoutes } from './routes/adminRoutes';
+import { utilityTypesRoutes } from './routes/utilityTypesRoutes';
+import { utilitySubscriptionsRoutes } from './routes/utilitySubscriptionsRoutes';
+import { tariffsRoutes } from './routes/tariffsRoutes';
+import { meterAllocationsRoutes } from './routes/meterAllocationsRoutes';
 import { commonRoutes } from './routes/commonRoutes';
 
 // Combine all route configurations
@@ -36,5 +40,9 @@ export const routes: RouteConfig[] = [
   ...rentTransactionsRoutes,
   ...bulkOperationsRoutes,
   ...adminRoutes,
+  ...utilityTypesRoutes,
+  ...utilitySubscriptionsRoutes,
+  ...tariffsRoutes,
+  ...meterAllocationsRoutes,
   ...commonRoutes,
 ];

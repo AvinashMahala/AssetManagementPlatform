@@ -10,6 +10,9 @@ import {
   Zap,
   FileImage,
   Wrench,
+  Settings,
+  ClipboardList,
+  Percent,
 } from 'lucide-react';
 import type { NavItem, NavigationConfig } from '../types';
 
@@ -18,7 +21,20 @@ const defaultNavItems: NavItem[] = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', enabled: true, requiredPermission: 'dashboard:dashboard:view' },
   { id: 'properties', name: 'Properties', icon: Building2, path: '/properties', enabled: true },
   { id: 'units', name: 'Units', icon: Home, path: '/units', enabled: true },
-  { id: 'meters', name: 'Meters', icon: Zap, path: '/meters', enabled: true },
+  { 
+    id: 'utilities', 
+    name: 'Utilities', 
+    icon: Zap, 
+    path: '/utilities', 
+    enabled: true,
+    children: [
+      { id: 'utility-types', name: 'Utility Types', icon: Settings, path: '/admin/utility-types', enabled: true },
+      { id: 'utility-subscriptions', name: 'Utility Subscriptions', icon: ClipboardList, path: '/utility-subscriptions', enabled: true },
+      { id: 'meters', name: 'Meters', icon: Zap, path: '/meters', enabled: true },
+      { id: 'tariffs', name: 'Tariffs', icon: Percent, path: '/tariffs', enabled: true },
+      { id: 'meter-allocations', name: 'Meter Allocations', icon: Zap, path: '/meter-allocations', enabled: true },
+    ]
+  },
   { id: 'tenants', name: 'Tenants', icon: Users, path: '/tenants', enabled: true },
   { id: 'leases', name: 'Leases', icon: FileText, path: '/leases', enabled: true },
   { id: 'expenses', name: 'Expenses', icon: Receipt, path: '/expenses', enabled: true },
@@ -29,7 +45,7 @@ const defaultNavItems: NavItem[] = [
 ];
 
 const STORAGE_KEY = 'asset-management-nav-config';
-const CONFIG_VERSION = 2;
+const CONFIG_VERSION = 4;
 
 export function useNavigationConfig() {
   const [config, setConfig] = useState<NavigationConfig>({

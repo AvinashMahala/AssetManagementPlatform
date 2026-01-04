@@ -92,6 +92,9 @@ export const ROUTE_PATHS = {
   ADMIN_USERS: '/admin/users',
   ADMIN_AUDIT: '/admin/audit',
   ADMIN_EXPORTS: '/admin/exports',
+  ADMIN_UTILITY_TYPES: '/admin/utility-types',
+  ADMIN_UTILITY_TYPE_CREATE: '/admin/utility-types/create',
+  ADMIN_UTILITY_TYPE_EDIT: '/admin/utility-types/:id/edit',
 
   // Defaults
   ROOT: '/',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -7,11 +7,13 @@ import {
   User,
   Building2,
   Users,
+  ChevronDown,
 } from 'lucide-react';
 import { useRBACContext } from '@/contexts';
 import { useAuthContext } from '../../../contexts';
 import { useNavigationConfig } from '@/features/admin/hooks/useNavigationConfig';
 import type { SidebarProps } from './Sidebar.types';
+import type { NavItem } from '@/features/admin/types';
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggle }) => {
   const location = useLocation();
@@ -19,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggle })
   const { user, logout } = useAuthContext();
   const { getEnabledItems } = useNavigationConfig();
   const { can, loading: rbacLoading } = useRBACContext();
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   // Start with configured items, but we'll insert the Admin link dynamically
   let navItems = getEnabledItems().filter(item => item.id !== 'admin');
@@ -39,6 +42,104 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggle })
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
+  const isChildActive = (item: NavItem) => {
+    if (!item.children) return false;
+    return item.children.some(child => isActive(child.path));
+  };
+
+  const toggleExpand = (id: string) => {
+    setExpandedItems(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  // Auto-expand parent if child is active
+  useEffect(() => {
+    navItems.forEach(item => {
+      if (item.children && isChildActive(item) && !expandedItems.includes(item.id)) {
+        setExpandedItems(prev => [...prev, item.id]);
+      }
+    });
+  }, [location.pathname]);
+
+  const renderNavItem = (item: NavItem, depth = 0) => {
+    const Icon = item.icon;
+    const active = isActive(item.path);
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = expandedItems.includes(item.id);
+    const childActive = isChildActive(item);
+    
+    // If it has children, the parent is "active" if it's expanded or a child is active
+    const parentActive = active || childActive;
+
+    if (hasChildren) {
+      return (
+        <div key={item.id}>
+          <button
+            onClick={() => toggleExpand(item.id)}
+            className={`
+              w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
+              ${
+                parentActive
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }
+              ${collapsed ? 'justify-center' : ''}
+            `}
+            title={collapsed ? item.name : ''}
+          >
+            <Icon className={`h-5 w-5 ${parentActive ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-sm font-medium text-left">{item.name}</span>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'transform rotate-180' : ''}`} 
+                />
+              </>
+            )}
+          </button>
+          
+          {/* Render Children */}
+          {!collapsed && isExpanded && (
+            <div className="mt-1 space-y-1">
+              {item.children!.map(child => renderNavItem(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        key={item.path}
+        to={item.path}
+        className={`
+          flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
+          ${
+            active
+              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+          }
+          ${collapsed ? 'justify-center' : ''}
+          ${depth > 0 ? 'ml-9' : ''} 
+        `}
+        title={collapsed ? item.name : ''}
+      >
+        {depth === 0 && <Icon className={`h-5 w-5 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />}
+        {!collapsed && (
+          <>
+            <span className={`flex-1 text-sm font-medium ${depth > 0 ? 'text-sm' : ''}`}>{item.name}</span>
+            {item.badge && (
+              <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                {item.badge}
+              </span>
+            )}
+          </>
+        )}
+      </Link>
+    );
   };
 
   return (
@@ -65,39 +166,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false, onToggle })
       {/* Navigation Items */}
       <nav className="flex-1 overflow-y-auto py-4">
         <div className="space-y-1 px-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`
-                  flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
-                  ${
-                    active
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }
-                  ${collapsed ? 'justify-center' : ''}
-                `}
-                title={collapsed ? item.name : ''}
-              >
-                <Icon className={`h-5 w-5 ${active ? 'text-blue-600 dark:text-blue-400' : ''}`} />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 text-sm font-medium">{item.name}</span>
-                    {item.badge && (
-                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-                        {item.badge}
-                      </span>
-                    )}
-                  </>
-                )}
-              </Link>
-            );
-          })}
+          {navItems.map((item) => renderNavItem(item))}
         </div>
       </nav>
 

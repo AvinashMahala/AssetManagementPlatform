@@ -7,6 +7,8 @@ export interface NavItem {
   path: string;
   badge?: number;
   enabled: boolean;
+  children?: NavItem[];
+  requiredPermission?: string;
 }
 
 export interface NavigationConfig {
