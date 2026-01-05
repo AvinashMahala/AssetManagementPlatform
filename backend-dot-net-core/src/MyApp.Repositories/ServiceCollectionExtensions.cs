@@ -58,7 +58,7 @@ public static class ServiceCollectionExtensions
         // Ensure LeaseRepository is registered (already wired above) - other repositories will be added per-feature
 
         // Permission category repository
-        services.AddScoped<MyApp.Interfaces.Repositories.IPermissionCategoryRepository, PermissionCategoryRepository>();
+        services.AddScoped<IPermissionCategoryRepository, PermissionCategoryRepository>();
 
         // Make DB accessible to integration tests via scoped provider
         services.AddScoped<AppDbContext>();

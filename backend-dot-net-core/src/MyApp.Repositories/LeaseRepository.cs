@@ -13,31 +13,31 @@ public class LeaseRepository : ILeaseRepository
 
     public LeaseRepository(AppDbContext db) => _db = db;
 
-    public async Task<IEnumerable<Lease>> ListAsync() => await _db.Leases.ToListAsync();
+    public async Task<IEnumerable<Lease>> ListAsync(CancellationToken cancellationToken = default) => await _db.Leases.ToListAsync(cancellationToken);
 
-    public Task<Lease?> GetByIdAsync(Guid id) => _db.Leases.FirstOrDefaultAsync(l => l.Id == id);
+    public Task<Lease?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Leases.FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
 
-    public async Task<IEnumerable<Lease>> ListByUnitAndPeriodAsync(Guid unitId, DateTime start, DateTime end)
-        => await _db.Leases.Where(l => l.UnitId == unitId && l.StartDate <= end && (l.EndDate == null || l.EndDate >= start)).ToListAsync();
+    public async Task<IEnumerable<Lease>> ListByUnitAndPeriodAsync(Guid unitId, DateTime start, DateTime end, CancellationToken cancellationToken = default)
+        => await _db.Leases.Where(l => l.UnitId == unitId && l.StartDate <= end && (l.EndDate == null || l.EndDate >= start)).ToListAsync(cancellationToken);
 
-    public async Task AddAsync(Lease lease)
+    public async Task AddAsync(Lease lease, CancellationToken cancellationToken = default)
     {
-        await _db.Leases.AddAsync(lease);
-        await _db.SaveChangesAsync();
+        await _db.Leases.AddAsync(lease, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Lease lease)
+    public async Task UpdateAsync(Lease lease, CancellationToken cancellationToken = default)
     {
         _db.Leases.Update(lease);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var lease = await _db.Leases.FindAsync(id);
+        var lease = await _db.Leases.FindAsync(new object[] { id }, cancellationToken);
         if (lease is null) return false;
         _db.Leases.Remove(lease);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
         return true;
     }
 } 

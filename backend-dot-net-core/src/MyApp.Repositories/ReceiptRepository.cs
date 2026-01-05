@@ -13,52 +13,52 @@ public class ReceiptRepository : IReceiptRepository
 
     public ReceiptRepository(AppDbContext db) => _db = db;
 
-    public async Task<IEnumerable<Receipt>> ListAsync() => await _db.Set<Receipt>().ToListAsync();
+    public async Task<IEnumerable<Receipt>> ListAsync(CancellationToken cancellationToken = default) => await _db.Set<Receipt>().ToListAsync(cancellationToken);
 
-    public Task<Receipt?> GetByIdAsync(Guid id) => _db.Set<Receipt>().FirstOrDefaultAsync(r => r.Id == id);
+    public Task<Receipt?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Set<Receipt>().FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
-    public async Task<IEnumerable<Receipt>> ListByRentTransactionAsync(Guid rentTransactionId)
-        => await _db.Set<Receipt>().Where(r => r.RentTransactionId == rentTransactionId).ToListAsync();
+    public async Task<IEnumerable<Receipt>> ListByRentTransactionAsync(Guid rentTransactionId, CancellationToken cancellationToken = default)
+        => await _db.Set<Receipt>().Where(r => r.RentTransactionId == rentTransactionId).ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<Receipt>> ListByRentPaymentAsync(Guid rentPaymentId)
-        => await _db.Set<Receipt>().Where(r => r.RentPaymentId == rentPaymentId).ToListAsync();
-    public Task<Receipt?> GetByNumberAsync(string number) => _db.Set<Receipt>().FirstOrDefaultAsync(r => r.ReceiptNumber == number);
+    public async Task<IEnumerable<Receipt>> ListByRentPaymentAsync(Guid rentPaymentId, CancellationToken cancellationToken = default)
+        => await _db.Set<Receipt>().Where(r => r.RentPaymentId == rentPaymentId).ToListAsync(cancellationToken);
+    public Task<Receipt?> GetByNumberAsync(string number, CancellationToken cancellationToken = default) => _db.Set<Receipt>().FirstOrDefaultAsync(r => r.ReceiptNumber == number, cancellationToken);
 
-    public async Task<IEnumerable<Receipt>> ListByPropertyAsync(Guid propertyId)
+    public async Task<IEnumerable<Receipt>> ListByPropertyAsync(Guid propertyId, CancellationToken cancellationToken = default)
     {
         // Find payments and transactions for leases belonging to the property
-        var paymentIds = await _db.RentPayments.Where(p => _db.Leases.Any(l => l.Id == p.LeaseId && l.PropertyId == propertyId)).Select(p => p.Id).ToListAsync();
-        var txIds = await _db.RentTransactions.Where(t => _db.Leases.Any(l => l.Id == t.LeaseId && l.PropertyId == propertyId)).Select(t => t.Id).ToListAsync();
-        return await _db.Set<Receipt>().Where(r => (r.RentPaymentId != null && paymentIds.Contains(r.RentPaymentId.Value)) || (r.RentTransactionId != null && txIds.Contains(r.RentTransactionId.Value))).ToListAsync();
+        var paymentIds = await _db.RentPayments.Where(p => _db.Leases.Any(l => l.Id == p.LeaseId && l.PropertyId == propertyId)).Select(p => p.Id).ToListAsync(cancellationToken);
+        var txIds = await _db.RentTransactions.Where(t => _db.Leases.Any(l => l.Id == t.LeaseId && l.PropertyId == propertyId)).Select(t => t.Id).ToListAsync(cancellationToken);
+        return await _db.Set<Receipt>().Where(r => (r.RentPaymentId != null && paymentIds.Contains(r.RentPaymentId.Value)) || (r.RentTransactionId != null && txIds.Contains(r.RentTransactionId.Value))).ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Receipt>> ListByTenantAsync(Guid tenantId)
+    public async Task<IEnumerable<Receipt>> ListByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
-        var paymentIds = await _db.RentPayments.Where(p => _db.Leases.Any(l => l.Id == p.LeaseId && l.TenantId == tenantId)).Select(p => p.Id).ToListAsync();
-        var txIds = await _db.RentTransactions.Where(t => _db.Leases.Any(l => l.Id == t.LeaseId && l.TenantId == tenantId)).Select(t => t.Id).ToListAsync();
-        return await _db.Set<Receipt>().Where(r => (r.RentPaymentId != null && paymentIds.Contains(r.RentPaymentId.Value)) || (r.RentTransactionId != null && txIds.Contains(r.RentTransactionId.Value))).ToListAsync();
+        var paymentIds = await _db.RentPayments.Where(p => _db.Leases.Any(l => l.Id == p.LeaseId && l.TenantId == tenantId)).Select(p => p.Id).ToListAsync(cancellationToken);
+        var txIds = await _db.RentTransactions.Where(t => _db.Leases.Any(l => l.Id == t.LeaseId && l.TenantId == tenantId)).Select(t => t.Id).ToListAsync(cancellationToken);
+        return await _db.Set<Receipt>().Where(r => (r.RentPaymentId != null && paymentIds.Contains(r.RentPaymentId.Value)) || (r.RentTransactionId != null && txIds.Contains(r.RentTransactionId.Value))).ToListAsync(cancellationToken);
     }
-    public async Task<Receipt> CreateAsync(Receipt r)
+    public async Task<Receipt> CreateAsync(Receipt r, CancellationToken cancellationToken = default)
     {
         if (r.Id == Guid.Empty) r.Id = Guid.NewGuid();
         r.ReceiptNumber = $"R-{DateTime.UtcNow.Ticks}";
-        await _db.Set<Receipt>().AddAsync(r);
-        await _db.SaveChangesAsync();
+        await _db.Set<Receipt>().AddAsync(r, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
         return r;
     }
 
-    public async Task<Receipt> UpdateAsync(Receipt r)
+    public async Task<Receipt> UpdateAsync(Receipt r, CancellationToken cancellationToken = default)
     {
         _db.Set<Receipt>().Update(r);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
         return r;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var r = await GetByIdAsync(id);
+        var r = await GetByIdAsync(id, cancellationToken);
         if (r is null) return;
         _db.Set<Receipt>().Remove(r);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 }

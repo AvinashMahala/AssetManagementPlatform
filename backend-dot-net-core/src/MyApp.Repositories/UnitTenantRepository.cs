@@ -14,33 +14,33 @@ public class UnitTenantRepository : IUnitTenantRepository
 
     public UnitTenantRepository(AppDbContext db) => _db = db;
 
-    public async Task<IEnumerable<UnitTenant>> ListAsync() => await _db.Set<UnitTenant>().ToListAsync();
+    public async Task<IEnumerable<UnitTenant>> ListAsync(CancellationToken cancellationToken = default) => await _db.Set<UnitTenant>().ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<UnitTenant>> ListByUnitAsync(Guid unitId) => await _db.Set<UnitTenant>().Where(x => x.UnitId == unitId).ToListAsync();
+    public async Task<IEnumerable<UnitTenant>> ListByUnitAsync(Guid unitId, CancellationToken cancellationToken = default) => await _db.Set<UnitTenant>().Where(x => x.UnitId == unitId).ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<UnitTenant>> ListByTenantAsync(Guid tenantId) => await _db.Set<UnitTenant>().Where(x => x.TenantId == tenantId).ToListAsync();
+    public async Task<IEnumerable<UnitTenant>> ListByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default) => await _db.Set<UnitTenant>().Where(x => x.TenantId == tenantId).ToListAsync(cancellationToken);
 
-    public Task<UnitTenant?> GetByIdAsync(Guid id) => _db.Set<UnitTenant>().FirstOrDefaultAsync(x => x.Id == id);
+    public Task<UnitTenant?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Set<UnitTenant>().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-    public async Task AddAsync(UnitTenant ut)
+    public async Task AddAsync(UnitTenant ut, CancellationToken cancellationToken = default)
     {
         if (ut.Id == Guid.Empty) ut.Id = Guid.NewGuid();
-        await _db.Set<UnitTenant>().AddAsync(ut);
-        await _db.SaveChangesAsync();
+        await _db.Set<UnitTenant>().AddAsync(ut, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(UnitTenant ut)
+    public async Task UpdateAsync(UnitTenant ut, CancellationToken cancellationToken = default)
     {
         _db.Set<UnitTenant>().Update(ut);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> DeleteByUnitAndTenantAsync(Guid unitId, Guid tenantId)
+    public async Task<bool> DeleteByUnitAndTenantAsync(Guid unitId, Guid tenantId, CancellationToken cancellationToken = default)
     {
-        var e = await _db.Set<UnitTenant>().FirstOrDefaultAsync(x => x.UnitId == unitId && x.TenantId == tenantId);
+        var e = await _db.Set<UnitTenant>().FirstOrDefaultAsync(x => x.UnitId == unitId && x.TenantId == tenantId, cancellationToken);
         if (e is null) return false;
         _db.Set<UnitTenant>().Remove(e);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

@@ -14,34 +14,34 @@ public class MeterAllocationRepository : IMeterAllocationRepository
 
     public MeterAllocationRepository(AppDbContext db) => _db = db;
 
-    public async Task<IEnumerable<MeterAllocation>> ListAsync() => await _db.Set<MeterAllocation>().ToListAsync();
+    public async Task<IEnumerable<MeterAllocation>> ListAsync(CancellationToken cancellationToken = default) => await _db.Set<MeterAllocation>().ToListAsync(cancellationToken);
 
-    public Task<MeterAllocation?> GetByIdAsync(Guid id) => _db.Set<MeterAllocation>().FirstOrDefaultAsync(m => m.Id == id);
+    public Task<MeterAllocation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Set<MeterAllocation>().FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
-    public async Task AddAsync(MeterAllocation m)
+    public async Task AddAsync(MeterAllocation m, CancellationToken cancellationToken = default)
     {
         if (m.Id == Guid.Empty) m.Id = Guid.NewGuid();
-        await _db.Set<MeterAllocation>().AddAsync(m);
-        await _db.SaveChangesAsync();
+        await _db.Set<MeterAllocation>().AddAsync(m, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(MeterAllocation m)
+    public async Task UpdateAsync(MeterAllocation m, CancellationToken cancellationToken = default)
     {
         _db.Set<MeterAllocation>().Update(m);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var m = await GetByIdAsync(id);
+        var m = await GetByIdAsync(id, cancellationToken);
         if (m is null) return;
         _db.Set<MeterAllocation>().Remove(m);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<MeterAllocation>> ListByMeterAsync(Guid meterId)
-        => await _db.Set<MeterAllocation>().Where(x => x.MeterId == meterId).ToListAsync();
+    public async Task<IEnumerable<MeterAllocation>> ListByMeterAsync(Guid meterId, CancellationToken cancellationToken = default)
+        => await _db.Set<MeterAllocation>().Where(x => x.MeterId == meterId).ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<MeterAllocation>> ListBySubscriptionAsync(Guid subscriptionId)
-        => await _db.Set<MeterAllocation>().Where(x => x.SubscriptionId == subscriptionId).ToListAsync();
+    public async Task<IEnumerable<MeterAllocation>> ListBySubscriptionAsync(Guid subscriptionId, CancellationToken cancellationToken = default)
+        => await _db.Set<MeterAllocation>().Where(x => x.SubscriptionId == subscriptionId).ToListAsync(cancellationToken);
 }

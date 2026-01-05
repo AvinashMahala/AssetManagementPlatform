@@ -13,26 +13,26 @@ public class MeterRepository : IMeterRepository
 
     public MeterRepository(AppDbContext db) => _db = db;
 
-    public async Task<IEnumerable<Meter>> ListAsync() => await _db.Set<Meter>().ToListAsync();
+    public async Task<IEnumerable<Meter>> ListAsync(CancellationToken cancellationToken = default) => await _db.Set<Meter>().ToListAsync(cancellationToken);
 
-    public Task<Meter?> GetByIdAsync(Guid id) => _db.Set<Meter>().FirstOrDefaultAsync(m => m.Id == id);
+    public Task<Meter?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Set<Meter>().FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
-    public async Task AddAsync(Meter m)
+    public async Task AddAsync(Meter m, CancellationToken cancellationToken = default)
     {
         if (m.Id == Guid.Empty) m.Id = Guid.NewGuid();
-        await _db.Set<Meter>().AddAsync(m);
-        await _db.SaveChangesAsync();
+        await _db.Set<Meter>().AddAsync(m, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Meter m)
+    public async Task UpdateAsync(Meter m, CancellationToken cancellationToken = default)
     {
         _db.Set<Meter>().Update(m);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> UpdateStatusAsync(Guid id, bool? isActive, string? status)
+    public async Task<bool> UpdateStatusAsync(Guid id, bool? isActive, string? status, CancellationToken cancellationToken = default)
     {
-        var m = await GetByIdAsync(id);
+        var m = await GetByIdAsync(id, cancellationToken);
         if (m is null) return false;
 
         var entry = _db.Entry(m);
@@ -52,27 +52,27 @@ public class MeterRepository : IMeterRepository
         m.UpdatedAt = DateTime.UtcNow;
         entry.Property(e => e.UpdatedAt).IsModified = true;
 
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var m = await GetByIdAsync(id);
+        var m = await GetByIdAsync(id, cancellationToken);
         if (m is null) return;
         _db.Set<Meter>().Remove(m);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId)
+    public async Task<IEnumerable<Meter>> ListByPropertyAsync(Guid propertyId, CancellationToken cancellationToken = default)
     {
-        return await _db.Set<Meter>().Where(m => m.PropertyId == propertyId).ToListAsync();
+        return await _db.Set<Meter>().Where(m => m.PropertyId == propertyId).ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Meter>> ListByUnitAsync(Guid unitId)
+    public async Task<IEnumerable<Meter>> ListByUnitAsync(Guid unitId, CancellationToken cancellationToken = default)
     {
-        var unit = await _db.Set<Unit>().FirstOrDefaultAsync(u => u.Id == unitId);
+        var unit = await _db.Set<Unit>().FirstOrDefaultAsync(u => u.Id == unitId, cancellationToken);
         if (unit is null) return new List<Meter>();
-        return await _db.Set<Meter>().Where(m => m.PropertyId == unit.PropertyId).ToListAsync();
+        return await _db.Set<Meter>().Where(m => m.PropertyId == unit.PropertyId).ToListAsync(cancellationToken);
     } 
 }

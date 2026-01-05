@@ -19,19 +19,19 @@ public class PropertyRepository : IPropertyRepository
         _logger = logger;
     }
 
-    public async Task<IEnumerable<Property>> ListAsync() => await _db.Set<Property>().ToListAsync();
+    public async Task<IEnumerable<Property>> ListAsync(CancellationToken cancellationToken = default) => await _db.Set<Property>().ToListAsync(cancellationToken);
 
-    public Task<Property?> GetByIdAsync(Guid id) => _db.Set<Property>().FirstOrDefaultAsync(p => p.Id == id);
+    public Task<Property?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Set<Property>().FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-    public async Task AddAsync(Property property)
+    public async Task AddAsync(Property property, CancellationToken cancellationToken = default)
     {
         if (property.Id == Guid.Empty) property.Id = Guid.NewGuid();
-        await _db.Set<Property>().AddAsync(property);
+        await _db.Set<Property>().AddAsync(property, cancellationToken);
         try
         {
             // Normalize DateTimes proactively before save to avoid a retry path
             _db.EnsureUtcDateTimes();
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
         {
@@ -62,7 +62,7 @@ public class PropertyRepository : IPropertyRepository
 
                 // Try to normalize DateTime kinds and retry once
                 _db.EnsureUtcDateTimes();
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync(cancellationToken);
                 return;
             }
 
@@ -71,7 +71,7 @@ public class PropertyRepository : IPropertyRepository
     }
 
     public async Task<Property?> FindByNormalizedKeyAsync(Guid? ownerId, string name, string? propertyType, string? currency,
-      string? addressStreet, string? addressCity, string? addressState, string? addressPincode, string? addressCountry, string? addressLandmark)
+      string? addressStreet, string? addressCity, string? addressState, string? addressPincode, string? addressCountry, string? addressLandmark, CancellationToken cancellationToken = default)
     {
         // Use SQL normalization consistent with the unique index expressions (regexp_replace -> collapse spaces, lower)
         var query = _db.Set<Property>().FromSqlInterpolated($@"
@@ -88,17 +88,17 @@ public class PropertyRepository : IPropertyRepository
               lower(regexp_replace(coalesce(address_landmark,''),'\s+',' ','g')) = lower(regexp_replace({addressLandmark},'\s+',' ','g'))
             LIMIT 1");
 
-        return await query.FirstOrDefaultAsync();
+        return await query.FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Property property)
+    public async Task UpdateAsync(Property property, CancellationToken cancellationToken = default)
     {
         _db.Set<Property>().Update(property);
         try
         {
             // Normalize DateTimes proactively before save to avoid a retry path
             _db.EnsureUtcDateTimes();
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
         {
@@ -129,7 +129,7 @@ public class PropertyRepository : IPropertyRepository
 
                 // Try to normalize DateTime kinds and retry once
                 _db.EnsureUtcDateTimes();
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync(cancellationToken);
                 return;
             }
 
@@ -137,11 +137,11 @@ public class PropertyRepository : IPropertyRepository
         }
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var p = await GetByIdAsync(id);
+        var p = await GetByIdAsync(id, cancellationToken);
         if (p is null) return;
         _db.Set<Property>().Remove(p);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 }

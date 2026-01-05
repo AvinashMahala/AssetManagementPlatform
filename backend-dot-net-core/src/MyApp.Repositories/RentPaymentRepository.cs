@@ -13,43 +13,43 @@ public class RentPaymentRepository : IRentPaymentRepository
 
     public RentPaymentRepository(AppDbContext db) => _db = db;
 
-    public async Task<IEnumerable<RentPayment>> ListAsync() => await _db.Set<RentPayment>().ToListAsync();
+    public async Task<IEnumerable<RentPayment>> ListAsync(CancellationToken cancellationToken = default) => await _db.Set<RentPayment>().ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<RentPayment>> ListByLeaseAsync(Guid leaseId)
-        => await _db.Set<RentPayment>().Where(p => p.LeaseId == leaseId).ToListAsync();
+    public async Task<IEnumerable<RentPayment>> ListByLeaseAsync(Guid leaseId, CancellationToken cancellationToken = default)
+        => await _db.Set<RentPayment>().Where(p => p.LeaseId == leaseId).ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<RentPayment>> ListByPropertyAsync(Guid propertyId)
+    public async Task<IEnumerable<RentPayment>> ListByPropertyAsync(Guid propertyId, CancellationToken cancellationToken = default)
         => await (from p in _db.Set<RentPayment>()
                   join l in _db.Leases on p.LeaseId equals l.Id
                   where l.PropertyId == propertyId
-                  select p).ToListAsync();
+                  select p).ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<RentPayment>> ListByTenantAsync(Guid tenantId)
+    public async Task<IEnumerable<RentPayment>> ListByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
         => await (from p in _db.Set<RentPayment>()
                   join l in _db.Leases on p.LeaseId equals l.Id
                   where l.TenantId == tenantId
-                  select p).ToListAsync();
+                  select p).ToListAsync(cancellationToken);
 
-    public Task<RentPayment?> GetByIdAsync(Guid id) => _db.Set<RentPayment>().FirstOrDefaultAsync(p => p.Id == id);
+    public Task<RentPayment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Set<RentPayment>().FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-    public async Task AddAsync(RentPayment p)
+    public async Task AddAsync(RentPayment p, CancellationToken cancellationToken = default)
     {
         if (p.Id == Guid.Empty) p.Id = Guid.NewGuid();
-        await _db.Set<RentPayment>().AddAsync(p);
-        await _db.SaveChangesAsync();
+        await _db.Set<RentPayment>().AddAsync(p, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(RentPayment p)
+    public async Task UpdateAsync(RentPayment p, CancellationToken cancellationToken = default)
     {
         _db.Set<RentPayment>().Update(p);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var p = await GetByIdAsync(id);
+        var p = await GetByIdAsync(id, cancellationToken);
         if (p is null) return;
         _db.Set<RentPayment>().Remove(p);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 }

@@ -14,31 +14,31 @@ public class ExpenseRepository : IExpenseRepository
 
     public ExpenseRepository(AppDbContext db) => _db = db;
 
-    public async Task<IEnumerable<Expense>> ListAsync() => await _db.Set<Expense>().ToListAsync();
+    public async Task<IEnumerable<Expense>> ListAsync(CancellationToken cancellationToken = default) => await _db.Set<Expense>().ToListAsync(cancellationToken);
 
-    public Task<Expense?> GetByIdAsync(Guid id) => _db.Set<Expense>().FirstOrDefaultAsync(e => e.Id == id);
+    public Task<Expense?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => _db.Set<Expense>().FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
-    public async Task AddAsync(Expense e)
+    public async Task AddAsync(Expense e, CancellationToken cancellationToken = default)
     {
         if (e.Id == Guid.Empty) e.Id = Guid.NewGuid();
-        await _db.Set<Expense>().AddAsync(e);
-        await _db.SaveChangesAsync();
+        await _db.Set<Expense>().AddAsync(e, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Expense e)
+    public async Task UpdateAsync(Expense e, CancellationToken cancellationToken = default)
     {
         _db.Set<Expense>().Update(e);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var e = await GetByIdAsync(id);
+        var e = await GetByIdAsync(id, cancellationToken);
         if (e is null) return;
         _db.Set<Expense>().Remove(e);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Expense>> ListByPropertyAsync(Guid propertyId) => await _db.Set<Expense>().Where(e => e.PropertyId == propertyId).ToListAsync();
-    public async Task<IEnumerable<Expense>> ListByUnitAsync(Guid unitId) => await _db.Set<Expense>().Where(e => e.UnitId == unitId).ToListAsync();
+    public async Task<IEnumerable<Expense>> ListByPropertyAsync(Guid propertyId, CancellationToken cancellationToken = default) => await _db.Set<Expense>().Where(e => e.PropertyId == propertyId).ToListAsync(cancellationToken);
+    public async Task<IEnumerable<Expense>> ListByUnitAsync(Guid unitId, CancellationToken cancellationToken = default) => await _db.Set<Expense>().Where(e => e.UnitId == unitId).ToListAsync(cancellationToken);
 }
