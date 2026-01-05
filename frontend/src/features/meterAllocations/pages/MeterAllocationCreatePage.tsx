@@ -2,19 +2,23 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { MeterAllocationForm } from '../components/forms/MeterAllocationForm';
-import { useMeterAllocations } from '../hooks/useMeterAllocations';
+import { useCreateMeterAllocation } from '../hooks/useMeterAllocations';
+import { useNotifications } from '@/contexts';
 import type { MeterAllocationInput } from '../types';
 
 export const MeterAllocationCreatePage: React.FC = () => {
   const navigate = useNavigate();
-  const { createMeterAllocation, isCreating } = useMeterAllocations();
+  const { mutate: createMeterAllocation, loading: isCreating } = useCreateMeterAllocation();
+  const { showSuccess, showError } = useNotifications();
 
   const handleSubmit = async (data: MeterAllocationInput) => {
     try {
       await createMeterAllocation(data);
+      showSuccess('Meter allocation created successfully');
       navigate('/meter-allocations');
     } catch (error) {
       console.error('Failed to create allocation:', error);
+      showError('Failed to create allocation');
     }
   };
 

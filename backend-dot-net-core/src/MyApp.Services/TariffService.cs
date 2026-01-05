@@ -20,16 +20,33 @@ public class TariffService(ITariffRepository repo, ILogger<TariffService> logger
 
     public async Task<Tariff> CreateAsync(Tariff t)
     {
+        // Ensure datetimes are UTC before persisting to timestamptz columns
+        t.EffectiveFrom = EnsureUtc(t.EffectiveFrom);
+        if (t.EffectiveTo.HasValue) t.EffectiveTo = EnsureUtc(t.EffectiveTo.Value);
+
+        // Ensure JSON fields are valid for jsonb columns
+        t.TieredRates ??= "[]";
+        t.Metadata ??= "{}";
+
         await _repo.AddAsync(t);
         return t;
     }
 
-    public async Task UpdateAsync(Tariff t) => await _repo.UpdateAsync(t);
+    public async Task UpdateAsync(Tariff t)
+    {
+        // Normalize datetimes to UTC
+        t.EffectiveFrom = EnsureUtc(t.EffectiveFrom);
+        if (t.EffectiveTo.HasValue) t.EffectiveTo = EnsureUtc(t.EffectiveTo.Value);
+        await _repo.UpdateAsync(t);
+    }
 
     public async Task DeleteAsync(Guid id) => await _repo.DeleteAsync(id);
 
     public async Task<Tariff?> GetApplicableTariffAsync(Guid? subscriptionId, Guid? meterId, Guid utilityTypeId, DateTime date)
     {
+        // normalize query date to UTC for consistent comparisons
+        date = EnsureUtc(date);
+
         // 1. subscription-specific
         if (subscriptionId.HasValue)
         {
@@ -63,4 +80,6 @@ public class TariffService(ITariffRepository repo, ILogger<TariffService> logger
             .FirstOrDefault();
         return defaultTariff;
     }
+
+    private static DateTime EnsureUtc(DateTime dt) => dt.Kind == DateTimeKind.Utc ? dt : DateTime.SpecifyKind(dt, DateTimeKind.Utc);
 }

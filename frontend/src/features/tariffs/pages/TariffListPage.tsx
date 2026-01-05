@@ -5,7 +5,8 @@ import { Button } from '@/componentDesignLibrary';
 import { Input } from '@/componentDesignLibrary';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { TariffTable } from '../components/TariffTable';
-import { useTariffs } from '../hooks/useTariffs';
+import { useTariffs, useDeleteTariff } from '../hooks/useTariffs';
+import { useNotifications } from '@/contexts';
 
 export const TariffListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,12 +15,13 @@ export const TariffListPage: React.FC = () => {
   
   const { 
     data: response, 
-    isLoading, 
+    loading,
     error, 
-    deleteTariff,
-    isDeleting,
     refetch 
   } = useTariffs(page, 10);
+
+  const { mutate: deleteTariff, loading: isDeleting } = useDeleteTariff();
+  const { showError, showSuccess } = useNotifications();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -27,7 +29,13 @@ export const TariffListPage: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this tariff?')) {
-      await deleteTariff(id);
+      try {
+        await deleteTariff(id);
+        showSuccess('Tariff deleted successfully');
+        refetch();
+      } catch (err) {
+        showError('Failed to delete tariff');
+      }
     }
   };
 
@@ -64,7 +72,7 @@ export const TariffListPage: React.FC = () => {
             />
           </div>
           <Button variant="ghost" size="icon" onClick={() => refetch()}>
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
 

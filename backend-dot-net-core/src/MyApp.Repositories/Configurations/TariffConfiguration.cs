@@ -23,8 +23,9 @@ public class TariffConfiguration : IEntityTypeConfiguration<Tariff>
 
         builder.Property(t => t.RatePerUnit).HasColumnName("rate_per_unit");
         builder.Property(t => t.FixedCharge).HasColumnName("fixed_charge");
-        builder.Property(t => t.TieredRates).HasColumnName("tiered_rates");
-        builder.Property(t => t.Metadata).HasColumnName("metadata");
+        // Stored as JSONB
+        builder.Property(t => t.TieredRates).HasColumnName("tiered_rates").HasColumnType("jsonb").HasDefaultValueSql("'[]'::jsonb");
+        builder.Property(t => t.Metadata).HasColumnName("metadata").HasColumnType("jsonb").HasDefaultValueSql("'{}'::jsonb");
 
         builder.Property(t => t.CreatedBy).HasColumnName("created_by");
         builder.Property(t => t.CreatedAt).HasColumnName("created_at");

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using MyApp.Interfaces;
 using MyApp.Interfaces.Repositories;
@@ -19,6 +20,22 @@ public class MeterAllocationService(IMeterAllocationRepository repo, ILogger<Met
 
     public async Task<MeterAllocation> CreateAsync(MeterAllocation m)
     {
+        // Normalize datetimes to UTC to avoid Npgsql errors writing unspecified kinds
+        m.EffectiveFrom = EnsureUtc(m.EffectiveFrom);
+        if (m.EffectiveTo.HasValue) m.EffectiveTo = EnsureUtc(m.EffectiveTo.Value);
+        m.CreatedAt = EnsureUtc(m.CreatedAt == default ? DateTime.UtcNow : m.CreatedAt);
+
+        // Ensure allocation_rule is valid JSON and set default if missing
+        m.AllocationRule ??= "{}";
+        try
+        {
+            JsonSerializer.Deserialize<object>(m.AllocationRule);
+        }
+        catch (Exception ex)
+        {
+            throw new MyApp.Services.Exceptions.ServiceException("Invalid JSON in allocation rule");
+        }
+
         // Pre-validate overlapping allocations so we throw a friendly message instead of DB error
         var existing = await _repo.ListByMeterAsync(m.MeterId);
         decimal overlapSum = 0m;
@@ -40,6 +57,22 @@ public class MeterAllocationService(IMeterAllocationRepository repo, ILogger<Met
 
     public async Task UpdateAsync(MeterAllocation m)
     {
+        // Normalize datetimes to UTC
+        m.EffectiveFrom = EnsureUtc(m.EffectiveFrom);
+        if (m.EffectiveTo.HasValue) m.EffectiveTo = EnsureUtc(m.EffectiveTo.Value);
+        m.UpdatedAt = EnsureUtc(m.UpdatedAt ?? DateTime.UtcNow);
+
+        // Ensure allocation_rule is valid JSON and set default if missing
+        m.AllocationRule ??= "{}";
+        try
+        {
+            JsonSerializer.Deserialize<object>(m.AllocationRule);
+        }
+        catch (Exception ex)
+        {
+            throw new MyApp.Services.Exceptions.ServiceException("Invalid JSON in allocation rule");
+        }
+
         // Similar check when updating
         var existing = await _repo.ListByMeterAsync(m.MeterId);
         decimal overlapSum = 0m;
@@ -63,4 +96,6 @@ public class MeterAllocationService(IMeterAllocationRepository repo, ILogger<Met
     public async Task<IEnumerable<MeterAllocation>> ListByMeterAsync(Guid meterId) => await _repo.ListByMeterAsync(meterId);
 
     public async Task<IEnumerable<MeterAllocation>> ListBySubscriptionAsync(Guid subscriptionId) => await _repo.ListBySubscriptionAsync(subscriptionId);
+
+    private static DateTime EnsureUtc(DateTime dt) => dt.Kind == DateTimeKind.Utc ? dt : DateTime.SpecifyKind(dt, DateTimeKind.Utc);
 }

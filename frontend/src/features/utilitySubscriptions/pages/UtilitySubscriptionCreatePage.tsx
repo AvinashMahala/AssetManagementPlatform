@@ -2,20 +2,23 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { UtilitySubscriptionForm } from '../components/forms/UtilitySubscriptionForm';
-import { useUtilitySubscriptions } from '../hooks/useUtilitySubscriptions';
+import { useCreateUtilitySubscription } from '../hooks/useUtilitySubscriptions';
+import { useNotifications } from '@/contexts';
 import type { UtilitySubscriptionInput } from '../types';
 
 export const UtilitySubscriptionCreatePage: React.FC = () => {
   const navigate = useNavigate();
-  const { createSubscription, isCreating } = useUtilitySubscriptions();
+  const { mutate: createSubscription, loading: isCreating } = useCreateUtilitySubscription();
+  const { showSuccess, showError } = useNotifications();
 
   const handleSubmit = async (data: UtilitySubscriptionInput) => {
     try {
       await createSubscription(data);
+      showSuccess('Utility subscription created successfully');
       navigate('/utility-subscriptions');
     } catch (error) {
       console.error('Failed to create subscription:', error);
-      // Error handling is done in the hook/toast usually
+      showError('Failed to create subscription');
     }
   };
 
