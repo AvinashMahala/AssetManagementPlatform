@@ -46,12 +46,12 @@ public class BillingService(
         var transaction = new RentTransaction
         {
             LeaseId = leaseId,
-            Amount = 0m,
+          UnitId = lease.UnitId,
+          PropertyId = lease.PropertyId,
+          TenantId = lease.TenantId,
+          Amount = 0m,
             CreatedAt = DateTime.UtcNow,
             Status = "draft",
-            TenantId = lease.TenantId,
-            PropertyId = lease.PropertyId,
-            UnitId = lease.UnitId,
             CreatedBy = Guid.Parse("0075ac4c-399e-4267-ad35-0b188cfd4cee"), // system user
         };
 
@@ -85,8 +85,7 @@ public class BillingService(
                 var startReading = await _meterReadingRepo.GetLatestByMeterBeforeDateAsync(meter.Id, periodStart);
                 if (endReading is null || startReading is null) continue; // can't compute
 
-                var rawUnits = (endReading.CurrentReading - startReading.CurrentReading);
-                var units = rawUnits * meter.Multiplier * subscription.BillingMultiplier * alloc.AllocationFraction;
+                var units = (endReading.CurrentReading - startReading.PreviousReading);
 
                 // Determine utility type id from subscription.UtilityTypeId
                 var utilityTypeId = subscription.UtilityTypeId;
@@ -94,7 +93,7 @@ public class BillingService(
                 var tariff = await _tariffService.GetApplicableTariffAsync(subscription.Id, meter.Id, utilityTypeId, periodEnd.Date);
                 decimal rate = tariff?.RatePerUnit ?? meter.CostPerUnit;
                 decimal fixedCharge = tariff?.FixedCharge ?? (meter.FixedCharge ?? 0m);
-                decimal cost = units * rate + fixedCharge * alloc.AllocationFraction;
+                decimal cost = (decimal)((units * rate) + fixedCharge * alloc.AllocationFraction);
 
                 totalMeterCharges += cost;
 
@@ -109,7 +108,7 @@ public class BillingService(
                     MeterNumber = meter.MeterNumber,
                     PreviousReading = startReading.CurrentReading,
                     CurrentReading = endReading.CurrentReading,
-                    UnitsConsumed = units,
+                    UnitsConsumed = (decimal)units,
                     CostPerUnit = rate,
                     FixedCharge = fixedCharge * alloc.AllocationFraction,
                     TotalCost = cost,

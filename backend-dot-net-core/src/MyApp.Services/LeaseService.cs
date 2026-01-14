@@ -35,6 +35,15 @@ public class LeaseService(ILeaseRepository repo) : ILeaseService
     public Task CreateLeaseAsync(Lease lease)
     {
         if (lease.Id == Guid.Empty) lease.Id = Guid.NewGuid();
+
+        // Normalize DateTimes to UTC to prevent Npgsql errors when writing to timestamptz columns
+        lease.StartDate = EnsureUtc(lease.StartDate);
+        if (lease.EndDate.HasValue) lease.EndDate = EnsureUtc(lease.EndDate.Value);
+        if (lease.SignedAt.HasValue) lease.SignedAt = EnsureUtc(lease.SignedAt.Value);
+        if (lease.TerminatedAt.HasValue) lease.TerminatedAt = EnsureUtc(lease.TerminatedAt.Value);
+        lease.CreatedAt = lease.CreatedAt == default ? DateTime.UtcNow : EnsureUtc(lease.CreatedAt!.Value);
+        lease.UpdatedAt = lease.UpdatedAt == default ? DateTime.UtcNow : EnsureUtc(lease.UpdatedAt!.Value);
+
         return _repo.AddAsync(lease);
     }
 
@@ -62,6 +71,14 @@ public class LeaseService(ILeaseRepository repo) : ILeaseService
     {
         // Ensure id consistency
         lease.Id = id;
+
+        // Normalize DateTimes to UTC before updating
+        lease.StartDate = EnsureUtc(lease.StartDate);
+        if (lease.EndDate.HasValue) lease.EndDate = EnsureUtc(lease.EndDate.Value);
+        if (lease.SignedAt.HasValue) lease.SignedAt = EnsureUtc(lease.SignedAt.Value);
+        if (lease.TerminatedAt.HasValue) lease.TerminatedAt = EnsureUtc(lease.TerminatedAt.Value);
+        lease.UpdatedAt = EnsureUtc(lease.UpdatedAt ?? DateTime.UtcNow);
+
         return _repo.UpdateAsync(lease);
     }
 
@@ -86,9 +103,11 @@ public class LeaseService(ILeaseRepository repo) : ILeaseService
     {
         var lease = await _repo.GetByIdAsync(id);
         if (lease is null) throw new MyApp.Services.Exceptions.ServiceException("Lease not found");
-        lease.EndDate = endDate;
+        lease.EndDate = EnsureUtc(endDate);
         await _repo.UpdateAsync(lease);
     }
 
     public Task<bool> DeleteLeaseAsync(Guid id) => _repo.DeleteAsync(id);
+
+    private static DateTime EnsureUtc(DateTime dt) => dt.Kind == DateTimeKind.Utc ? dt : DateTime.SpecifyKind(dt, DateTimeKind.Utc);
 } 

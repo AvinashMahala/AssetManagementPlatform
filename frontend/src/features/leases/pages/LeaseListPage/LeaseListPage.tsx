@@ -16,6 +16,7 @@ import { useLeases, useDeleteLease } from '@/features/leases/hooks/useLeases';
 import { useTenants } from '@/features/tenants/hooks/useTenants';
 import { useUnits } from '@/features/units/hooks/useUnits';
 import { AppLayout } from '@/components/layout';
+import { ROUTE_PATHS } from '@/constants/routes';
 import { format, isWithinInterval } from 'date-fns';
 import type { Lease } from '@/features/leases/types/lease';
 import type { Tenant } from '@/features/tenants/types';
@@ -325,7 +326,7 @@ const LeaseListPage: React.FC = () => {
           <TabsContent value="management" className="space-y-4">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold tracking-tight">Lease Management</h1>
-              <Button onClick={() => navigate('/leases/new')}>
+              <Button onClick={() => navigate(ROUTE_PATHS.LEASES_CREATE)}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Lease
               </Button>

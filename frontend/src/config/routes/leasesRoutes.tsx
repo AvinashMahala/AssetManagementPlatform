@@ -17,6 +17,13 @@ export const leasesRoutes: RouteConfig[] = [
     isProtected: true,
     requiredPermission: 'leases:lease:view'
   },
+  // Backwards-compat redirect from old '/leases/new' to canonical create route
+  {
+    path: '/leases/new',
+    element: <Navigate to={ROUTE_PATHS.LEASES_CREATE_TABBED} replace />,
+    isProtected: true,
+    requiredPermission: 'leases:lease:create'
+  },
   {
     path: ROUTE_PATHS.LEASES_CREATE,
     element: <Navigate to={ROUTE_PATHS.LEASES_CREATE_TABBED} replace />,
